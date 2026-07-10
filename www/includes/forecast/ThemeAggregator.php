@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../atlas/AtlasLoader.php';
+require_once __DIR__ . '/ThemeMap.php';
 
 final class ThemeAggregator
 {
@@ -17,23 +18,17 @@ final class ThemeAggregator
         $scores = [];
 
         foreach (($temaRS['pianeti'] ?? []) as $nome => $info) {
+            $chiave = mb_strtolower((string)$nome);
+            $casa   = (int)($info['casa'] ?? 0);
 
-            $chiave = mb_strtolower($nome);
-
-            if (!isset($this->atlas[$chiave])) {
-                continue;
-            }
-
-            $casa = (int)($info['casa'] ?? 0);
-
-            if (!isset($this->atlas[$chiave][$casa])) {
+            if (!isset($this->atlas[$chiave][$casa]['themes'])) {
                 continue;
             }
 
             foreach ($this->atlas[$chiave][$casa]['themes'] as $tema => $peso) {
-
-                $scores[$tema] = ($scores[$tema] ?? 0) + $peso;
-
+                $temaNormalizzato = ThemeMap::normalize((string)$tema);
+                $scores[$temaNormalizzato] =
+                    ($scores[$temaNormalizzato] ?? 0) + (int)$peso;
             }
         }
 
