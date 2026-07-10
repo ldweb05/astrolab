@@ -1,0 +1,53 @@
+name: astro-val
+
+services:
+
+  astro-val-web:
+    build: .
+    container_name: astro-val-web
+    restart: unless-stopped
+    ports:
+      - "8190:80"
+    volumes:
+      - ./www:/var/www/html
+      - ./php-config/php.ini:/usr/local/etc/php/php.ini
+    env_file:
+      - .env
+    environment:
+      - TZ=Europe/Rome
+    depends_on:
+      - astro-val-db
+    networks:
+      - astro-val-net
+
+  astro-val-db:
+    image: postgres:16-alpine
+    container_name: astro-val-db
+    restart: unless-stopped
+    ports:
+      - "5441:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      - TZ=Europe/Rome
+    networks:
+      - astro-val-net
+
+  astro-val-adminer:
+    image: adminer:latest
+    container_name: astro-val-adminer
+    restart: unless-stopped
+    ports:
+      - "8191:8080"
+    environment:
+      - TZ=Europe/Rome
+    depends_on:
+      - astro-val-db
+    networks:
+      - astro-val-net
+
+networks:
+  astro-val-net:
+    driver: bridge

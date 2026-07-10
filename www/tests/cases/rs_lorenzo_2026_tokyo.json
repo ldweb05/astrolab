@@ -1,0 +1,14 @@
+{
+  "tipo": "RS",
+  "soggetto_id": 23,
+  "anno": 2026,
+  "luogo": "Tokyo",
+  "lat": 35.6764,
+  "lon": 139.65,
+  "condizione": "Decima",
+  "atteso": {
+    "stelline": 0,
+    "veto": true,
+    "is_valida": false
+  }
+}
