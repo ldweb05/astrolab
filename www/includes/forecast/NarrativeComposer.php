@@ -50,6 +50,7 @@ final class NarrativeComposer
                 'symbolic_notes' => $this->symbolicNotes($forecast, $name),
                 'context_notes' => $this->contextNotes($forecast, $name),
                 'advanced_notes' => $this->advancedNotes($forecast, $name),
+                'aspect_notes' => $this->aspectNotes($forecast, $name),
                 'text' => '',
             ];
 
@@ -238,6 +239,19 @@ final class NarrativeComposer
                 '.';
         }
 
+        $aspectText = '';
+
+        if (!empty($item['aspect_notes'])) {
+            $aspectText =
+                ' Le dinamiche planetarie includono ' .
+                implode(', ', array_slice(
+                    array_unique($item['aspect_notes']),
+                    0,
+                    2
+                )) .
+                '.';
+        }
+
         $opening = match($theme) {
             'carriera' => 'La realizzazione personale e professionale',
             'studio' => 'L\'apprendimento e lo sviluppo',
@@ -254,7 +268,8 @@ final class NarrativeComposer
                 $planets .
                 $symbolText .
                 $contextText .
-                $advancedText,
+                $advancedText .
+                $aspectText,
 
             'critical' =>
                 $opening .
@@ -263,7 +278,8 @@ final class NarrativeComposer
                 $planets .
                 $symbolText .
                 $contextText .
-                $advancedText,
+                $advancedText .
+                $aspectText,
 
             default =>
                 $opening .
@@ -353,6 +369,52 @@ final class NarrativeComposer
             if (in_array(strtolower($planet), $planets, true)) {
                 $notes[] =
                     'dignità in ' . ($data['sign'] ?? '');
+            }
+        }
+
+        return array_values(array_unique($notes));
+    }
+
+
+    private function aspectNotes(array $forecast, string $theme): array
+    {
+        $sources = $forecast['contributions'][$theme] ?? [];
+
+        if (!$sources) {
+            return [];
+        }
+
+        $planets = [];
+
+        foreach ($sources as $source) {
+            if (!empty($source['planet'])) {
+                $planets[] = strtolower($source['planet']);
+            }
+        }
+
+        $planets = array_unique($planets);
+
+        $notes = [];
+
+        foreach (($forecast['context']['aspects'] ?? []) as $aspect) {
+
+            $p1 = strtolower($aspect['planet1'] ?? '');
+            $p2 = strtolower($aspect['planet2'] ?? '');
+
+            if (
+                in_array($p1, $planets, true) ||
+                in_array($p2, $planets, true)
+            ) {
+                $notes[] =
+                    ucfirst($aspect['planet1']) .
+                    ' ' .
+                    ($aspect['aspect'] ?? '') .
+                    ' ' .
+                    ucfirst($aspect['planet2']);
+            }
+
+            if (count($notes) >= 2) {
+                break;
             }
         }
 
