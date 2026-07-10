@@ -1,0 +1,56 @@
+services:
+
+  astro-web:
+    build: .
+    container_name: astro-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./www:/var/www/html
+      - ./php-config/php.ini:/usr/local/etc/php/php.ini
+    environment:
+      - TZ=Europe/Rome
+      - DB_HOST=astro-db
+      - DB_NAME=${DB_NAME:-astrologia}
+      - DB_USER=${DB_USER:-astro}
+      - DB_PASS=${DB_PASS:-astro2024secure}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+    depends_on:
+      - astro-db
+    networks:
+      - astro-net
+
+  astro-db:
+    image: postgres:16-alpine
+    container_name: astro-db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME:-astrologia}
+      - POSTGRES_USER=${DB_USER:-astro}
+      - POSTGRES_PASSWORD=${DB_PASS:-astro2024secure}
+      - TZ=Europe/Rome
+    networks:
+      - astro-net
+
+  astro-adminer:
+    image: adminer:latest
+    container_name: astro-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      - TZ=Europe/Rome
+    depends_on:
+      - astro-db
+    networks:
+      - astro-net
+
+networks:
+  astro-net:
+    driver: bridge

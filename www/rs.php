@@ -1,0 +1,1278 @@
+<?php
+require_once __DIR__ . '/includes/bootstrap.php';
+// ===== INIZIO PATCH AUTH MULTI-ASTROLOGO =====
+session_start();
+require_once 'includes/Auth.php';
+ 
+$pdo = db_connect();
+$auth = new Auth($pdo);
+$auth->richiediLogin();
+ 
+$isAdmin       = $auth->isAdmin();
+$username      = $auth->getCurrentUsername();
+$soggettoAttivo = $auth->getSoggettoAttivo();
+$soggettoNome  = $auth->getSoggettoNome();
+ 
+$id = intval($_GET['id'] ?? $soggettoAttivo ?? 0);
+if ($id > 0) { $auth->setSoggettoAttivo($id); $soggettoNome = $auth->getSoggettoNome(); }
+// ===== FINE PATCH AUTH MULTI-ASTROLOGO =====
+ 
+require_once 'includes/SweCalc.php';
+require_once 'includes/RuleEngine.php';
+ 
+$soggetto = null;
+$defaultLat = 0;
+$defaultLon = 0;
+$defaultLuogo = '';
+ 
+if ($id) {
+    $soggetto = $auth->verificaSoggetto($id);
+}
+ 
+$latRS_Url        = isset($_GET['lat_rs'])    ? (float)$_GET['lat_rs']  : null;
+$lonRS_Url        = isset($_GET['lon_rs'])    ? (float)$_GET['lon_rs']  : null;
+$luogoRS_Url      = $_GET['luogo_rs']         ?? null;
+$annoRS_Url       = isset($_GET['anno'])      ? (int)$_GET['anno']      : null;
+$condizioneRS_Url = $_GET['condizione'] ?? null;
+$condizioni_valide = ['Decima','Lavoro','Amore','Salute','Denaro','Denaro Low','Casa'];
+if ($condizioneRS_Url !== null && !in_array($condizioneRS_Url, $condizioni_valide)) {
+    $condizioneRS_Url = 'Decima';
+}
+ 
+$condizioni = [
+    'Decima', 'Lavoro', 'Amore', 'Salute', 'Denaro', 'Denaro Low', 'Casa'
+];
+ 
+$annoCorrente = (int)date('Y');
+ 
+$jsData = null;
+if ($soggetto) {
+    $defaultLat  = $latRS_Url  !== null ? $latRS_Url
+                 : ($soggetto['residenza_latitudine']  ?: ($soggetto['latitudine'] ?? 0));
+    $defaultLon  = $lonRS_Url  !== null ? $lonRS_Url
+                 : ($soggetto['residenza_longitudine'] ?: ($soggetto['longitudine'] ?? 0));
+    $defaultLuogo = $luogoRS_Url !== null ? $luogoRS_Url
+                 : ($soggetto['residenza_luogo']
+                    ? $soggetto['residenza_luogo'] . ($soggetto['residenza_nazione'] ? ', '.$soggetto['residenza_nazione'] : '')
+                    : ($soggetto['luogo_nascita'] ?? ''));
+ 
+    $date   = new DateTime($soggetto['data_nascita']);
+    $oraGmt = explode(':', $soggetto['ora_nascita_gmt']);
+    $jsData = [
+        'id'         => $soggetto['id'],
+        'nome'       => $soggetto['nome'],
+        'giorno'     => (int)$date->format('d'),
+        'mese'       => (int)$date->format('m'),
+        'anno'       => (int)$date->format('Y'),
+        'ora_gmt'    => (int)$oraGmt[0] + (int)$oraGmt[1]/60,
+        'ora_loc'    => substr($soggetto['ora_nascita'], 0, 5),
+        'lat'        => (float)$soggetto['latitudine'],
+        'lon'        => (float)$soggetto['longitudine'],
+        'luogo'      => $soggetto['luogo_nascita'],
+        'nazione'    => $soggetto['nazione_nascita'],
+        'offset'     => (float)($soggetto['offset_gmt'] ?? 0),
+        'res_lat'    => $soggetto['residenza_latitudine']  ? (float)$soggetto['residenza_latitudine']  : null,
+        'res_lon'    => $soggetto['residenza_longitudine'] ? (float)$soggetto['residenza_longitudine'] : null,
+        'res_luogo'  => $soggetto['residenza_luogo']  ?: null,
+        'res_nazione'=> $soggetto['residenza_nazione'] ?: null,
+        'data_str'   => $date->format('d/m/Y'),
+        'ora_loc_str'=> substr($soggetto['ora_nascita'],0,5),
+        'ora_gmt_str'=> substr($soggetto['ora_nascita_gmt'],0,5),
+    ];
+}
+?>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Rivoluzione Solare</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/print.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Symbols+2&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+<?php $paginaAttiva = 'rs'; include 'includes/header_nav.php'; ?>
+ 
+<main>
+<?php if (!$soggetto): ?>
+    <div class="card">
+        <p class="empty">Seleziona un soggetto dalla <a href="index.php">lista soggetti</a>.</p>
+    </div>
+<?php else: ?>
+ 
+    <div class="header-soggetto">
+        <div><span>Soggetto: </span><b><?= htmlspecialchars($soggetto['nome']) ?></b></div>
+        <div><span>Nato il: </span><b><?= date('d/m/Y', strtotime($soggetto['data_nascita'])) ?></b></div>
+        <div><span>Ore: </span><b><?= substr($soggetto['ora_nascita'],0,5) ?> (loc.) — <?= substr($soggetto['ora_nascita_gmt'],0,5) ?> GMT</b></div>
+        <div><span>Nascita: </span><b><?= htmlspecialchars($soggetto['luogo_nascita'].' '.$soggetto['nazione_nascita']) ?></b></div>
+        <?php if ($soggetto['residenza_luogo']): ?>
+        <div><span>🏠 Residenza: </span><b><?= htmlspecialchars($soggetto['residenza_luogo'].($soggetto['residenza_nazione'] ? ', '.$soggetto['residenza_nazione'] : '')) ?></b></div>
+        <?php endif; ?>
+    </div>
+
+    <div id="print-header-rs" class="print-only-header">
+    <div class="print-header-left">
+        <div class="print-h-nome" id="print-h-nome"></div>
+        <div id="print-h-nascita"></div>
+        <div id="print-h-ora"></div>
+    </div>
+    <div class="print-header-right">
+        <div class="print-h-gmt" id="print-h-gmt"></div>
+        <div id="print-h-ora-locale"></div>
+        <div id="print-h-luogo"></div>
+    </div>
+</div>
+ 
+    <div class="controlli">
+        <div class="form-group">
+            <label>Anno RS</label>
+            <select id="anno-rs">
+                <?php for($y = $annoCorrente - 67; $y <= $annoCorrente + 15; $y++): ?>
+                <option value="<?= $y ?>" <?= ($annoRS_Url ?? $annoCorrente) == $y ? 'selected' : '' ?>><?= $y ?></option>
+                <?php endfor; ?>
+            </select>
+        </div>
+        <input type="hidden" id="condizione" value="Decima">
+        <div class="form-group luogo-group">
+            <label>Luogo RS</label>
+            <div class="luogo-rs-wrap">
+                <input type="text" id="luogo-rs-input" placeholder="Cerca città RS..."
+                       value="<?= htmlspecialchars($defaultLuogo) ?>" style="flex:1">
+                <button class="btn-search" onclick="cercaLuogoRS()">🔍 Cerca</button>
+            </div>
+            <div id="luogo-rs-risultati" class="dropdown-risultati"></div>
+        </div>
+        <div class="form-group coord-group">
+            <label>Lat</label>
+            <input type="number" id="rs-lat" step="0.0001" value="<?= htmlspecialchars($defaultLat) ?>">
+        </div>
+        <div class="form-group coord-group">
+            <label>Lon</label>
+            <input type="number" id="rs-lon" step="0.0001" value="<?= htmlspecialchars($defaultLon) ?>">
+        </div>
+        <div class="form-group check-group">
+            <label>
+                <input type="checkbox" id="mostra-banner-escluse" checked>
+                Mostra avviso RS escluse
+            </label>
+        </div>
+       <div style="width:100%;display:flex;gap:10px;align-items:center;padding-top:2px;">
+            <button class="btn-primary" onclick="calcolaRS()">↺ Calcola RS</button>
+            <button class="btn-mappa" id="btn-apri-mappa" onclick="toggleMappa()" style="display:none">🌍 Mappa</button>
+        </div>
+    </div>
+ 
+    <div class="header-rs" id="header-rs" style="display:none">
+        <div><span>RS: </span><b id="rs-anno-label"></b></div>
+        <div><span>GMT: </span><b id="rs-gmt-label"></b></div>
+        <div><span>Luogo: </span><b id="rs-luogo-label"></b></div>
+        <div><span>Ora Locale RS: </span><b id="rs-ora-locale-label">--:--:--</b></div>
+        <div><span>Fuso Orario: </span><b id="rs-fuso-label">GMT --</b></div>
+        <div id="rs-giorno-succ-label" style="display:none;background:#CC3333;color:white;padding:2px 6px;border-radius:4px;font-weight:bold">+1 Giorno</div>
+        <div id="rs-link-viaggio" style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+    </div>
+
+    <div class="page-title" style="margin-bottom:10px">
+    <button class="btn-stampa-diretta" onclick="prepareStampaRS()">🖨️ Stampa Rivoluzione Solare</button>
+</div>
+    <div id="rs-btn-report-wrap" style="display:none;margin-bottom:10px;text-align:right">
+        <a id="rs-btn-report" href="#" target="_blank"
+           style="display:inline-flex;align-items:center;gap:6px;
+                  background:#2C3E6B;color:white;text-decoration:none;
+                  border-radius:6px;padding:7px 16px;font-size:12px;
+                  letter-spacing:0.03em;transition:background 0.2s"
+           onmouseover="this.style.background='#3A5090'"
+           onmouseout="this.style.background='#2C3E6B'">
+            📄 Stampa / PDF Report
+        </a>
+    </div>
+    <div class="card" id="card-salva-rs" style="display:none">
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:200px">
+                <label>Note per questa sessione</label>
+                <input type="text" id="salva-rs-note" placeholder="Es: opzione preferita, da verificare con il cliente...">
+            </div>
+            <button class="btn-primary" id="btn-salva-rs" onclick="salvaSessioneRS()">💾 Salva questa RS</button>
+        </div>
+        <div id="salva-rs-msg" style="margin-top:8px;font-size:12px"></div>
+    </div>
+ 
+    <div class="card" id="card-sessioni-rs" style="display:none">
+        <h3>📂 Sessioni RS salvate per questo soggetto</h3>
+        <div id="lista-sessioni-rs"></div>
+    </div>
+ 
+    <div id="rs-loading" style="display:none"><p>⟳ Calcolo in corso...</p></div>
+ 
+    <div id="rs-filtro-esclusione" class="val-item val-veto" style="display:none;margin-bottom:14px;font-size:13px;line-height:1.6"></div>
+
+    <div id="rs-alert-stellium"></div>
+ 
+    <div class="valutazione" id="valutazione" style="display:none">
+        <div class="val-header">
+            <div class="stelle-grandi" id="val-stelle"></div>
+            <div class="val-stringa"   id="val-stringa"></div>
+            <div class="val-condizione" id="val-condizione"></div>
+        </div>
+        <div class="val-grid">
+            <div class="val-section"><h4>✅ Bonus</h4><div id="val-bonus"></div></div>
+            <div class="val-section"><h4>⚠️ Penalità / Note</h4><div id="val-penali"></div></div>
+        </div>
+        <div id="val-veti"></div>
+    </div>
+        <div id="pannello-sensibilita" style="display:none">
+        <div class="sensib-header" onclick="toggleSensibilita()">
+            <span class="sensib-titolo">⏱ Analisi Sensibilità Oraria</span>
+            <span class="sensib-sub" id="sensib-badge-header"></span>
+            <span class="sensib-chevron" id="sensib-chevron">▶</span>
+        </div>
+        <div class="sensib-body" id="sensib-body" style="display:none">
+            <div class="sensib-controlli">
+                <div class="form-group" style="margin:0">
+                    <label>Passo (minuti)</label>
+                    <select id="sensib-step">
+                        <option value="5">Ogni 5′</option>
+                        <option value="10">Ogni 10′</option>
+                        <option value="15" selected>Ogni 15′</option>
+                        <option value="30">Ogni 30′</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0">
+                    <label>Finestra (± minuti)</label>
+                    <select id="sensib-range">
+                        <option value="30">± 30′</option>
+                        <option value="60" selected>± 60′</option>
+                        <option value="90">± 90′</option>
+                        <option value="120">± 120′</option>
+                    </select>
+                </div>
+                <button class="btn-secondary" id="btn-calcola-sensib"
+                        onclick="calcolaSensibilita()"
+                        style="font-size:12px;padding:6px 14px;white-space:nowrap">
+                    ↺ Calcola
+                </button>
+                <div id="sensib-loading"
+                     style="display:none;font-size:12px;color:#667;font-style:italic;align-self:center">
+                    ⟳ Calcolo in corso…
+                </div>
+            </div>
+ 
+            <div id="sensib-riepilogo" style="display:none" class="sensib-riepilogo">
+                <div class="sensib-badge-wrap">
+                    <span id="sensib-badge" class="sensib-badge"></span>
+                    <span id="sensib-perc"  class="sensib-perc"></span>
+                </div>
+                <p id="sensib-messaggio" class="sensib-messaggio"></p>
+                <div id="sensib-alert-veto" class="sensib-alert" style="display:none"></div>
+            </div>
+ 
+            <div id="sensib-tabella-wrap" style="display:none;overflow-x:auto;margin-top:12px">
+                <table class="tabella-sensib" id="sensib-tabella">
+                    <thead>
+                        <tr>
+                            <th title="Variazione applicata all'ora di nascita">Δ Ora</th>
+                            <th title="Momento esatto della RS con questa ora di nascita">GMT della RS</th>
+                            <th title="Ascendente della Rivoluzione Solare">ASC RS</th>
+                            <th title="Casa natale in cui cade l'ASC della RS (I/VI/XII = veto)">Casa Natale ASC</th>
+                            <th title="MC della Rivoluzione Solare">MC RS</th>
+                            <th title="Valutazione stelline">Stelle</th>
+                            <th title="Stringa VAL">VAL</th>
+                            <th title="Veti attivi">Veti</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensib-tbody"></tbody>
+                </table>
+            </div>
+ 
+            <div class="sensib-legenda">
+                <span class="sensib-leg-item sensib-row-base">● riga evidenziata = ora di nascita attuale</span>
+                <span class="sensib-leg-item">🟢 = stabile rispetto a δ=0</span>
+                <span class="sensib-leg-item">🟡 = stelle cambiano</span>
+                <span class="sensib-leg-item">🔴 = casa ASC o veti cambiano</span>
+            </div>
+        </div>
+    </div>
+<div class="temi-wrapper" id="temi-wrapper" style="display:none">
+        <div class="tema-box">
+            <div class="tema-box-header">
+                <button class="btn-toggle-gradi" id="btn-toggle-cuspidi" onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
+                <h3>Tema Natale</h3>
+                <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
+            </div>
+            <svg id="wheel-natale" width="480" height="480" style="max-width:100%;height:auto"></svg>
+            <p class="tema-info" id="info-natale"></p>
+            <table class="tabella-pianeti" id="tab-natale"></table>
+            <div class="aspetti-container">
+                <h4 style="font-size:11px;color:#2C3E6B;text-align:center;margin-bottom:8px">📐 Aspetti nella Rivoluzione Solare</h4>
+                <table class="tabella-aspetti">
+                    <thead><tr><th>Pianeta 1</th><th></th><th>Pianeta 2</th><th>Aspetto</th><th>Orbe</th></tr></thead>
+                    <tbody id="aspetti-rs-body"><tr><td colspan="5" style="text-align:center;color:#999">Nessun aspetto rilevante</td></tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+ 
+        <div class="time-controls" style="align-self:flex-start">
+            <div class="time-btn-group">
+                <button class="time-btn" onclick="modificaOraRS(1)">▲</button>
+                <div class="time-label">ORA</div>
+                <div class="time-display" id="ora-corrente-display">--:--</div>
+                <button class="time-btn" onclick="modificaOraRS(-1)">▼</button>
+            </div>
+            <div class="time-btn-group">
+                <button class="time-btn" onclick="modificaMinutiRS(1)">▲</button>
+                <div class="time-label">MIN</div>
+                <div class="time-display" id="min-corrente-display">--</div>
+                <button class="time-btn" onclick="modificaMinutiRS(-1)">▼</button>
+            </div>
+        </div>
+ 
+        <div class="tema-box">
+            <h3 id="rs-titolo">Rivoluzione Solare</h3>
+            <div class="map-loading-overlay" id="rs-mappa-loading">⟳ Ricalcolo RS...</div>
+            <svg id="wheel-rs" width="480" height="480" style="max-width:100%;height:auto"></svg>
+            <p class="tema-info" id="info-rs"></p>
+            <table class="tabella-pianeti" id="tab-rs"></table>
+            <div class="cuspidi-container">
+                <h4 style="font-size:11px;color:#2C3E6B;text-align:center;margin-bottom:8px">🏠 Cuspidi Case RS</h4>
+                <table class="tabella-cuspidi">
+                    <thead><tr><th>Casa</th><th>Gradi Cuspide</th></tr></thead>
+                    <tbody id="cuspidi-rs-body"><tr><td colspan="2" style="text-align:center;color:#999">—</td></tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+ 
+    <div id="print-aspetti-rs" class="print-only-aspetti"></div>
+ 
+    <div id="mappa-float" class="map-float-win">
+        <div class="map-float-header" id="mappa-drag-handle">
+            <h3>🌍 Mappa RS — trascina il marker per ricalcolare</h3>
+            <span class="map-float-coords" id="mappa-coords">—</span>
+            <button class="btn-close-float" onclick="chiudiMappa()" title="Chiudi">✕</button>
+        </div>
+        <div class="map-leaflet-inner">
+            <div class="map-loading-overlay" id="mappa-ricalcolo">⟳ Ricalcolo...</div>
+            <div id="leaflet-map" style="width:100%;height:100%"></div>
+        </div>
+        <div class="map-float-footer">
+            <span class="info-drag">Trascina il marker · la RS si aggiorna in tempo reale</span>
+            <button class="btn-usa-pos" onclick="usaPosizione()">✓ Usa questa posizione</button>
+        </div>
+    </div>
+ 
+<?php endif; ?>
+</main>
+ 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/zodiac_wheel.js"></script>
+<script src="js/svg_zoom.js"></script> 
+<script src="js/app.js"></script>
+<script src="js/rs_alert.js"></script>
+<script>
+<?php if ($soggetto && $jsData): ?>
+const DS = <?= json_encode($jsData) ?>;
+let temaNataleCache = null;
+let oraNascitaCorrente = 0, minNascitaCorrente = 0, offsetRS = 0;
+let ultimaDatiRS = null;
+ 
+// ── IPOTESI: toggleGradiPianeti disponibile ─────────────────────
+console.log('RS: toggleGradiPianeti disponibile?', typeof toggleGradiPianeti === 'function');
+ 
+// ── Mappa fluttuante ─────────────────────────────────────────────────────
+let leafletMap    = null;
+let mapMarker     = null;
+let mappaAperta   = false;
+let ricalcoloTimer= null;
+let posIniziale   = null;
+let posMappa      = null;
+ 
+// ── Drag della finestra ──────────────────────────────────────────────────
+(function initDrag() {
+    const win    = document.getElementById('mappa-float');
+    const handle = document.getElementById('mappa-drag-handle');
+    let dragging = false, offX = 0, offY = 0;
+ 
+    handle.addEventListener('mousedown', e => {
+        if (e.target.classList.contains('btn-close-float')) return;
+        dragging = true;
+        const rect = win.getBoundingClientRect();
+        if (win.style.position !== 'fixed') {
+            win.style.position = 'fixed';
+            win.style.right    = 'auto';
+        }
+        win.style.left = rect.left + 'px';
+        win.style.top  = rect.top  + 'px';
+        offX = e.clientX - rect.left;
+        offY = e.clientY - rect.top;
+        e.preventDefault();
+    });
+ 
+    document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        win.style.left = (e.clientX - offX) + 'px';
+        win.style.top  = (e.clientY - offY) + 'px';
+        if (leafletMap) leafletMap.invalidateSize();
+    });
+ 
+    document.addEventListener('mouseup', () => { dragging = false; });
+})();
+ 
+new ResizeObserver(() => {
+    if (leafletMap && mappaAperta) leafletMap.invalidateSize();
+}).observe(document.getElementById('mappa-float'));
+ 
+// ── Toggle mappa ─────────────────────────────────────────────────────────
+function toggleMappa() {
+    if (mappaAperta) { chiudiMappa(); return; }
+    apriMappa();
+}
+ 
+function apriMappa() {
+    const lat = parseFloat(document.getElementById('rs-lat').value) || 0;
+    const lon = parseFloat(document.getElementById('rs-lon').value) || 0;
+    posIniziale = {lat, lon};
+    posMappa    = {lat, lon};
+ 
+    const win = document.getElementById('mappa-float');
+    win.classList.add('visible');
+    mappaAperta = true;
+ 
+    const btn = document.getElementById('btn-apri-mappa');
+    if (btn) { btn.textContent = '🗺️ Chiudi Mappa'; btn.classList.add('active'); }
+ 
+    if (!leafletMap) {
+        setTimeout(() => {
+            leafletMap = L.map('leaflet-map').setView([lat, lon], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            }).addTo(leafletMap);
+            mapMarker = L.marker([lat, lon], {draggable: true}).addTo(leafletMap);
+ 
+            mapMarker.on('drag', e => {
+                const p = e.target.getLatLng();
+                posMappa = {lat: p.lat, lon: p.lng};
+                document.getElementById('mappa-coords').textContent =
+                    p.lat.toFixed(4) + '°  ' + p.lng.toFixed(4) + '°';
+            });
+ 
+            mapMarker.on('dragend', e => {
+                const p = e.target.getLatLng();
+                posMappa = {lat: p.lat, lon: p.lng};
+                document.getElementById('mappa-coords').textContent =
+                    p.lat.toFixed(4) + '°  ' + p.lng.toFixed(4) + '°';
+                clearTimeout(ricalcoloTimer);
+                ricalcoloTimer = setTimeout(() => calcolaRS(p.lat, p.lng, true), 280);
+            });
+ 
+            leafletMap.invalidateSize();
+        }, 80);
+ 
+    } else {
+        mapMarker.setLatLng([lat, lon]);
+        leafletMap.setView([lat, lon], leafletMap.getZoom());
+        setTimeout(() => leafletMap.invalidateSize(), 60);
+    }
+ 
+    document.getElementById('mappa-coords').textContent =
+        lat.toFixed(4) + '°  ' + lon.toFixed(4) + '°';
+}
+ 
+// ── Ricalcolo con nuova ora locale ───────────────────────────────────────
+function ricalcolaTuttoConNuovaOra() {
+    let anno = document.getElementById('anno-rs').value;
+    let cond = document.getElementById('condizione').value;
+    let latRS = document.getElementById('rs-lat').value;
+    let lonRS = document.getElementById('rs-lon').value;
+    let luogoRS = document.getElementById('luogo-rs-input').value || DS.luogo;
+ 
+    let oraGmtMin = oraNascitaCorrente * 60 + minNascitaCorrente - offsetRS * 60;
+    let oraGmtFinale = ((oraGmtMin % 1440) + 1440) % 1440;
+    let hGmt = Math.floor(oraGmtFinale / 60);
+    let mGmt = oraGmtFinale % 60;
+    let oraGmtDec = hGmt + mGmt / 60;
+ 
+    const loadingEl = document.getElementById('rs-mappa-loading');
+    if (loadingEl) loadingEl.classList.add('visible');
+ 
+    fetch('api/tema_api.php?tipo=natale&g='+DS.giorno+'&m='+DS.mese+'&a='+DS.anno+
+          '&ora_gmt='+oraGmtDec+'&lat='+DS.lat+'&lon='+DS.lon)
+        .then(r => r.json())
+        .then(tema => {
+            ZodiacWheel.disegna('wheel-natale', tema, {size:480});
+            initSvgZoom('wheel-natale');
+            document.getElementById('info-natale').textContent =
+                'ASC: '+(tema.case?.ASC?.posizione?.stringa??'?')+
+                ' — MC: '+(tema.case?.MC?.posizione?.stringa??'?');
+            popolaTabellaPianeti('tab-natale', tema);
+        });
+ 
+    fetch('api/rs_api.php?g='+DS.giorno+'&m='+DS.mese+'&a='+DS.anno+
+          '&ora_gmt='+oraGmtDec+'&lat='+DS.lat+'&lon='+DS.lon+
+          '&anno='+anno+'&lat_rs='+latRS+'&lon_rs='+lonRS+
+          '&condizione='+encodeURIComponent(cond)+
+          '&luogo_rs='+encodeURIComponent(luogoRS))
+        .then(r => r.json())
+        .then(data => {
+            if (data.errore) {
+                throw new Error(data.errore);
+            }
+
+            if (loadingEl) loadingEl.classList.remove('visible');
+            document.getElementById('rs-gmt-label').textContent = data.rs_gmt;
+            aggiornaFusoOrarioLocale(latRS, lonRS, data.rs_gmt);
+            const luogoHome = DS.res_luogo
+                ? DS.res_luogo + (DS.res_nazione ? ', '+DS.res_nazione : '')
+                : DS.luogo + (DS.nazione ? ', '+DS.nazione : '');
+            aggiornaLinkViaggio(luogoRS, luogoHome);
+            let v = data.valutazione;
+            document.getElementById('val-stelle').textContent  = v.stelle_str;
+            document.getElementById('val-stringa').textContent = v.val;
+            aggiornaBannerEsclusione(data);
+            
+            ZodiacWheel.disegna('wheel-rs', data.tema_rs, {size:480});
+            initSvgZoom('wheel-rs');
+            document.getElementById('info-rs').textContent =
+                'ASC: '+(data.tema_rs.case?.ASC?.posizione?.stringa??'?')+
+                ' — MC: '+(data.tema_rs.case?.MC?.posizione?.stringa??'?');
+            popolaTabellaPianeti('tab-rs', data.tema_rs);
+            popolaTabellaAspetti(data.aspetti || []);
+            popolaTabellaCuspidi('cuspidi-rs-body', data.tema_rs);
+ 
+            aggiornaSensibilita(oraGmtDec, latRS, lonRS, anno, cond);
+        })
+        .catch(() => { if (loadingEl) loadingEl.classList.remove('visible'); });
+}
+ 
+function chiudiMappa() {
+    const win = document.getElementById('mappa-float');
+    win.classList.remove('visible');
+    mappaAperta = false;
+    clearTimeout(ricalcoloTimer);
+ 
+    const btn = document.getElementById('btn-apri-mappa');
+    if (btn) { btn.textContent = '🌍 Mappa'; btn.classList.remove('active'); }
+}
+ 
+function usaPosizione() {
+    if (!posMappa) return;
+    document.getElementById('rs-lat').value = posMappa.lat.toFixed(4);
+    document.getElementById('rs-lon').value = posMappa.lon.toFixed(4);
+    chiudiMappa();
+    calcolaRS();
+}
+ 
+// ── Ora nascita con controlli ─────────────────────────────────────────────
+function initOraRS(oraLocale, offsetGmt) {
+    let [hh, mm] = oraLocale.split(':').map(Number);
+    oraNascitaCorrente = hh;
+    minNascitaCorrente = mm;
+    offsetRS = offsetGmt;
+    document.getElementById('ora-corrente-display').textContent =
+        String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+    document.getElementById('min-corrente-display').textContent = String(mm).padStart(2,'0');
+}
+ 
+function modificaOraRS(delta) {
+    oraNascitaCorrente = (oraNascitaCorrente + delta + 24) % 24;
+    document.getElementById('ora-corrente-display').textContent =
+        String(oraNascitaCorrente).padStart(2,'0') + ':' + String(minNascitaCorrente).padStart(2,'0');
+    ricalcolaTuttoConNuovaOra();
+}
+ 
+function modificaMinutiRS(delta) {
+    minNascitaCorrente += delta;
+    if (minNascitaCorrente >= 60) { minNascitaCorrente -= 60; oraNascitaCorrente = (oraNascitaCorrente + 1) % 24; }
+    if (minNascitaCorrente < 0)   { minNascitaCorrente += 60; oraNascitaCorrente = (oraNascitaCorrente - 1 + 24) % 24; }
+    document.getElementById('ora-corrente-display').textContent =
+        String(oraNascitaCorrente).padStart(2,'0') + ':' + String(minNascitaCorrente).padStart(2,'0');
+    document.getElementById('min-corrente-display').textContent = String(minNascitaCorrente).padStart(2,'0');
+    ricalcolaTuttoConNuovaOra();
+}
+ 
+// ── Fuso orario locale (TimeZoneDB) ──────────────────────────────────────
+function aggiornaFusoOrarioLocale(lat, lon, gmtString) {
+    let parti = gmtString.split(' ');
+    let dp = parti[0].split('/');
+    let op = parti[1].split(':');
+    let dataUtc = new Date(Date.UTC(
+        parseInt(dp[2]), parseInt(dp[1]) - 1, parseInt(dp[0]),
+        parseInt(op[0]), parseInt(op[1]), parseInt(op[2])
+    ));
+    let ts  = Math.floor(dataUtc.getTime() / 1000);
+    const apiKey = TIMEZONE_API_KEY; // definita in app.js, caricato prima di questo script
+    fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=position&lat=${lat}&lng=${lon}&time=${ts}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.status !== 'OK') return;
+            let oraLocaleStr = data.formatted;
+            let partiLocale  = oraLocaleStr.split(' ');
+            document.getElementById('rs-ora-locale-label').textContent = partiLocale[1];
+            let offsetOre = data.gmtOffset / 3600;
+            document.getElementById('rs-fuso-label').textContent = 'GMT ' + (offsetOre >= 0 ? '+' : '') + offsetOre;
+            let giornoGmt   = parseInt(dp[0]);
+            let giornoLocale= parseInt(partiLocale[0].split('-')[2]);
+            let el = document.getElementById('rs-giorno-succ-label');
+            if (giornoLocale > giornoGmt)       { el.textContent = '+1 Giorno'; el.style.display = 'inline-block'; }
+            else if (giornoLocale < giornoGmt)  { el.textContent = '-1 Giorno'; el.style.display = 'inline-block'; }
+            else                                { el.style.display = 'none'; }
+        })
+        .catch(() => {});
+}
+ 
+// ── Link viaggio ─────────────────────────────────────────────────────────
+function formatCittaUrl(str) {
+    if (!str) return '';
+    return str.replace(/\(.*?\)/g,'').replace(/,.*$/,'').trim()
+              .replace(/[\s\-]+/g,'-').replace(/^-+|-+$/g,'');
+}
+ 
+function aggiornaLinkViaggio(luogoRS, luogoHome) {
+    const container = document.getElementById('rs-link-viaggio');
+    if (!container) return;
+    const dest   = formatCittaUrl(luogoRS);
+    const origin = formatCittaUrl(luogoHome);
+    if (!dest) { container.innerHTML = ''; return; }
+    const urlRome2Rio = origin
+        ? `https://www.rome2rio.com/it/map/${origin}/${dest}`
+        : `https://www.rome2rio.com/it/map/${dest}`;
+    const btnStyle = 'display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.13);color:white;text-decoration:none;border:1px solid rgba(255,255,255,0.28);border-radius:4px;padding:4px 11px;font-size:11px;white-space:nowrap;transition:background 0.2s';
+    container.innerHTML = `
+        <span style="font-size:10px;color:#88AACC;white-space:nowrap">Come arrivare:</span>
+        <a href="${urlRome2Rio}" target="_blank" rel="noopener" style="${btnStyle}"
+           onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+           onmouseout="this.style.background='rgba(255,255,255,0.13)'">🗺️ Rome2Rio</a>`;
+}
+ 
+// ── Carica tema natale iniziale ──────────────────────────────────────────
+fetch('api/tema_api.php?tipo=natale&g='+DS.giorno+'&m='+DS.mese+'&a='+DS.anno+
+      '&ora_gmt='+DS.ora_gmt+'&lat='+DS.lat+'&lon='+DS.lon)
+    .then(r => r.json())
+    .then(tema => {
+        temaNataleCache = tema;
+        ZodiacWheel.disegna('wheel-natale', tema, {size:480});
+        initSvgZoom('wheel-natale');
+        document.getElementById('info-natale').textContent =
+            'ASC: '+(tema.case?.ASC?.posizione?.stringa??'?')+
+            ' — MC: '+(tema.case?.MC?.posizione?.stringa??'?');
+        popolaTabellaPianeti('tab-natale', tema);
+    });
+ 
+initOraRS(DS.ora_loc_str, DS.offset);
+ 
+// ── Calcola RS ───────────────────────────────────────────────────────────
+function calcolaRS(latOvr, lonOvr, soloGrafico) {
+    let anno  = document.getElementById('anno-rs').value;
+    let cond  = document.getElementById('condizione').value;
+    let latRS = (latOvr !== undefined) ? latOvr : document.getElementById('rs-lat').value;
+    let lonRS = (lonOvr !== undefined) ? lonOvr : document.getElementById('rs-lon').value;
+    let luogoRS = document.getElementById('luogo-rs-input').value || DS.luogo;
+ 
+    if (!soloGrafico) {
+        document.getElementById('rs-loading').style.display = 'block';
+        document.getElementById('temi-wrapper').style.display = 'none';
+        document.getElementById('valutazione').style.display  = 'none';
+        document.getElementById('header-rs').style.display    = 'none';
+    } else {
+        const loadingEl = document.getElementById('rs-mappa-loading');
+        if (loadingEl) loadingEl.classList.add('visible');
+        const mapLoading = document.getElementById('mappa-ricalcolo');
+        if (mapLoading) mapLoading.classList.add('visible');
+    }
+ 
+    fetch('api/rs_api.php?g='+DS.giorno+'&m='+DS.mese+'&a='+DS.anno+
+          '&ora_gmt='+DS.ora_gmt+'&lat='+DS.lat+'&lon='+DS.lon+
+          '&anno='+anno+'&lat_rs='+latRS+'&lon_rs='+lonRS+
+          '&condizione='+encodeURIComponent(cond)+
+          '&luogo_rs='+encodeURIComponent(luogoRS))
+        .then(r => r.json())
+        .then(data => {
+            if (data.errore) {
+                throw new Error(data.errore);
+            }
+
+            document.getElementById('rs-loading').style.display = 'none';
+            const loadingEl = document.getElementById('rs-mappa-loading');
+            if (loadingEl) loadingEl.classList.remove('visible');
+            const mapLoading = document.getElementById('mappa-ricalcolo');
+            if (mapLoading) mapLoading.classList.remove('visible');
+ 
+            document.getElementById('rs-anno-label').textContent  = anno;
+            document.getElementById('rs-gmt-label').textContent   = data.rs_gmt;
+            
+            // FIX 1 APPLICATO: Corretto lo swap tra Long e Lat
+            document.getElementById('rs-luogo-label').textContent = luogoRS + ' (Long: ' + parseFloat(lonRS).toFixed(4) + '°, Lat: ' + parseFloat(latRS).toFixed(4) + '°)';
+            
+            document.getElementById('header-rs').style.display    = 'flex';
+ 
+            aggiornaFusoOrarioLocale(latRS, lonRS, data.rs_gmt);
+ 
+            const lieuHome = DS.res_luogo
+                ? DS.res_luogo + (DS.res_nazione ? ', '+DS.res_nazione : '')
+                : DS.luogo + (DS.nazione ? ', '+DS.nazione : '');
+            aggiornaLinkViaggio(luogoRS, lieuHome);
+ 
+            let v = data.valutazione;
+            document.getElementById('val-stelle').textContent    = v.stelle_str;
+            document.getElementById('val-stringa').textContent   = v.val;
+            document.getElementById('val-condizione').textContent= 'Condizione: '+v.condizione;
+ 
+            document.getElementById('val-veti').innerHTML = v.veti.length
+                ? v.veti.map(t => '<div class="val-item val-veto">⛔ '+t+'</div>').join('') : '';
+            document.getElementById('val-bonus').innerHTML = v.bonus.length
+                ? v.bonus.map(b => '<div class="val-item val-bonus"><b>'+b.codice+'</b> '+b.nota+'</div>').join('')
+                : '<div style="color:#999;font-size:11px">Nessun bonus significativo</div>';
+            const penHtml = [
+                ...v.penalita.map(p => '<div class="val-item val-penali"><b>'+p.codice+'</b> '+p.nota+'</div>'),
+                ...v.note.map(n => '<div class="val-item val-note"><b>'+n.codice+'</b> '+n.nota+'</div>')
+            ].join('');
+            document.getElementById('val-penali').innerHTML = penHtml
+                || '<div style="color:#999;font-size:11px">Nessuna penalità</div>';
+ 
+            aggiornaBannerEsclusione(data);
+            ultimaDatiRS = data;
+
+            if (typeof RSAlert !== 'undefined') {
+                RSAlert.aggiorna({
+                    g:       DS.giorno,
+                    m:       DS.mese,
+                    a:       DS.anno,
+                    ora_gmt: DS.ora_gmt,
+                    lat:     DS.lat,
+                    lon:     DS.lon,
+                    anno:    anno,
+                    lat_rs:  latRS,
+                    lon_rs:  lonRS,
+                });
+            }
+ 
+            document.getElementById('valutazione').style.display = 'block';
+            document.getElementById('rs-titolo').textContent = 'RS '+anno+' — '+luogoRS;
+ 
+            ZodiacWheel.disegna('wheel-rs', data.tema_rs, {size:480});
+            initSvgZoom('wheel-rs');
+            document.getElementById('info-rs').textContent =
+                'ASC: '+(data.tema_rs.case?.ASC?.posizione?.stringa??'?')+
+                ' — MC: '+(data.tema_rs.case?.MC?.posizione?.stringa??'?');
+            popolaTabellaPianeti('tab-rs', data.tema_rs);
+            popolaTabellaAspetti(data.aspetti || []);
+            popolaTabellaCuspidi('cuspidi-rs-body', data.tema_rs);
+ 
+            ultimaRSCalcolata = {
+                anno:       parseInt(anno),
+                condizione: cond,
+                lat:        parseFloat(latRS),
+                lon:        parseFloat(lonRS),
+                luogo:      luogoRS,
+                rs_gmt:     data.rs_gmt,
+                stelline:   v.stelline,
+                val:        v.val,
+            };
+            document.getElementById('card-salva-rs').style.display = 'block';
+ 
+            document.getElementById('temi-wrapper').style.display = 'flex';
+            document.getElementById('btn-apri-mappa').style.display = 'inline-block';
+            if (!soloGrafico) document.getElementById('temi-wrapper').scrollIntoView({behavior:'smooth'});
+ 
+            if (!soloGrafico) {
+                aggiornaSensibilita(DS.ora_gmt, latRS, lonRS, anno, cond);
+            }
+        })
+        .catch(e => alert('Errore calcolo RS: '+e.message));
+}
+ 
+// ── Tabelle pianeti / aspetti ─────────────────────────────────────────────
+function popolaTabellaPianeti(tabId, tema) {
+    const nomi = {0:'☉ Sole',1:'☽ Luna',2:'☿ Mercurio',3:'♀ Venere',4:'♂ Marte',
+                  5:'♃ Giove',6:'♄ Saturno',7:'♅ Urano',8:'♆ Nettuno',9:'♇ Plutone',
+                  11:'☊ Nodo N.'};
+    let html = '<table><th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th></tr>';
+    Object.values(tema.pianeti).forEach(p => {
+        html += '<tr><td>'+(nomi[p.id]??p.nome)+'</td><td>'+p.posizione.stringa+'</td>'+
+                '<td>'+p.casa+'</td><td>'+(p.retrogrado?'<span class="retro">R</span>':'')+'</td></tr>';
+    });
+    document.getElementById(tabId).innerHTML = html;
+}
+ 
+function popolaTabellaAspetti(aspetti) {
+    const tbody = document.getElementById('aspetti-rs-body');
+    if (!tbody) return;
+    if (!aspetti || aspetti.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999">Nessun aspetto rilevante</td></tr>';
+        return;
+    }
+    const simboli = {0:'☉',1:'☽',2:'☿',3:'♀',4:'♂',5:'♃',6:'♄',7:'♅',8:'♆',9:'♇'};
+    const nomi    = {0:'Sole',1:'Luna',2:'Mercurio',3:'Venere',4:'Marte',5:'Giove',
+                     6:'Saturno',7:'Urano',8:'Nettuno',9:'Plutone'};
+    const tipoMap = {
+        'Trigono':{sim:'△',cls:'aspetto-trigono'},'trine':{sim:'△',cls:'aspetto-trigono'},
+        'Quadrato':{sim:'□',cls:'aspetto-quadrato'},'square':{sim:'□',cls:'aspetto-quadrato'},
+        'Opposizione':{sim:'☍',cls:'aspetto-opposizione'},'opposition':{sim:'☍',cls:'aspetto-opposizione'},
+        'Sestile':{sim:'⚹',cls:'aspetto-sestile'},'sextile':{sim:'⚹',cls:'aspetto-sestile'},
+        'Congiunzione':{sim:'☌',cls:'aspetto-altro'},'conjunction':{sim:'☌',cls:'aspetto-altro'}
+    };
+    tbody.innerHTML = aspetti.map(a => {
+        const ti = tipoMap[a.aspetto || a.tipo] || {sim:'•',cls:'aspetto-altro'};
+        return `<tr>
+            <td>${simboli[a.pianeta_a]??''} ${nomi[a.pianeta_a]??a.nome_a??'?'}</td>
+            <td style="font-size:14px">→</td>
+            <td>${simboli[a.pianeta_b]??''} ${nomi[a.pianeta_b]??a.nome_b??'?'}</td>
+            <td class="${ti.cls}">${ti.sim} ${a.aspetto||a.tipo}</td>
+            <td>${a.scarto?.toFixed(1)??'?'}°</td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Tabella cuspidi case ───────────────────────────────────────────────────
+function popolaTabellaCuspidi(tbodyId, tema) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody || !tema?.case) return;
+
+    const CASE_LABEL = {
+        1:'I o ASC', 2:'II', 3:'III', 4:'IV o FC', 5:'V', 6:'VI',
+        7:'VII o DSC', 8:'VIII', 9:'IX', 10:'X o MC', 11:'XI', 12:'XII'
+    };
+    const ANGOLARI = new Set([1, 4, 7, 10]);
+
+    let html = '';
+    for (let c = 1; c <= 12; c++) {
+        const casa = tema.case[c];
+        if (!casa) continue;
+        const label   = CASE_LABEL[c] || String(c);
+        const stringa = casa.posizione?.stringa ?? '—';
+        const bold    = ANGOLARI.has(c) ? ' font-weight:bold;color:#2C3E6B;' : '';
+        html += `<tr>
+            <td style="text-align:center;${bold}">${label}</td>
+            <td style="${bold}">${stringa}</td>
+        </tr>`;
+    }
+    tbody.innerHTML = html || '<tr><td colspan="2" style="text-align:center;color:#999">—</td></tr>';
+}
+ 
+function aggiornaBannerEsclusione(data) {
+    const el = document.getElementById('rs-filtro-esclusione');
+    if (!el) return;
+    const motifs = data.escluso_filtro || [];
+    const showBanner = document.getElementById('mostra-banner-escluse')?.checked !== false;
+    if (motifs.length === 0 || !showBanner) {
+        el.style.display = 'none';
+        el.innerHTML = '';
+        return;
+    }
+    el.innerHTML = '⚠️ <b>Questa RS non viene elencata nei risultati di ricerca</b> ' +
+        'perché presenta le seguenti configurazioni escluse:<br>' +
+        motifs.map(m => '• ' + m).join('<br>');
+    el.style.display = 'block';
+}
+ 
+// ── Analisi Sensibilità Oraria ───────────────────────────────────────────
+let _sensibParams = null; 
+ 
+function aggiornaSensibilita(oraGmtUsata, latRS, lonRS, anno, cond) {
+    _sensibParams = { oraGmtUsata, latRS, lonRS, anno, cond };
+    document.getElementById('pannello-sensibilita').style.display = 'block';
+    document.getElementById('sensib-badge-header').textContent =
+        '— clicca ▶ per analizzare la robustezza oraria';
+    _chiudiSensibBody();
+}
+ 
+function toggleSensibilita() {
+    const body    = document.getElementById('sensib-body');
+    const chevron = document.getElementById('sensib-chevron');
+    const aperto  = body.style.display !== 'none';
+    if (aperto) {
+        _chiudiSensibBody();
+    } else {
+        body.style.display = 'block';
+        chevron.classList.add('aperto');
+    }
+}
+ 
+function _chiudiSensibBody() {
+    document.getElementById('sensib-body').style.display = 'none';
+    document.getElementById('sensib-chevron').classList.remove('aperto');
+}
+ 
+function calcolaSensibilita() {
+    if (!_sensibParams) return;
+ 
+    const step  = document.getElementById('sensib-step').value;
+    const range = document.getElementById('sensib-range').value;
+ 
+    const loadingEl  = document.getElementById('sensib-loading');
+    const btnCalc    = document.getElementById('btn-calcola-sensib');
+    const riepilogo  = document.getElementById('sensib-riepilogo');
+    const tabellaWrap= document.getElementById('sensib-tabella-wrap');
+ 
+    loadingEl.style.display  = 'inline';
+    btnCalc.disabled         = true;
+    riepilogo.style.display  = 'none';
+    tabellaWrap.style.display= 'none';
+ 
+    const p = _sensibParams;
+    const url = 'api/sensibilita_api.php?' + new URLSearchParams({
+        g:           DS.giorno,
+        m:           DS.mese,
+        a:           DS.anno,
+        ora_gmt:     p.oraGmtUsata,
+        lat:         DS.lat,
+        lon:         DS.lon,
+        anno:        p.anno,
+        lat_rs:      p.latRS,
+        lon_rs:      p.lonRS,
+        condizione:  p.cond,
+        delta_step:  step,
+        delta_range: range,
+    });
+ 
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            loadingEl.style.display = 'none';
+            btnCalc.disabled        = false;
+            if (!data.ok) {
+                _mostraErroreSensib(data.errore || 'Errore nel calcolo sensibilità.');
+                return;
+            }
+            _renderSensibilita(data);
+        })
+        .catch(e => {
+            loadingEl.style.display = 'none';
+            btnCalc.disabled        = false;
+            _mostraErroreSensib('Errore di rete: ' + e.message);
+        });
+}
+ 
+function _renderSensibilita(data) {
+    const badgeEl  = document.getElementById('sensib-badge');
+    const percEl   = document.getElementById('sensib-perc');
+    const msgEl    = document.getElementById('sensib-messaggio');
+    const alertEl  = document.getElementById('sensib-alert-veto');
+    const headerSub= document.getElementById('sensib-badge-header');
+    const riepilogo= document.getElementById('sensib-riepilogo');
+ 
+    const labelRob = {
+        alta:    '✅ Robusta',
+        media:   '⚠️ Mediamente robusta',
+        bassa:   '⚠️ Instabile',
+        critica: '🔴 Critica',
+    };
+ 
+    badgeEl.className   = 'sensib-badge ' + data.robustezza;
+    badgeEl.textContent = labelRob[data.robustezza] || data.robustezza;
+    percEl.textContent  = data.perc_stabile + '% punti stabili';
+    msgEl.textContent   = data.messaggio;
+ 
+    headerSub.textContent = labelRob[data.robustezza] + ' — ' + data.perc_stabile + '% stabile';
+ 
+    const alertParts = [];
+    if (data.veto_compare)   alertParts.push('⛔ Con alcune variazioni orarie compaiono VETI che a δ=0 non esistono.');
+    if (data.veto_scompare)  alertParts.push('⚠️ Con alcune variazioni orarie i veti presenti a δ=0 scompaiono.');
+    if (alertParts.length > 0) {
+        alertEl.innerHTML = alertParts.join('<br>');
+        alertEl.style.display = 'block';
+    } else {
+        alertEl.style.display = 'none';
+    }
+ 
+    riepilogo.style.display = 'block';
+ 
+    const tbody   = document.getElementById('sensib-tbody');
+    let html = '';
+ 
+    const base = data.punti.find(p => p.is_punto_base);
+ 
+    data.punti.forEach(p => {
+        let rigaCls = '';
+        if (p.is_punto_base) {
+            rigaCls = 'sensib-row-base';
+        } else if (!p.is_valida || (base && p.casa_natale_asc !== base.casa_natale_asc)) {
+            rigaCls = 'sensib-row-critica';
+        } else if (base && p.stelline !== base.stelline) {
+            rigaCls = 'sensib-row-stelle-cambiano';
+        } else {
+            rigaCls = 'sensib-row-ok';
+        }
+ 
+        const dSign   = p.delta_min < 0 ? 'neg' : p.delta_min === 0 ? 'zero' : 'pos';
+        const dLabel  = p.is_punto_base
+            ? `<span class="delta-label zero">0′ ★</span>`
+            : `<span class="delta-label ${dSign}">${p.delta_label}</span>`;
+ 
+        const casaNum  = p.casa_natale_asc;
+        const casaVeto = [1, 6, 12].includes(casaNum);
+        const casaWarn = base && casaNum !== base.casa_natale_asc;
+        const casaCls  = casaVeto ? 'veto' : casaWarn ? 'warn' : 'ok';
+        const casaBadge= `<span class="casa-badge ${casaCls}">${casaNum}ª</span>`;
+ 
+        let icona = '';
+        if (!p.is_punto_base && base) {
+            if (!p.is_valida && base.is_valida)        icona = '🔴';
+            else if (p.is_valida && !base.is_valida)   icona = '🟢';
+            else if (p.casa_natale_asc !== base.casa_natale_asc) icona = '🔴';
+            else if (p.stelline !== base.stelline)     icona = '🟡';
+            else                                       icona = '🟢';
+        }
+ 
+        const stelle = p.stelline > 0
+            ? `<span class="stelle-sensib">${'★'.repeat(p.stelline)}${'☆'.repeat(5-p.stelline)}</span>`
+            : `<span style="color:#CC3333;font-size:10px">0 ⛔</span>`;
+ 
+        const vetiHtml = p.veti && p.veti.length > 0
+            ? `<span class="veto-count" title="${p.veti.join('\n')}">${p.veti.length} veto${p.veti.length>1?'i':''}</span>`
+            : `<span style="color:#4CAF50;font-size:10px">nessuno</span>`;
+ 
+        const valStr = p.val ? p.val.replace(/^\*+/, '') : '—';
+ 
+        html += `<tr class="${rigaCls}">
+            <td>${dLabel} ${icona}</td>
+            <td style="font-family:monospace;font-size:10px">${p.rs_gmt}</td>
+            <td style="font-size:11px">${p.asc_rs_str}</td>
+            <td style="text-align:center">${casaBadge}</td>
+            <td style="font-size:11px;color:#667">${p.mc_rs_str}</td>
+            <td>${stelle}</td>
+            <td style="font-family:monospace;font-size:10px;color:#2C3E6B">${valStr}</td>
+            <td>${vetiHtml}</td>
+        </tr>`;
+    });
+ 
+    tbody.innerHTML = html;
+    document.getElementById('sensib-tabella-wrap').style.display = 'block';
+}
+ 
+function _mostraErroreSensib(msg) {
+    const riepilogo = document.getElementById('sensib-riepilogo');
+    riepilogo.innerHTML = `<p style="color:#CC3333;font-size:12px">❌ ${msg}</p>`;
+    riepilogo.style.display = 'block';
+}
+ 
+// ── Geocoding luogo RS ────────────────────────────────────────────────────
+function cercaLuogoRS() {
+    const q = document.getElementById('luogo-rs-input').value.trim();
+    if (q.length < 3) return;
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=6&addressdetails=1')
+        .then(r => r.json())
+        .then(ris => {
+            const div = document.getElementById('luogo-rs-risultati');
+            div.innerHTML = ris.map(r =>
+                `<div class="dropdown-item" onclick="selezionaLuogoRS(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
+                    ${r.display_name}
+                </div>`
+            ).join('');
+            div.classList.add('visible');
+        });
+}
+ 
+function selezionaLuogoRS(lat, lon, nome) {
+    document.getElementById('rs-lat').value = parseFloat(lat).toFixed(4);
+    document.getElementById('rs-lon').value = parseFloat(lon).toFixed(4);
+    document.getElementById('luogo-rs-input').value = nome.split(',')[0].trim();
+    document.getElementById('luogo-rs-risultati').classList.remove('visible');
+    if (leafletMap && mapMarker) {
+        mapMarker.setLatLng([parseFloat(lat), parseFloat(lon)]);
+        leafletMap.setView([parseFloat(lat), parseFloat(lon)], leafletMap.getZoom());
+    }
+}
+ 
+// ── Init DOM ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.luogo-rs-wrap'))
+            document.getElementById('luogo-rs-risultati')?.classList.remove('visible');
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && mappaAperta) chiudiMappa();
+    });
+    
+    const toggleCheckbox = document.getElementById('mostra-banner-escluse');
+    if (toggleCheckbox) {
+        toggleCheckbox.addEventListener('change', () => {
+            if (window.ultimaDatiRS) aggiornaBannerEsclusione(window.ultimaDatiRS);
+        });
+    }
+    
+    calcolaRS();
+});
+// ══════════════════════════════════════════════════════════════════════
+//  SALVATAGGIO SESSIONI RS 
+// ══════════════════════════════════════════════════════════════════════
+ 
+let ultimaRSCalcolata = null;
+ 
+function caricaSessioniRS() {
+    fetch('api/sessioni_api.php?action=lista_rs&soggetto_id=' + DS.id)
+        .then(r => r.json())
+        .then(rows => {
+            const card = document.getElementById('card-sessioni-rs');
+            const div  = document.getElementById('lista-sessioni-rs');
+            if (!Array.isArray(rows) || rows.length === 0) {
+                card.style.display = 'none';
+                return;
+            }
+            card.style.display = 'block';
+ 
+            let html = '<table class="tabella-soggetti"><thead><tr>' +
+                '<th>Anno</th><th>Luogo</th><th>Condizione</th><th>Stelle</th>' +
+                '<th>VAL</th><th>Note</th><th>Salvata il</th><th>Azioni</th>' +
+                '</tr></thead><tbody>';
+ 
+            rows.forEach(s => {
+                const stelle = s.stelline != null
+                    ? '★'.repeat(Math.round(s.stelline)) + '☆'.repeat(5 - Math.round(s.stelline))
+                    : '—';
+                const dataSalv = new Date(s.creato_il).toLocaleString('it-IT',
+                    {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+                const url = 'rs.php?id=' + DS.id +
+                    '&anno=' + s.anno +
+                    '&lat_rs=' + s.lat + '&lon_rs=' + s.lon +
+                    '&luogo_rs=' + encodeURIComponent(s.luogo || '') +
+                    '&condizione=' + encodeURIComponent(s.condizione);
+ 
+                html += `<tr>
+                    <td>${s.anno}</td>
+                    <td>${s.luogo || '—'}</td>
+                    <td>${s.condizione}</td>
+                    <td class="stelle">${stelle}</td>
+                    <td><span class="val-badge">${s.val || '—'}</span></td>
+                    <td style="max-width:200px;font-size:11px;color:#667">${s.note || ''}</td>
+                    <td style="font-size:11px;color:#888;white-space:nowrap">${dataSalv}</td>
+                    <td><div class="azioni">
+                        <a href="${url}" class="btn-icon" title="Richiama questa sessione">↺</a>
+                        <button class="btn-icon" title="Elimina" onclick="eliminaSessioneRS(${s.id})">🗑️</button>
+                    </div></td>
+                </tr>`;
+            });
+ 
+            html += '</tbody></table>';
+            div.innerHTML = html;
+        })
+        .catch(() => {});
+}
+ 
+function salvaSessioneRS() {
+    if (!ultimaRSCalcolata) {
+        alert('Calcola prima una RS prima di salvarla.');
+        return;
+    }
+ 
+    const note = document.getElementById('salva-rs-note').value.trim();
+    const btn  = document.getElementById('btn-salva-rs');
+    const msg  = document.getElementById('salva-rs-msg');
+ 
+    btn.disabled = true;
+    btn.textContent = '⟳ Salvataggio...';
+ 
+    fetch('api/sessioni_api.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            action:     'salva_rs',
+            soggetto_id: DS.id,
+            anno:        ultimaRSCalcolata.anno,
+            condizione:  ultimaRSCalcolata.condizione,
+            lat:         ultimaRSCalcolata.lat,
+            lon:         ultimaRSCalcolata.lon,
+            luogo:       ultimaRSCalcolata.luogo,
+            rs_gmt:      ultimaRSCalcolata.rs_gmt,
+            stelline:    ultimaRSCalcolata.stelline,
+            val:         ultimaRSCalcolata.val,
+            note:        note,
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.textContent = '💾 Salva questa RS';
+        if (data.ok) {
+            msg.innerHTML = '<span style="color:#2E7D32">✅ Sessione salvata.</span>';
+            document.getElementById('salva-rs-note').value = '';
+            caricaSessioniRS();
+            setTimeout(() => { msg.innerHTML = ''; }, 3000);
+        } else {
+            msg.innerHTML = '<span style="color:#C62828">⚠️ ' + (data.errore || 'Errore salvataggio') + '</span>';
+        }
+    })
+    .catch(e => {
+        btn.disabled = false;
+        btn.textContent = '💾 Salva questa RS';
+        msg.innerHTML = '<span style="color:#C62828">⚠️ Errore rete: ' + e.message + '</span>';
+    });
+}
+ 
+function eliminaSessioneRS(id) {
+    if (!confirm('Eliminare questa sessione salvata?')) return;
+    fetch('api/sessioni_api.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: 'elimina_rs', id})
+    })
+    .then(r => r.json())
+    .then(data => { if (data.ok) caricaSessioniRS(); });
+}
+ 
+caricaSessioniRS();
+
+// FIX 2 APPLICATO: Sostituito prepareStampaRS per ripulire le coordinate già incluse prima di ristamparle
+function prepareStampaRS() {
+    document.getElementById('print-h-nome').textContent    = DS.nome;
+    document.getElementById('print-h-nascita').textContent = 'Nato il ' + DS.data_str;
+    document.getElementById('print-h-ora').textContent     = 'Ore ' + DS.ora_loc_str + ' (loc.) — ' + DS.ora_gmt_str + ' GMT';
+
+    const anno   = document.getElementById('rs-anno-label')?.textContent        || '';
+    const gmt    = document.getElementById('rs-gmt-label')?.textContent         || '';
+    const oraLoc = document.getElementById('rs-ora-locale-label')?.textContent  || '';
+    const fuso   = document.getElementById('rs-fuso-label')?.textContent        || '';
+
+    // Rimuove le coordinate già embeddate in rs-luogo-label per evitare la doppia stampa
+    let luogo = document.getElementById('rs-luogo-label')?.textContent || '';
+    luogo = luogo.split(' (')[0].trim();
+
+    document.getElementById('print-h-gmt').textContent        = 'RS ' + anno + ' — ' + gmt;
+    document.getElementById('print-h-ora-locale').textContent = 'Ora Locale ' + oraLoc + ' — Fuso ' + fuso;
+    
+    const latRS = parseFloat(document.getElementById('rs-lat')?.value) || 0;
+    const lonRS = parseFloat(document.getElementById('rs-lon')?.value) || 0;
+    document.getElementById('print-h-luogo').textContent =
+        'Luogo: ' + luogo + '   Long ' + lonRS.toFixed(4) + '°   Lat ' + latRS.toFixed(4) + '°';
+
+    buildAspettiOrizzontale('aspetti-rs-body', 'print-aspetti-rs');
+    stampaPagina('print-rs');
+}
+<?php endif; ?>
+// ── Aggiorna link Report dopo ogni calcolo RS ─────────────────────────
+(function() {
+    const _origCalcolaRS = window.calcolaRS;
+    window.calcolaRS = function(latOvr, lonOvr, soloGrafico) {
+        _origCalcolaRS.apply(this, arguments);
+        setTimeout(_aggiornaLinkReportRS, 600);
+    };
+
+    function _aggiornaLinkReportRS() {
+        const wrap  = document.getElementById('rs-btn-report-wrap');
+        const link  = document.getElementById('rs-btn-report');
+        if (!wrap || !link || !window.DS) return;
+
+        const anno   = document.getElementById('anno-rs')?.value        || new Date().getFullYear();
+        const latRS  = document.getElementById('rs-lat')?.value         || DS.lat;
+        const lonRS  = document.getElementById('rs-lon')?.value         || DS.lon;
+        const luogo  = document.getElementById('luogo-rs-input')?.value || '';
+        const cond   = document.getElementById('condizione')?.value     || 'Decima';
+
+        const params = new URLSearchParams({
+            id:         DS.id,
+            anno:       anno,
+            lat_rs:     latRS,
+            lon_rs:     lonRS,
+            luogo_rs:   luogo,
+            condizione: cond,
+        });
+        link.href = 'stampa.php?' + params.toString();
+        wrap.style.display = 'block';
+    }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "tipo": "RS",
+  "soggetto_id": 23,
+  "anno": 2026,
+  "luogo": "Roma",
+  "lat": 41.9028,
+  "lon": 12.4964,
+  "condizione": "Decima",
+  "atteso": {
+    "stelline": 0,
+    "veto": true,
+    "is_valida": false
+  }
+}
