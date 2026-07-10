@@ -12,41 +12,59 @@ final class NarrativeComposer
         $this->dominant = new DominantThemeEngine();
     }
 
-    public function compose(array $forecast): string
+    public function compose(array $forecast): array
     {
         $themes = $forecast['polarities'] ?? [];
 
         $dominant = $this->dominant->extract($themes);
 
-        $parts = [];
+        $result = [
+            'headline' => '',
+            'dominant_themes' => [],
+            'opportunities' => [],
+            'challenges' => [],
+            'technical_notes' => [],
+        ];
 
-        $headline = $this->dominant->headline($dominant);
-
-        if ($headline !== '') {
-            $parts[] = $headline;
-        }
+        $result['headline'] = $this->dominant->headline($dominant);
 
         foreach ($dominant as $name => $theme) {
 
-            $sentence = ucfirst($name).': ';
+            $item = [
+                'theme' => $name,
+                'polarity' => $theme['polarity'] ?? 'neutral',
+                'text' => '',
+            ];
 
-            switch ($theme['polarity']) {
+            switch ($theme['polarity'] ?? 'neutral') {
 
                 case 'positive':
-                    $sentence .= 'costituisce una delle aree più promettenti dell\'anno.';
+                    $item['text'] =
+                        ucfirst($name) .
+                        ' rappresenta una delle aree più promettenti dell\'anno.';
+                    $result['opportunities'][] = $name;
                     break;
 
                 case 'critical':
-                    $sentence .= 'richiederà prudenza, disciplina e maturazione.';
+                    $item['text'] =
+                        ucfirst($name) .
+                        ' richiede prudenza, disciplina e capacità di maturazione.';
+                    $result['challenges'][] = $name;
                     break;
 
                 default:
-                    $sentence .= 'presenta opportunità ma anche elementi da gestire con equilibrio.';
+                    $item['text'] =
+                        ucfirst($name) .
+                        ' presenta opportunità e aspetti da gestire con equilibrio.';
             }
 
-            $parts[] = $sentence;
+            $result['dominant_themes'][] = $item;
         }
 
-        return implode("\n\n", $parts);
+        foreach (($forecast['contributions'] ?? []) as $theme => $data) {
+            $result['technical_notes'][$theme] = $data;
+        }
+
+        return $result;
     }
 }
