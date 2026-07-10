@@ -2,26 +2,37 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/ThemeRating.php';
+require_once __DIR__.'/TextTemplates.php';
 
 final class NarrativeEngine
 {
-    public function build(array $scores): array
+    public function build(array $scores, array $fonti = []): array
     {
         $themes = ThemeRating::summarize($scores);
 
-        $paragraphs = [];
+        $out = [];
 
-        foreach ($themes as $theme => $info) {
+        foreach ($themes as $tema => $info) {
 
-            $paragraphs[] = [
-                'theme'  => $theme,
-                'score'  => $info['score'],
-                'stars'  => $info['string'],
-                'text'   => '',
-                'sources'=> [],
+            $testo = TextTemplates::INTRO[$tema]
+                ?? ('L\'anno evidenzia il tema "' . $tema . '".');
+
+            $out[] = [
+                'theme'   => $tema,
+                'score'   => $info['score'],
+                'stars'   => $info['stars'],
+                'string'  => $info['string'],
+                'color'   => $info['color'],
+                'text'    => $testo,
+                'sources' => $fonti[$tema] ?? [],
             ];
         }
 
-        return $paragraphs;
+        usort(
+            $out,
+            fn($a, $b) => $b['score'] <=> $a['score']
+        );
+
+        return $out;
     }
 }
