@@ -157,9 +157,10 @@ if ($soggetto) {
                 Mostra avviso RS escluse
             </label>
         </div>
-       <div style="width:100%;display:flex;gap:10px;align-items:center;padding-top:2px;">
+       <div style="width:100%;display:flex;gap:10px;align-items:center;padding-top:2px;flex-wrap:wrap;">
             <button class="btn-primary" onclick="calcolaRS()">↺ Calcola RS</button>
             <button class="btn-mappa" id="btn-apri-mappa" onclick="toggleMappa()" style="display:none">🌍 Mappa</button>
+            <button class="btn-mappa" id="btn-previsione-annuale" onclick="togglePrevisioneAnnuale()" style="display:none">📖 Previsione Annuale</button>
         </div>
     </div>
  
@@ -208,6 +209,39 @@ if ($soggetto) {
     <div id="rs-filtro-esclusione" class="val-item val-veto" style="display:none;margin-bottom:14px;font-size:13px;line-height:1.6"></div>
 
     <div id="rs-alert-stellium"></div>
+
+    <div id="previsione-annuale" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;padding:24px;overflow:auto;">
+        <div id="previsione-annuale-finestra"
+             style="width:min(900px,calc(100vw - 48px));
+                    min-width:360px;
+                    min-height:280px;
+                    max-width:calc(100vw - 48px);
+                    max-height:calc(100vh - 80px);
+                    margin:40px auto;
+                    background:#fffaf0;
+                    border:1px solid #244a78;
+                    border-radius:12px;
+                    box-shadow:0 18px 60px rgba(0,0,0,.35);
+                    resize:both;
+                    overflow:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid #d9cdb8;background:#f4ead8;border-radius:12px 12px 0 0;position:sticky;top:0;z-index:2;">
+                <div class="val-stringa">📖 Previsione Annuale</div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button type="button"
+                            onclick="stampaPrevisioneAnnuale()"
+                            title="Stampa Previsione Annuale"
+                            aria-label="Stampa Previsione Annuale"
+                            style="border:0;background:transparent;font-size:21px;cursor:pointer;line-height:1;">🖨️</button>
+                    <button type="button"
+                            onclick="togglePrevisioneAnnuale()"
+                            title="Chiudi"
+                            aria-label="Chiudi"
+                            style="border:0;background:transparent;font-size:26px;cursor:pointer;line-height:1;">×</button>
+                </div>
+            </div>
+            <div id="previsione-annuale-contenuto" style="font-size:16px;line-height:1.8;padding:24px;color:#1f2a35;"></div>
+        </div>
+    </div>
  
     <div class="valutazione" id="valutazione" style="display:none">
         <div class="val-header">
@@ -377,6 +411,108 @@ const DS = <?= json_encode($jsData) ?>;
 let temaNataleCache = null;
 let oraNascitaCorrente = 0, minNascitaCorrente = 0, offsetRS = 0;
 let ultimaDatiRS = null;
+let ultimaPrevisioneAnnuale = null;
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function renderPrevisioneAnnuale(previsione) {
+    const contenuto = document.getElementById('previsione-annuale-contenuto');
+    if (!contenuto || !previsione) return;
+
+    let html = '';
+
+    if (previsione.introduzione) {
+        html += '<p>' + escapeHtml(previsione.introduzione) + '</p>';
+    }
+
+    for (const paragrafo of (previsione.paragrafi || [])) {
+        html += '<p>' + escapeHtml(paragrafo.testo);
+
+        if (Array.isArray(paragrafo.fonti) && paragrafo.fonti.length) {
+            html += ' <strong>('
+                + paragrafo.fonti.map(escapeHtml).join('; ')
+                + ')</strong>';
+        }
+
+        html += '</p>';
+    }
+
+    contenuto.innerHTML = html || '<p>Nessuna previsione disponibile.</p>';
+}
+
+function togglePrevisioneAnnuale() {
+    const pannello = document.getElementById('previsione-annuale');
+    if (!pannello || !ultimaPrevisioneAnnuale) return;
+
+    const nascosto = pannello.style.display === 'none' || !pannello.style.display;
+    pannello.style.display = nascosto ? 'block' : 'none';
+}
+
+function stampaPrevisioneAnnuale() {
+    const contenuto = document.getElementById('previsione-annuale-contenuto');
+    if (!contenuto) return;
+
+    const finestra = window.open('', '_blank', 'width=900,height=700');
+
+    if (!finestra) {
+        alert('Il browser ha bloccato la finestra di stampa.');
+        return;
+    }
+
+    finestra.document.write(`<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Previsione Annuale</title>
+    <style>
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            color: #1f2a35;
+            background: #ffffff;
+            margin: 40px;
+            line-height: 1.7;
+        }
+
+        h1 {
+            color: #244a78;
+            border-bottom: 1px solid #d9cdb8;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+
+        p {
+            margin: 0 0 18px;
+        }
+
+        strong {
+            color: #244a78;
+        }
+
+        @page {
+            margin: 18mm;
+        }
+    </style>
+</head>
+<body>
+    <h1>Previsione Annuale</h1>
+    ${contenuto.innerHTML}
+</body>
+</html>`);
+
+    finestra.document.close();
+    finestra.focus();
+
+    setTimeout(() => {
+        finestra.print();
+    }, 250);
+}
  
 // ── IPOTESI: toggleGradiPianeti disponibile ─────────────────────
 console.log('RS: toggleGradiPianeti disponibile?', typeof toggleGradiPianeti === 'function');
@@ -529,6 +665,20 @@ function ricalcolaTuttoConNuovaOra() {
                 : DS.luogo + (DS.nazione ? ', '+DS.nazione : '');
             aggiornaLinkViaggio(luogoRS, luogoHome);
             let v = data.valutazione;
+
+            ultimaDatiRS = data;
+            ultimaPrevisioneAnnuale = data.previsione_annuale || null;
+
+            const btnPrevisione = document.getElementById('btn-previsione-annuale');
+            const pannelloPrevisione = document.getElementById('previsione-annuale');
+
+            if (ultimaPrevisioneAnnuale) {
+                renderPrevisioneAnnuale(ultimaPrevisioneAnnuale);
+                if (btnPrevisione) btnPrevisione.style.display = 'inline-block';
+            } else {
+                if (btnPrevisione) btnPrevisione.style.display = 'none';
+                if (pannelloPrevisione) pannelloPrevisione.style.display = 'none';
+            }
             document.getElementById('val-stelle').textContent  = v.stelle_str;
             document.getElementById('val-stringa').textContent = v.val;
             aggiornaBannerEsclusione(data);
@@ -716,6 +866,20 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
             aggiornaLinkViaggio(luogoRS, lieuHome);
  
             let v = data.valutazione;
+
+            ultimaDatiRS = data;
+            ultimaPrevisioneAnnuale = data.previsione_annuale || null;
+
+            const btnPrevisione = document.getElementById('btn-previsione-annuale');
+            const pannelloPrevisione = document.getElementById('previsione-annuale');
+
+            if (ultimaPrevisioneAnnuale) {
+                renderPrevisioneAnnuale(ultimaPrevisioneAnnuale);
+                if (btnPrevisione) btnPrevisione.style.display = 'inline-block';
+            } else {
+                if (btnPrevisione) btnPrevisione.style.display = 'none';
+                if (pannelloPrevisione) pannelloPrevisione.style.display = 'none';
+            }
             document.getElementById('val-stelle').textContent    = v.stelle_str;
             document.getElementById('val-stringa').textContent   = v.val;
             document.getElementById('val-condizione').textContent= 'Condizione: '+v.condizione;
