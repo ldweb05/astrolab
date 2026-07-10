@@ -17,10 +17,12 @@ if (!$auth->isLoggedIn()) {
 header('Content-Type: application/json');
 require_once '../includes/SweCalc.php';
 require_once '../includes/RuleEngine.php';
+require_once '../includes/AnnualForecastEngine.php';
 require_once '../includes/FiltroEsclusione.php';
 
 $swe    = new SweCalc();
-$engine = new RuleEngine();
+$engine   = new RuleEngine();
+$forecast = new AnnualForecastEngine();
 
 $g      = intval($_GET['g']);
 $m      = intval($_GET['m']);
@@ -55,6 +57,7 @@ try {
 
 // Valuta con RuleEngine
 $val = $engine->valuta($temaNatale, $temaRS, $cond);
+$previsioneAnnuale = $forecast->genera($temaRS, $val);
 
 // ── Filtro di esclusione RS (aggiuntivo, non RuleEngine) ─────────────────
 // Sole/Marte in I/VI/XII RS, ASC RS in I/VI/XII natale, Saturno in X RS,
@@ -141,6 +144,7 @@ echo json_encode([
     'rs_gmt'     => $rs['stringa'],
     'tema_rs'    => $temaRS,
     'valutazione'=> $val,
+    'previsione_annuale' => $previsioneAnnuale,
     'aspetti'    => $aspetti,
     'escluso_filtro' => $motiviEsclusioneRS,
 ]);
