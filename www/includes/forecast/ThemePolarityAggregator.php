@@ -6,6 +6,7 @@ require_once __DIR__.'/ThemeMap.php';
 require_once __DIR__.'/AngularPowerEngine.php';
 require_once __DIR__.'/PlanetStrengthEngine.php';
 require_once __DIR__.'/PlanetNature.php';
+require_once __DIR__.'/PlanetResolver.php';
 
 final class ThemePolarityAggregator
 {
@@ -26,7 +27,12 @@ final class ThemePolarityAggregator
         $angularData = $this->angularPower->calculate($temaRS);
 
         foreach (($temaRS['pianeti'] ?? []) as $nome => $info) {
-            $planet = mb_strtolower((string)$nome);
+            $planet = PlanetResolver::normalized($nome, $info);
+
+            if ($planet === null) {
+                continue;
+            }
+
             $casa   = (int)($info['casa'] ?? 0);
 
             if (!isset($this->atlas[$planet][$casa]['themes'])) {

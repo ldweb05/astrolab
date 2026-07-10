@@ -5,6 +5,7 @@ require_once __DIR__.'/../atlas/AtlasLoader.php';
 require_once __DIR__.'/ThemeMap.php';
 require_once __DIR__.'/AdvancedContextEngine.php';
 require_once __DIR__.'/AspectScoreEngine.php';
+require_once __DIR__.'/PlanetResolver.php';
 
 final class AdvancedThemeAggregator
 {
@@ -22,12 +23,18 @@ final class AdvancedThemeAggregator
     public function aggregate(array $temaRS): array
     {
         $scores = [];
+        $contributions = [];
 
         $context = $this->context->analyze($temaRS);
 
         foreach (($temaRS['pianeti'] ?? []) as $planet => $info) {
 
-            $p = mb_strtolower((string)$planet);
+            $p = PlanetResolver::normalized($planet, $info);
+
+            if ($p === null) {
+                continue;
+            }
+
             $house = (int)($info['casa'] ?? 0);
 
             if (!isset($this->atlas[$p][$house]['themes'])) {
@@ -48,10 +55,17 @@ final class AdvancedThemeAggregator
 
                 $theme = ThemeMap::normalize((string)$theme);
 
+                $value = (float)$weight * $strength;
+
                 $scores[$theme] =
                     ($scores[$theme] ?? 0)
-                    +
-                    ((float)$weight * $strength);
+                    + $value;
+
+                $contributions[$theme][] = [
+                    'planet'   => $p,
+                    'house'    => $house,
+                    'value'    => round($value,2),
+                ];
             }
         }
 
@@ -63,8 +77,9 @@ final class AdvancedThemeAggregator
         arsort($scores);
 
         return [
-            'scores' => $scores,
-            'context' => $context,
+            'scores'        => $scores,
+            'context'       => $context,
+            'contributions' => $contributions,
         ];
     }
 }

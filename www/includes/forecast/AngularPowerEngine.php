@@ -26,7 +26,14 @@ final class AngularPowerEngine
 
         foreach (($temaRS['pianeti'] ?? []) as $nome => $p) {
 
-            $planet = mb_strtolower($nome);
+            if (!is_string($nome)) {
+                $nome = $p['nome']
+                    ?? $p['pianeta']
+                    ?? $p['id']
+                    ?? ('planet_' . $nome);
+            }
+
+            $planet = mb_strtolower((string)$nome);
 
             $out[$planet] = [
                 'factor' => 1.0,
