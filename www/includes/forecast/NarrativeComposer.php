@@ -60,6 +60,18 @@ final class NarrativeComposer
                 $item
             );
 
+            $item['text'] = str_replace(
+                [
+                    'L\'apprendimento e lo sviluppo personale rappresenta',
+                    'Crescita attraverso esperienze impegnative richiede',
+                ],
+                [
+                    'L\'apprendimento e lo sviluppo personale rappresentano',
+                    'La crescita attraverso esperienze impegnative richiede',
+                ],
+                $item['text']
+            );
+
             if (($theme['polarity'] ?? 'neutral') === 'positive') {
                 $result['opportunities'][] = $name;
             }
@@ -254,17 +266,42 @@ final class NarrativeComposer
 
         $opening = match($theme) {
             'carriera' => 'La realizzazione personale e professionale',
-            'studio' => 'L\'apprendimento e lo sviluppo',
-            'salute' => 'L\'equilibrio personale e la gestione delle energie',
+            'studio' => 'L\'apprendimento e lo sviluppo personale',
+            'salute' => 'L\'equilibrio personale e la gestione consapevole delle energie',
             'amore' => 'La vita affettiva e relazionale',
             default => ucfirst($role)
+        };
+
+        $grammar = match($theme) {
+            'studio' => [
+                'positive' => ' emerge come uno dei temi centrali dell\'anno. ',
+                'critical' => ' richiede attenzione e consapevolezza. ',
+                'default' => ' rappresenta un ambito di crescita progressiva. ',
+            ],
+
+            'salute' => [
+                'positive' => ' emergono come uno dei temi centrali dell\'anno. ',
+                'critical' => ' richiedono attenzione e consapevolezza. ',
+                'default' => ' rappresentano un ambito di crescita progressiva. ',
+            ],
+            'prove' => [
+                'positive' => ' emerge come uno dei temi centrali dell\'anno. ',
+                'critical' => ' richiede attenzione e consapevolezza. ',
+                'default' => ' rappresenta un ambito di crescita progressiva. ',
+            ],
+
+            default => [
+                'positive' => ' emerge come uno dei temi centrali dell\'anno. ',
+                'critical' => ' richiede attenzione e consapevolezza. ',
+                'default' => ' rappresenta un ambito di crescita progressiva. ',
+            ],
         };
 
         return match($polarity) {
 
             'positive' =>
                 $opening .
-                ' emerge come uno dei temi centrali dell\'anno. ' .
+                $grammar['positive'] .
                 $planets .
                 $symbolText .
                 $contextText .
@@ -273,7 +310,7 @@ final class NarrativeComposer
 
             'critical' =>
                 $opening .
-                ' richiede attenzione e consapevolezza. ' .
+                $grammar['critical'] .
                 'Può rappresentare un percorso di maturazione e trasformazione. ' .
                 $planets .
                 $symbolText .
@@ -283,7 +320,7 @@ final class NarrativeComposer
 
             default =>
                 $opening .
-                ' rappresenta un ambito di crescita progressiva. ' .
+                $grammar['default'] .
                 $planets .
                 $symbolText .
                 $contextText
@@ -359,16 +396,24 @@ final class NarrativeComposer
 
         foreach (($forecast['context']['solar'] ?? []) as $planet => $data) {
             if (in_array(strtolower($planet), $planets, true)) {
-                $notes[] =
-                    ($data['condition'] ?? 'condizione solare') .
-                    ' (' . ($data['distance'] ?? '') . '°)';
+                $notes[] = match($data['condition'] ?? '') {
+                    'cazimi' =>
+                        'una forte concentrazione di energia e consapevolezza',
+                    'combusto' =>
+                        'una fase in cui crescita ed espressione richiedono equilibrio',
+                    'sotto_raggi' =>
+                        'un processo di maturazione graduale',
+                    default =>
+                        'una particolare condizione solare'
+                };
             }
         }
 
         foreach (($forecast['context']['dignities'] ?? []) as $planet => $data) {
             if (in_array(strtolower($planet), $planets, true)) {
                 $notes[] =
-                    'dignità in ' . ($data['sign'] ?? '');
+                    'una maggiore espressione delle qualità legate al pianeta in ' .
+                    ($data['sign'] ?? '');
             }
         }
 
