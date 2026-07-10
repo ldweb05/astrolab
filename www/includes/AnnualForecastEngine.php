@@ -1,48 +1,43 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__.'/forecast/ForecastEngineV3.php';
-require_once __DIR__.'/forecast/NarrativeComposer.php';
+require_once __DIR__.'/forecast/AdvancedForecastEngine.php';
+require_once __DIR__.'/forecast/FinalNarrativeEngine.php';
 
 final class AnnualForecastEngine
 {
-    private ForecastEngineV3 $engine;
-    private NarrativeComposer $composer;
+    private AdvancedForecastEngine $engine;
+    private FinalNarrativeEngine $narrative;
 
     public function __construct()
     {
-        $this->engine   = new ForecastEngineV3();
-        $this->composer = new NarrativeComposer();
+        $this->engine    = new AdvancedForecastEngine();
+        $this->narrative = new FinalNarrativeEngine();
     }
 
-    public function genera(array $temaRS, array $valutazione): array
+    public function genera(array $temaRS, array $valutazione = []): array
     {
         $forecast = $this->engine->generate($temaRS);
-        $sintesi  = $this->composer->compose($forecast);
 
-        return [
-            'titolo'       => 'Previsione Annuale',
-            'introduzione' => $this->introduzione($valutazione),
-            'sintesi'      => $sintesi,
-            'temi'         => array_slice($forecast['paragraphs'], 0, 8),
-            'paragrafi'    => array_slice($forecast['paragraphs'], 0, 6),
-            'scores'       => $forecast['scores'],
-            'polarities'   => $forecast['polarities'] ?? [],
-        ];
+        $forecast['sintesi'] =
+            $this->narrative->compose($forecast);
+
+        $forecast['introduzione'] =
+            $this->introduzione($valutazione);
+
+        return $forecast;
     }
+
 
     private function introduzione(array $valutazione): string
     {
         if (!empty($valutazione['veti'])) {
-            return 'La Rivoluzione Solare presenta configurazioni che richiedono particolare prudenza. La previsione descrive i temi principali dell’anno senza considerarli eventi inevitabili.';
+
+            return
+                'La Rivoluzione Solare evidenzia aree che richiedono attenzione e gestione consapevole delle energie.';
         }
 
-        $stelle = (int)($valutazione['stelline'] ?? 0);
-
-        return match (true) {
-            $stelle >= 4 => 'L’anno appare complessivamente ricco di possibilità, con diversi settori capaci di offrire crescita e risultati concreti.',
-            $stelle === 3 => 'L’anno presenta opportunità significative insieme ad alcune situazioni che richiederanno attenzione e capacità di adattamento.',
-            default       => 'L’anno può richiedere prudenza, disciplina e una gestione consapevole delle energie e delle priorità.',
-        };
+        return
+            'La previsione annuale integra posizioni planetarie, forza angolare, dignità, aspetti e dinamiche evolutive.';
     }
 }
