@@ -2,26 +2,32 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/forecast/ForecastEngineV3.php';
+require_once __DIR__.'/forecast/NarrativeComposer.php';
 
 final class AnnualForecastEngine
 {
     private ForecastEngineV3 $engine;
+    private NarrativeComposer $composer;
 
     public function __construct()
     {
-        $this->engine = new ForecastEngineV3();
+        $this->engine   = new ForecastEngineV3();
+        $this->composer = new NarrativeComposer();
     }
 
     public function genera(array $temaRS, array $valutazione): array
     {
         $forecast = $this->engine->generate($temaRS);
+        $sintesi  = $this->composer->compose($forecast);
 
         return [
             'titolo'       => 'Previsione Annuale',
             'introduzione' => $this->introduzione($valutazione),
+            'sintesi'      => $sintesi,
             'temi'         => array_slice($forecast['paragraphs'], 0, 8),
             'paragrafi'    => array_slice($forecast['paragraphs'], 0, 6),
             'scores'       => $forecast['scores'],
+            'polarities'   => $forecast['polarities'] ?? [],
         ];
     }
 
