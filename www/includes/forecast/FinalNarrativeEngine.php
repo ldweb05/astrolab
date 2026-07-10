@@ -14,6 +14,7 @@ final class FinalNarrativeEngine
             'opportunities' => $narrative['opportunities'] ?? [],
             'challenges' => $narrative['challenges'] ?? [],
             'technical_notes' => $narrative['technical_notes'] ?? [],
+            'annual_story' => $narrative['annual_story'] ?? [],
         ];
     }
 
