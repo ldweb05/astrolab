@@ -49,6 +49,7 @@ final class NarrativeComposer
                 'reason' => $this->reasonFromSources($forecast, $name),
                 'symbolic_notes' => $this->symbolicNotes($forecast, $name),
                 'context_notes' => $this->contextNotes($forecast, $name),
+                'advanced_notes' => $this->advancedNotes($forecast, $name),
                 'text' => '',
             ];
 
@@ -224,6 +225,19 @@ final class NarrativeComposer
                 '.';
         }
 
+        $advancedText = '';
+
+        if (!empty($item['advanced_notes'])) {
+            $advancedText =
+                ' Le condizioni avanzate evidenziano ' .
+                implode(', ', array_slice(
+                    array_unique($item['advanced_notes']),
+                    0,
+                    2
+                )) .
+                '.';
+        }
+
         $opening = match($theme) {
             'carriera' => 'La realizzazione personale e professionale',
             'studio' => 'L\'apprendimento e lo sviluppo',
@@ -239,7 +253,8 @@ final class NarrativeComposer
                 ' emerge come uno dei temi centrali dell\'anno. ' .
                 $planets .
                 $symbolText .
-                $contextText,
+                $contextText .
+                $advancedText,
 
             'critical' =>
                 $opening .
@@ -247,7 +262,8 @@ final class NarrativeComposer
                 'Può rappresentare un percorso di maturazione e trasformazione. ' .
                 $planets .
                 $symbolText .
-                $contextText,
+                $contextText .
+                $advancedText,
 
             default =>
                 $opening .
@@ -298,4 +314,49 @@ final class NarrativeComposer
 
         return array_values(array_unique($out));
     }
+
+    private function advancedNotes(array $forecast, string $theme): array
+    {
+        $notes = [];
+
+        $sources = $forecast['contributions'][$theme] ?? [];
+
+        if (!$sources) {
+            return [];
+        }
+
+        $planets = [];
+
+        foreach ($sources as $source) {
+            if (!empty($source['planet'])) {
+                $planets[] = strtolower($source['planet']);
+            }
+        }
+
+        $planets = array_unique($planets);
+
+        foreach (($forecast['context']['retrograde'] ?? []) as $planet => $data) {
+            if (in_array(strtolower($planet), $planets, true)) {
+                $notes[] = $data['meaning'] ?? 'fase retrograda';
+            }
+        }
+
+        foreach (($forecast['context']['solar'] ?? []) as $planet => $data) {
+            if (in_array(strtolower($planet), $planets, true)) {
+                $notes[] =
+                    ($data['condition'] ?? 'condizione solare') .
+                    ' (' . ($data['distance'] ?? '') . '°)';
+            }
+        }
+
+        foreach (($forecast['context']['dignities'] ?? []) as $planet => $data) {
+            if (in_array(strtolower($planet), $planets, true)) {
+                $notes[] =
+                    'dignità in ' . ($data['sign'] ?? '');
+            }
+        }
+
+        return array_values(array_unique($notes));
+    }
+
 }
