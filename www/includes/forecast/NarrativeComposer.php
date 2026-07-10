@@ -2,14 +2,17 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/DominantThemeEngine.php';
+require_once __DIR__.'/PlanetarySymbolEngine.php';
 
 final class NarrativeComposer
 {
     private DominantThemeEngine $dominant;
+    private PlanetarySymbolEngine $symbols;
 
     public function __construct()
     {
         $this->dominant = new DominantThemeEngine();
+        $this->symbols  = new PlanetarySymbolEngine();
     }
 
     public function compose(array $forecast): array
@@ -36,6 +39,7 @@ final class NarrativeComposer
                 'role' => $theme['role'] ?? '',
                 'explanation' => $theme['explanation'] ?? '',
                 'reason' => $this->reasonFromSources($forecast, $name),
+                'symbolic_notes' => $this->symbolicNotes($forecast, $name),
                 'text' => '',
             ];
 
@@ -98,6 +102,24 @@ final class NarrativeComposer
 
         return ' I fattori simbolici principali coinvolgono ' .
             implode(', ', $planets) . '.';
+    }
+
+
+    private function symbolicNotes(array $forecast, string $theme): array
+    {
+        $sources = $forecast['contributions'][$theme] ?? [];
+
+        $planets = [];
+
+        foreach ($sources as $source) {
+            if (!empty($source['planet'])) {
+                $planets[] = strtolower($source['planet']);
+            }
+        }
+
+        $planets = array_values(array_unique($planets));
+
+        return $this->symbols->interpret($planets);
     }
 
 }
