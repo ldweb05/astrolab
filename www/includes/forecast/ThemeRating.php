@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class ThemeRating
 {
-    public static function stars(int $score): int
+    public static function stars(int|float $score): int
     {
         return match (true) {
             $score >= 450 => 5,
@@ -36,10 +36,10 @@ final class ThemeRating
         $out = [];
 
         foreach ($scores as $theme => $score) {
-            $stars = self::stars($score);
+            $stars = self::stars((int)round($score));
 
             $out[$theme] = [
-                'score' => $score,
+                'score' => (int)round($score),
                 'stars' => $stars,
                 'string'=> self::starsString($stars),
                 'color' => self::color($stars),
