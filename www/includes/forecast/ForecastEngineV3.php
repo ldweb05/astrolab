@@ -1,50 +1,38 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__.'/ForecastEngineV2.php';
-require_once __DIR__.'/SourceCollector.php';
-require_once __DIR__.'/TextTemplates.php';
+require_once __DIR__.'/AdvancedThemeAggregator.php';
+require_once __DIR__.'/ThemeRating.php';
 require_once __DIR__.'/ThemePresenter.php';
-require_once __DIR__.'/ThemePolarityAggregator.php';
 
 final class ForecastEngineV3
 {
-    private ForecastEngineV2 $engine;
-    private SourceCollector $sources;
-    private ThemePolarityAggregator $polarity;
+    private AdvancedThemeAggregator $aggregator;
 
     public function __construct()
     {
-        $this->engine   = new ForecastEngineV2();
-        $this->sources  = new SourceCollector();
-        $this->polarity = new ThemePolarityAggregator();
+        $this->aggregator = new AdvancedThemeAggregator();
     }
 
     public function generate(array $temaRS): array
     {
-        $data       = $this->engine->generate($temaRS);
-        $fonti      = $this->sources->collect($temaRS);
-        $polarities = $this->polarity->aggregate($temaRS);
+        $result = $this->aggregator->aggregate($temaRS);
 
-        foreach ($data['paragraphs'] as &$p) {
-            $tema = (string)$p['theme'];
+        $paragraphs = [];
 
-            $p['text'] = TextTemplates::INTRO[$tema]
-                ?? ('L\'anno evidenzia il tema "' . $tema . '".');
+        foreach ($result['scores'] as $theme => $score) {
 
-            $p['sources'] = $fonti[$tema] ?? [];
-
-            $p['polarity'] = $polarities[$tema]['polarity'] ?? 'mixed';
-            $p['positive'] = $polarities[$tema]['positive'] ?? 0.0;
-            $p['critical'] = $polarities[$tema]['critical'] ?? 0.0;
-            $p['neutral']  = $polarities[$tema]['neutral'] ?? 0.0;
-            $p['balance']  = $polarities[$tema]['balance'] ?? 0.0;
+            $paragraphs[] = [
+                'theme' => $theme,
+                'score' => (int)round($score),
+                'rating' => ThemeRating::stars((int)round($score)),
+            ];
         }
-        unset($p);
 
-        $data['paragraphs'] = ThemePresenter::present($data['paragraphs']);
-        $data['polarities'] = $polarities;
-
-        return $data;
+        return [
+            'scores'     => $result['scores'],
+            'paragraphs' => ThemePresenter::present($paragraphs),
+            'context'    => $result['context'],
+        ];
     }
 }
