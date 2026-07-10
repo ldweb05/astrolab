@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 require_once __DIR__.'/DignityEngine.php';
 require_once __DIR__.'/SignUtils.php';
+require_once __DIR__.'/PlanetResolver.php';
 
 final class DignityIntegrationEngine
 {
+
     private DignityEngine $dignity;
 
     public function __construct()
@@ -17,9 +19,14 @@ final class DignityIntegrationEngine
     {
         $out = [];
 
-        foreach (($temaRS['pianeti'] ?? []) as $planet => $data) {
+        foreach (($temaRS['pianeti'] ?? []) as $planetKey => $data) {
+            if (!is_array($data) || !isset($data['longitudine'])) {
+                continue;
+            }
 
-            if (!isset($data['longitudine'])) {
+            $planet = PlanetResolver::name($planetKey, $data);
+
+            if ($planet === null) {
                 continue;
             }
 
@@ -27,10 +34,12 @@ final class DignityIntegrationEngine
                 (float)$data['longitudine']
             );
 
-            $out[mb_strtolower($planet)] = [
+            $normalizedPlanet = mb_strtolower($planet);
+
+            $out[$normalizedPlanet] = [
                 'sign'        => $sign,
                 'coefficient' => $this->dignity->coefficient(
-                    (string)$planet,
+                    $planet,
                     $sign
                 ),
             ];

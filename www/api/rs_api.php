@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/bootstrap.php';
 // ===== INIZIO AUTH =====
 session_start();
-require_once '../includes/Auth.php';
+require_once __DIR__ . '/../includes/Auth.php';
 
 $pdo = db_connect();
 $auth = new Auth($pdo);
@@ -54,7 +54,6 @@ try {
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
-
 // Valuta con RuleEngine
 $val = $engine->valuta($temaNatale, $temaRS, $cond);
 $previsioneAnnuale = $forecast->genera($temaRS, $val);
