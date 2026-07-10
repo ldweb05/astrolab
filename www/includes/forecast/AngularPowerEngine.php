@@ -3,90 +3,133 @@ declare(strict_types=1);
 
 final class AngularPowerEngine
 {
+    private const ORBS = [
+        1.0 => 2.00,
+        3.0 => 1.75,
+        5.0 => 1.50,
+    ];
+
     public function calculate(array $temaRS): array
     {
-        $mc = $this->extractLongitude($temaRS['case']['MC'] ?? null);
+        $angles = [
+            'ASC' => $this->lon($temaRS['case']['ASC'] ?? null),
+            'MC'  => $this->lon($temaRS['case']['MC'] ?? null),
+            'DSC' => isset($temaRS['case']['ASC'])
+                ? $this->normalize($this->lon($temaRS['case']['ASC']) + 180)
+                : null,
+            'IC'  => isset($temaRS['case']['MC'])
+                ? $this->normalize($this->lon($temaRS['case']['MC']) + 180)
+                : null,
+        ];
 
-        if ($mc === null) {
-            return [];
-        }
+        $out = [];
 
-        $result = [];
+        foreach (($temaRS['pianeti'] ?? []) as $nome => $p) {
 
-        foreach (($temaRS['pianeti'] ?? []) as $name => $planet) {
-            $longitude = $this->extractLongitude($planet);
+            $planet = mb_strtolower($nome);
 
-            if ($longitude === null) {
+            $out[$planet] = [
+                'factor' => 1.0,
+                'zones'  => [],
+            ];
+
+            $lon  = $this->lon($p);
+            $casa = (int)($p['casa'] ?? 0);
+
+            if ($lon === null) {
                 continue;
             }
 
-            $house = (int)($planet['casa'] ?? 0);
-            $distanceBeforeMc = $this->forwardDistance($longitude, $mc);
-
-            $factor = 1.0;
-            $zone = null;
-
             /*
-             * Zona Gauquelin lato IX:
-             * pianeta formalmente in IX casa, immediatamente prima del MC.
+             * MC
              */
-            if ($house === 9 && $distanceBeforeMc <= 5.0) {
-                $factor = match (true) {
-                    $distanceBeforeMc <= 1.0 => 2.00,
-                    $distanceBeforeMc <= 3.0 => 1.75,
-                    default                  => 1.50,
-                };
 
-                $zone = 'gauquelin_mc_pre_cusp';
+            if ($casa === 9) {
+                $d = $this->forwardDistance($lon, $angles['MC']);
+
+                if ($f = $this->factor($d)) {
+                    $out[$planet]['factor'] = max($out[$planet]['factor'], $f);
+                    $out[$planet]['zones'][] = "Gauquelin MC (-{$d}°)";
+                }
             }
 
-            $result[mb_strtolower((string)$name)] = [
-                'factor'      => $factor,
-                'zone'        => $zone,
-                'distance_mc' => round($distanceBeforeMc, 4),
-                'is_active'   => $factor > 1.0,
-                'label'       => $factor > 1.0
-                    ? sprintf(
-                        '%s in zona Gauquelin prima del MC (%.2f°)',
-                        ucfirst((string)$name),
-                        $distanceBeforeMc
-                    )
-                    : null,
-            ];
+            /*
+             * ASC
+             */
+
+            if ($casa === 12) {
+                $d = $this->forwardDistance($lon, $angles['ASC']);
+
+                if ($f = $this->factor($d)) {
+                    $out[$planet]['factor'] = max($out[$planet]['factor'], $f);
+                    $out[$planet]['zones'][] = "Gauquelin ASC (-{$d}°)";
+                }
+            }
+
+            /*
+             * DSC
+             */
+
+            if ($casa === 6 && $angles['DSC'] !== null) {
+                $d = $this->forwardDistance($lon, $angles['DSC']);
+
+                if ($f = $this->factor($d)) {
+                    $out[$planet]['factor'] = max($out[$planet]['factor'], $f);
+                    $out[$planet]['zones'][] = "Gauquelin DSC (-{$d}°)";
+                }
+            }
+
+            /*
+             * IC
+             */
+
+            if ($casa === 3 && $angles['IC'] !== null) {
+                $d = $this->forwardDistance($lon, $angles['IC']);
+
+                if ($f = $this->factor($d)) {
+                    $out[$planet]['factor'] = max($out[$planet]['factor'], $f);
+                    $out[$planet]['zones'][] = "Gauquelin IC (-{$d}°)";
+                }
+            }
         }
 
-        return $result;
+        return $out;
     }
 
-    public function apply(int|float $score, float $factor): float
+    public function apply(float|int $score, float $factor): float
     {
         return round($score * $factor, 2);
     }
 
-    private function extractLongitude(mixed $data): ?float
+    private function factor(float $distance): ?float
     {
-        if (!is_array($data) || !array_key_exists('longitudine', $data)) {
+        foreach (self::ORBS as $orb => $f) {
+            if ($distance <= $orb) {
+                return $f;
+            }
+        }
+
+        return null;
+    }
+
+    private function lon(?array $x): ?float
+    {
+        if (!$x || !isset($x['longitudine'])) {
             return null;
         }
 
-        $longitude = (float)$data['longitudine'];
-
-        return $this->normalize($longitude);
+        return $this->normalize((float)$x['longitudine']);
     }
 
-    private function normalize(float $degrees): float
+    private function normalize(float $x): float
     {
-        $degrees = fmod($degrees, 360.0);
+        $x = fmod($x,360);
 
-        if ($degrees < 0) {
-            $degrees += 360.0;
-        }
-
-        return $degrees;
+        return $x < 0 ? $x+360 : $x;
     }
 
-    private function forwardDistance(float $from, float $to): float
+    private function forwardDistance(float $from,float $to): float
     {
-        return fmod(($to - $from + 360.0), 360.0);
+        return round(fmod(($to-$from+360),360),2);
     }
 }
