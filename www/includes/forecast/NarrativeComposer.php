@@ -139,7 +139,7 @@ final class NarrativeComposer
 
         foreach ($sources as $source) {
             if (!empty($source['planet'])) {
-                $planets[] = strtolower($source['planet']);
+                $planets[] = strtolower((string)$source['planet']);
             }
         }
 
@@ -382,20 +382,20 @@ final class NarrativeComposer
 
         foreach ($sources as $source) {
             if (!empty($source['planet'])) {
-                $planets[] = strtolower($source['planet']);
+                $planets[] = strtolower((string)$source['planet']);
             }
         }
 
         $planets = array_unique($planets);
 
         foreach (($forecast['context']['retrograde'] ?? []) as $planet => $data) {
-            if (in_array(strtolower($planet), $planets, true)) {
+            if (in_array(strtolower((string)$planet), $planets, true)) {
                 $notes[] = $data['meaning'] ?? 'fase retrograda';
             }
         }
 
         foreach (($forecast['context']['solar'] ?? []) as $planet => $data) {
-            if (in_array(strtolower($planet), $planets, true)) {
+            if (in_array(strtolower((string)$planet), $planets, true)) {
                 $notes[] = match($data['condition'] ?? '') {
                     'cazimi' =>
                         'una forte concentrazione di energia e consapevolezza',
@@ -410,7 +410,7 @@ final class NarrativeComposer
         }
 
         foreach (($forecast['context']['dignities'] ?? []) as $planet => $data) {
-            if (in_array(strtolower($planet), $planets, true)) {
+            if (in_array(strtolower((string)$planet), $planets, true)) {
                 $notes[] =
                     'una maggiore espressione delle qualità legate al pianeta in ' .
                     ($data['sign'] ?? '');
@@ -433,7 +433,7 @@ final class NarrativeComposer
 
         foreach ($sources as $source) {
             if (!empty($source['planet'])) {
-                $planets[] = strtolower($source['planet']);
+                $planets[] = strtolower((string)$source['planet']);
             }
         }
 

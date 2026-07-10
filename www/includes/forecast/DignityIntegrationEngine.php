@@ -34,7 +34,7 @@ final class DignityIntegrationEngine
                 (float)$data['longitudine']
             );
 
-            $normalizedPlanet = mb_strtolower($planet);
+            $normalizedPlanet = mb_strtolower((string)$planet);
 
             $out[$normalizedPlanet] = [
                 'sign'        => $sign,
