@@ -11,12 +11,30 @@ final class DominantThemeEngine
                 $b['intensity'] <=> $a['intensity']
         );
 
-        return array_slice(
+        $dominant = array_slice(
             $themes,
             0,
             $limit,
             true
         );
+
+        foreach ($dominant as $name => &$theme) {
+
+            $theme['role'] = match($name) {
+                'carriera' => 'realizzazione personale e professionale',
+                'amore' => 'vita affettiva e relazionale',
+                'salute' => 'equilibrio personale e gestione delle energie',
+                'trasformazione' => 'cambiamento e rinnovamento',
+                'prove' => 'crescita attraverso esperienze impegnative',
+                'studio' => 'apprendimento e sviluppo',
+                default => 'area significativa dell esperienza annuale'
+            };
+
+            $theme['explanation'] =
+                'Tema evidenziato dalla combinazione di intensità astrologica e dinamiche presenti nella Rivoluzione Solare.';
+        }
+
+        return $dominant;
     }
 
     public function headline(array $dominant): string

@@ -33,6 +33,9 @@ final class NarrativeComposer
             $item = [
                 'theme' => $name,
                 'polarity' => $theme['polarity'] ?? 'neutral',
+                'role' => $theme['role'] ?? '',
+                'explanation' => $theme['explanation'] ?? '',
+                'reason' => $this->reasonFromSources($forecast, $name),
                 'text' => '',
             ];
 
@@ -40,22 +43,25 @@ final class NarrativeComposer
 
                 case 'positive':
                     $item['text'] =
-                        ucfirst($name) .
-                        ' rappresenta una delle aree più promettenti dell\'anno.';
+                        'Il tema della ' . ($theme['role'] ?? $name) .
+                        ' emerge come una delle aree più dinamiche dell\'anno. ' .
+                        'Le configurazioni presenti suggeriscono possibilità di crescita, sviluppo e consolidamento.' .
+                        ($item['reason'] ?? '');
                     $result['opportunities'][] = $name;
                     break;
 
                 case 'critical':
                     $item['text'] =
-                        ucfirst($name) .
-                        ' richiede prudenza, disciplina e capacità di maturazione.';
+                        'Il tema della ' . ($theme['role'] ?? $name) .
+                        ' richiede maggiore consapevolezza e capacità di gestione. ' .
+                        'Può rappresentare un\'area di maturazione attraverso esperienze significative.';
                     $result['challenges'][] = $name;
                     break;
 
                 default:
                     $item['text'] =
-                        ucfirst($name) .
-                        ' presenta opportunità e aspetti da gestire con equilibrio.';
+                        'Il tema della ' . ($theme['role'] ?? $name) .
+                        ' presenta opportunità da sviluppare mantenendo equilibrio e attenzione.';
             }
 
             $result['dominant_themes'][] = $item;
@@ -67,4 +73,31 @@ final class NarrativeComposer
 
         return $result;
     }
+
+    private function reasonFromSources(array $forecast, string $theme): string
+    {
+        $sources = $forecast['contributions'][$theme] ?? [];
+
+        if (!$sources) {
+            return '';
+        }
+
+        $planets = [];
+
+        foreach ($sources as $source) {
+            if (!empty($source['planet'])) {
+                $planets[] = ucfirst($source['planet']);
+            }
+        }
+
+        $planets = array_values(array_unique($planets));
+
+        if (!$planets) {
+            return '';
+        }
+
+        return ' I fattori simbolici principali coinvolgono ' .
+            implode(', ', $planets) . '.';
+    }
+
 }
