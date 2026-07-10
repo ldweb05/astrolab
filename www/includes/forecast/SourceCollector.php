@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/../atlas/AtlasLoader.php';
+require_once __DIR__.'/ThemeMap.php';
 
 final class SourceCollector
 {
@@ -14,28 +15,32 @@ final class SourceCollector
 
     public function collect(array $temaRS): array
     {
-        $fonti = [];
+        $out = [];
 
         foreach (($temaRS['pianeti'] ?? []) as $nome => $info) {
 
-            $planet = mb_strtolower($nome);
+            $planet = mb_strtolower((string)$nome);
             $casa   = (int)($info['casa'] ?? 0);
 
-            if (!isset($this->atlas[$planet][$casa])) {
+            if (!isset($this->atlas[$planet][$casa]['themes'])) {
                 continue;
             }
 
             foreach ($this->atlas[$planet][$casa]['themes'] as $tema => $peso) {
 
-                $fonti[$tema][] = ucfirst($planet).' in '.$casa.'ª casa';
+                $tema = ThemeMap::normalize((string)$tema);
 
+                $out[$tema][] = ucfirst($planet) . ' in ' . $casa . 'ª casa';
             }
         }
 
-        foreach ($fonti as &$lista) {
-            $lista = array_values(array_unique($lista));
+        foreach ($out as &$v) {
+            sort($v);
+            $v = array_values(array_unique($v));
         }
 
-        return $fonti;
+        ksort($out);
+
+        return $out;
     }
 }
