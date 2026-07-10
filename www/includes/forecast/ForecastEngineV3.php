@@ -38,7 +38,12 @@ final class ForecastEngineV3
             'scores'         => $result['scores'],
             'paragraphs'     => ThemePresenter::present($paragraphs),
             'polarities'     => $polarities,
-            'context'        => $result['context'],
+            'context'        => array_merge(
+                $result['context'],
+                [
+                    'planets' => $temaRS['pianeti'] ?? []
+                ]
+            ),
 
             // Contratto interno V3.1
             'contributions'  => $result['contributions'] ?? [],
