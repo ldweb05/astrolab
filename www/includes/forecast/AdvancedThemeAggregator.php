@@ -4,16 +4,19 @@ declare(strict_types=1);
 require_once __DIR__.'/../atlas/AtlasLoader.php';
 require_once __DIR__.'/ThemeMap.php';
 require_once __DIR__.'/AdvancedContextEngine.php';
+require_once __DIR__.'/AspectScoreEngine.php';
 
 final class AdvancedThemeAggregator
 {
     private array $atlas;
     private AdvancedContextEngine $context;
+    private AspectScoreEngine $aspectScore;
 
     public function __construct()
     {
         $this->atlas = AtlasLoader::load();
         $this->context = new AdvancedContextEngine();
+        $this->aspectScore = new AspectScoreEngine();
     }
 
     public function aggregate(array $temaRS): array
@@ -51,6 +54,11 @@ final class AdvancedThemeAggregator
                     ((float)$weight * $strength);
             }
         }
+
+        $scores = $this->aspectScore->apply(
+            $scores,
+            $context['aspects'] ?? []
+        );
 
         arsort($scores);
 
