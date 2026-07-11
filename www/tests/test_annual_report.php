@@ -39,9 +39,15 @@ if (($validation['valid'] ?? false) !== true) {
 }
 
 $sections = $report['sections'] ?? [];
+$evidences = $report['evidences'] ?? [];
 
 if (count($sections) < 8) {
     fwrite(STDERR, "Numero sezioni insufficiente\n");
+    exit(1);
+}
+
+if (count($evidences) < 1) {
+    fwrite(STDERR, "Evidenze relazione mancanti\n");
     exit(1);
 }
 
@@ -56,4 +62,6 @@ echo "ANNUAL REPORT OK: "
     .count($sections)
     ." sezioni, "
     .$wordCount
-    ." parole\n";
+    ." parole, "
+    .count($evidences)
+    ." evidenze\n";
