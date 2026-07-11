@@ -26,6 +26,16 @@ $evidencesByTheme = $report['evidences_by_theme'] ?? [];
 $sections = $report['sections'] ?? [];
 $explainability = $report['explainability'] ?? [];
 
+$meaningRuleIds =
+    $explainability['sections']['meaning_of_year']['rule_ids']
+    ?? [];
+
+$hasCompositeRuleId = in_array(
+    'RULE_COMPOSITE_SUN_JUPITER_SAME_HOUSE',
+    $meaningRuleIds,
+    true
+);
+
 $sectionsWithEvidences = 0;
 
 foreach ($sections as $section) {
@@ -55,6 +65,7 @@ $checks = [
     'theme_groups'  => count($evidencesByTheme),
     'section_links' => $sectionsWithEvidences,
     'explainability' => count($explainability['sections'] ?? []),
+    'rule_trace'     => $hasCompositeRuleId,
 ];
 
 foreach ($checks as $k=>$v) {
@@ -69,7 +80,8 @@ if (
     !$checks['composite'] ||
     $checks['theme_groups'] < 10 ||
     $checks['section_links'] < 8 ||
-    $checks['explainability'] < 8
+    $checks['explainability'] < 8 ||
+    !$checks['rule_trace']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
     exit(1);

@@ -49,6 +49,10 @@ final class EvidenceFormatter
                     ?? $evidence['theme']
                     ?? ''
                 ),
+                'rule_id' => (string)(
+                    $evidence['rule_id']
+                    ?? ''
+                ),
                 'text' => $textLabel,
                 'priority' => (int)(
                     $evidence['priority']
