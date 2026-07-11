@@ -43,16 +43,31 @@ final class EvidenceFormatter
                 );
             }
 
+            $code = (string)(
+                $evidence['code']
+                ?? $evidence['theme']
+                ?? ''
+            );
+
+            $ruleId = (string)(
+                $evidence['rule_id']
+                ?? ''
+            );
+
+            $evidenceId = 'EVIDENCE_'.strtoupper(substr(
+                hash('sha256', implode('|', [
+                    $code,
+                    $ruleId,
+                    strtolower($textLabel),
+                ])),
+                0,
+                16
+            ));
+
             $rows[] = [
-                'code' => (string)(
-                    $evidence['code']
-                    ?? $evidence['theme']
-                    ?? ''
-                ),
-                'rule_id' => (string)(
-                    $evidence['rule_id']
-                    ?? ''
-                ),
+                'evidence_id' => $evidenceId,
+                'code' => $code,
+                'rule_id' => $ruleId,
                 'text' => $textLabel,
                 'priority' => (int)(
                     $evidence['priority']
