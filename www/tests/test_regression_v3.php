@@ -40,11 +40,16 @@ $meaningEvidenceIds =
     $explainability['sections']['meaning_of_year']['evidence_ids']
     ?? [];
 
+$meaningConditionIds =
+    $explainability['sections']['meaning_of_year']['condition_ids']
+    ?? [];
+
 $meaningRuleIds =
     $explainability['sections']['meaning_of_year']['rule_ids']
     ?? [];
 
 $hasEvidenceIds = count($meaningEvidenceIds) >= 1;
+$hasConditionTrace = count($meaningConditionIds) >= 1;
 
 $hasCompositeRuleId = in_array(
     'RULE_COMPOSITE_SUN_JUPITER_SAME_HOUSE',
@@ -83,6 +88,7 @@ $checks = [
     'explainability' => count($explainability['sections'] ?? []),
     'rule_trace'     => $hasCompositeRuleId,
     'evidence_trace' => $hasEvidenceIds,
+    'condition_trace' => $hasConditionTrace,
     'conditions'     => count($planetConditions),
     'condition_ids'  => $hasConditionIds,
 ];
@@ -102,6 +108,7 @@ if (
     $checks['explainability'] < 8 ||
     !$checks['rule_trace'] ||
     !$checks['evidence_trace'] ||
+    !$checks['condition_trace'] ||
     $checks['conditions'] < 10 ||
     !$checks['condition_ids']
 ) {

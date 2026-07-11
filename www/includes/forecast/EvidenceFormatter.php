@@ -66,6 +66,10 @@ final class EvidenceFormatter
 
             $rows[] = [
                 'evidence_id' => $evidenceId,
+                'condition_id' => (string)(
+                    $evidence['condition_id']
+                    ?? ''
+                ),
                 'code' => $code,
                 'rule_id' => $ruleId,
                 'text' => $textLabel,

@@ -168,6 +168,13 @@ final class ForecastEngineV3
                         $section['evidences'] ?? []
                     )
                 ))),
+                'condition_ids' => array_values(array_unique(array_filter(
+                    array_map(
+                        static fn(array $evidence): string =>
+                            (string)($evidence['condition_id'] ?? ''),
+                        $section['evidences'] ?? []
+                    )
+                ))),
             ];
         }
 

@@ -71,6 +71,10 @@ final class AdvancedThemeAggregator
                 $value = (float)$weight * $strength;
 
                 $evidences[] = [
+                    'condition_id' => (string)(
+                        $planetConditions[$p]['condition_id']
+                        ?? ''
+                    ),
                     'planet'   => $p,
                     'house'    => $house,
                     'theme'    => $theme,
