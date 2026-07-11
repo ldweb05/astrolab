@@ -78,6 +78,29 @@ final class ForecastEngineV3
 
         $annualReport['evidences'] = $formattedEvidence;
 
+        $evidencesByTheme = [];
+
+        foreach ($formattedEvidence as $evidence) {
+            $theme = (string)($evidence['code'] ?? '');
+
+            if ($theme === '' || str_starts_with($theme, 'COMPOSITE_')) {
+                continue;
+            }
+
+            $evidencesByTheme[$theme][] = $evidence;
+        }
+
+        foreach ($formattedEvidence as $evidence) {
+            if (
+                ($evidence['code'] ?? '') ===
+                'COMPOSITE_SUN_JUPITER_SAME_HOUSE'
+            ) {
+                $evidencesByTheme['carriera'][] = $evidence;
+            }
+        }
+
+        $annualReport['evidences_by_theme'] = $evidencesByTheme;
+
         $annualReport['sections'] = $this->style->refine(
             $annualReport['sections'] ?? []
         );
