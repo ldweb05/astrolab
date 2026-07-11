@@ -147,6 +147,13 @@ final class ForecastEngineV3
 
             $sectionTraceability[$sectionId] = [
                 'evidence_count' => count($section['evidences'] ?? []),
+                'evidence_ids' => array_values(array_unique(array_filter(
+                    array_map(
+                        static fn(array $evidence): string =>
+                            (string)($evidence['evidence_id'] ?? ''),
+                        $section['evidences'] ?? []
+                    )
+                ))),
                 'evidence_codes' => array_values(array_unique(
                     array_map(
                         static fn(array $evidence): string =>
