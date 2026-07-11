@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/AARules.php';
+require_once __DIR__.'/EvidenceEngine.php';
 
 /**
  * Active Astrology Rule Engine
@@ -14,12 +15,40 @@ final class AARuleEngine
 {
     public function evaluate(array $temaRS): array
     {
+        $engine = new EvidenceEngine();
+
+        /*
+         * RULE-0001
+         * Giove in X Casa
+         */
+        foreach ($temaRS['planets'] ?? [] as $planet) {
+
+            $name  = strtoupper((string)($planet['name'] ?? ''));
+            $house = (int)($planet['house'] ?? 0);
+
+            if ($name === 'JUPITER' && $house === 10) {
+
+                $engine->add(
+                    self::evidence(
+                        'RULE-0001',
+                        'career',
+                        90,
+                        80,
+                        [
+                            'planet' => 'JUPITER',
+                            'house'  => 10,
+                        ]
+                    )
+                );
+            }
+        }
+
         return [
             'events' => [],
             'priorities' => [],
             'planet_conditions' => [],
             'theme_modifiers' => [],
-            'evidences' => [],
+            'evidences' => $engine->all(),
         ];
     }
 
