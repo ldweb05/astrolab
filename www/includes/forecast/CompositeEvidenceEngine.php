@@ -30,6 +30,7 @@ final class CompositeEvidenceEngine
                     'strength' => 1.0,
                     'value' => 120.0,
                     'source' => 'composite',
+                    'rule_id' => 'RULE_COMPOSITE_SUN_JUPITER_SAME_HOUSE',
                     'priority' => 120,
                     'data' => [
                         'planets' => ['sole', 'giove'],
