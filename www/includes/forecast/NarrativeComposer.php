@@ -443,8 +443,8 @@ final class NarrativeComposer
 
         foreach (($forecast['context']['aspects'] ?? []) as $aspect) {
 
-            $p1 = strtolower($aspect['planet1'] ?? '');
-            $p2 = strtolower($aspect['planet2'] ?? '');
+            $p1 = strtolower((string)($aspect['planet1'] ?? ''));
+            $p2 = strtolower((string)($aspect['planet2'] ?? ''));
 
             if (
                 in_array($p1, $planets, true) ||
