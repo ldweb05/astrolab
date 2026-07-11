@@ -144,6 +144,7 @@ echo json_encode([
     'tema_rs'    => $temaRS,
     'valutazione'=> $val,
     'previsione_annuale' => $previsioneAnnuale,
+    'relazione_annuale' => $previsioneAnnuale['relazione_annuale'] ?? [],
     'aspetti'    => $aspetti,
     'escluso_filtro' => $motiviEsclusioneRS,
 ]);
