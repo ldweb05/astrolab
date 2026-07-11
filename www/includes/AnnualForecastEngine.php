@@ -31,6 +31,9 @@ final class AnnualForecastEngine
         $forecast['introduzione'] =
             $this->introduzione($valutazione);
 
+        $forecast['relazione_annuale'] =
+            $forecast['annual_report'] ?? [];
+
         return $forecast;
     }
 

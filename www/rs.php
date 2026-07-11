@@ -160,7 +160,7 @@ if ($soggetto) {
        <div style="width:100%;display:flex;gap:10px;align-items:center;padding-top:2px;flex-wrap:wrap;">
             <button class="btn-primary" onclick="calcolaRS()">↺ Calcola RS</button>
             <button class="btn-mappa" id="btn-apri-mappa" onclick="toggleMappa()" style="display:none">🌍 Mappa</button>
-            <button class="btn-mappa" id="btn-previsione-annuale" onclick="togglePrevisioneAnnuale()" style="display:none">📖 Previsione Annuale</button>
+            <button class="btn-mappa" id="btn-previsione-annuale" onclick="togglePrevisioneAnnuale()" style="display:none">📖 Relazione Annuale</button>
         </div>
     </div>
  
@@ -225,12 +225,12 @@ if ($soggetto) {
                     resize:both;
                     overflow:auto;">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid #d9cdb8;background:#f4ead8;border-radius:12px 12px 0 0;position:sticky;top:0;z-index:2;">
-                <div class="val-stringa">📖 Previsione Annuale</div>
+                <div class="val-stringa">📖 Relazione Annuale</div>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <button type="button"
                             onclick="stampaPrevisioneAnnuale()"
-                            title="Stampa Previsione Annuale"
-                            aria-label="Stampa Previsione Annuale"
+                            title="Stampa Relazione Annuale"
+                            aria-label="Stampa Relazione Annuale"
                             style="border:0;background:transparent;font-size:21px;cursor:pointer;line-height:1;">🖨️</button>
                     <button type="button"
                             onclick="togglePrevisioneAnnuale()"
@@ -403,6 +403,41 @@ if ($soggetto) {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/svg_zoom.js"></script> 
+<style>
+#previsione-annuale-contenuto {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+#previsione-annuale-contenuto h3 {
+    color: #244a78;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 21px;
+    line-height: 1.3;
+    margin: 30px 0 12px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #d9cdb8;
+}
+
+#previsione-annuale-contenuto h3:first-of-type {
+    margin-top: 18px;
+}
+
+#previsione-annuale-contenuto p {
+    margin: 0 0 18px;
+    text-align: justify;
+}
+
+#previsione-annuale-contenuto .report-methodological-note {
+    background: #f4ead8;
+    border-left: 4px solid #244a78;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-style: italic;
+    text-align: left;
+}
+</style>
+
 <script src="js/app.js"></script>
 <script src="js/rs_alert.js"></script>
 <script>
@@ -428,20 +463,38 @@ function renderPrevisioneAnnuale(previsione) {
 
     let html = '';
 
-    if (previsione.introduzione) {
-        html += '<p>' + escapeHtml(previsione.introduzione) + '</p>';
+    if (previsione.methodological_note) {
+        html += '<p class="report-methodological-note">'
+            + escapeHtml(previsione.methodological_note)
+            + '</p>';
     }
 
-    for (const paragrafo of (previsione.paragrafi || [])) {
-        html += '<p>' + escapeHtml(paragrafo.testo);
+    if (Array.isArray(previsione.sections)) {
+        for (const sezione of previsione.sections) {
+            if (sezione.title) {
+                html += '<h3>' + escapeHtml(sezione.title) + '</h3>';
+            }
 
-        if (Array.isArray(paragrafo.fonti) && paragrafo.fonti.length) {
-            html += ' <strong>('
-                + paragrafo.fonti.map(escapeHtml).join('; ')
-                + ')</strong>';
+            if (sezione.text) {
+                html += '<p>' + escapeHtml(sezione.text) + '</p>';
+            }
+        }
+    } else {
+        if (previsione.introduzione) {
+            html += '<p>' + escapeHtml(previsione.introduzione) + '</p>';
         }
 
-        html += '</p>';
+        for (const paragrafo of (previsione.paragrafi || [])) {
+            html += '<p>' + escapeHtml(paragrafo.testo || '');
+
+            if (Array.isArray(paragrafo.fonti) && paragrafo.fonti.length) {
+                html += ' <strong>('
+                    + paragrafo.fonti.map(escapeHtml).join('; ')
+                    + ')</strong>';
+            }
+
+            html += '</p>';
+        }
     }
 
     contenuto.innerHTML = html || '<p>Nessuna previsione disponibile.</p>';
@@ -470,7 +523,7 @@ function stampaPrevisioneAnnuale() {
 <html lang="it">
 <head>
     <meta charset="utf-8">
-    <title>Previsione Annuale</title>
+    <title>Relazione Annuale</title>
     <style>
         body {
             font-family: Georgia, "Times New Roman", serif;
@@ -495,13 +548,30 @@ function stampaPrevisioneAnnuale() {
             color: #244a78;
         }
 
+        h3 {
+            color: #244a78;
+            font-size: 18px;
+            margin: 26px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #d9cdb8;
+            page-break-after: avoid;
+        }
+
+        .report-methodological-note {
+            background: #f4ead8;
+            border-left: 4px solid #244a78;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-style: italic;
+        }
+
         @page {
             margin: 18mm;
         }
     </style>
 </head>
 <body>
-    <h1>Previsione Annuale</h1>
+    <h1>Relazione Annuale</h1>
     ${contenuto.innerHTML}
 </body>
 </html>`);
@@ -667,7 +737,7 @@ function ricalcolaTuttoConNuovaOra() {
             let v = data.valutazione;
 
             ultimaDatiRS = data;
-            ultimaPrevisioneAnnuale = data.previsione_annuale || null;
+            ultimaPrevisioneAnnuale = data.relazione_annuale || data.previsione_annuale || null;
 
             const btnPrevisione = document.getElementById('btn-previsione-annuale');
             const pannelloPrevisione = document.getElementById('previsione-annuale');
@@ -868,7 +938,7 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
             let v = data.valutazione;
 
             ultimaDatiRS = data;
-            ultimaPrevisioneAnnuale = data.previsione_annuale || null;
+            ultimaPrevisioneAnnuale = data.relazione_annuale || data.previsione_annuale || null;
 
             const btnPrevisione = document.getElementById('btn-previsione-annuale');
             const pannelloPrevisione = document.getElementById('previsione-annuale');
