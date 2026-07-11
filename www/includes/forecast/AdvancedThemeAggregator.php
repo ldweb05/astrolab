@@ -6,6 +6,7 @@ require_once __DIR__.'/ThemeMap.php';
 require_once __DIR__.'/AdvancedContextEngine.php';
 require_once __DIR__.'/AspectScoreEngine.php';
 require_once __DIR__.'/PlanetResolver.php';
+require_once __DIR__.'/CompositeEvidenceEngine.php';
 require_once __DIR__.'/ContributionNormalizer.php';
 require_once __DIR__.'/EvidenceBuilder.php';
 
@@ -14,6 +15,7 @@ final class AdvancedThemeAggregator
     private array $atlas;
     private AdvancedContextEngine $context;
     private AspectScoreEngine $aspectScore;
+    private CompositeEvidenceEngine $compositeEvidence;
     private ContributionNormalizer $normalizer;
     private EvidenceBuilder $builder;
 
@@ -22,6 +24,7 @@ final class AdvancedThemeAggregator
         $this->atlas = AtlasLoader::load();
         $this->context = new AdvancedContextEngine();
         $this->aspectScore = new AspectScoreEngine();
+        $this->compositeEvidence = new CompositeEvidenceEngine();
         $this->normalizer = new ContributionNormalizer();
         $this->builder = new EvidenceBuilder();
     }
@@ -94,6 +97,10 @@ final class AdvancedThemeAggregator
         );
 
         arsort($scores);
+
+        $evidences = $this->compositeEvidence->build(
+            $evidences ?? []
+        );
 
         return [
             'scores'                   => $scores,
