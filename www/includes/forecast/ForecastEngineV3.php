@@ -101,6 +101,41 @@ final class ForecastEngineV3
 
         $annualReport['evidences_by_theme'] = $evidencesByTheme;
 
+        foreach ($annualReport['sections'] as &$section) {
+            $sectionId = (string)($section['id'] ?? '');
+            $sectionThemes = [];
+
+            if (str_starts_with($sectionId, 'theme_')) {
+                $sectionThemes[] = substr($sectionId, 6);
+            } elseif (
+                $sectionId === 'meaning_of_year'
+                || $sectionId === 'conclusion'
+            ) {
+                $sectionThemes[] = (string)($summary['dominant_theme'] ?? '');
+            } elseif ($sectionId === 'cross_dynamics') {
+                $sectionThemes = $summary['primary_themes'] ?? [];
+            } elseif ($sectionId === 'opportunities') {
+                $sectionThemes = $summary['support_themes'] ?? [];
+            } elseif ($sectionId === 'attention') {
+                $sectionThemes = $summary['attention_themes'] ?? [];
+            }
+
+            $sectionEvidences = [];
+
+            foreach ($sectionThemes as $theme) {
+                foreach ($evidencesByTheme[(string)$theme] ?? [] as $evidence) {
+                    $key = (string)($evidence['code'] ?? '')
+                        .'|'
+                        .(string)($evidence['text'] ?? '');
+
+                    $sectionEvidences[$key] = $evidence;
+                }
+            }
+
+            $section['evidences'] = array_values($sectionEvidences);
+        }
+        unset($section);
+
         $annualReport['sections'] = $this->style->refine(
             $annualReport['sections'] ?? []
         );
