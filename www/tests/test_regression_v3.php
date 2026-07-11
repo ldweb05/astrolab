@@ -22,6 +22,16 @@ $data = (new AnnualForecastEngine())->genera($tema);
 
 $report = $data['relazione_annuale'] ?? [];
 $formattedEvidences = $data['formatted_evidences'] ?? [];
+$planetConditions = $data['planet_conditions'] ?? [];
+
+$hasConditionIds = true;
+
+foreach ($planetConditions as $condition) {
+    if (empty($condition['condition_id'])) {
+        $hasConditionIds = false;
+        break;
+    }
+}
 $evidencesByTheme = $report['evidences_by_theme'] ?? [];
 $sections = $report['sections'] ?? [];
 $explainability = $report['explainability'] ?? [];
@@ -73,6 +83,8 @@ $checks = [
     'explainability' => count($explainability['sections'] ?? []),
     'rule_trace'     => $hasCompositeRuleId,
     'evidence_trace' => $hasEvidenceIds,
+    'conditions'     => count($planetConditions),
+    'condition_ids'  => $hasConditionIds,
 ];
 
 foreach ($checks as $k=>$v) {
@@ -89,7 +101,9 @@ if (
     $checks['section_links'] < 8 ||
     $checks['explainability'] < 8 ||
     !$checks['rule_trace'] ||
-    !$checks['evidence_trace']
+    !$checks['evidence_trace'] ||
+    $checks['conditions'] < 10 ||
+    !$checks['condition_ids']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
     exit(1);
