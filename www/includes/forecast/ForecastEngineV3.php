@@ -224,6 +224,8 @@ final class ForecastEngineV3
                 ]
             ),
 
+            'planet_conditions' => $result['planet_conditions'] ?? [],
+
             // Contratto interno V3.1 / V4 incrementale
             'contributions'            => $result['contributions'] ?? [],
             'normalized_contributions' => $result['normalized_contributions'] ?? [],
