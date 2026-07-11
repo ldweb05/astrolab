@@ -136,6 +136,33 @@ final class ForecastEngineV3
         }
         unset($section);
 
+        $sectionTraceability = [];
+
+        foreach ($annualReport['sections'] as $section) {
+            $sectionId = (string)($section['id'] ?? '');
+
+            if ($sectionId === '') {
+                continue;
+            }
+
+            $sectionTraceability[$sectionId] = [
+                'evidence_count' => count($section['evidences'] ?? []),
+                'evidence_codes' => array_values(array_unique(
+                    array_map(
+                        static fn(array $evidence): string =>
+                            (string)($evidence['code'] ?? ''),
+                        $section['evidences'] ?? []
+                    )
+                )),
+            ];
+        }
+
+        $annualReport['explainability'] = [
+            'total_evidences' => count($formattedEvidence),
+            'themes_with_evidences' => count($evidencesByTheme),
+            'sections' => $sectionTraceability,
+        ];
+
         $annualReport['sections'] = $this->style->refine(
             $annualReport['sections'] ?? []
         );

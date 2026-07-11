@@ -24,6 +24,7 @@ $report = $data['relazione_annuale'] ?? [];
 $formattedEvidences = $data['formatted_evidences'] ?? [];
 $evidencesByTheme = $report['evidences_by_theme'] ?? [];
 $sections = $report['sections'] ?? [];
+$explainability = $report['explainability'] ?? [];
 
 $sectionsWithEvidences = 0;
 
@@ -53,6 +54,7 @@ $checks = [
     'composite'     => $hasSunJupiterComposite,
     'theme_groups'  => count($evidencesByTheme),
     'section_links' => $sectionsWithEvidences,
+    'explainability' => count($explainability['sections'] ?? []),
 ];
 
 foreach ($checks as $k=>$v) {
@@ -66,7 +68,8 @@ if (
     !$checks['valid'] ||
     !$checks['composite'] ||
     $checks['theme_groups'] < 10 ||
-    $checks['section_links'] < 8
+    $checks['section_links'] < 8 ||
+    $checks['explainability'] < 8
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
     exit(1);
