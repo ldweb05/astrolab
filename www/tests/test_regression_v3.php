@@ -21,12 +21,26 @@ $tema = [
 $data = (new AnnualForecastEngine())->genera($tema);
 
 $report = $data['relazione_annuale'] ?? [];
+$formattedEvidences = $data['formatted_evidences'] ?? [];
+
+$hasSunJupiterComposite = false;
+
+foreach ($formattedEvidences as $evidence) {
+    if (
+        ($evidence['code'] ?? '') ===
+        'COMPOSITE_SUN_JUPITER_SAME_HOUSE'
+    ) {
+        $hasSunJupiterComposite = true;
+        break;
+    }
+}
 
 $checks = [
     'sections'      => count($report['sections'] ?? []),
     'word_count'    => (int)($report['word_count'] ?? 0),
     'evidences'     => count($report['evidences'] ?? []),
     'valid'         => (bool)($data['report_validation']['valid'] ?? false),
+    'composite'     => $hasSunJupiterComposite,
 ];
 
 foreach ($checks as $k=>$v) {
@@ -37,7 +51,8 @@ if (
     $checks['sections'] < 10 ||
     $checks['word_count'] < 900 ||
     $checks['evidences'] < 10 ||
-    !$checks['valid']
+    !$checks['valid'] ||
+    !$checks['composite']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
     exit(1);

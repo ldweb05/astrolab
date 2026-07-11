@@ -25,17 +25,31 @@ final class EvidenceFormatter
                 continue;
             }
 
+            $planets = $evidence['data']['planets'] ?? [];
+
+            if (is_array($planets) && $planets !== []) {
+                $labels = array_map(
+                    static fn(string $name): string =>
+                        ucfirst(strtolower($name)),
+                    array_map('strval', $planets)
+                );
+
+                $textLabel = implode(' e ', $labels).' in Casa '.$house;
+            } else {
+                $textLabel = sprintf(
+                    '%s in Casa %d',
+                    ucfirst(strtolower($planet)),
+                    $house
+                );
+            }
+
             $rows[] = [
                 'code' => (string)(
                     $evidence['code']
                     ?? $evidence['theme']
                     ?? ''
                 ),
-                'text' => sprintf(
-                    '%s in Casa %d',
-                    ucfirst(strtolower($planet)),
-                    $house
-                ),
+                'text' => $textLabel,
                 'priority' => (int)(
                     $evidence['priority']
                     ?? $evidence['value']
