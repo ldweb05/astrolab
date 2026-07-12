@@ -3,33 +3,42 @@ declare(strict_types=1);
 
 final class Rule0001_Jupiter10
 {
-    public function apply(array $temaRS, EvidenceEngine $engine): void
-    {
-        foreach ($temaRS['planets'] ?? [] as $planet) {
+    public function apply(
+        array $planetConditions,
+        EvidenceEngine $engine
+    ): void {
+        $condition = $planetConditions['giove'] ?? null;
 
-            $name  = strtoupper((string)($planet['name'] ?? ''));
-            $house = (int)($planet['house'] ?? 0);
-
-            if ($name !== 'JUPITER') {
-                continue;
-            }
-
-            if ($house !== 10) {
-                continue;
-            }
-
-            $engine->add(
-                AARuleEngine::evidence(
-                    'RULE-0001',
-                    'career',
-                    90,
-                    80,
-                    [
-                        'planet' => 'JUPITER',
-                        'house'  => 10,
-                    ]
-                )
-            );
+        if (!is_array($condition)) {
+            return;
         }
+
+        if ((int)($condition['house'] ?? 0) !== 10) {
+            return;
+        }
+
+        $conditionId = (string)(
+            $condition['condition_id']
+            ?? ''
+        );
+
+        $strength = (float)(
+            $condition['strength']
+            ?? 1.0
+        );
+
+        $engine->add(
+            AARuleEngine::evidence(
+                'RULE-0001',
+                'carriera',
+                90,
+                80 * $strength,
+                [
+                    'planet' => 'giove',
+                    'house' => 10,
+                    'condition_id' => $conditionId,
+                ]
+            )
+        );
     }
 }

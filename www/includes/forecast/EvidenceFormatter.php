@@ -46,7 +46,14 @@ final class EvidenceFormatter
             $code = (string)(
                 $evidence['code']
                 ?? $evidence['theme']
+                ?? $evidence['category']
                 ?? ''
+            );
+
+            $theme = (string)(
+                $evidence['theme']
+                ?? $evidence['category']
+                ?? $code
             );
 
             $ruleId = (string)(
@@ -75,6 +82,7 @@ final class EvidenceFormatter
                 'condition_id' => $conditionIds[0] ?? '',
                 'condition_ids' => $conditionIds,
                 'code' => $code,
+                'theme' => $theme,
                 'rule_id' => $ruleId,
                 'text' => $textLabel,
                 'priority' => (int)(
