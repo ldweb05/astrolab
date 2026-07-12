@@ -204,3 +204,14 @@ La Rule deve:
 - Full Regression: OK.
 - Commit: feat(rule): implement RULE-0012 Sun House 2.
 - Prossimo passo: RULE-0013, Sole in Casa III.\n
+
+### 2026-07-12 — Direttiva operativa permanente
+
+- Congelata definitivamente l'architettura attuale.
+- Vietate nuove versioni, riprogettazioni e refactoring non necessari.
+- Obiettivo esclusivo: completare il progetto con i contratti esistenti.
+- Aggiornati tutti i documenti operativi e normativi.
+- Reso obbligatorio registrare ogni passaggio in HANDOVER_OPERATIVO.md.
+- Test richiesti: nessuno, modifica esclusivamente documentale.
+- Commit: docs: enforce frozen architecture and mandatory handover.
+- Prossimo passo: RULE-0013, Sole in Casa III.
