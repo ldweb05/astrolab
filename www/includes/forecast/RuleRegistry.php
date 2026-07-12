@@ -10,6 +10,7 @@ require_once __DIR__.'/rules/Rule0006_Moon4.php';
 require_once __DIR__.'/rules/Rule0007_Uranus11.php';
 require_once __DIR__.'/rules/Rule0008_Neptune9.php';
 require_once __DIR__.'/rules/Rule0009_Pluto8.php';
+require_once __DIR__.'/rules/Rule0010_Sun10.php';
 
 /**
  * Registro centrale delle regole astrologiche.
@@ -31,6 +32,7 @@ final class RuleRegistry
             new Rule0007_Uranus11(),
             new Rule0008_Neptune9(),
             new Rule0009_Pluto8(),
+            new Rule0010_Sun10(),
         ];
     }
 }

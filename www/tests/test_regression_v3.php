@@ -49,6 +49,7 @@ $hasRule0006InFamiglia = false;
 $hasRule0007InAmicizie = false;
 $hasRule0008InSpiritualita = false;
 $hasRule0009InTrasformazione = false;
+$hasRule0010InCarriera = false;
 
 foreach ($careerEvidences as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0001') {
@@ -129,6 +130,13 @@ foreach (($evidencesByTheme['spiritualita'] ?? []) as $evidence) {
 foreach (($evidencesByTheme['trasformazione'] ?? []) as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0009') {
         $hasRule0009InTrasformazione = true;
+        break;
+    }
+}
+
+foreach (($evidencesByTheme['carriera'] ?? []) as $evidence) {
+    if (($evidence['rule_id'] ?? '') === 'RULE-0010') {
+        $hasRule0010InCarriera = true;
         break;
     }
 }
@@ -216,6 +224,7 @@ $checks = [
     'rule_0007_amicizie' => $hasRule0007InAmicizie,
     'rule_0008_spiritualita' => $hasRule0008InSpiritualita,
     'rule_0009_trasformazione' => $hasRule0009InTrasformazione,
+    'rule_0010_carriera' => $hasRule0010InCarriera,
     'composite_theme_link' => $hasCompositeInCareer,
 ];
 
@@ -249,6 +258,7 @@ if (
     !$checks['rule_0007_amicizie'] ||
     !$checks['rule_0008_spiritualita'] ||
     !$checks['rule_0009_trasformazione'] ||
+    !$checks['rule_0010_carriera'] ||
     !$checks['composite_theme_link']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
