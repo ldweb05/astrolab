@@ -39,6 +39,7 @@ $careerEvidences = $evidencesByTheme['carriera'] ?? [];
 
 $hasRule0001InCareer = false;
 $hasCompositeInCareer = false;
+$hasRule0002InProve = false;
 
 foreach ($careerEvidences as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0001') {
@@ -50,6 +51,13 @@ foreach ($careerEvidences as $evidence) {
         'COMPOSITE_SUN_JUPITER_SAME_HOUSE'
     ) {
         $hasCompositeInCareer = true;
+    }
+}
+
+foreach (($evidencesByTheme['prove'] ?? []) as $evidence) {
+    if (($evidence['rule_id'] ?? '') === 'RULE-0002') {
+        $hasRule0002InProve = true;
+        break;
     }
 }
 $explainability = $report['explainability'] ?? [];
@@ -126,6 +134,7 @@ $checks = [
     'conditions'     => count($planetConditions),
     'condition_ids'  => $hasConditionIds,
     'rule_theme_link' => $hasRule0001InCareer,
+    'rule_0002_link' => $hasRule0002InProve,
     'composite_theme_link' => $hasCompositeInCareer,
 ];
 
@@ -149,6 +158,7 @@ if (
     $checks['conditions'] < 10 ||
     !$checks['condition_ids'] ||
     !$checks['rule_theme_link'] ||
+    !$checks['rule_0002_link'] ||
     !$checks['composite_theme_link']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
