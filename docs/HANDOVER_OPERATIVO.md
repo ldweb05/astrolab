@@ -1,3 +1,24 @@
+
+
+# Regola permanente
+
+Da questo punto in avanti ogni attività eseguita sul progetto deve essere
+registrata cronologicamente in questo documento.
+
+Ogni voce deve riportare almeno:
+
+- data;
+- componente modificato;
+- obiettivo;
+- risultato;
+- test eseguiti;
+- commit Git;
+- passo successivo.
+
+Questo documento costituisce il punto di ripartenza ufficiale per ogni
+futuro sviluppatore.
+
+
 # Astro-Val — Handover operativo
 
 Ultimo aggiornamento: 2026-07-12
