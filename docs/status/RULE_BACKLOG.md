@@ -4,7 +4,6 @@ Generato automaticamente.
 
 ## Sole
 - RULE-0012 → sole in Casa 2
-- RULE-0013 → sole in Casa 3
 - RULE-0014 → sole in Casa 4
 - RULE-0015 → sole in Casa 5
 - RULE-0016 → sole in Casa 6

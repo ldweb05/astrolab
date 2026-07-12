@@ -215,3 +215,16 @@ La Rule deve:
 - Test richiesti: nessuno, modifica esclusivamente documentale.
 - Commit: docs: enforce frozen architecture and mandatory handover.
 - Prossimo passo: RULE-0013, Sole in Casa III.
+
+### 2026-07-12 — RULE-0013
+
+- Obiettivo: implementare Sole in Casa III.
+- Creato: www/includes/forecast/rules/Rule0013_Sun3.php.
+- Creato: www/tests/test_rule_0013.php.
+- Evidenze: comunicazione, studio.
+- condition_id propagata correttamente.
+- RuleRegistry: 13 Rule registrate.
+- Test dedicato: OK.
+- Full Regression: OK.
+- Commit: feat(rule): implement RULE-0013 Sun House 3.
+- Prossimo passo: RULE-0014, Sole in Casa IV.
