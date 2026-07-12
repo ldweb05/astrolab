@@ -46,6 +46,7 @@ $hasRule0004InCreativita = false;
 $hasRule0005InStudio = false;
 $hasRule0006InCasa = false;
 $hasRule0006InFamiglia = false;
+$hasRule0007InAmicizie = false;
 
 foreach ($careerEvidences as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0001') {
@@ -105,6 +106,13 @@ foreach (($evidencesByTheme['casa'] ?? []) as $evidence) {
 foreach (($evidencesByTheme['famiglia'] ?? []) as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0006') {
         $hasRule0006InFamiglia = true;
+        break;
+    }
+}
+
+foreach (($evidencesByTheme['amicizie'] ?? []) as $evidence) {
+    if (($evidence['rule_id'] ?? '') === 'RULE-0007') {
+        $hasRule0007InAmicizie = true;
         break;
     }
 }
@@ -189,6 +197,7 @@ $checks = [
     'rule_0005_studio' => $hasRule0005InStudio,
     'rule_0006_casa' => $hasRule0006InCasa,
     'rule_0006_famiglia' => $hasRule0006InFamiglia,
+    'rule_0007_amicizie' => $hasRule0007InAmicizie,
     'composite_theme_link' => $hasCompositeInCareer,
 ];
 
@@ -219,6 +228,7 @@ if (
     !$checks['rule_0005_studio'] ||
     !$checks['rule_0006_casa'] ||
     !$checks['rule_0006_famiglia'] ||
+    !$checks['rule_0007_amicizie'] ||
     !$checks['composite_theme_link']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
