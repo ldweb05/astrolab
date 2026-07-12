@@ -40,6 +40,7 @@ $careerEvidences = $evidencesByTheme['carriera'] ?? [];
 $hasRule0001InCareer = false;
 $hasCompositeInCareer = false;
 $hasRule0002InProve = false;
+$hasRule0003InSalute = false;
 
 foreach ($careerEvidences as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0001') {
@@ -57,6 +58,13 @@ foreach ($careerEvidences as $evidence) {
 foreach (($evidencesByTheme['prove'] ?? []) as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0002') {
         $hasRule0002InProve = true;
+        break;
+    }
+}
+
+foreach (($evidencesByTheme['salute'] ?? []) as $evidence) {
+    if (($evidence['rule_id'] ?? '') === 'RULE-0003') {
+        $hasRule0003InSalute = true;
         break;
     }
 }
@@ -135,6 +143,7 @@ $checks = [
     'condition_ids'  => $hasConditionIds,
     'rule_theme_link' => $hasRule0001InCareer,
     'rule_0002_link' => $hasRule0002InProve,
+    'rule_0003_link' => $hasRule0003InSalute,
     'composite_theme_link' => $hasCompositeInCareer,
 ];
 
@@ -159,6 +168,7 @@ if (
     !$checks['condition_ids'] ||
     !$checks['rule_theme_link'] ||
     !$checks['rule_0002_link'] ||
+    !$checks['rule_0003_link'] ||
     !$checks['composite_theme_link']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");

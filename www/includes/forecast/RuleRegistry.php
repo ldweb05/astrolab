@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__.'/rules/Rule0001_Jupiter10.php';
 require_once __DIR__.'/rules/Rule0002_Saturn12.php';
+require_once __DIR__.'/rules/Rule0003_Mars6.php';
 
 /**
  * Registro centrale delle regole astrologiche.
@@ -17,6 +18,7 @@ final class RuleRegistry
         return [
             new Rule0001_Jupiter10(),
             new Rule0002_Saturn12(),
+            new Rule0003_Mars6(),
         ];
     }
 }
