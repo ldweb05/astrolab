@@ -39,6 +39,17 @@ final class ThemeProfileBuilder
                     2
                 ),
                 'polarity'   => (string)($polarity['polarity'] ?? 'mixed'),
+                'protection' => round((float)($polarity['positive'] ?? 0),2),
+                'exposure'   => round((float)($polarity['critical'] ?? 0),2),
+                'confidence' => round(
+                    min(
+                        100,
+                        count($normalizedContributions[$theme] ?? []) * 20
+                    ),
+                    2
+                ),
+                'summary'    => '',
+                'metadata'   => [],
                 'sources'    => $normalizedContributions[$theme] ?? [],
             ];
         }
