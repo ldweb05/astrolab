@@ -5,7 +5,6 @@ Generato automaticamente.
 ## Sole
 - RULE-0012 → sole in Casa 2
 ## Luna
-- RULE-0022 → luna in Casa 1
 - RULE-0023 → luna in Casa 2
 - RULE-0024 → luna in Casa 3
 - RULE-0025 → luna in Casa 5
