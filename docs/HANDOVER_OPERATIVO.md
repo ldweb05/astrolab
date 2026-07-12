@@ -117,7 +117,7 @@ SweCalc
 Il Rule Generator è un prototipo incompleto.
 
 Non svilupparlo ulteriormente durante la fase di completamento.
-Le Rule possono essere create direttamente seguendo le classi esistenti.
+Le Rule possono essere creato direttamente seguendo le classi esistenti.
 
 ## Prossimi passi obbligatori
 
@@ -320,3 +320,16 @@ La Rule deve:
 - Full Regression: OK.
 - Commit: feat(rule): implement RULE-0021 Sun House 12.
 - Prossimo passo: RULE-0022, Luna in Casa I.
+
+### 2026-07-12 — RULE-0022
+
+- Obiettivo: implementare Luna in Casa I.
+- Creato: www/includes/forecast/rules/Rule0022_Moon1.php.
+- Creato: www/tests/test_rule_0022.php.
+- Evidenze: emotivita, identita, salute.
+- condition_id propagata correttamente.
+- RuleRegistry: 22 Rule registrate.
+- Test dedicato: OK.
+- Full Regression: OK.
+- Commit: feat(rule): implement RULE-0022 Moon House 1.
+- Prossimo passo: RULE-0023, Luna in Casa II.
