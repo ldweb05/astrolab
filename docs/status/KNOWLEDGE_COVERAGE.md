@@ -2,9 +2,9 @@
 
 Version: V4.1
 
-Implemented rules: 20
+Implemented rules: 21
 Atlas configurations: 120
-Coverage: 20/120 (16.7%)
+Coverage: 21/120 (17.5%)
 
 ## Progress
 
@@ -25,7 +25,7 @@ Coverage: 20/120 (16.7%)
 - Casa  9: ✔
 - Casa 10: ✔
 - Casa 11: ✔
-- Casa 12: ·
+- Casa 12: ✔
 
 ## Luna
 - Casa  1: ·
