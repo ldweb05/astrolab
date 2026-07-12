@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 final class CompositeEvidenceEngine
 {
-    public function build(array $evidences): array
-    {
+    public function build(
+        array $evidences,
+        array $planetConditions = []
+    ): array {
         $result = $evidences;
         $byHouse = [];
 
@@ -32,6 +34,10 @@ final class CompositeEvidenceEngine
                     'source' => 'composite',
                     'rule_id' => 'RULE_COMPOSITE_SUN_JUPITER_SAME_HOUSE',
                     'priority' => 120,
+                    'condition_ids' => array_values(array_filter([
+                        $planetConditions['sole']['condition_id'] ?? '',
+                        $planetConditions['giove']['condition_id'] ?? '',
+                    ])),
                     'data' => [
                         'planets' => ['sole', 'giove'],
                         'house' => (int)$house,

@@ -57,6 +57,21 @@ $hasCompositeRuleId = in_array(
     true
 );
 
+$compositeConditionIds = [];
+
+foreach ($formattedEvidences as $evidence) {
+    if (
+        ($evidence['code'] ?? '') ===
+        'COMPOSITE_SUN_JUPITER_SAME_HOUSE'
+    ) {
+        $compositeConditionIds = $evidence['condition_ids'] ?? [];
+        break;
+    }
+}
+
+$hasCompositeConditionTrace =
+    count(array_unique($compositeConditionIds)) === 2;
+
 $sectionsWithEvidences = 0;
 
 foreach ($sections as $section) {
@@ -89,6 +104,7 @@ $checks = [
     'rule_trace'     => $hasCompositeRuleId,
     'evidence_trace' => $hasEvidenceIds,
     'condition_trace' => $hasConditionTrace,
+    'composite_conditions' => $hasCompositeConditionTrace,
     'conditions'     => count($planetConditions),
     'condition_ids'  => $hasConditionIds,
 ];
@@ -109,6 +125,7 @@ if (
     !$checks['rule_trace'] ||
     !$checks['evidence_trace'] ||
     !$checks['condition_trace'] ||
+    !$checks['composite_conditions'] ||
     $checks['conditions'] < 10 ||
     !$checks['condition_ids']
 ) {

@@ -64,12 +64,16 @@ final class EvidenceFormatter
                 16
             ));
 
+            $conditionIds = array_values(array_filter(array_map(
+                'strval',
+                $evidence['condition_ids']
+                ?? [($evidence['condition_id'] ?? '')]
+            )));
+
             $rows[] = [
                 'evidence_id' => $evidenceId,
-                'condition_id' => (string)(
-                    $evidence['condition_id']
-                    ?? ''
-                ),
+                'condition_id' => $conditionIds[0] ?? '',
+                'condition_ids' => $conditionIds,
                 'code' => $code,
                 'rule_id' => $ruleId,
                 'text' => $textLabel,
