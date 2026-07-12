@@ -46,6 +46,42 @@ final class CompositeEvidenceEngine
             }
         }
 
+        $mars = $planetConditions['marte'] ?? null;
+        $saturn = $planetConditions['saturno'] ?? null;
+
+        if (
+            is_array($mars)
+            && is_array($saturn)
+            && (int)($mars['house'] ?? 0) === 6
+            && (int)($saturn['house'] ?? 0) === 12
+        ) {
+            foreach ([
+                ['theme' => 'salute', 'priority' => 118],
+                ['theme' => 'prove', 'priority' => 116],
+            ] as $definition) {
+                $result[] = [
+                    'code' => 'COMPOSITE_MARS6_SATURN12',
+                    'planet' => 'marte+saturno',
+                    'house' => 0,
+                    'theme' => $definition['theme'],
+                    'weight' => 115.0,
+                    'strength' => 1.0,
+                    'value' => 115.0,
+                    'source' => 'composite',
+                    'rule_id' => 'RULE_COMPOSITE_MARS6_SATURN12',
+                    'priority' => $definition['priority'],
+                    'condition_ids' => array_values(array_filter([
+                        $mars['condition_id'] ?? '',
+                        $saturn['condition_id'] ?? '',
+                    ])),
+                    'data' => [
+                        'planets' => ['marte', 'saturno'],
+                        'houses' => [6, 12],
+                    ],
+                ];
+            }
+        }
+
         return $result;
     }
 }

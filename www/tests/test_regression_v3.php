@@ -39,6 +39,8 @@ $careerEvidences = $evidencesByTheme['carriera'] ?? [];
 
 $hasRule0001InCareer = false;
 $hasCompositeInCareer = false;
+$hasMarsSaturnInSalute = false;
+$hasMarsSaturnInProve = false;
 $hasRule0002InProve = false;
 $hasRule0003InSalute = false;
 $hasRule0004InAmore = false;
@@ -67,6 +69,22 @@ foreach ($careerEvidences as $evidence) {
 foreach (($evidencesByTheme['prove'] ?? []) as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0002') {
         $hasRule0002InProve = true;
+    }
+
+    if (
+        ($evidence['code'] ?? '') ===
+        'COMPOSITE_MARS6_SATURN12'
+    ) {
+        $hasMarsSaturnInProve = true;
+    }
+}
+
+foreach (($evidencesByTheme['salute'] ?? []) as $evidence) {
+    if (
+        ($evidence['code'] ?? '') ===
+        'COMPOSITE_MARS6_SATURN12'
+    ) {
+        $hasMarsSaturnInSalute = true;
         break;
     }
 }
@@ -226,6 +244,8 @@ $checks = [
     'rule_0009_trasformazione' => $hasRule0009InTrasformazione,
     'rule_0010_carriera' => $hasRule0010InCarriera,
     'composite_theme_link' => $hasCompositeInCareer,
+    'mars_saturn_salute' => $hasMarsSaturnInSalute,
+    'mars_saturn_prove' => $hasMarsSaturnInProve,
 ];
 
 foreach ($checks as $k=>$v) {
@@ -259,7 +279,9 @@ if (
     !$checks['rule_0008_spiritualita'] ||
     !$checks['rule_0009_trasformazione'] ||
     !$checks['rule_0010_carriera'] ||
-    !$checks['composite_theme_link']
+    !$checks['composite_theme_link'] ||
+    !$checks['mars_saturn_salute'] ||
+    !$checks['mars_saturn_prove']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
     exit(1);

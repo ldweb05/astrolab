@@ -21,13 +21,40 @@ final class EvidenceFormatter
                 ?? 0
             );
 
-            if ($planet === '' || $house === 0) {
+            $planets = $evidence['data']['planets'] ?? [];
+            $houses = $evidence['data']['houses'] ?? [];
+
+            $hasSingleHouse = $house >= 1 && $house <= 12;
+            $hasMultipleHouses =
+                is_array($houses)
+                && is_array($planets)
+                && $houses !== []
+                && count($houses) === count($planets);
+
+            if (
+                $planet === ''
+                || (!$hasSingleHouse && !$hasMultipleHouses)
+            ) {
                 continue;
             }
 
-            $planets = $evidence['data']['planets'] ?? [];
+            if (
+                is_array($planets)
+                && $planets !== []
+                && $hasMultipleHouses
+            ) {
+                $parts = [];
 
-            if (is_array($planets) && $planets !== []) {
+                foreach ($planets as $index => $name) {
+                    $parts[] = sprintf(
+                        '%s in Casa %d',
+                        ucfirst(strtolower((string)$name)),
+                        (int)$houses[$index]
+                    );
+                }
+
+                $textLabel = implode(' e ', $parts);
+            } elseif (is_array($planets) && $planets !== []) {
                 $labels = array_map(
                     static fn(string $name): string =>
                         ucfirst(strtolower($name)),
