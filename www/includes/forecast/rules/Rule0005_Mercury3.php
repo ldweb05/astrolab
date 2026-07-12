@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-final class Rule0005_Mercury3
+final class Rule0005_Mercury3 implements AstrologyRuleInterface
 {
     public function apply(
         array $planetConditions,

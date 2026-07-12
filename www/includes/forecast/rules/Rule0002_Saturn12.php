@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-final class Rule0002_Saturn12
+final class Rule0002_Saturn12 implements AstrologyRuleInterface
 {
     public function apply(
         array $planetConditions,

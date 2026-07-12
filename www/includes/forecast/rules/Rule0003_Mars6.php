@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-final class Rule0003_Mars6
+final class Rule0003_Mars6 implements AstrologyRuleInterface
 {
     public function apply(
         array $planetConditions,

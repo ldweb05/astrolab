@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-final class Rule0008_Neptune9
+final class Rule0008_Neptune9 implements AstrologyRuleInterface
 {
     public function apply(
         array $planetConditions,
