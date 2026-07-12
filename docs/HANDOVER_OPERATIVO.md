@@ -280,3 +280,16 @@ La Rule deve:
 - Full Regression: OK.
 - Commit: feat(rule): implement RULE-0018 Sun House 8.
 - Prossimo passo: RULE-0019, Sole in Casa IX.
+
+### 2026-07-12 — RULE-0019
+
+- Obiettivo: implementare Sole in Casa IX.
+- Creato: www/includes/forecast/rules/Rule0019_Sun9.php.
+- Creato: www/tests/test_rule_0019.php.
+- Evidenze: estero, studio, viaggi.
+- condition_id propagata correttamente.
+- RuleRegistry: 19 Rule registrate.
+- Test dedicato: OK.
+- Full Regression: OK.
+- Commit: feat(rule): implement RULE-0019 Sun House 9.
+- Prossimo passo: RULE-0020, Sole in Casa XI.
