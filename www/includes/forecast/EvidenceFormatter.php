@@ -64,6 +64,7 @@ final class EvidenceFormatter
             $evidenceId = 'EVIDENCE_'.strtoupper(substr(
                 hash('sha256', implode('|', [
                     $code,
+                    $theme,
                     $ruleId,
                     strtolower($textLabel),
                 ])),
@@ -98,6 +99,7 @@ final class EvidenceFormatter
         foreach ($rows as $row) {
             $key = implode('|', [
                 $row['code'],
+                $row['theme'] ?? '',
                 $row['text'],
             ]);
 

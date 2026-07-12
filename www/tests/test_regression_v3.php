@@ -41,6 +41,8 @@ $hasRule0001InCareer = false;
 $hasCompositeInCareer = false;
 $hasRule0002InProve = false;
 $hasRule0003InSalute = false;
+$hasRule0004InAmore = false;
+$hasRule0004InCreativita = false;
 
 foreach ($careerEvidences as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0001') {
@@ -65,6 +67,20 @@ foreach (($evidencesByTheme['prove'] ?? []) as $evidence) {
 foreach (($evidencesByTheme['salute'] ?? []) as $evidence) {
     if (($evidence['rule_id'] ?? '') === 'RULE-0003') {
         $hasRule0003InSalute = true;
+        break;
+    }
+}
+
+foreach (($evidencesByTheme['amore'] ?? []) as $evidence) {
+    if (($evidence['rule_id'] ?? '') === 'RULE-0004') {
+        $hasRule0004InAmore = true;
+        break;
+    }
+}
+
+foreach (($evidencesByTheme['creativita'] ?? []) as $evidence) {
+    if (($evidence['rule_id'] ?? '') === 'RULE-0004') {
+        $hasRule0004InCreativita = true;
         break;
     }
 }
@@ -144,6 +160,8 @@ $checks = [
     'rule_theme_link' => $hasRule0001InCareer,
     'rule_0002_link' => $hasRule0002InProve,
     'rule_0003_link' => $hasRule0003InSalute,
+    'rule_0004_amore' => $hasRule0004InAmore,
+    'rule_0004_creativita' => $hasRule0004InCreativita,
     'composite_theme_link' => $hasCompositeInCareer,
 ];
 
@@ -169,6 +187,8 @@ if (
     !$checks['rule_theme_link'] ||
     !$checks['rule_0002_link'] ||
     !$checks['rule_0003_link'] ||
+    !$checks['rule_0004_amore'] ||
+    !$checks['rule_0004_creativita'] ||
     !$checks['composite_theme_link']
 ) {
     fwrite(STDERR,"REGRESSION TEST FAILED\n");
