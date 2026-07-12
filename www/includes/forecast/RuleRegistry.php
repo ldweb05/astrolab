@@ -6,6 +6,7 @@ require_once __DIR__.'/rules/Rule0002_Saturn12.php';
 require_once __DIR__.'/rules/Rule0003_Mars6.php';
 require_once __DIR__.'/rules/Rule0004_Venus5.php';
 require_once __DIR__.'/rules/Rule0005_Mercury3.php';
+require_once __DIR__.'/rules/Rule0006_Moon4.php';
 
 /**
  * Registro centrale delle regole astrologiche.
@@ -23,6 +24,7 @@ final class RuleRegistry
             new Rule0003_Mars6(),
             new Rule0004_Venus5(),
             new Rule0005_Mercury3(),
+            new Rule0006_Moon4(),
         ];
     }
 }
