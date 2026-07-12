@@ -194,4 +194,13 @@ La Rule deve:
 - Consolidati i campi ThemeProfile già introdotti.
 - Rimossi backup e prototipi temporanei non necessari.
 - Architettura congelata: nessun ulteriore refactoring.
-- Prossimo passo: RULE-0012, Sole in Casa II.
+- Prossimo passo: RULE-0012, Sole in Casa II.\n\n### 2026-07-12 — RULE-0012
+
+- Implementata RULE-0012: Sole in Casa II.
+- Evidenze prodotte: denaro, patrimonio.
+- condition_id propagata correttamente.
+- RuleRegistry: 12 Rule registrate.
+- Test dedicato: OK.
+- Full Regression: OK.
+- Commit: feat(rule): implement RULE-0012 Sun House 2.
+- Prossimo passo: RULE-0013, Sole in Casa III.\n
