@@ -306,3 +306,17 @@ La Rule deve:
 - Full Regression: OK.
 - Commit: feat(rule): implement RULE-0020 Sun House 11.
 - Prossimo passo: RULE-0021, Sole in Casa XII.
+
+### 2026-07-12 — RULE-0021
+
+- Obiettivo: implementare Sole in Casa XII.
+- Creato: www/includes/forecast/rules/Rule0021_Sun12.php.
+- Creato: www/tests/test_rule_0021.php.
+- Evidenze: introspezione, spiritualita.
+- condition_id propagata correttamente.
+- RuleRegistry: 21 Rule registrate.
+- Completata la copertura del Sole nelle 12 case.
+- Test dedicato: OK.
+- Full Regression: OK.
+- Commit: feat(rule): implement RULE-0021 Sun House 12.
+- Prossimo passo: RULE-0022, Luna in Casa I.
