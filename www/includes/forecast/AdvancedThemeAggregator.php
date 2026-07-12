@@ -106,7 +106,8 @@ final class AdvancedThemeAggregator
         arsort($scores);
 
         $evidences = $this->compositeEvidence->build(
-            $evidences ?? []
+            $evidences ?? [],
+            $planetConditions
         );
 
         return [

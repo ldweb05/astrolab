@@ -169,11 +169,18 @@ final class ForecastEngineV3
                     )
                 ))),
                 'condition_ids' => array_values(array_unique(array_filter(
-                    array_map(
-                        static fn(array $evidence): string =>
-                            (string)($evidence['condition_id'] ?? ''),
+                    array_merge(...array_map(
+                        static function (array $evidence): array {
+                            $ids = $evidence['condition_ids'] ?? [];
+
+                            if ($ids === [] && !empty($evidence['condition_id'])) {
+                                $ids = [(string)$evidence['condition_id']];
+                            }
+
+                            return array_map('strval', $ids);
+                        },
                         $section['evidences'] ?? []
-                    )
+                    ))
                 ))),
             ];
         }
