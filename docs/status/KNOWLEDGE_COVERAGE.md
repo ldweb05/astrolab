@@ -2,9 +2,9 @@
 
 Version: V4.1
 
-Implemented rules: 13
+Implemented rules: 14
 Atlas configurations: 120
-Coverage: 13/120 (10.8%)
+Coverage: 14/120 (11.7%)
 
 ## Progress
 
@@ -17,7 +17,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ✔
 - Casa  2: ·
 - Casa  3: ✔
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ·
 - Casa  6: ·
 - Casa  7: ·
@@ -45,7 +45,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ·
 - Casa  2: ·
 - Casa  3: ✔
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ·
 - Casa  6: ·
 - Casa  7: ·
@@ -59,7 +59,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ·
 - Casa  2: ·
 - Casa  3: ·
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ✔
 - Casa  6: ·
 - Casa  7: ·
@@ -73,7 +73,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ·
 - Casa  2: ·
 - Casa  3: ·
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ·
 - Casa  6: ✔
 - Casa  7: ·
@@ -87,7 +87,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ·
 - Casa  2: ·
 - Casa  3: ·
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ·
 - Casa  6: ·
 - Casa  7: ·
@@ -101,7 +101,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ·
 - Casa  2: ·
 - Casa  3: ·
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ·
 - Casa  6: ·
 - Casa  7: ·
@@ -115,7 +115,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ·
 - Casa  2: ·
 - Casa  3: ·
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ·
 - Casa  6: ·
 - Casa  7: ·
@@ -129,7 +129,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ·
 - Casa  2: ·
 - Casa  3: ·
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ·
 - Casa  6: ·
 - Casa  7: ·
@@ -143,7 +143,7 @@ Coverage: 13/120 (10.8%)
 - Casa  1: ·
 - Casa  2: ·
 - Casa  3: ·
-- Casa  4: ·
+- Casa  4: ✔
 - Casa  5: ·
 - Casa  6: ·
 - Casa  7: ·
