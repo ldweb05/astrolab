@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-final class Rule0001_Jupiter10
+final class Rule0001_Jupiter10 implements AstrologyRuleInterface
 {
     public function apply(
         array $planetConditions,

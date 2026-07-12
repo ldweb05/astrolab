@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__.'/AstrologyRuleInterface.php';
+
 require_once __DIR__.'/rules/Rule0001_Jupiter10.php';
 require_once __DIR__.'/rules/Rule0002_Saturn12.php';
 require_once __DIR__.'/rules/Rule0003_Mars6.php';
@@ -22,7 +24,7 @@ final class RuleRegistry
      */
     public static function all(): array
     {
-        return [
+        $rules = [
             new Rule0001_Jupiter10(),
             new Rule0002_Saturn12(),
             new Rule0003_Mars6(),
@@ -34,5 +36,16 @@ final class RuleRegistry
             new Rule0009_Pluto8(),
             new Rule0010_Sun10(),
         ];
+
+        foreach ($rules as $rule) {
+            if (!$rule instanceof AstrologyRuleInterface) {
+                throw new LogicException(
+                    get_class($rule)
+                    .' non implementa AstrologyRuleInterface'
+                );
+            }
+        }
+
+        return $rules;
     }
 }

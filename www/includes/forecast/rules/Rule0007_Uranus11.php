@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-final class Rule0007_Uranus11
+final class Rule0007_Uranus11 implements AstrologyRuleInterface
 {
     public function apply(
         array $planetConditions,
