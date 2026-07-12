@@ -7,6 +7,7 @@ require_once __DIR__.'/AdvancedContextEngine.php';
 require_once __DIR__.'/AspectScoreEngine.php';
 require_once __DIR__.'/PlanetResolver.php';
 require_once __DIR__.'/PlanetConditionEngine.php';
+require_once __DIR__.'/AARuleEngine.php';
 require_once __DIR__.'/CompositeEvidenceEngine.php';
 require_once __DIR__.'/ContributionNormalizer.php';
 require_once __DIR__.'/EvidenceBuilder.php';
@@ -18,6 +19,7 @@ final class AdvancedThemeAggregator
     private AspectScoreEngine $aspectScore;
     private CompositeEvidenceEngine $compositeEvidence;
     private PlanetConditionEngine $planetConditions;
+    private AARuleEngine $ruleEngine;
     private ContributionNormalizer $normalizer;
     private EvidenceBuilder $builder;
 
@@ -28,6 +30,7 @@ final class AdvancedThemeAggregator
         $this->aspectScore = new AspectScoreEngine();
         $this->compositeEvidence = new CompositeEvidenceEngine();
         $this->planetConditions = new PlanetConditionEngine();
+        $this->ruleEngine = new AARuleEngine();
         $this->normalizer = new ContributionNormalizer();
         $this->builder = new EvidenceBuilder();
     }
@@ -43,6 +46,10 @@ final class AdvancedThemeAggregator
         $planetConditions = $this->planetConditions->build(
             $temaRS,
             $context
+        );
+
+        $ruleResult = $this->ruleEngine->evaluate(
+            $planetConditions
         );
 
         foreach (($temaRS['pianeti'] ?? []) as $planet => $info) {
@@ -105,8 +112,15 @@ final class AdvancedThemeAggregator
 
         arsort($scores);
 
-        $evidences = $this->compositeEvidence->build(
+        $ruleEvidences = $ruleResult['evidences'] ?? [];
+
+        $evidences = array_merge(
             $evidences ?? [],
+            $ruleEvidences
+        );
+
+        $evidences = $this->compositeEvidence->build(
+            $evidences,
             $planetConditions
         );
 
@@ -114,6 +128,7 @@ final class AdvancedThemeAggregator
             'scores'                   => $scores,
             'context'                  => $context,
             'planet_conditions'        => $planetConditions,
+            'rule_evidences'           => $ruleResult['evidences'] ?? [],
             'contributions'            => $contributions,
             'normalized_contributions' => $this->normalizer->normalize($contributions),
             'evidence_groups'          => $this->builder->build($contributions),

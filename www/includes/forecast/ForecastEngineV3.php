@@ -81,22 +81,16 @@ final class ForecastEngineV3
         $evidencesByTheme = [];
 
         foreach ($formattedEvidence as $evidence) {
-            $theme = (string)($evidence['code'] ?? '');
+            $theme = (string)(
+                $evidence['theme']
+                ?? ''
+            );
 
-            if ($theme === '' || str_starts_with($theme, 'COMPOSITE_')) {
+            if ($theme === '') {
                 continue;
             }
 
             $evidencesByTheme[$theme][] = $evidence;
-        }
-
-        foreach ($formattedEvidence as $evidence) {
-            if (
-                ($evidence['code'] ?? '') ===
-                'COMPOSITE_SUN_JUPITER_SAME_HOUSE'
-            ) {
-                $evidencesByTheme['carriera'][] = $evidence;
-            }
         }
 
         $annualReport['evidences_by_theme'] = $evidencesByTheme;
@@ -239,6 +233,7 @@ final class ForecastEngineV3
             ),
 
             'planet_conditions' => $result['planet_conditions'] ?? [],
+            'rule_evidences'    => $result['rule_evidences'] ?? [],
 
             // Contratto interno V3.1 / V4 incrementale
             'contributions'            => $result['contributions'] ?? [],

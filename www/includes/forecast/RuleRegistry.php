@@ -1,8 +1,10 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__.'/rules/Rule0001_Jupiter10.php';
+
 /**
- * Registro centrale delle Rule astrologiche.
+ * Registro centrale delle regole astrologiche.
  */
 final class RuleRegistry
 {
