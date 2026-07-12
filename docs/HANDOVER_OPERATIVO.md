@@ -165,3 +165,12 @@ La Rule deve:
 - Test dedicato: OK.
 - Full Regression: OK.
 - Prossimo passo: RULE-0012, Sole in Casa II.
+
+### 2026-07-12 — Consolidamento repository
+
+- Consolidate le modifiche documentali già completate.
+- Consolidato Evidence Contract retrocompatibile.
+- Consolidati i campi ThemeProfile già introdotti.
+- Rimossi backup e prototipi temporanei non necessari.
+- Architettura congelata: nessun ulteriore refactoring.
+- Prossimo passo: RULE-0012, Sole in Casa II.

@@ -44,6 +44,15 @@ final class AARuleEngine
             'rule_id' => $code,
             'category' => $category,
             'theme' => $category,
+
+            // --- V4 metadata ------------------------------------
+            'secondary_themes' => $data['secondary_themes'] ?? [],
+            'polarity'         => $data['polarity'] ?? 'mixed',
+            'confidence'       => (float)($data['confidence'] ?? 100),
+            'summary'          => (string)($data['summary'] ?? ''),
+            'requirements'     => $data['requirements'] ?? [],
+            // -----------------------------------------------------
+
             'source' => 'rule',
             'priority' => $priority,
             'strength' => round($strength, 2),
