@@ -346,3 +346,16 @@ La Rule deve:
 - Full Regression: OK.
 - Commit: feat(rule): implement RULE-0023 Moon House 2.
 - Prossimo passo: RULE-0024, Luna in Casa III.
+
+### 2026-07-12 — RULE-0024
+
+- Obiettivo: implementare Luna in Casa III.
+- Creato: www/includes/forecast/rules/Rule0024_Moon3.php.
+- Creato: www/tests/test_rule_0024.php.
+- Evidenze: comunicazione, spostamenti.
+- condition_id propagata correttamente.
+- RuleRegistry: 24 Rule registrate.
+- Test dedicato: OK.
+- Full Regression: OK.
+- Commit: feat(rule): implement RULE-0024 Moon House 3.
+- Prossimo passo: RULE-0025, Luna in Casa V.
