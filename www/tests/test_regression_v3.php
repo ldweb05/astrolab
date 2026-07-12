@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/../includes/AnnualForecastEngine.php';
+require_once __DIR__.'/../includes/forecast/RuleRegistry.php';
 
 $tema = [
     'pianeti' => [
@@ -19,6 +20,16 @@ $tema = [
 ];
 
 $data = (new AnnualForecastEngine())->genera($tema);
+
+$registeredRules = RuleRegistry::all();
+$allRulesValid = true;
+
+foreach ($registeredRules as $rule) {
+    if (!$rule instanceof AstrologyRuleInterface) {
+        $allRulesValid = false;
+        break;
+    }
+}
 
 $report = $data['relazione_annuale'] ?? [];
 $formattedEvidences = $data['formatted_evidences'] ?? [];
@@ -244,6 +255,8 @@ $checks = [
     'rule_0009_trasformazione' => $hasRule0009InTrasformazione,
     'rule_0010_carriera' => $hasRule0010InCarriera,
     'composite_theme_link' => $hasCompositeInCareer,
+    'registered_rules' => count($registeredRules),
+    'rules_contract' => $allRulesValid,
     'mars_saturn_salute' => $hasMarsSaturnInSalute,
     'mars_saturn_prove' => $hasMarsSaturnInProve,
 ];
@@ -280,6 +293,8 @@ if (
     !$checks['rule_0009_trasformazione'] ||
     !$checks['rule_0010_carriera'] ||
     !$checks['composite_theme_link'] ||
+    $checks['registered_rules'] < 10 ||
+    !$checks['rules_contract'] ||
     !$checks['mars_saturn_salute'] ||
     !$checks['mars_saturn_prove']
 ) {
