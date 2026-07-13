@@ -19,6 +19,12 @@ final class AnnualReportOutlineBuilder
             'theme' => $summary['dominant_theme'] ?? null,
         ];
 
+        $sections[] = [
+            'id' => 'theme_summary',
+            'title' => 'Profilo dei temi principali',
+            'themes' => $summary['primary_themes'] ?? [],
+        ];
+
         foreach (($summary['primary_themes'] ?? []) as $theme) {
             if (!isset($profiles[$theme])) {
                 continue;

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__.'/ThemeNarrativeBuilder.php';
 require_once __DIR__.'/ExecutiveSummaryNarrativeBuilder.php';
+require_once __DIR__.'/ThemeSummaryNarrativeBuilder.php';
 require_once __DIR__.'/AnnualMeaningBuilder.php';
 require_once __DIR__.'/CrossDynamicsBuilder.php';
 require_once __DIR__.'/OpportunitiesNarrativeBuilder.php';
@@ -12,6 +13,7 @@ final class AnnualReportDraftBuilder
 {
     private ThemeNarrativeBuilder $themeNarrative;
     private ExecutiveSummaryNarrativeBuilder $executiveSummary;
+    private ThemeSummaryNarrativeBuilder $themeSummary;
     private AnnualMeaningBuilder $meaningBuilder;
     private CrossDynamicsBuilder $crossDynamics;
     private OpportunitiesNarrativeBuilder $opportunities;
@@ -22,6 +24,7 @@ final class AnnualReportDraftBuilder
     {
         $this->themeNarrative = new ThemeNarrativeBuilder();
         $this->executiveSummary = new ExecutiveSummaryNarrativeBuilder();
+        $this->themeSummary = new ThemeSummaryNarrativeBuilder();
         $this->meaningBuilder = new AnnualMeaningBuilder();
         $this->crossDynamics = new CrossDynamicsBuilder();
         $this->opportunities = new OpportunitiesNarrativeBuilder();
@@ -68,6 +71,11 @@ final class AnnualReportDraftBuilder
             'meaning_of_year' => $this->meaningBuilder->build(
                 (string)($summary['dominant_theme'] ?? ''),
                 $profiles[(string)($summary['dominant_theme'] ?? '')] ?? []
+            ),
+
+            'theme_summary' => $this->themeSummary->build(
+                $summary['primary_themes'] ?? [],
+                $profiles
             ),
 
             'cross_dynamics' => $this->crossDynamics->build(
