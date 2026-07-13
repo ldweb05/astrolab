@@ -7,9 +7,6 @@ Generato automaticamente.
 ## Luna
 ## Mercurio
 ## Venere
-- RULE-0053 → venere in Casa 11
-- RULE-0054 → venere in Casa 12
-
 ## Marte
 - RULE-0055 → marte in Casa 1
 - RULE-0056 → marte in Casa 2
