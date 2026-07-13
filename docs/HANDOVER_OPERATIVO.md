@@ -694,3 +694,19 @@ La Rule deve:
 - Knowledge Coverage: 66/120 — 55,0%
 - Commit: feat(rule): implement RULE-0065 and RULE-0066 Mars 12 Jupiter 1
 - Prossime Rule da implementare: RULE-0067 — giove in Casa 2; RULE-0068 — giove in Casa 3
+
+## 2026-07-13 — RULE-0067 e RULE-0068
+
+- Rule implementate: RULE-0067, RULE-0068
+- Pianeta e case: Giove in Casa II; Giove in Casa III
+- Evidenze prodotte:
+  - RULE-0067: denaro, patrimonio
+  - RULE-0068: studio, viaggi, comunicazione
+- Test dedicati:
+  - test_rule_0067.php: OK
+  - test_rule_0068.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 68
+- Knowledge Coverage: 68/120 — 56,7%
+- Commit: feat(rule): implement RULE-0067 and RULE-0068 Jupiter Houses 2-3
+- Prossime Rule da implementare: RULE-0069 — giove in Casa 4; RULE-0070 — giove in Casa 5
