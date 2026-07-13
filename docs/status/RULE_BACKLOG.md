@@ -12,8 +12,6 @@ Generato automaticamente.
 ## Giove
 
 ## Saturno
-- RULE-0077 → saturno in Casa 1
-- RULE-0078 → saturno in Casa 2
 - RULE-0079 → saturno in Casa 3
 - RULE-0080 → saturno in Casa 4
 - RULE-0081 → saturno in Casa 5
