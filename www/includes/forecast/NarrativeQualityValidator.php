@@ -20,6 +20,7 @@ final class NarrativeQualityValidator
     {
         $issues = [];
         $texts = [];
+        $seenTexts = [];
 
         foreach (($report['sections'] ?? []) as $section) {
             $id = (string)($section['id'] ?? '');
@@ -35,6 +36,20 @@ final class NarrativeQualityValidator
             }
 
             $texts[] = $text;
+
+            $normalizedText = mb_strtolower(
+                preg_replace('/\\s+/u', ' ', $text) ?? $text
+            );
+
+            if (isset($seenTexts[$normalizedText])) {
+                $issues[] = [
+                    'type' => 'duplicate_section',
+                    'section' => $id,
+                    'duplicate_of' => $seenTexts[$normalizedText],
+                ];
+            } else {
+                $seenTexts[$normalizedText] = $id;
+            }
 
             foreach (self::FORBIDDEN_PATTERNS as $pattern) {
                 if (preg_match($pattern, $text) === 1) {
