@@ -1110,3 +1110,19 @@ La Rule deve:
 - Knowledge Coverage: 118/120 — 98,3%
 - Commit: feat(rule): implement RULE-0117 and RULE-0118 Pluto Houses 9-10
 - Prossime Rule da implementare: RULE-0119 — plutone in Casa 11; RULE-0120 — plutone in Casa 12
+
+## 2026-07-13 — RULE-0119 e RULE-0120
+
+- Rule implementate: RULE-0119, RULE-0120
+- Pianeta e case: Plutone in Casa XI; Plutone in Casa XII
+- Evidenze prodotte:
+  - RULE-0119: amicizie, progetti
+  - RULE-0120: prove, spiritualita, introspezione
+- Test dedicati:
+  - test_rule_0119.php: OK
+  - test_rule_0120.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 120
+- Knowledge Coverage: 120/120 — 100,0%
+- Commit: feat(rule): implement RULE-0119 and RULE-0120 Pluto Houses 11-12
+- Prossime Rule da implementare: nessuna — Knowledge Coverage completata
