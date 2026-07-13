@@ -966,3 +966,19 @@ La Rule deve:
 - Knowledge Coverage: 100/120 — 83,3%
 - Commit: feat(rule): implement RULE-0099 and RULE-0100 Neptune Houses 1-2
 - Prossime Rule da implementare: RULE-0101 — nettuno in Casa 3; RULE-0102 — nettuno in Casa 4
+
+## 2026-07-13 — RULE-0101 e RULE-0102
+
+- Rule implementate: RULE-0101, RULE-0102
+- Pianeta e case: Nettuno in Casa III; Nettuno in Casa IV
+- Evidenze prodotte:
+  - RULE-0101: studio, intuizione
+  - RULE-0102: casa, famiglia
+- Test dedicati:
+  - test_rule_0101.php: OK
+  - test_rule_0102.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 102
+- Knowledge Coverage: 102/120 — 85,0%
+- Commit: feat(rule): implement RULE-0101 and RULE-0102 Neptune Houses 3-4
+- Prossime Rule da implementare: RULE-0103 — nettuno in Casa 5; RULE-0104 — nettuno in Casa 6
