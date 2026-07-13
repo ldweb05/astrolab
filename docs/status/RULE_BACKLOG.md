@@ -8,8 +8,6 @@ Generato automaticamente.
 ## Mercurio
 ## Venere
 ## Marte
-- RULE-0063 → marte in Casa 10
-- RULE-0064 → marte in Casa 11
 - RULE-0065 → marte in Casa 12
 
 ## Giove
