@@ -8,10 +8,8 @@ Generato automaticamente.
 ## Mercurio
 ## Venere
 ## Marte
-- RULE-0065 → marte in Casa 12
 
 ## Giove
-- RULE-0066 → giove in Casa 1
 - RULE-0067 → giove in Casa 2
 - RULE-0068 → giove in Casa 3
 - RULE-0069 → giove in Casa 4
