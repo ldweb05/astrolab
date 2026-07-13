@@ -8,8 +8,6 @@ Generato automaticamente.
 ## Mercurio
 ## Venere
 ## Marte
-- RULE-0057 → marte in Casa 3
-- RULE-0058 → marte in Casa 4
 - RULE-0059 → marte in Casa 5
 - RULE-0060 → marte in Casa 7
 - RULE-0061 → marte in Casa 8

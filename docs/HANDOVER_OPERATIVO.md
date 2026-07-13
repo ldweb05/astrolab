@@ -616,3 +616,17 @@ La Rule deve:
 - Knowledge Coverage: 56/120 (46.7%).
 - Commit: feat(rule): implement RULE-0055 and RULE-0056 Mars Houses 1-2.
 - Prossimo passo: RULE-0057 e RULE-0058, Marte nelle Case III e IV.
+
+### 2026-07-13 — RULE-0057 e RULE-0058
+
+- Implementata RULE-0057: Marte in Casa III.
+- Evidenze RULE-0057: discussioni, spostamenti.
+- Implementata RULE-0058: Marte in Casa IV.
+- Evidenze RULE-0058: casa, famiglia, tensioni.
+- Controllo sintassi: OK.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 58 Rule registrate.
+- Knowledge Coverage: 58/120 (48.3%).
+- Commit: feat(rule): implement RULE-0057 and RULE-0058 Mars Houses 3-4.
+- Prossimo passo: RULE-0059 e RULE-0060, Marte nelle Case V e VII.
