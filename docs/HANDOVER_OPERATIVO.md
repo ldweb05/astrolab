@@ -1078,3 +1078,19 @@ La Rule deve:
 - Knowledge Coverage: 114/120 — 95,0%
 - Commit: feat(rule): implement RULE-0113 and RULE-0114 Pluto Houses 4-5
 - Prossime Rule da implementare: RULE-0115 — plutone in Casa 6; RULE-0116 — plutone in Casa 7
+
+## 2026-07-13 — RULE-0115 e RULE-0116
+
+- Rule implementate: RULE-0115, RULE-0116
+- Pianeta e case: Plutone in Casa VI; Plutone in Casa VII
+- Evidenze prodotte:
+  - RULE-0115: lavoro, salute
+  - RULE-0116: relazioni, trasformazione
+- Test dedicati:
+  - test_rule_0115.php: OK
+  - test_rule_0116.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 116
+- Knowledge Coverage: 116/120 — 96,7%
+- Commit: feat(rule): implement RULE-0115 and RULE-0116 Pluto Houses 6-7
+- Prossime Rule da implementare: RULE-0117 — plutone in Casa 9; RULE-0118 — plutone in Casa 10
