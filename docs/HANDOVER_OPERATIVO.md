@@ -1062,3 +1062,19 @@ La Rule deve:
 - Knowledge Coverage: 112/120 — 93,3%
 - Commit: feat(rule): implement RULE-0111 and RULE-0112 Pluto Houses 2-3
 - Prossime Rule da implementare: RULE-0113 — plutone in Casa 4; RULE-0114 — plutone in Casa 5
+
+## 2026-07-13 — RULE-0113 e RULE-0114
+
+- Rule implementate: RULE-0113, RULE-0114
+- Pianeta e case: Plutone in Casa IV; Plutone in Casa V
+- Evidenze prodotte:
+  - RULE-0113: casa, famiglia
+  - RULE-0114: amore, figli, creativita
+- Test dedicati:
+  - test_rule_0113.php: OK
+  - test_rule_0114.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 114
+- Knowledge Coverage: 114/120 — 95,0%
+- Commit: feat(rule): implement RULE-0113 and RULE-0114 Pluto Houses 4-5
+- Prossime Rule da implementare: RULE-0115 — plutone in Casa 6; RULE-0116 — plutone in Casa 7

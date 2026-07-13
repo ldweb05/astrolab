@@ -18,8 +18,6 @@ Generato automaticamente.
 ## Nettuno
 
 ## Plutone
-- RULE-0113 → plutone in Casa 4
-- RULE-0114 → plutone in Casa 5
 - RULE-0115 → plutone in Casa 6
 - RULE-0116 → plutone in Casa 7
 - RULE-0117 → plutone in Casa 9
