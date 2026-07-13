@@ -470,3 +470,15 @@ La Rule deve:
 - RuleRegistry: 34 Rule registrate.
 - Commit: feat(rule): implement RULE-0033 and RULE-0034 Mercury Houses 1-2.
 - Prossimo passo: RULE-0035 e RULE-0036, Mercurio nelle Case IV e V.
+
+### 2026-07-13 — RULE-0035 e RULE-0036
+
+- Implementata RULE-0035: Mercurio in Casa IV.
+- Evidenze RULE-0035: casa, famiglia.
+- Implementata RULE-0036: Mercurio in Casa V.
+- Evidenze RULE-0036: creativita, figli.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 36 Rule registrate.
+- Commit: feat(rule): implement RULE-0035 and RULE-0036 Mercury Houses 4-5.
+- Prossimo passo: RULE-0037 e RULE-0038, Mercurio nelle Case VI e VII.
