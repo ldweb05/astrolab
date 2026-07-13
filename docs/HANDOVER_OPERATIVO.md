@@ -372,3 +372,13 @@ La Rule deve:
 - Full Regression: OK.
 - Commit: feat(rule): implement RULE-0025 Moon House 5.
 - Prossimo passo: RULE-0026, Luna in Casa VI.
+
+### 2026-07-13 — RULE-0025
+
+- Implementata RULE-0025: Luna in Casa V.
+- Evidenze: amore, creativita, figli.
+- Test dedicato: OK.
+- Full Regression: OK.
+- RuleRegistry: 25 Rule registrate.
+- Commit: feat(rule): implement RULE-0025 Moon House 5.
+- Prossimo passo: RULE-0026, Luna in Casa VI.
