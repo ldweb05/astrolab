@@ -24,16 +24,54 @@ final class FinalNarrativeEngine
         $parts = [];
 
         if (!empty($narrative['headline'])) {
-            $parts[] = $narrative['headline'];
+            $parts[] = (string)$narrative['headline'];
         }
 
         foreach (($narrative['dominant_themes'] ?? []) as $theme) {
+            $text = trim((string)($theme['text'] ?? ''));
 
-            if (!empty($theme['text'])) {
-                $parts[] = $theme['text'];
+            if ($text !== '') {
+                $parts[] = $text;
             }
         }
 
-        return implode("\n\n", $parts);
+        return implode(
+            "\n\n",
+            $this->deduplicateParagraphs($parts)
+        );
+    }
+
+    /**
+     * Elimina i paragrafi narrativi duplicati mantenendo il primo
+     * elemento e preservando l'ordine originale.
+     *
+     * @param array<int,string> $paragraphs
+     * @return array<int,string>
+     */
+    private function deduplicateParagraphs(array $paragraphs): array
+    {
+        $result = [];
+        $seen = [];
+
+        foreach ($paragraphs as $paragraph) {
+            $paragraph = trim($paragraph);
+
+            if ($paragraph === '') {
+                continue;
+            }
+
+            $normalized = mb_strtolower(
+                preg_replace('/\\s+/u', ' ', $paragraph) ?? $paragraph
+            );
+
+            if (isset($seen[$normalized])) {
+                continue;
+            }
+
+            $seen[$normalized] = true;
+            $result[] = $paragraph;
+        }
+
+        return $result;
     }
 }
