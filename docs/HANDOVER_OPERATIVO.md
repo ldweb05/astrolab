@@ -458,3 +458,15 @@ La Rule deve:
 - Completata la copertura della Luna nelle 12 case.
 - Commit: feat(rule): implement RULE-0031 and RULE-0032 Moon Houses 11-12.
 - Prossimo passo: RULE-0033 e RULE-0034, Mercurio nelle Case I e II.
+
+### 2026-07-13 — RULE-0033 e RULE-0034
+
+- Implementata RULE-0033: Mercurio in Casa I.
+- Evidenze RULE-0033: comunicazione, identita.
+- Implementata RULE-0034: Mercurio in Casa II.
+- Evidenze RULE-0034: affari, denaro.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 34 Rule registrate.
+- Commit: feat(rule): implement RULE-0033 and RULE-0034 Mercury Houses 1-2.
+- Prossimo passo: RULE-0035 e RULE-0036, Mercurio nelle Case IV e V.
