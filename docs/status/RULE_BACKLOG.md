@@ -16,10 +16,8 @@ Generato automaticamente.
 ## Urano
 
 ## Nettuno
-- RULE-0109 → nettuno in Casa 12
 
 ## Plutone
-- RULE-0110 → plutone in Casa 1
 - RULE-0111 → plutone in Casa 2
 - RULE-0112 → plutone in Casa 3
 - RULE-0113 → plutone in Casa 4

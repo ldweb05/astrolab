@@ -1030,3 +1030,19 @@ La Rule deve:
 - Knowledge Coverage: 108/120 — 90,0%
 - Commit: feat(rule): implement RULE-0107 and RULE-0108 Neptune Houses 10-11
 - Prossime Rule da implementare: RULE-0109 — nettuno in Casa 12; RULE-0110 — plutone in Casa 1
+
+## 2026-07-13 — RULE-0109 e RULE-0110
+
+- Rule implementate: RULE-0109, RULE-0110
+- Pianeta e case: Nettuno in Casa XII; Plutone in Casa I
+- Evidenze prodotte:
+  - RULE-0109: spiritualita, prove, introspezione
+  - RULE-0110: trasformazione, identita
+- Test dedicati:
+  - test_rule_0109.php: OK
+  - test_rule_0110.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 110
+- Knowledge Coverage: 110/120 — 91,7%
+- Commit: feat(rule): implement RULE-0109 Neptune 12 and RULE-0110 Pluto 1
+- Prossime Rule da implementare: RULE-0111 — plutone in Casa 2; RULE-0112 — plutone in Casa 3
