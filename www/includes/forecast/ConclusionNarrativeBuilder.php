@@ -40,26 +40,36 @@ final class ConclusionNarrativeBuilder
         ));
 
         $text = sprintf(
-            "Nel complesso, questa Rivoluzione Solare sembrerebbe svilupparsi "
-            ."principalmente intorno al tema %s.",
+            "Nel complesso, il percorso annuale sembrerebbe trovare il proprio centro "
+            ."nel tema %s.",
             $this->label($dominantTheme)
         );
 
-        if ($primaryThemes !== []) {
+        $secondaryThemes = array_values(array_filter(
+            $primaryThemes,
+            static fn(string $theme): bool => $theme !== $dominantTheme
+        ));
+
+        if ($secondaryThemes !== []) {
             $text .= sprintf(
-                " Le dinamiche relative a %s potrebbero costituire i principali "
-                ."ambiti attraverso i quali l'anno tenderà a esprimersi.",
+                " Accanto a questo nucleo, %s potrebbero rappresentare gli ambiti "
+                ."nei quali le dinamiche dell'anno troveranno maggiore espressione.",
                 $this->joinWords(array_map(
                     fn(string $theme): string => $this->shortLabel($theme),
-                    $primaryThemes
+                    $secondaryThemes
                 ))
             );
         }
 
+        $supportThemes = array_values(array_diff(
+            $supportThemes,
+            $attentionThemes
+        ));
+
         if ($supportThemes !== []) {
             $text .= sprintf(
-                " Le risorse presenti negli ambiti relativi a %s potrebbero offrire sostegno, "
-                ."facilitazione o una migliore capacità di affrontare le circostanze.",
+                " Le risorse riconoscibili in %s potrebbero offrire sostegno, capacità "
+                ."di recupero e margini utili per affrontare le circostanze.",
                 $this->joinWords(array_map(
                     fn(string $theme): string => $this->shortLabel($theme),
                     $supportThemes
@@ -69,8 +79,8 @@ final class ConclusionNarrativeBuilder
 
         if ($attentionThemes !== []) {
             $text .= sprintf(
-                " Parallelamente, gli ambiti relativi a %s potrebbero richiedere maggiore "
-                ."prudenza, continuità e tempestività.",
+                " Una cura particolare potrebbe invece essere necessaria in %s, "
+                ."dove prudenza, continuità e tempestività potrebbero risultare decisive.",
                 $this->joinWords(array_map(
                     fn(string $theme): string => $this->shortLabel($theme),
                     $attentionThemes
@@ -80,11 +90,11 @@ final class ConclusionNarrativeBuilder
 
         return trim(
             $text
-            ." Le configurazioni dell'anno non descriverebbero eventi inevitabili, "
-            ."ma possibilità e tendenze da osservare nel loro contesto concreto. "
-            ."Un atteggiamento consapevole, flessibile e partecipe potrebbe aiutare "
-            ."a valorizzare le opportunità disponibili e a gestire con maggiore "
-            ."equilibrio le situazioni più impegnative."
+            ." Questa lettura non descrive eventi inevitabili, ma un insieme di "
+            ."possibilità simboliche da osservare nel contesto concreto della vita. "
+            ."La consapevolezza delle priorità potrebbe aiutare a utilizzare meglio "
+            ."le risorse disponibili e ad affrontare con maggiore equilibrio gli "
+            ."aspetti più impegnativi dell'anno."
         );
     }
 
@@ -109,7 +119,6 @@ final class ConclusionNarrativeBuilder
         };
     }
 
-    
 
     private function shortLabel(string $theme): string
     {
@@ -132,7 +141,7 @@ final class ConclusionNarrativeBuilder
         };
     }
 
-private function joinWords(array $words): string
+    private function joinWords(array $words): string
     {
         $words = array_values(array_unique($words));
 
