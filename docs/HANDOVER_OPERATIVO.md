@@ -630,3 +630,19 @@ La Rule deve:
 - Knowledge Coverage: 58/120 (48.3%).
 - Commit: feat(rule): implement RULE-0057 and RULE-0058 Mars Houses 3-4.
 - Prossimo passo: RULE-0059 e RULE-0060, Marte nelle Case V e VII.
+
+## 2026-07-13 — RULE-0059 e RULE-0060
+
+- Rule implementate: RULE-0059, RULE-0060
+- Pianeta e case: Marte in Casa V; Marte in Casa VII
+- Evidenze prodotte:
+  - RULE-0059: amore, figli
+  - RULE-0060: relazioni, separazioni, cause
+- Test dedicati:
+  - test_rule_0059.php: OK
+  - test_rule_0060.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 60
+- Knowledge Coverage: 60/120 — 50,0%
+- Commit: feat(rule): implement RULE-0059 and RULE-0060 Mars Houses 5-7
+- Prossime Rule da implementare: RULE-0061 e RULE-0062
