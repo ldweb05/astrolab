@@ -506,3 +506,15 @@ La Rule deve:
 - RuleRegistry: 40 Rule registrate.
 - Commit: feat(rule): implement RULE-0039 and RULE-0040 Mercury Houses 8-9.
 - Prossimo passo: RULE-0041 e RULE-0042, Mercurio nelle Case X e XI.
+
+### 2026-07-13 — RULE-0041 e RULE-0042
+
+- Implementata RULE-0041: Mercurio in Casa X.
+- Evidenze RULE-0041: carriera, successo.
+- Implementata RULE-0042: Mercurio in Casa XI.
+- Evidenze RULE-0042: amicizie, progetti.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 42 Rule registrate.
+- Commit: feat(rule): implement RULE-0041 and RULE-0042 Mercury Houses 10-11.
+- Prossimo passo: RULE-0043 e RULE-0044, Mercurio nelle Case XII e Venere nella Casa I.
