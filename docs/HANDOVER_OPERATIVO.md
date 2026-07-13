@@ -587,3 +587,18 @@ La Rule deve:
 - Knowledge Coverage: 52/120 (43.3%).
 - Commit: feat(rule): implement RULE-0051 and RULE-0052 Venus Houses 9-10.
 - Prossimo passo: RULE-0053 e RULE-0054, Venere nelle Case XI e XII.
+
+### 2026-07-13 — RULE-0053 e RULE-0054
+
+- Implementata RULE-0053: Venere in Casa XI.
+- Evidenze RULE-0053: amicizie, progetti.
+- Implementata RULE-0054: Venere in Casa XII.
+- Evidenze RULE-0054: prove, spiritualita.
+- Controllo sintassi: OK.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 54 Rule registrate.
+- Knowledge Coverage: 54/120 (45.0%).
+- Completata la copertura di Venere nelle 12 case.
+- Commit: feat(rule): implement RULE-0053 and RULE-0054 Venus Houses 11-12.
+- Prossimo passo: RULE-0055 e RULE-0056, Marte nelle Case I e II.
