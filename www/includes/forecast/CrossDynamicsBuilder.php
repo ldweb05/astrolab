@@ -42,28 +42,30 @@ final class CrossDynamicsBuilder
             $this->joinWords($labels)
         );
 
+        $positive = array_values(array_diff($positive, $critical));
+        $critical = array_values(array_diff($critical, $positive));
+
         if ($positive !== []) {
             $text .= sprintf(
-                " Le risorse presenti soprattutto nei settori %s potrebbero offrire sostegno "
-                ."anche alle altre aree della vita, facilitando la ricerca di soluzioni "
-                ."e una migliore capacità di adattamento.",
+                " Le risorse presenti soprattutto in %s potrebbero sostenere anche gli altri "
+                ."ambiti, favorendo adattamento, recupero e ricerca di soluzioni.",
                 $this->joinWords($positive)
             );
         }
 
         if ($critical !== []) {
             $text .= sprintf(
-                " Parallelamente, gli ambiti %s potrebbero richiedere maggiore attenzione, "
-                ."poiché eventuali tensioni potrebbero riflettersi sull'equilibrio generale "
-                ."dell'anno.",
+                " Gli elementi più delicati sembrerebbero invece concentrarsi in %s, dove "
+                ."potrebbe essere utile mantenere prudenza, continuità e capacità di risposta.",
                 $this->joinWords($critical)
             );
         }
 
         return trim(
             $text
-            ." Una gestione consapevole delle priorità potrebbe quindi aiutare a mantenere "
-            ."un equilibrio più stabile tra responsabilità, bisogni personali e opportunità."
+            ." Una gestione consapevole delle priorità potrebbe aiutare a integrare "
+            ."responsabilità, bisogni personali e opportunità senza perdere la visione "
+            ."complessiva dell'anno."
         );
     }
 
