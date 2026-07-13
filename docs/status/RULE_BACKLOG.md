@@ -7,8 +7,6 @@ Generato automaticamente.
 ## Luna
 ## Mercurio
 ## Venere
-- RULE-0049 → venere in Casa 7
-- RULE-0050 → venere in Casa 8
 - RULE-0051 → venere in Casa 9
 - RULE-0052 → venere in Casa 10
 - RULE-0053 → venere in Casa 11

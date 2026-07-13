@@ -559,3 +559,17 @@ La Rule deve:
 - Knowledge Coverage: 48/120 (40.0%).
 - Commit: feat(rule): implement RULE-0047 and RULE-0048 Venus Houses 4-6.
 - Prossimo passo: RULE-0049 e RULE-0050, Venere nelle Case VII e VIII.
+
+### 2026-07-13 — RULE-0049 e RULE-0050
+
+- Implementata RULE-0049: Venere in Casa VII.
+- Evidenze RULE-0049: matrimonio, relazioni, societa.
+- Implementata RULE-0050: Venere in Casa VIII.
+- Evidenze RULE-0050: denaro, trasformazione.
+- Controllo sintassi: OK.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 50 Rule registrate.
+- Knowledge Coverage: 50/120 (41.7%).
+- Commit: feat(rule): implement RULE-0049 and RULE-0050 Venus Houses 7-8.
+- Prossimo passo: RULE-0051 e RULE-0052, Venere nelle Case IX e X.
