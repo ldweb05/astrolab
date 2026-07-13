@@ -742,3 +742,19 @@ La Rule deve:
 - Knowledge Coverage: 72/120 — 60,0%
 - Commit: feat(rule): implement RULE-0071 and RULE-0072 Jupiter Houses 6-7
 - Prossime Rule da implementare: RULE-0073 — giove in Casa 8; RULE-0074 — giove in Casa 9
+
+## 2026-07-13 — RULE-0073 e RULE-0074
+
+- Rule implementate: RULE-0073, RULE-0074
+- Pianeta e case: Giove in Casa VIII; Giove in Casa IX
+- Evidenze prodotte:
+  - RULE-0073: trasformazione, denaro
+  - RULE-0074: viaggi, estero, studio
+- Test dedicati:
+  - test_rule_0073.php: OK
+  - test_rule_0074.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 74
+- Knowledge Coverage: 74/120 — 61,7%
+- Commit: feat(rule): implement RULE-0073 and RULE-0074 Jupiter Houses 8-9
+- Prossime Rule da implementare: RULE-0075 — giove in Casa 11; RULE-0076 — giove in Casa 12
