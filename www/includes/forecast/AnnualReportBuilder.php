@@ -40,6 +40,13 @@ final class AnnualReportBuilder
                 ."Solare secondo i principi dell'Astrologia Attiva. Le indicazioni "
                 ."descrivono tendenze e possibilità, non eventi certi.",
             'dominant_theme' => $summary['dominant_theme'] ?? null,
+            'executive_summary' => $summary['executive_summary'] ?? [
+                'dominant_theme' => $summary['dominant_theme'] ?? null,
+                'top_strengths' => [],
+                'top_attention' => [],
+                'overall_tone' => 'neutral',
+                'confidence' => 0.0,
+            ],
             'outline' => $outline,
             'sections' => $sections,
             'word_count' => str_word_count($plainText),
