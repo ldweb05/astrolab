@@ -950,3 +950,19 @@ La Rule deve:
 - Knowledge Coverage: 98/120 — 81,7%
 - Commit: feat(rule): implement RULE-0097 and RULE-0098 Uranus Houses 10-12
 - Prossime Rule da implementare: RULE-0099 — nettuno in Casa 1; RULE-0100 — nettuno in Casa 2
+
+## 2026-07-13 — RULE-0099 e RULE-0100
+
+- Rule implementate: RULE-0099, RULE-0100
+- Pianeta e case: Nettuno in Casa I; Nettuno in Casa II
+- Evidenze prodotte:
+  - RULE-0099: spiritualita, identita
+  - RULE-0100: denaro, confusione
+- Test dedicati:
+  - test_rule_0099.php: OK
+  - test_rule_0100.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 100
+- Knowledge Coverage: 100/120 — 83,3%
+- Commit: feat(rule): implement RULE-0099 and RULE-0100 Neptune Houses 1-2
+- Prossime Rule da implementare: RULE-0101 — nettuno in Casa 3; RULE-0102 — nettuno in Casa 4
