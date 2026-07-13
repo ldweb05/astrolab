@@ -602,3 +602,17 @@ La Rule deve:
 - Completata la copertura di Venere nelle 12 case.
 - Commit: feat(rule): implement RULE-0053 and RULE-0054 Venus Houses 11-12.
 - Prossimo passo: RULE-0055 e RULE-0056, Marte nelle Case I e II.
+
+### 2026-07-13 — RULE-0055 e RULE-0056
+
+- Implementata RULE-0055: Marte in Casa I.
+- Evidenze RULE-0055: energia, incidenti, salute.
+- Implementata RULE-0056: Marte in Casa II.
+- Evidenze RULE-0056: denaro, spese.
+- Controllo sintassi: OK.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 56 Rule registrate.
+- Knowledge Coverage: 56/120 (46.7%).
+- Commit: feat(rule): implement RULE-0055 and RULE-0056 Mars Houses 1-2.
+- Prossimo passo: RULE-0057 e RULE-0058, Marte nelle Case III e IV.
