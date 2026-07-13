@@ -16,8 +16,6 @@ Generato automaticamente.
 ## Urano
 
 ## Nettuno
-- RULE-0099 → nettuno in Casa 1
-- RULE-0100 → nettuno in Casa 2
 - RULE-0101 → nettuno in Casa 3
 - RULE-0102 → nettuno in Casa 4
 - RULE-0103 → nettuno in Casa 5
