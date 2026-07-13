@@ -12,10 +12,8 @@ Generato automaticamente.
 ## Giove
 
 ## Saturno
-- RULE-0087 → saturno in Casa 11
 
 ## Urano
-- RULE-0088 → urano in Casa 1
 - RULE-0089 → urano in Casa 2
 - RULE-0090 → urano in Casa 3
 - RULE-0091 → urano in Casa 4

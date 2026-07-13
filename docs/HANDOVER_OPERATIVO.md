@@ -854,3 +854,19 @@ La Rule deve:
 - Knowledge Coverage: 86/120 — 71,7%
 - Commit: feat(rule): implement RULE-0085 and RULE-0086 Saturn Houses 9-10
 - Prossime Rule da implementare: RULE-0087 — saturno in Casa 11; RULE-0088 — urano in Casa 1
+
+## 2026-07-13 — RULE-0087 e RULE-0088
+
+- Rule implementate: RULE-0087, RULE-0088
+- Pianeta e case: Saturno in Casa XI; Urano in Casa I
+- Evidenze prodotte:
+  - RULE-0087: amicizie, progetti
+  - RULE-0088: cambiamenti, identita
+- Test dedicati:
+  - test_rule_0087.php: OK
+  - test_rule_0088.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 88
+- Knowledge Coverage: 88/120 — 73,3%
+- Commit: feat(rule): implement RULE-0087 Saturn 11 and RULE-0088 Uranus 1
+- Prossime Rule da implementare: RULE-0089 — urano in Casa 2; RULE-0090 — urano in Casa 3
