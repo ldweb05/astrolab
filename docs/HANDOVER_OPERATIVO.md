@@ -710,3 +710,19 @@ La Rule deve:
 - Knowledge Coverage: 68/120 — 56,7%
 - Commit: feat(rule): implement RULE-0067 and RULE-0068 Jupiter Houses 2-3
 - Prossime Rule da implementare: RULE-0069 — giove in Casa 4; RULE-0070 — giove in Casa 5
+
+## 2026-07-13 — RULE-0069 e RULE-0070
+
+- Rule implementate: RULE-0069, RULE-0070
+- Pianeta e case: Giove in Casa IV; Giove in Casa V
+- Evidenze prodotte:
+  - RULE-0069: casa, famiglia
+  - RULE-0070: amore, figli, creativita
+- Test dedicati:
+  - test_rule_0069.php: OK
+  - test_rule_0070.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 70
+- Knowledge Coverage: 70/120 — 58,3%
+- Commit: feat(rule): implement RULE-0069 and RULE-0070 Jupiter Houses 4-5
+- Prossime Rule da implementare: RULE-0071 — giove in Casa 6; RULE-0072 — giove in Casa 7
