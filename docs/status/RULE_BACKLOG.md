@@ -10,8 +10,6 @@ Generato automaticamente.
 ## Marte
 
 ## Giove
-- RULE-0075 → giove in Casa 11
-- RULE-0076 → giove in Casa 12
 
 ## Saturno
 - RULE-0077 → saturno in Casa 1
