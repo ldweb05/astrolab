@@ -678,3 +678,19 @@ La Rule deve:
 - Knowledge Coverage: 64/120 — 53,3%
 - Commit: feat(rule): implement RULE-0063 and RULE-0064 Mars Houses 10-11
 - Prossime Rule da implementare: RULE-0012 — sole in Casa 2; RULE-0065 — marte in Casa 12
+
+## 2026-07-13 — RULE-0065 e RULE-0066
+
+- Rule implementate: RULE-0065, RULE-0066
+- Pianeta e case: Marte in Casa XII; Giove in Casa I
+- Evidenze prodotte:
+  - RULE-0065: prove, nemici, salute
+  - RULE-0066: salute, identita, iniziative
+- Test dedicati:
+  - test_rule_0065.php: OK
+  - test_rule_0066.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 66
+- Knowledge Coverage: 66/120 — 55,0%
+- Commit: feat(rule): implement RULE-0065 and RULE-0066 Mars 12 Jupiter 1
+- Prossime Rule da implementare: RULE-0067 — giove in Casa 2; RULE-0068 — giove in Casa 3
