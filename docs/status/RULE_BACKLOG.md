@@ -5,9 +5,6 @@ Generato automaticamente.
 ## Sole
 - RULE-0012 → sole in Casa 2
 ## Luna
-- RULE-0031 → luna in Casa 11
-- RULE-0032 → luna in Casa 12
-
 ## Mercurio
 - RULE-0033 → mercurio in Casa 1
 - RULE-0034 → mercurio in Casa 2

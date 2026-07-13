@@ -445,3 +445,16 @@ La Rule deve:
 - RuleRegistry: 30 Rule registrate.
 - Commit: feat(rule): implement RULE-0030 Moon House 10.
 - Prossimo passo: RULE-0031, Luna in Casa XI.
+
+### 2026-07-13 — RULE-0031 e RULE-0032
+
+- Implementata RULE-0031: Luna in Casa XI.
+- Evidenze RULE-0031: amicizie, progetti.
+- Implementata RULE-0032: Luna in Casa XII.
+- Evidenze RULE-0032: introspezione, spiritualita.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 32 Rule registrate.
+- Completata la copertura della Luna nelle 12 case.
+- Commit: feat(rule): implement RULE-0031 and RULE-0032 Moon Houses 11-12.
+- Prossimo passo: RULE-0033 e RULE-0034, Mercurio nelle Case I e II.
