@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/ThemeNarrativeBuilder.php';
+require_once __DIR__.'/ExecutiveSummaryNarrativeBuilder.php';
 require_once __DIR__.'/AnnualMeaningBuilder.php';
 require_once __DIR__.'/CrossDynamicsBuilder.php';
 require_once __DIR__.'/OpportunitiesNarrativeBuilder.php';
@@ -10,6 +11,7 @@ require_once __DIR__.'/ConclusionNarrativeBuilder.php';
 final class AnnualReportDraftBuilder
 {
     private ThemeNarrativeBuilder $themeNarrative;
+    private ExecutiveSummaryNarrativeBuilder $executiveSummary;
     private AnnualMeaningBuilder $meaningBuilder;
     private CrossDynamicsBuilder $crossDynamics;
     private OpportunitiesNarrativeBuilder $opportunities;
@@ -19,6 +21,7 @@ final class AnnualReportDraftBuilder
     public function __construct()
     {
         $this->themeNarrative = new ThemeNarrativeBuilder();
+        $this->executiveSummary = new ExecutiveSummaryNarrativeBuilder();
         $this->meaningBuilder = new AnnualMeaningBuilder();
         $this->crossDynamics = new CrossDynamicsBuilder();
         $this->opportunities = new OpportunitiesNarrativeBuilder();
@@ -58,6 +61,10 @@ final class AnnualReportDraftBuilder
         array $profiles
     ): string {
         return match ($id) {
+            'executive_summary' => $this->executiveSummary->build(
+                $summary['executive_summary'] ?? []
+            ),
+
             'meaning_of_year' => $this->meaningBuilder->build(
                 (string)($summary['dominant_theme'] ?? ''),
                 $profiles[(string)($summary['dominant_theme'] ?? '')] ?? []
