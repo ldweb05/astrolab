@@ -4,7 +4,7 @@ Version: V4.1
 
 Implemented rules: 58
 Atlas configurations: 120
-Coverage: 108/120 (78,3%)
+Coverage: 110/120 (91,7%)
 
 ## Progress
 
