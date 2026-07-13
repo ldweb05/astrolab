@@ -545,3 +545,17 @@ La Rule deve:
 - Dal prossimo gruppo il ciclo sarà maggiormente automatizzato.
 - Commit: feat(rule): implement RULE-0045 and RULE-0046 Venus Houses 2-3.
 - Prossimo passo: RULE-0047 e RULE-0048, Venere nelle Case IV e VI.
+
+### 2026-07-13 — RULE-0047 e RULE-0048
+
+- Implementata RULE-0047: Venere in Casa IV.
+- Evidenze RULE-0047: casa, famiglia.
+- Implementata RULE-0048: Venere in Casa VI.
+- Evidenze RULE-0048: lavoro, salute.
+- Controllo sintassi: OK.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 48 Rule registrate.
+- Knowledge Coverage: 48/120 (40.0%).
+- Commit: feat(rule): implement RULE-0047 and RULE-0048 Venus Houses 4-6.
+- Prossimo passo: RULE-0049 e RULE-0050, Venere nelle Case VII e VIII.
