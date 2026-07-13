@@ -531,3 +531,17 @@ La Rule deve:
 - Completata la copertura di Mercurio nelle 12 case.
 - Commit: feat(rule): implement RULE-0043 and RULE-0044 Mercury 12 Venus 1.
 - Prossimo passo: RULE-0045 e RULE-0046, Venere nelle Case II e III.
+
+### 2026-07-13 — RULE-0045 e RULE-0046
+
+- Implementata RULE-0045: Venere in Casa II.
+- Evidenze RULE-0045: denaro, patrimonio.
+- Implementata RULE-0046: Venere in Casa III.
+- Evidenze RULE-0046: comunicazione, studio.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 46 Rule registrate.
+- Confermato il lavoro a gruppi di due Rule.
+- Dal prossimo gruppo il ciclo sarà maggiormente automatizzato.
+- Commit: feat(rule): implement RULE-0045 and RULE-0046 Venus Houses 2-3.
+- Prossimo passo: RULE-0047 e RULE-0048, Venere nelle Case IV e VI.
