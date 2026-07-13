@@ -382,3 +382,13 @@ La Rule deve:
 - RuleRegistry: 25 Rule registrate.
 - Commit: feat(rule): implement RULE-0025 Moon House 5.
 - Prossimo passo: RULE-0026, Luna in Casa VI.
+
+### 2026-07-13 — Intervallo anni Rivoluzione Solare
+
+- Modificato www/ricerca.php.
+- L'elenco degli anni RS parte dal 1960.
+- Il limite massimo resta anno corrente + 5.
+- La modifica è voluta e diventa parte della baseline funzionale.
+- Non ripristinare il precedente limite anno corrente - 2.
+- Commit: feat(search): extend solar return year range from 1960.
+- Prossimo passo: RULE-0026, Luna in Casa VI.
