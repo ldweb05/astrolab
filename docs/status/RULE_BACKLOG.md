@@ -6,8 +6,6 @@ Generato automaticamente.
 - RULE-0012 → sole in Casa 2
 ## Luna
 ## Mercurio
-- RULE-0037 → mercurio in Casa 6
-- RULE-0038 → mercurio in Casa 7
 - RULE-0039 → mercurio in Casa 8
 - RULE-0040 → mercurio in Casa 9
 - RULE-0041 → mercurio in Casa 10
