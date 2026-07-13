@@ -2,9 +2,9 @@
 
 Version: V4.1
 
-Implemented rules: 44
+Implemented rules: 46
 Atlas configurations: 120
-Coverage: 44/120 (36.7%)
+Coverage: 46/120 (38.3%)
 
 ## Progress
 
@@ -57,8 +57,8 @@ Coverage: 44/120 (36.7%)
 
 ## Venere
 - Casa  1: ✔
-- Casa  2: ·
-- Casa  3: ·
+- Casa  2: ✔
+- Casa  3: ✔
 - Casa  4: ✔
 - Casa  5: ✔
 - Casa  6: ·
