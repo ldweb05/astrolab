@@ -774,3 +774,19 @@ La Rule deve:
 - Knowledge Coverage: 76/120 — 63,3%
 - Commit: feat(rule): implement RULE-0075 and RULE-0076 Jupiter Houses 11-12
 - Prossime Rule da implementare: RULE-0077 — saturno in Casa 1; RULE-0078 — saturno in Casa 2
+
+## 2026-07-13 — RULE-0077 e RULE-0078
+
+- Rule implementate: RULE-0077, RULE-0078
+- Pianeta e case: Saturno in Casa I; Saturno in Casa II
+- Evidenze prodotte:
+  - RULE-0077: salute, fatica, isolamento
+  - RULE-0078: denaro, restrizioni
+- Test dedicati:
+  - test_rule_0077.php: OK
+  - test_rule_0078.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 78
+- Knowledge Coverage: 78/120 — 65,0%
+- Commit: feat(rule): implement RULE-0077 and RULE-0078 Saturn Houses 1-2
+- Prossime Rule da implementare: RULE-0079 — saturno in Casa 3; RULE-0080 — saturno in Casa 4
