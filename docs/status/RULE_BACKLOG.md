@@ -14,8 +14,6 @@ Generato automaticamente.
 ## Saturno
 
 ## Urano
-- RULE-0097 → urano in Casa 10
-- RULE-0098 → urano in Casa 12
 
 ## Nettuno
 - RULE-0099 → nettuno in Casa 1
