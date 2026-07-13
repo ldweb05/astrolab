@@ -8,6 +8,12 @@ final class AnnualReportOutlineBuilder
         $sections = [];
 
         $sections[] = [
+            'id' => 'executive_summary',
+            'title' => 'Sintesi esecutiva',
+            'theme' => $summary['dominant_theme'] ?? null,
+        ];
+
+        $sections[] = [
             'id' => 'meaning_of_year',
             'title' => "Il significato dell'anno",
             'theme' => $summary['dominant_theme'] ?? null,
