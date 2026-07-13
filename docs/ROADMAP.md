@@ -230,3 +230,36 @@ Non è richiesto reinterpretare l'architettura.
 È richiesto esclusivamente proseguire il completamento del progetto.
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+# V5 — Consolidamento Report Professionale
+
+## Stato corrente
+
+Milestone completate:
+
+- deduplicazione dei paragrafi narrativi finali;
+- Executive Summary strutturato;
+- Executive Summary esposto nell'Annual Report;
+- sezione narrativa Executive Summary;
+- sezione narrativa Theme Summary;
+- rimozione del codice obsoleto da AnnualReportDraftBuilder;
+- validazione automatica delle sezioni narrative duplicate.
+
+## Risultato corrente
+
+- Annual Report: 12 sezioni;
+- lunghezza regressione corrente: circa 1.230 parole;
+- Full Regression: OK;
+- Rule Engine: 120/120, invariato e in FREEZE;
+- Working Tree: CLEAN.
+
+## Prossimi obiettivi V5
+
+- consolidamento Cross Dynamics;
+- miglioramento della conclusione;
+- riduzione delle ripetizioni semantiche;
+- qualità editoriale del PDF;
+- UX del report;
+- validazione con casi reali.
