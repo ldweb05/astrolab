@@ -886,3 +886,19 @@ La Rule deve:
 - Knowledge Coverage: 90/120 — 75,0%
 - Commit: feat(rule): implement RULE-0089 and RULE-0090 Uranus Houses 2-3
 - Prossime Rule da implementare: RULE-0091 — urano in Casa 4; RULE-0092 — urano in Casa 5
+
+## 2026-07-13 — RULE-0091 e RULE-0092
+
+- Rule implementate: RULE-0091, RULE-0092
+- Pianeta e case: Urano in Casa IV; Urano in Casa V
+- Evidenze prodotte:
+  - RULE-0091: casa, traslochi
+  - RULE-0092: amore, creativita
+- Test dedicati:
+  - test_rule_0091.php: OK
+  - test_rule_0092.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 92
+- Knowledge Coverage: 92/120 — 76,7%
+- Commit: feat(rule): implement RULE-0091 and RULE-0092 Uranus Houses 4-5
+- Prossime Rule da implementare: RULE-0093 — urano in Casa 6; RULE-0094 — urano in Casa 7
