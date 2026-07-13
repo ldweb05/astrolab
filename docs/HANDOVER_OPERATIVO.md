@@ -1094,3 +1094,19 @@ La Rule deve:
 - Knowledge Coverage: 116/120 — 96,7%
 - Commit: feat(rule): implement RULE-0115 and RULE-0116 Pluto Houses 6-7
 - Prossime Rule da implementare: RULE-0117 — plutone in Casa 9; RULE-0118 — plutone in Casa 10
+
+## 2026-07-13 — RULE-0117 e RULE-0118
+
+- Rule implementate: RULE-0117, RULE-0118
+- Pianeta e case: Plutone in Casa IX; Plutone in Casa X
+- Evidenze prodotte:
+  - RULE-0117: estero, studio
+  - RULE-0118: carriera, potere, prestigio
+- Test dedicati:
+  - test_rule_0117.php: OK
+  - test_rule_0118.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 118
+- Knowledge Coverage: 118/120 — 98,3%
+- Commit: feat(rule): implement RULE-0117 and RULE-0118 Pluto Houses 9-10
+- Prossime Rule da implementare: RULE-0119 — plutone in Casa 11; RULE-0120 — plutone in Casa 12
