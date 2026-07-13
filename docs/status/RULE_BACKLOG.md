@@ -10,8 +10,6 @@ Generato automaticamente.
 ## Marte
 
 ## Giove
-- RULE-0069 → giove in Casa 4
-- RULE-0070 → giove in Casa 5
 - RULE-0071 → giove in Casa 6
 - RULE-0072 → giove in Casa 7
 - RULE-0073 → giove in Casa 8
