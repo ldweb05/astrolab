@@ -790,3 +790,19 @@ La Rule deve:
 - Knowledge Coverage: 78/120 — 65,0%
 - Commit: feat(rule): implement RULE-0077 and RULE-0078 Saturn Houses 1-2
 - Prossime Rule da implementare: RULE-0079 — saturno in Casa 3; RULE-0080 — saturno in Casa 4
+
+## 2026-07-13 — RULE-0079 e RULE-0080
+
+- Rule implementate: RULE-0079, RULE-0080
+- Pianeta e case: Saturno in Casa III; Saturno in Casa IV
+- Evidenze prodotte:
+  - RULE-0079: studio, spostamenti, parenti
+  - RULE-0080: casa, famiglia
+- Test dedicati:
+  - test_rule_0079.php: OK
+  - test_rule_0080.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 80
+- Knowledge Coverage: 80/120 — 66,7%
+- Commit: feat(rule): implement RULE-0079 and RULE-0080 Saturn Houses 3-4
+- Prossime Rule da implementare: RULE-0081 — saturno in Casa 5; RULE-0082 — saturno in Casa 6
