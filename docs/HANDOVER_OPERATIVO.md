@@ -870,3 +870,19 @@ La Rule deve:
 - Knowledge Coverage: 88/120 — 73,3%
 - Commit: feat(rule): implement RULE-0087 Saturn 11 and RULE-0088 Uranus 1
 - Prossime Rule da implementare: RULE-0089 — urano in Casa 2; RULE-0090 — urano in Casa 3
+
+## 2026-07-13 — RULE-0089 e RULE-0090
+
+- Rule implementate: RULE-0089, RULE-0090
+- Pianeta e case: Urano in Casa II; Urano in Casa III
+- Evidenze prodotte:
+  - RULE-0089: denaro, imprevisti
+  - RULE-0090: studio, comunicazione, spostamenti
+- Test dedicati:
+  - test_rule_0089.php: OK
+  - test_rule_0090.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 90
+- Knowledge Coverage: 90/120 — 75,0%
+- Commit: feat(rule): implement RULE-0089 and RULE-0090 Uranus Houses 2-3
+- Prossime Rule da implementare: RULE-0091 — urano in Casa 4; RULE-0092 — urano in Casa 5
