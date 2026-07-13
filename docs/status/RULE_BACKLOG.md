@@ -12,8 +12,6 @@ Generato automaticamente.
 ## Giove
 
 ## Saturno
-- RULE-0085 → saturno in Casa 9
-- RULE-0086 → saturno in Casa 10
 - RULE-0087 → saturno in Casa 11
 
 ## Urano
