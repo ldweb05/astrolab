@@ -518,3 +518,16 @@ La Rule deve:
 - RuleRegistry: 42 Rule registrate.
 - Commit: feat(rule): implement RULE-0041 and RULE-0042 Mercury Houses 10-11.
 - Prossimo passo: RULE-0043 e RULE-0044, Mercurio nelle Case XII e Venere nella Casa I.
+
+### 2026-07-13 — RULE-0043 e RULE-0044
+
+- Implementata RULE-0043: Mercurio in Casa XII.
+- Evidenze RULE-0043: introspezione.
+- Implementata RULE-0044: Venere in Casa I.
+- Evidenze RULE-0044: identita, relazioni, salute.
+- Test dedicati: OK.
+- Full Regression: OK.
+- RuleRegistry: 44 Rule registrate.
+- Completata la copertura di Mercurio nelle 12 case.
+- Commit: feat(rule): implement RULE-0043 and RULE-0044 Mercury 12 Venus 1.
+- Prossimo passo: RULE-0045 e RULE-0046, Venere nelle Case II e III.
