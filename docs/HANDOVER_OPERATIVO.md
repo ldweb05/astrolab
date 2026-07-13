@@ -425,3 +425,13 @@ La Rule deve:
 - RuleRegistry: 28 Rule registrate.
 - Commit: feat(rule): implement RULE-0028 Moon House 8.
 - Prossimo passo: RULE-0029, Luna in Casa IX.
+
+### 2026-07-13 — RULE-0029
+
+- Implementata RULE-0029: Luna in Casa IX.
+- Evidenze: viaggi, estero.
+- Test dedicato: OK.
+- Full Regression: OK.
+- RuleRegistry: 29 Rule registrate.
+- Commit: feat(rule): implement RULE-0029 Moon House 9.
+- Prossimo passo: RULE-0030, Luna in Casa X.
