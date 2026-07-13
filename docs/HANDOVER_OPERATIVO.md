@@ -758,3 +758,19 @@ La Rule deve:
 - Knowledge Coverage: 74/120 — 61,7%
 - Commit: feat(rule): implement RULE-0073 and RULE-0074 Jupiter Houses 8-9
 - Prossime Rule da implementare: RULE-0075 — giove in Casa 11; RULE-0076 — giove in Casa 12
+
+## 2026-07-13 — RULE-0075 e RULE-0076
+
+- Rule implementate: RULE-0075, RULE-0076
+- Pianeta e case: Giove in Casa XI; Giove in Casa XII
+- Evidenze prodotte:
+  - RULE-0075: amicizie, progetti
+  - RULE-0076: spiritualita, protezione
+- Test dedicati:
+  - test_rule_0075.php: OK
+  - test_rule_0076.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 76
+- Knowledge Coverage: 76/120 — 63,3%
+- Commit: feat(rule): implement RULE-0075 and RULE-0076 Jupiter Houses 11-12
+- Prossime Rule da implementare: RULE-0077 — saturno in Casa 1; RULE-0078 — saturno in Casa 2
