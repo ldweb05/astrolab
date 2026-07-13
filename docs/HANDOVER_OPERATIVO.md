@@ -918,3 +918,19 @@ La Rule deve:
 - Knowledge Coverage: 94/120 — 78,3%
 - Commit: feat(rule): implement RULE-0093 and RULE-0094 Uranus Houses 6-7
 - Prossime Rule da implementare: RULE-0095 — urano in Casa 8; RULE-0096 — urano in Casa 9
+
+## 2026-07-13 — RULE-0095 e RULE-0096
+
+- Rule implementate: RULE-0095, RULE-0096
+- Pianeta e case: Urano in Casa VIII; Urano in Casa IX
+- Evidenze prodotte:
+  - RULE-0095: trasformazione
+  - RULE-0096: viaggi, estero
+- Test dedicati:
+  - test_rule_0095.php: OK
+  - test_rule_0096.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 96
+- Knowledge Coverage: 96/120 — 80,0%
+- Commit: feat(rule): implement RULE-0095 and RULE-0096 Uranus Houses 8-9
+- Prossime Rule da implementare: RULE-0097 — urano in Casa 10; RULE-0098 — urano in Casa 12

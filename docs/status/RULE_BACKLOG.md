@@ -14,8 +14,6 @@ Generato automaticamente.
 ## Saturno
 
 ## Urano
-- RULE-0095 → urano in Casa 8
-- RULE-0096 → urano in Casa 9
 - RULE-0097 → urano in Casa 10
 - RULE-0098 → urano in Casa 12
 
