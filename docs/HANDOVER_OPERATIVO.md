@@ -392,3 +392,16 @@ La Rule deve:
 - Non ripristinare il precedente limite anno corrente - 2.
 - Commit: feat(search): extend solar return year range from 1960.
 - Prossimo passo: RULE-0026, Luna in Casa VI.
+
+### 2026-07-13 — RULE-0026
+
+- Implementata RULE-0026: Luna in Casa VI.
+- Creato: www/includes/forecast/rules/Rule0026_Moon6.php.
+- Creato: www/tests/test_rule_0026.php.
+- Evidenze: lavoro, salute.
+- condition_id propagata correttamente.
+- RuleRegistry: 26 Rule registrate.
+- Test dedicato: OK.
+- Full Regression: OK.
+- Commit: feat(rule): implement RULE-0026 Moon House 6.
+- Prossimo passo: RULE-0027, Luna in Casa VII.
