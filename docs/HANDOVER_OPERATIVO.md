@@ -662,3 +662,19 @@ La Rule deve:
 - Knowledge Coverage: 62/120 — 51,7%
 - Commit: feat(rule): implement RULE-0061 and RULE-0062 Mars Houses 8-9
 - Prossime Rule da implementare: RULE-0012 — sole in Casa 2; RULE-0063 — marte in Casa 10
+
+## 2026-07-13 — RULE-0063 e RULE-0064
+
+- Rule implementate: RULE-0063, RULE-0064
+- Pianeta e case: Marte in Casa X; Marte in Casa XI
+- Evidenze prodotte:
+  - RULE-0063: carriera, conflitti
+  - RULE-0064: amicizie, progetti
+- Test dedicati:
+  - test_rule_0063.php: OK
+  - test_rule_0064.php: OK
+- Full Regression: FULL REGRESSION OK
+- Rule registrate: 64
+- Knowledge Coverage: 64/120 — 53,3%
+- Commit: feat(rule): implement RULE-0063 and RULE-0064 Mars Houses 10-11
+- Prossime Rule da implementare: RULE-0012 — sole in Casa 2; RULE-0065 — marte in Casa 12
