@@ -16,8 +16,6 @@ Generato automaticamente.
 ## Urano
 
 ## Nettuno
-- RULE-0107 → nettuno in Casa 10
-- RULE-0108 → nettuno in Casa 11
 - RULE-0109 → nettuno in Casa 12
 
 ## Plutone
