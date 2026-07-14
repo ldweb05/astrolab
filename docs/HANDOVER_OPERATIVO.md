@@ -1147,3 +1147,23 @@ La Rule deve:
 - Knowledge Coverage: 100%.
 - Ultimo commit funzionale: `e1fb4fe`.
 - Prossimo passo: consolidamento Cross Dynamics e conclusione professionale.
+
+## 2026-07-14 — Report Annuale integrato nel PDF nativo
+
+- Confermata la pipeline di stampa:
+  - browser: SVG + `window.print()`;
+  - PDF nativo: SVG → Canvas → PNG base64 → Dompdf.
+- Dompdf confermato disponibile nel container.
+- Vietata la reintroduzione di SVG inline nel PDF.
+- Creato `AnnualReportPrintRenderer`.
+- Il payload di `stampa.php` trasmette ora `relazione_annuale`.
+- `stampa_pdf_api.php` integra nota metodologica e sezioni narrative.
+- Aggiunti stili editoriali compatibili con Dompdf.
+- Escape HTML verificato.
+- Test dedicato: `test_annual_report_print_renderer.php` — OK.
+- Annual Report corrente: 12 sezioni, circa 1.223 parole.
+- Full Regression: OK.
+- Rule registrate: 120.
+- Rule Engine invariato e in FREEZE.
+- Commit: `ee27d89` — `feat(pdf): include annual narrative report in native PDF`.
+- Prossimo passo: verifica visiva del PDF su casi reali e consolidamento UX.
