@@ -824,7 +824,14 @@ async function buildReportHTML(perStampa) {
         }
 
         html += '</div>';
-        if (perStampa && (modRL || modRiloc)) html += '<div class="page-break"></div>';
+
+        if (modRS && _temaRSCache?.relazione_annuale) {
+            html += buildAnnualReportHTML(
+                _temaRSCache.relazione_annuale
+            );
+        } else if (perStampa && (modRL || modRiloc)) {
+            html += '<div class="page-break"></div>';
+        }
     }
 
     if (modRL) {
@@ -886,6 +893,78 @@ async function buildReportHTML(perStampa) {
     </div>`;
 
     return html;
+}
+
+/**
+ * Esegue l'escape HTML dei contenuti narrativi ricevuti dall'API.
+ */
+function escapeReportHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+/**
+ * Converte un testo narrativo in paragrafi HTML sicuri.
+ */
+function reportParagraphs(text) {
+    return String(text ?? '')
+        .trim()
+        .split(/\n\s*\n/)
+        .map(paragraph => paragraph.trim())
+        .filter(Boolean)
+        .map(paragraph => `<p>${escapeReportHtml(paragraph)}</p>`)
+        .join('');
+}
+
+/**
+ * Renderizza il Report Annuale nell'anteprima e nella stampa browser.
+ */
+function buildAnnualReportHTML(report) {
+    if (!report || !Array.isArray(report.sections) || report.sections.length === 0) {
+        return '';
+    }
+
+    const title = escapeReportHtml(
+        report.title || 'Rivoluzione Solare'
+    );
+
+    const methodologicalNote = String(
+        report.methodological_note || ''
+    ).trim();
+
+    const sections = report.sections
+        .filter(section => section && String(section.text || '').trim() !== '')
+        .map(section => {
+            const sectionTitle = String(section.title || '').trim();
+            const titleHtml = sectionTitle !== ''
+                ? `<div class="annual-report-section-title">${escapeReportHtml(sectionTitle)}</div>`
+                : '';
+
+            return `
+                <div class="annual-report-section">
+                    ${titleHtml}
+                    <div class="annual-report-section-text">
+                        ${reportParagraphs(section.text)}
+                    </div>
+                </div>`;
+        })
+        .join('');
+
+    const noteHtml = methodologicalNote !== ''
+        ? `<div class="annual-report-note">${reportParagraphs(methodologicalNote)}</div>`
+        : '';
+
+    return `
+        <div class="page-break"></div>
+        <div class="report-section annual-report-print">
+            <div class="report-section-title">${title}</div>
+            ${noteHtml}
+            ${sections}
+        </div>`;
 }
 
 // ════════════════════════════════════════════════════════════════════════
