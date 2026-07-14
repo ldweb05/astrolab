@@ -11,6 +11,20 @@ run_test() {
     "$PHP_BIN" "$test_file"
 }
 
+run_php_lint() {
+    printf '\n===== PHP SYNTAX CHECK =====\n'
+
+    while IFS= read -r -d '' php_file; do
+        "$PHP_BIN" -l "$php_file" >/dev/null
+    done < <(
+        find "$ROOT"             -path "$ROOT/vendor" -prune -o             -type f -name '*.php' -print0
+    )
+
+    printf 'PHP SYNTAX CHECK OK\n'
+}
+
+run_php_lint
+
 run_test "$TESTS/test_annual_summary_builder.php"
 run_test "$TESTS/test_executive_summary_narrative.php"
 run_test "$TESTS/test_theme_summary_narrative.php"
