@@ -47,6 +47,7 @@ require_once '../includes/SweCalc.php';
 require_once '../includes/RuleEngine.php';
 require_once '../includes/FiltroEsclusione.php';
 require_once '../includes/forecast/AnnualReportPrintRenderer.php';
+require_once '../includes/forecast/AnnualReportPrintSanitizer.php';
 
 // ── Carica Dompdf via Composer ──────────────────────────────────────────
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -91,9 +92,11 @@ $pngRL     = _validaPng($get('png_rl',     ''));
 $pngRiloc  = _validaPng($get('png_riloc',  ''));
 
 $annualReportRaw = $get('annual_report', []);
-$annualReport = is_array($annualReportRaw)
-    ? $annualReportRaw
-    : [];
+$annualReport = (new AnnualReportPrintSanitizer())->sanitize(
+    is_array($annualReportRaw)
+        ? $annualReportRaw
+        : []
+);
 
 // ── Verifica autorizzazione soggetto ────────────────────────────────────
 $soggetto = $auth->verificaSoggetto($soggettoId);
