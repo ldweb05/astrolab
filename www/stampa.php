@@ -995,8 +995,9 @@ async function generaPDF() {
         luogo_riloc: document.getElementById('luogo-riloc-print')?.value ?? '',
         png_natale:  pngNatale,
         png_rs:      pngRS,
-        png_rl:      pngRL,
-        png_riloc:   pngRiloc,
+        png_rl:        pngRL,
+        png_riloc:     pngRiloc,
+        annual_report: _temaRSCache?.relazione_annuale ?? {},
     };
 
     try {
