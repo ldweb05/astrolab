@@ -39,6 +39,39 @@ run_shell_lint() {
 
 run_shell_lint
 
+assert_git_clean() {
+    printf '\n===== GIT INTEGRITY CHECK =====\n'
+
+    local repository_root
+    repository_root="$(cd "$ROOT/.." && pwd)"
+
+    if ! git -C "$repository_root" diff --quiet --; then
+        git -C "$repository_root" status --short
+        printf 'File tracciati modificati durante la suite\n' >&2
+        return 1
+    fi
+
+    if ! git -C "$repository_root" diff --cached --quiet --; then
+        git -C "$repository_root" status --short
+        printf 'Modifiche staged presenti durante la suite\n' >&2
+        return 1
+    fi
+
+    if [[ -n "$(git -C "$repository_root" ls-files --deleted)" ]]; then
+        git -C "$repository_root" status --short
+        printf 'File tracciati mancanti\n' >&2
+        return 1
+    fi
+
+    if [[ -n "$(git -C "$repository_root" ls-files --others --exclude-standard)" ]]; then
+        git -C "$repository_root" status --short
+        printf 'File non tracciati generati durante la suite\n' >&2
+        return 1
+    fi
+
+    printf 'GIT INTEGRITY CHECK OK\n'
+}
+
 run_test "$TESTS/test_annual_summary_builder.php"
 run_test "$TESTS/test_executive_summary_narrative.php"
 run_test "$TESTS/test_theme_summary_narrative.php"
@@ -56,5 +89,7 @@ run_test "$TESTS/test_annual_report_dompdf_smoke.php"
 run_test "$TESTS/test_annual_report_real_cases.php"
 run_test "$TESTS/test_annual_report.php"
 run_test "$TESTS/test_regression_v3.php"
+
+assert_git_clean
 
 printf '\nV6 HARDENING SUITE OK\n'
