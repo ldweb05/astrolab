@@ -17,7 +17,7 @@ stato del progetto e sapere da dove riprendere lo sviluppo.
 
 **Branch di sviluppo:** `feature/sintesi-rsm`
 
-**Prossima milestone:** V5 — Consolidamento Report Professionale
+**Prossima milestone:** V6 — Hardening e Release 1.0
 
 ------------------------------------------------------------------------
 

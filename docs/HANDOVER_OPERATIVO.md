@@ -1167,3 +1167,22 @@ La Rule deve:
 - Rule Engine invariato e in FREEZE.
 - Commit: `ee27d89` — `feat(pdf): include annual narrative report in native PDF`.
 - Prossimo passo: verifica visiva del PDF su casi reali e consolidamento UX.
+
+## 2026-07-14 — Consolidamento finale V5
+
+- Branch: `feature/sintesi-rsm`.
+- Report Annuale disponibile nel PDF Dompdf.
+- Report Annuale disponibile in anteprima e stampa browser.
+- Pipeline grafica confermata:
+  - browser: SVG + `window.print()`;
+  - PDF: SVG → Canvas → PNG base64 → Dompdf.
+- Payload PDF sanitizzato tramite `AnnualReportPrintSanitizer`.
+- Narrative Style Engine consolidato.
+- Validazione narrativa multi-scenario completata.
+- Test dedicati: OK.
+- Full Regression: OK.
+- Rule registrate: 120.
+- Knowledge Coverage: 100%.
+- Rule Engine invariato e in FREEZE.
+- Ultimo commit: `3406077`.
+- Prossimo passo: verifica visiva con casi operativi reali e preparazione V6.
