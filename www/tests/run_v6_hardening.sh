@@ -92,6 +92,7 @@ run_test "$TESTS/test_annual_report_determinism.php"
 run_test "$TESTS/test_annual_report_schema.php"
 run_test "$TESTS/test_forecast_json_contract.php"
 run_test "$TESTS/test_forecast_performance_budget.php"
+run_test "$TESTS/test_forecast_house_boundaries.php"
 run_test "$TESTS/test_annual_report.php"
 run_test "$TESTS/test_regression_v3.php"
 
