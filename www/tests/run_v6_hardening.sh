@@ -60,6 +60,7 @@ assert_git_clean() {
 }
 
 run_test "$TESTS/test_astronomical_backend_architecture.php"
+run_test "$TESTS/test_runtime_environment.php"
 run_test "$TESTS/test_annual_summary_builder.php"
 run_test "$TESTS/test_executive_summary_narrative.php"
 run_test "$TESTS/test_theme_summary_narrative.php"
