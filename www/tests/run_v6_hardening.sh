@@ -70,6 +70,7 @@ assert_git_clean() {
 run_test "$TESTS/test_astronomical_backend_architecture.php"
 run_test "$TESTS/test_rule_engine_freeze.php"
 run_test "$TESTS/test_runtime_environment.php"
+run_test "$TESTS/test_composer_dependencies.php"
 run_test "$TESTS/test_database_environment.php"
 run_test "$TESTS/test_configuration_security.php"
 run_test "$TESTS/test_annual_summary_builder.php"
