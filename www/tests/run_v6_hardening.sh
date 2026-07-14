@@ -8,9 +8,7 @@ TESTS="$ROOT/tests"
 run_test() {
     local test_file="$1"
 
-    printf '
-===== %s =====
-' "$(basename "$test_file")"
+    printf '\n===== %s =====\n' "$(basename "$test_file")"
 
     "$PHP_BIN" \
         -d error_reporting=E_ALL \
