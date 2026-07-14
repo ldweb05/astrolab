@@ -278,3 +278,30 @@ Completato:
 Commit di riferimento:
 
 `ee27d89` — `feat(pdf): include annual narrative report in native PDF`
+
+## Consolidamento finale V5
+
+Completato:
+
+- Report Annuale integrato nel PDF nativo Dompdf;
+- Report Annuale integrato nell’anteprima e nella stampa browser;
+- sanitizzazione strutturale del payload di stampa;
+- Narrative Style Engine consolidato e coperto da test;
+- validazione narrativa su tre scenari deterministici;
+- controllo sezioni duplicate;
+- smoke test Dompdf;
+- Full Regression stabile;
+- Rule Engine invariato a 120/120 e in FREEZE.
+
+Commit di riferimento:
+
+- `6443d1c` — browser preview;
+- `7937c3d` — sanitizzazione payload PDF;
+- `b3b5796` — Narrative Style Engine;
+- `3406077` — validazione multi-scenario.
+
+Prossimo obiettivo:
+
+- verifica visiva ed editoriale con casi operativi reali;
+- rifinitura UX;
+- preparazione V6 — Hardening e Release 1.0.
