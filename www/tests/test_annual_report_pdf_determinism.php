@@ -8,7 +8,7 @@ require_once __DIR__
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-function buildPdf(): string
+function buildPdf(): array
 {
     $renderer = new AnnualReportPrintRenderer();
 
@@ -122,7 +122,14 @@ HTML;
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
 
-    return $dompdf->output();
+    $canvas = $dompdf->getCanvas();
+    $pageCount = $canvas->get_page_count();
+    $pdf = $dompdf->output();
+
+    return [
+        'pdf' => $pdf,
+        'page_count' => $pageCount,
+    ];
 }
 
 function pdfStructure(string $pdf): array
@@ -168,11 +175,38 @@ function pdfStructure(string $pdf): array
     ];
 }
 
-$first = buildPdf();
-$second = buildPdf();
+$firstResult = buildPdf();
+$secondResult = buildPdf();
+
+$first = (string)($firstResult['pdf'] ?? '');
+$second = (string)($secondResult['pdf'] ?? '');
+
+$firstPageCount = (int)($firstResult['page_count'] ?? 0);
+$secondPageCount = (int)($secondResult['page_count'] ?? 0);
+
+if ($firstPageCount < 1 || $secondPageCount < 1) {
+    fwrite(
+        STDERR,
+        "Dompdf non ha generato pagine valide: "
+        ."{$firstPageCount}/{$secondPageCount}\n"
+    );
+    exit(1);
+}
+
+if ($firstPageCount !== $secondPageCount) {
+    fwrite(
+        STDERR,
+        "Numero pagine Dompdf non deterministico: "
+        ."{$firstPageCount}/{$secondPageCount}\n"
+    );
+    exit(1);
+}
 
 $firstStructure = pdfStructure($first);
 $secondStructure = pdfStructure($second);
+
+$firstStructure['canvas_pages'] = $firstPageCount;
+$secondStructure['canvas_pages'] = $secondPageCount;
 
 if ($firstStructure !== $secondStructure) {
     fwrite(
@@ -190,8 +224,19 @@ if ($firstStructure !== $secondStructure) {
     exit(1);
 }
 
-if (($firstStructure['pages'] ?? 0) < 1) {
-    fwrite(STDERR, "Numero pagine PDF non valido\n");
+if (($firstStructure['canvas_pages'] ?? 0) < 1) {
+    fwrite(STDERR, "Numero pagine Canvas non valido\n");
+    exit(1);
+}
+
+if (
+    ($firstStructure['pages'] ?? 0)
+    < ($firstStructure['canvas_pages'] ?? 0)
+) {
+    fwrite(
+        STDERR,
+        "Struttura PDF incoerente con il Canvas Dompdf\n"
+    );
     exit(1);
 }
 
@@ -224,7 +269,7 @@ foreach ([
 echo sprintf(
     "ANNUAL REPORT PDF DETERMINISM OK: "
     ."%d pagine, %d oggetti, %d/%d byte\n",
-    $firstStructure['pages'],
+    $firstStructure['canvas_pages'],
     $firstStructure['objects'],
     $firstSize,
     $secondSize
