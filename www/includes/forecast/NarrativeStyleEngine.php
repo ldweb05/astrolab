@@ -6,6 +6,9 @@ final class NarrativeStyleEngine
     /**
      * Varia alcune formule ripetitive mantenendo invariato
      * il significato prudenziale della relazione.
+     *
+     * @param array<int,array> $sections
+     * @return array<int,array>
      */
     public function refine(array $sections): array
     {
@@ -18,22 +21,22 @@ final class NarrativeStyleEngine
             'sembrerebbe assumere' => [
                 'potrebbe assumere',
                 'tenderebbe ad assumere',
-                'apparirebbe destinato ad assumere',
+                'potrebbe progressivamente assumere',
             ],
             'sembrerebbero offrire' => [
                 'potrebbero offrire',
                 'tenderebbero a offrire',
-                'lascerebbero intravedere risorse utili per',
+                'potrebbero mettere a disposizione',
             ],
             'sembrerebbero concentrarsi' => [
                 'potrebbero concentrarsi',
                 'tenderebbero a concentrarsi',
-                'apparirebbero maggiormente presenti',
+                'potrebbero risultare maggiormente presenti',
             ],
             'sembrerebbe sostenuto' => [
                 'potrebbe essere sostenuto',
                 'parrebbe sostenuto',
-                'risulterebbe sostenuto',
+                'potrebbe trovare sostegno',
             ],
             'potrebbe rappresentare' => [
                 'potrebbe costituire',
@@ -55,24 +58,37 @@ final class NarrativeStyleEngine
         $counters = [];
 
         foreach ($sections as $index => $section) {
+            if (!is_array($section)) {
+                continue;
+            }
+
             $text = (string)($section['text'] ?? '');
 
+            if ($text === '') {
+                continue;
+            }
+
             foreach ($replacements as $needle => $variants) {
-                if (!str_contains($text, $needle)) {
-                    continue;
+                while (str_contains($text, $needle)) {
+                    $position = $counters[$needle] ?? 0;
+                    $replacement = $variants[
+                        $position % count($variants)
+                    ];
+
+                    $updated = preg_replace(
+                        '/'.preg_quote($needle, '/').'/u',
+                        $replacement,
+                        $text,
+                        1
+                    );
+
+                    if (!is_string($updated) || $updated === $text) {
+                        break;
+                    }
+
+                    $text = $updated;
+                    $counters[$needle] = $position + 1;
                 }
-
-                $position = $counters[$needle] ?? 0;
-                $replacement = $variants[$position % count($variants)];
-
-                $text = preg_replace(
-                    '/'.preg_quote($needle, '/').'/u',
-                    $replacement,
-                    $text,
-                    1
-                ) ?? $text;
-
-                $counters[$needle] = $position + 1;
             }
 
             $sections[$index]['text'] = $text;
