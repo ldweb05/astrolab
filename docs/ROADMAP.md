@@ -263,3 +263,18 @@ Milestone completate:
 - qualità editoriale del PDF;
 - UX del report;
 - validazione con casi reali.
+
+## PDF professionale
+
+Completato:
+
+- continuità editoriale e controllo delle interruzioni di pagina;
+- mantenimento della pipeline SVG → Canvas → PNG base64 → Dompdf;
+- integrazione del Report Annuale narrativo nel PDF nativo;
+- rendering sicuro di nota metodologica e sezioni narrative;
+- test dedicato del renderer HTML;
+- Full Regression stabile.
+
+Commit di riferimento:
+
+`ee27d89` — `feat(pdf): include annual narrative report in native PDF`
