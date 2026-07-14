@@ -7,8 +7,10 @@ TESTS="$ROOT/tests"
 
 run_test() {
     local test_file="$1"
+
     printf '\n===== %s =====\n' "$(basename "$test_file")"
-    "$PHP_BIN" "$test_file"
+
+    "$PHP_BIN"         -d error_reporting=E_ALL         -d display_errors=1         -d display_startup_errors=1         -d assert.active=1         -d assert.exception=1         "$test_file"
 }
 
 run_php_lint() {
