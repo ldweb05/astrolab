@@ -87,6 +87,7 @@ run_test "$TESTS/test_print_report_css.php"
 run_test "$TESTS/test_annual_report_dompdf_smoke.php"
 run_test "$TESTS/test_annual_report_real_cases.php"
 run_test "$TESTS/test_annual_report_determinism.php"
+run_test "$TESTS/test_forecast_json_contract.php"
 run_test "$TESTS/test_annual_report.php"
 run_test "$TESTS/test_regression_v3.php"
 
