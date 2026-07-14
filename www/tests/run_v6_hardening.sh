@@ -25,6 +25,20 @@ run_php_lint() {
 
 run_php_lint
 
+run_shell_lint() {
+    printf '\n===== SHELL SYNTAX CHECK =====\n'
+
+    while IFS= read -r -d '' shell_file; do
+        bash -n "$shell_file"
+    done < <(
+        find "$ROOT"             -path "$ROOT/vendor" -prune -o             -type f -name '*.sh' -print0
+    )
+
+    printf 'SHELL SYNTAX CHECK OK\n'
+}
+
+run_shell_lint
+
 run_test "$TESTS/test_annual_summary_builder.php"
 run_test "$TESTS/test_executive_summary_narrative.php"
 run_test "$TESTS/test_theme_summary_narrative.php"
