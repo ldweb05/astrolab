@@ -17,7 +17,7 @@ stato del progetto e sapere da dove riprendere lo sviluppo.
 
 **Branch di sviluppo:** `feature/sintesi-rsm`
 
-**Milestone corrente:** V6 — Release Candidate 1 superata
+**Milestone corrente:** V6 — Release Candidate 2 superata
 
 ------------------------------------------------------------------------
 
