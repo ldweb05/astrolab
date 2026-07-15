@@ -42,6 +42,8 @@ required_files=(
     "$APPLICATION_ROOT/tests/run_v6_hardening.sh"
     "$APPLICATION_ROOT/tests/run_v6_release_check.sh"
     "$APPLICATION_ROOT/tests/run_v6_backup_restore_check.sh"
+    "$REPOSITORY_ROOT/docker-compose.production.yml"
+    "$REPOSITORY_ROOT/tools/environment.sh"
     "$APPLICATION_ROOT/tests/fixtures/rule_engine_freeze.json"
 )
 
@@ -79,6 +81,68 @@ grep -Fq \
 grep -Fq \
     'V6 Hardening e Release Check' \
     "$REPOSITORY_ROOT/docs/HANDOVER_OPERATIVO.md"
+
+development_env="$(
+    awk -F= '$1 == "APP_ENV" { print $2; exit }' \
+        "$REPOSITORY_ROOT/.env"
+)"
+
+development_debug="$(
+    awk -F= '$1 == "APP_DEBUG" { print $2; exit }' \
+        "$REPOSITORY_ROOT/.env"
+)"
+
+production_env="$(
+    awk -F= '$1 == "APP_ENV" { print $2; exit }' \
+        "$REPOSITORY_ROOT/.env.production"
+)"
+
+production_debug="$(
+    awk -F= '$1 == "APP_DEBUG" { print $2; exit }' \
+        "$REPOSITORY_ROOT/.env.production"
+)"
+
+if [[ "$development_env" != "development" \
+    || "$development_debug" != "true" ]]; then
+    printf 'Configurazione development non valida\n' >&2
+    exit 1
+fi
+
+if [[ "$production_env" != "production" \
+    || "$production_debug" != "false" ]]; then
+    printf 'Configurazione production non valida\n' >&2
+    exit 1
+fi
+
+docker compose \
+    -f "$REPOSITORY_ROOT/docker-compose.yml" \
+    -f "$REPOSITORY_ROOT/docker-compose.production.yml" \
+    config >/tmp/astro-val-v6-production-compose.yml
+
+if ! grep -Fq 'APP_ENV: production' \
+    /tmp/astro-val-v6-production-compose.yml; then
+    printf 'Compose production senza APP_ENV=production\n' >&2
+    exit 1
+fi
+
+if ! grep -Fq 'APP_DEBUG: "false"' \
+    /tmp/astro-val-v6-production-compose.yml; then
+    printf 'Compose production senza APP_DEBUG=false\n' >&2
+    exit 1
+fi
+
+environment_output="$(
+    "$REPOSITORY_ROOT/tools/environment.sh" status
+)"
+
+printf '%s\n' "$environment_output"
+
+if ! grep -Eq \
+    'mode[[:space:]]*:[[:space:]]*(DEVELOPMENT|PRODUCTION)' \
+    <<< "$environment_output"; then
+    printf 'Stato ambiente runtime non coerente\n' >&2
+    exit 1
+fi
 
 release_output="$(
     docker exec \
@@ -138,12 +202,15 @@ last_commit="$(
     printf 'rule_engine: 120 RULE — FREEZE OK\n'
     printf 'release_check: OK\n'
     printf 'backup_restore: OK\n'
+    printf 'environment_switching: OK\n'
     printf '\nLAST COMMIT\n'
     printf '%s\n' "$last_commit"
     printf '\nRELEASE OUTPUT\n'
     printf '%s\n' "$release_output"
     printf '\nBACKUP RESTORE OUTPUT\n'
     printf '%s\n' "$backup_restore_output"
+    printf '\nENVIRONMENT OUTPUT\n'
+    printf '%s\n' "$environment_output"
 } > "$REPORT_FILE.tmp"
 
 mv "$REPORT_FILE.tmp" "$REPORT_FILE"
@@ -164,5 +231,6 @@ printf 'working_tree       : CLEAN\n'
 printf 'rule_engine        : FREEZE OK\n'
 printf 'release_check      : OK\n'
 printf 'backup_restore     : OK\n'
+printf 'environment       : OK\n'
 printf 'report             : %s\n' "$REPORT_FILE"
 printf '\nV6 RC2 CHECK OK\n'
