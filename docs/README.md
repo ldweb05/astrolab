@@ -223,26 +223,21 @@ WORKING TREE CLEAN
 - V2 — Base Interpretation: completata
 - V3 — Forecast Engine: completata
 - V4 — Rule Engine 120/120: completata
-- V5 — Consolidamento Report Professionale: in corso
-- V6 — Hardening e Release 1.0: pianificata
+- V5 — Consolidamento Report Professionale: completata
+- V6 — Hardening e Release 1.0: RC2 superata
 
 Per i dettagli consultare `docs/ROADMAP.md`.
 
 ## Punto di ripresa
 
-Il prossimo sviluppo deve concentrarsi sul consolidamento del Report Professionale.
+Lo sviluppo riparte dalla base stabile della V6 RC2.
 
-Priorità operative:
+Prossime priorità operative:
 
-1. Executive Summary
-2. Narrative Engine
-3. Theme Profile
-4. Cross Dynamics
-5. Conclusion
-6. Riduzione delle ripetizioni
-7. Coerenza stilistica
-8. Qualità del PDF
-9. UX del report
-10. Validazione con casi reali
+1. Preparazione della release stabile
+2. Verifica finale della configurazione production
+3. Rifiniture UX/UI
+4. Validazione finale browser e PDF
+5. Rilascio della versione stabile
 
-Il Rule Engine non deve essere riaperto salvo bug documentati.
+Per lo stato dettagliato consultare `docs/ROADMAP.md` e `docs/HANDOVER_OPERATIVO.md`.
