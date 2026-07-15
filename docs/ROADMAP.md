@@ -305,3 +305,43 @@ Prossimo obiettivo:
 - verifica visiva ed editoriale con casi operativi reali;
 - rifinitura UX;
 - preparazione V6 — Hardening e Release 1.0.
+
+## V6 — Hardening e Release 1.0
+
+### Stato corrente
+
+Completato:
+
+- suite unica `www/tests/run_v6_hardening.sh`;
+- comando release `www/tests/run_v6_release_check.sh`;
+- lint completo PHP e Bash;
+- diagnostica PHP rigorosa;
+- validazione ambiente PHP 8.3, FFI, libswe e Dompdf;
+- validazione PostgreSQL 16;
+- integrità Composer;
+- sicurezza configurazione;
+- divieto di backend astronomici esterni;
+- baseline crittografica del Rule Engine;
+- 120 Rule in stato FREEZE;
+- contratto API autenticato e non autenticato;
+- contratto JSON del Forecast Engine;
+- determinismo del Report Annuale;
+- schema stabile delle 12 sezioni;
+- determinismo strutturale PDF tramite Canvas Dompdf;
+- test su casi reali e case estreme;
+- budget prestazionale del Forecast Engine;
+- Full Regression stabile.
+
+### Release check corrente
+
+- durata complessiva: circa 36 secondi;
+- timeout massimo: 180 secondi;
+- esito: `V6 RELEASE CHECK OK`;
+- Working Tree: CLEAN.
+
+### Prossimi obiettivi
+
+- controllo visuale manuale browser/PDF;
+- validazione backup e ripristino PostgreSQL;
+- verifica configurazione production;
+- preparazione checklist Release Candidate 1.
