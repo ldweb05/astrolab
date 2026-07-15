@@ -17,3 +17,9 @@ postgres-data/
 www/cache/
 www/tmp/
 .bak_*
+
+# Configurazioni e backup sensibili
+.env.bak*
+.env.*.bak
+backup*.sql
+bkup*.sql
