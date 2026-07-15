@@ -96,6 +96,19 @@ if ! grep -Fq \
     exit 1
 fi
 
+backup_restore_output="$(
+    "$APPLICATION_ROOT/tests/run_v6_backup_restore_check.sh"
+)"
+
+printf '%s\n' "$backup_restore_output"
+
+if ! grep -Fq \
+    'V6 BACKUP AND RESTORE CHECK OK' \
+    <<< "$backup_restore_output"; then
+    printf 'Backup e ripristino PostgreSQL non validi\n' >&2
+    exit 1
+fi
+
 rule_freeze_output="$(
     docker exec astro-val-web php \
         -d error_reporting=E_ALL \
