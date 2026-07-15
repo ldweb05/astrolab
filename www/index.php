@@ -33,7 +33,13 @@ $soggettoNome = $auth->getSoggettoNome();
 <header>
     <div class="header-inner">
         <h1>☉ Astrologia Attiva</h1>
-        <nav>
+        <button class="nav-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="main-nav"
+                aria-label="Apri menu di navigazione">☰</button>
+
+        <nav id="main-nav" class="main-nav">
             <a href="index.php" class="active">Soggetti</a>
             <a href="tema.php">Tema Natale</a>
             <a href="rs.php">Rivoluzione Solare</a>
@@ -41,16 +47,23 @@ $soggettoNome = $auth->getSoggettoNome();
             <?php if ($isAdmin): ?>
             <a href="admin_utenti.php">⚙️ Utenti</a>
             <?php endif; ?>
-        </nav>
-        <div class="header-user">
+        
+
+            <hr class="nav-separator">
+
+<div class="header-user">
             <span>👤 <?= htmlspecialchars($username) ?>
                 <?php if ($isAdmin): ?><span style="color:#D4C9A8;font-size:10px"> (admin)</span><?php endif; ?>
             </span>
             <?php if ($soggettoNome): ?>
             <span class="soggetto-attivo">⭐ <?= htmlspecialchars($soggettoNome) ?></span>
             <?php endif; ?>
-            <a href="logout.php">Esci</a>
+            <a href="cambia_password.php" class="header-link">🔑 Password</a>
+            <a href="logout.php" class="header-link">Esci</a>
         </div>
+
+</nav>
+        
     </div>
 </header>
 
@@ -229,6 +242,7 @@ $soggettoNome = $auth->getSoggettoNome();
     </div>
 </main>
 
+<script src="js/header_nav.js" defer></script>
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/app.js"></script>
 <script>
