@@ -44,8 +44,8 @@ salvo correzioni di bug documentati.
 -   V2 --- Base Interpretation ✅
 -   V3 --- Forecast Engine ✅
 -   V4 --- Rule Engine (120 Rule) ✅
--   V5 --- Consolidamento Report Professionale ⏳
--   V6 --- Hardening e Release 1.0 ⏳
+-   V5 --- Consolidamento Report Professionale ✅
+-   V6 --- Hardening e Release 1.0 — RC2 superata ✅
 
 ------------------------------------------------------------------------
 
