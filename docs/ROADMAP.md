@@ -345,3 +345,40 @@ Completato:
 - validazione backup e ripristino PostgreSQL;
 - verifica configurazione production;
 - preparazione checklist Release Candidate 1.
+
+## V6 Release Candidate 1
+
+Stato: **SUPERATA**
+
+Controlli completati:
+
+- V6 Hardening Suite: OK;
+- V6 Release Check: OK;
+- V6 RC1 Check: OK;
+- Full Regression: OK;
+- Rule Engine: 120 Rule in FREEZE;
+- API autenticate e non autenticate: OK;
+- determinismo Report Annuale: OK;
+- determinismo strutturale PDF: OK;
+- integrità runtime, PostgreSQL e Composer: OK;
+- sicurezza configurazione: OK;
+- Working Tree: CLEAN.
+
+Metriche RC1:
+
+- durata release check: 28 secondi;
+- timeout disponibile: 180 secondi;
+- report temporaneo:
+  `/tmp/astro-val-v6-rc1-report.txt`.
+
+Commit principali:
+
+- `4586c81` — release readiness check;
+- `5a028cd` — checklist RC1;
+- `935cedc` — rimozione dei backup ambiente dal tracciamento Git.
+
+Prossimo obiettivo:
+
+- verifica visuale manuale browser e PDF;
+- validazione backup/ripristino PostgreSQL;
+- preparazione Release Candidate 2.
