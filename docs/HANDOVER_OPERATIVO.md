@@ -1206,3 +1206,21 @@ La Rule deve:
 - Ultimo commit funzionale:
   `4586c81 test(v6): add release readiness check`
 - Working Tree: CLEAN.
+
+## 2026-07-15 — V6 Release Candidate 1 superata
+
+- Branch: `feature/sintesi-rsm`.
+- V6 Hardening Suite: OK.
+- V6 Release Check: OK.
+- V6 RC1 Check: OK.
+- Durata release check: 28 secondi.
+- Timeout: 180 secondi.
+- Rule Engine: 120 Rule in FREEZE.
+- Full Regression: OK.
+- API autenticate: OK.
+- API non autenticate: OK.
+- Report Annuale e PDF: OK.
+- Working Tree: CLEAN.
+- Backup `.env` non più tracciati da Git.
+- Ultimo commit di sicurezza: `935cedc`.
+- Prossimo passo: verifica visuale e preparazione RC2.
