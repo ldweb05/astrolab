@@ -1186,3 +1186,23 @@ La Rule deve:
 - Rule Engine invariato e in FREEZE.
 - Ultimo commit: `3406077`.
 - Prossimo passo: verifica visiva con casi operativi reali e preparazione V6.
+
+## 2026-07-15 — V6 Hardening e Release Check
+
+- Branch operativo: `feature/sintesi-rsm`.
+- Rule Engine: 120 Rule, stato FREEZE.
+- Manifest FREEZE: 122 file protetti.
+- Hardening Suite: OK.
+- Full Regression: OK.
+- API non autenticate: OK.
+- API autenticate: OK.
+- Report Annuale: 12 sezioni.
+- Determinismo JSON: OK.
+- Determinismo PDF Dompdf: OK.
+- Budget Forecast Engine: OK.
+- Release check: 36 secondi su limite di 180.
+- Comando release:
+  `www/tests/run_v6_release_check.sh`
+- Ultimo commit funzionale:
+  `4586c81 test(v6): add release readiness check`
+- Working Tree: CLEAN.
