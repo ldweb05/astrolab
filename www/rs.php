@@ -579,8 +579,35 @@ function stampaPrevisioneAnnuale() {
     finestra.document.close();
     finestra.focus();
 
+    let stampaCompletata = false;
+
+    const chiudiFinestraStampa = () => {
+        if (stampaCompletata || finestra.closed) {
+            return;
+        }
+
+        stampaCompletata = true;
+        finestra.close();
+    };
+
+    finestra.addEventListener(
+        'afterprint',
+        chiudiFinestraStampa,
+        { once: true }
+    );
+
     setTimeout(() => {
+        if (finestra.closed) {
+            return;
+        }
+
         finestra.print();
+
+        /*
+         * Fallback per browser che non emettono afterprint
+         * in modo affidabile sulla finestra secondaria.
+         */
+        setTimeout(chiudiFinestraStampa, 1500);
     }, 250);
 }
  
