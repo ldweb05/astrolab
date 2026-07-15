@@ -1259,3 +1259,14 @@ la conclusione o l'annullamento del dialogo del browser.
 - Working Tree: CLEAN.
 - Ultimo commit RC2: `ff94c69`.
 - Prossimo passo: configurazione production e RC finale.
+
+## 2026-07-15 — Consolidamento documentazione V6 RC2
+
+- README aggiornato allo stato reale della piattaforma.
+- START_HERE allineato alla milestone corrente.
+- ROADMAP e HANDOVER verificati e coerenti.
+- Nessun riferimento operativo obsoleto residuo.
+- Environment switching documentato.
+- Working Tree CLEAN.
+- Stato del progetto pronto per la preparazione della Release stabile.
+
