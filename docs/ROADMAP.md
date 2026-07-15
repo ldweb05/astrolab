@@ -382,3 +382,13 @@ Prossimo obiettivo:
 - verifica visuale manuale browser e PDF;
 - validazione backup/ripristino PostgreSQL;
 - preparazione Release Candidate 2.
+
+### Correzioni successive a RC1
+
+- verifica visuale browser e PDF completata;
+- chiusura automatica della finestra temporanea usata per la stampa
+  della Relazione Annuale;
+- commit: `2f8055d fix(print): close annual report print window`;
+- V6 Release Check successivo: OK;
+- durata rilevata: 30 secondi;
+- Working Tree: CLEAN.

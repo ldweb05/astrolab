@@ -1224,3 +1224,17 @@ La Rule deve:
 - Backup `.env` non più tracciati da Git.
 - Ultimo commit di sicurezza: `935cedc`.
 - Prossimo passo: verifica visuale e preparazione RC2.
+
+## 2026-07-15 — Correzione finestra stampa Relazione Annuale
+
+La funzione `stampaPrevisioneAnnuale()` continua a usare una finestra
+temporanea dedicata alla stampa, ma ora la chiude automaticamente dopo
+la conclusione o l'annullamento del dialogo del browser.
+
+- file: `www/rs.php`;
+- commit: `2f8055d`;
+- verifica visuale: OK;
+- Full Regression: OK;
+- V6 Release Check: OK;
+- durata: 30 secondi;
+- Working Tree: CLEAN.
