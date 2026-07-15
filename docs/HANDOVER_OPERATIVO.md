@@ -1238,3 +1238,24 @@ la conclusione o l'annullamento del dialogo del browser.
 - V6 Release Check: OK;
 - durata: 30 secondi;
 - Working Tree: CLEAN.
+
+## 2026-07-15 — V6 Release Candidate 2 superata
+
+- Branch: `feature/sintesi-rsm`.
+- V6 Hardening Suite: OK.
+- V6 Release Check: OK.
+- V6 RC2 Check: OK.
+- Durata release check: 27 secondi.
+- Timeout: 180 secondi.
+- Rule Engine: 120 Rule in FREEZE.
+- Full Regression: OK.
+- Verifica visuale browser/PDF: OK.
+- Finestra temporanea stampa: chiusura automatica verificata.
+- Backup PostgreSQL: 2.769.999 byte.
+- Restore PostgreSQL: OK.
+- Tabelle ripristinate: 7.
+- Utenti ripristinati: 3.
+- Soggetti ripristinati: 4.
+- Working Tree: CLEAN.
+- Ultimo commit RC2: `ff94c69`.
+- Prossimo passo: configurazione production e RC finale.

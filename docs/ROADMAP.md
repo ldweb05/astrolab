@@ -392,3 +392,44 @@ Prossimo obiettivo:
 - V6 Release Check successivo: OK;
 - durata rilevata: 30 secondi;
 - Working Tree: CLEAN.
+
+## V6 Release Candidate 2
+
+Stato: **SUPERATA**
+
+Controlli completati:
+
+- V6 Hardening Suite: OK;
+- V6 Release Check: OK;
+- V6 RC2 Check: OK;
+- Full Regression: OK;
+- Rule Engine: 120 Rule in FREEZE;
+- API autenticate e non autenticate: OK;
+- verifica visuale browser e PDF: OK;
+- chiusura automatica finestra di stampa: OK;
+- determinismo Report Annuale e PDF: OK;
+- backup e ripristino PostgreSQL: OK;
+- 7 tabelle ripristinate;
+- 3 utenti e 4 soggetti verificati;
+- Working Tree: CLEAN.
+
+Metriche RC2:
+
+- durata release check: 27 secondi;
+- timeout disponibile: 180 secondi;
+- backup verificato: 2.769.999 byte;
+- report temporaneo:
+  `/tmp/astro-val-v6-rc2-report.txt`.
+
+Commit principali:
+
+- `2f8055d` — chiusura finestra temporanea di stampa;
+- `8d47d9c` — controllo automatico backup/restore;
+- `65603c4` — integrazione restore nella checklist;
+- `ff94c69` — checklist RC2.
+
+Prossimo obiettivo:
+
+- verifica configurazione production;
+- revisione logging e gestione errori;
+- preparazione Release Candidate finale.
