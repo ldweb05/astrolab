@@ -1,0 +1,9 @@
+services:
+
+  astro-val-web:
+    env_file:
+      - .env.production
+
+  astro-val-db:
+    env_file:
+      - .env.production
