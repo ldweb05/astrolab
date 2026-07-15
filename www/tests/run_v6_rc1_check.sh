@@ -41,6 +41,7 @@ required_files=(
     "$APPLICATION_ROOT/composer.lock"
     "$APPLICATION_ROOT/tests/run_v6_hardening.sh"
     "$APPLICATION_ROOT/tests/run_v6_release_check.sh"
+    "$APPLICATION_ROOT/tests/run_v6_backup_restore_check.sh"
     "$APPLICATION_ROOT/tests/fixtures/rule_engine_freeze.json"
 )
 
@@ -123,10 +124,13 @@ last_commit="$(
     printf 'working_tree: CLEAN\n'
     printf 'rule_engine: 120 RULE — FREEZE OK\n'
     printf 'release_check: OK\n'
+    printf 'backup_restore: OK\n'
     printf '\nLAST COMMIT\n'
     printf '%s\n' "$last_commit"
     printf '\nRELEASE OUTPUT\n'
     printf '%s\n' "$release_output"
+    printf '\nBACKUP RESTORE OUTPUT\n'
+    printf '%s\n' "$backup_restore_output"
 } > "$REPORT_FILE.tmp"
 
 mv "$REPORT_FILE.tmp" "$REPORT_FILE"
@@ -146,5 +150,6 @@ printf 'branch             : %s\n' "$current_branch"
 printf 'working_tree       : CLEAN\n'
 printf 'rule_engine        : FREEZE OK\n'
 printf 'release_check      : OK\n'
+printf 'backup_restore     : OK\n'
 printf 'report             : %s\n' "$REPORT_FILE"
 printf '\nV6 RC1 CHECK OK\n'
