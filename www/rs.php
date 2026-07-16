@@ -996,11 +996,12 @@ function popolaTabellaPianeti(tabId, tema) {
     const nomi = {0:'☉ Sole',1:'☽ Luna',2:'☿ Mercurio',3:'♀ Venere',4:'♂ Marte',
                   5:'♃ Giove',6:'♄ Saturno',7:'♅ Urano',8:'♆ Nettuno',9:'♇ Plutone',
                   11:'☊ Nodo N.'};
-    let html = '<table><th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th></tr>';
+    let html = '<table class="tabella-pianeti"><thead><tr><th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th></tr></thead><tbody>';
     Object.values(tema.pianeti).forEach(p => {
         html += '<tr><td>'+(nomi[p.id]??p.nome)+'</td><td>'+p.posizione.stringa+'</td>'+
                 '<td>'+p.casa+'</td><td>'+(p.retrogrado?'<span class="retro">R</span>':'')+'</td></tr>';
     });
+    html += '</tbody></table>';
     document.getElementById(tabId).innerHTML = html;
 }
  
