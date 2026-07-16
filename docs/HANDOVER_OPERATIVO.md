@@ -18,6 +18,14 @@ Ogni voce deve riportare almeno:
 Questo documento costituisce il punto di ripartenza ufficiale per ogni
 futuro sviluppatore.
 
+**Questo deve essere il workflow operativo:**
+- 1	apriamo un file;
+- 2	lo leggiamo;
+- 3	individuiamo solo ciò che va aggiornato;
+- 4	preparo uno script Python;
+- 5	tu lo esegui;
+- 6	verifichiamo (diff, php -l, git diff --check, ecc.);
+- 7	commit.
 
 # Astro-Val — Handover operativo
 
@@ -1318,3 +1326,32 @@ Stato corrente:
 - Rule Engine: FREEZE a 120 Rule;
 - Working Tree: CLEAN;
 - prossimo passo: rifiniture UX/UI finali e preparazione della release V6.1.
+
+------------------------------------------------------------------------
+
+## 2026-07-16 — V6.1 Refactoring stili JavaScript
+
+Completata la rimozione degli inline style statici dai moduli JavaScript
+della Rivoluzione Lunare e degli alert della Rivoluzione Solare.
+
+Interventi eseguiti:
+
+- refactoring di `www/js/rl.js`;
+- riutilizzo delle classi condivise presenti in `www/css/style.css`;
+- conversione di messaggi, tabelle, cuspidi e informazioni orarie RL;
+- refactoring di `www/js/rs_alert.js`;
+- sostituzione dei colori inline degli alert con classi CSS di severità;
+- mantenimento degli stili runtime realmente dinamici;
+- verifica sintassi JavaScript tramite `node --check`;
+- verifica `git diff --check` completata con esito positivo.
+
+Commit:
+
+- `f7d7278` — `refactor(ui): remove inline styles from lunar return scripts`;
+- `ea48964` — `refactor(ui): replace inline alert colors with CSS classes`.
+
+Stato corrente:
+
+- branch: `feature/v6.1`;
+- Rule Engine: FREEZE a 120 Rule;
+- prossimo passo: proseguire il censimento degli inline style statici residui nei moduli JavaScript.
