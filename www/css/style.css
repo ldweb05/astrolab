@@ -523,6 +523,35 @@ main {
     margin-bottom: 8px;
 }
 
+.rl-location-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.rl-coordinate-input {
+    width: 90px;
+}
+
+.rl-actions-row {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding-top: 2px;
+}
+
+.rl-link-rs-group {
+    flex: 1;
+    min-width: 160px;
+}
+
+.rl-table-section-title {
+    font-size: 11px;
+    color: #7C3AED;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
 .table-empty-cell {
     text-align: center;
     color: #999;
