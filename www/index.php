@@ -53,7 +53,7 @@ $soggettoNome = $auth->getSoggettoNome();
 
 <div class="header-user">
             <span>👤 <?= htmlspecialchars($username) ?>
-                <?php if ($isAdmin): ?><span style="color:#D4C9A8;font-size:10px"> (admin)</span><?php endif; ?>
+                <?php if ($isAdmin): ?><span class="header-role header-role-admin"> (admin)</span><?php endif; ?>
             </span>
             <?php if ($soggettoNome): ?>
             <span class="soggetto-attivo">⭐ <?= htmlspecialchars($soggettoNome) ?></span>
@@ -85,18 +85,18 @@ $soggettoNome = $auth->getSoggettoNome();
             Tema natale, RS e ricerca useranno: <b><?= htmlspecialchars($soggettoNome) ?></b>
         </span>
         <?php else: ?>
-        <span style="font-size:12px;color:#888" id="info-soggetto-attivo">
+        <span class="info-soggetto-inattivo" id="info-soggetto-attivo">
             Seleziona un soggetto per usarlo in tutte le pagine.
         </span>
         <?php endif; ?>
         <?php if ($soggettoId): ?>
-        <button class="btn-secondary" style="font-size:11px;padding:5px 10px"
+        <button class="btn-secondary btn-cambia-soggetto"
                 onclick="cambiaSoggetto()">↺ Cambia soggetto</button>
         <?php endif; ?>
     </div>
 
     <!-- Form inserimento/modifica -->
-    <div id="form-soggetto" class="card" style="display:none">
+    <div id="form-soggetto" class="card is-hidden">
         <h3 id="form-titolo">Nuovo Soggetto</h3>
         <form id="frm-soggetto">
             <input type="hidden" id="soggetto-id">
