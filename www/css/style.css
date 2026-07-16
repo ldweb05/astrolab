@@ -214,6 +214,16 @@ main {
     letter-spacing: 0.05em;
 }
 
+
+.page-title-compact {
+    margin-bottom: 10px;
+}
+
+.zodiac-wheel-responsive {
+    max-width: 100%;
+    height: auto;
+}
+
 /* ── CARD ─────────────────────────────────────────────────────────── */
 .card {
     background: white;
