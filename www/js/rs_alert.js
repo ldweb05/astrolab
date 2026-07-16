@@ -20,10 +20,10 @@ const RSAlert = (function () {
     const CONTAINER_ID = 'rs-alert-stellium';
 
     // Pallini colorati (testo) per i tre livelli di severità
-    const PALLINI = {
-        '#dc3545': '🔴',
-        '#ff4500': '🟠',
-        '#28a745': '🟢',
+    const LIVELLI = {
+        '#dc3545': { pallino: '🔴', classe: 'rs-alert-danger' },
+        '#ff4500': { pallino: '🟠', classe: 'rs-alert-warning' },
+        '#28a745': { pallino: '🟢', classe: 'rs-alert-success' },
     };
 
     /**
@@ -86,9 +86,13 @@ const RSAlert = (function () {
         var html = '<div class="rs-alert-header">⚠️ Stellium Natale — Possibili attivazioni nella RS</div>';
 
         alerts.forEach(function (alert) {
-            var pallino = PALLINI[alert.colore] || '●';
-            html += '<div class="rs-alert-item" style="border-left-color:' + alert.colore + '">' +
-                        '<span class="rs-alert-pallino" style="color:' + alert.colore + '">' + pallino + '</span>' +
+            var livello = LIVELLI[alert.colore] || {
+                pallino: '●',
+                classe: 'rs-alert-default'
+            };
+
+            html += '<div class="rs-alert-item ' + livello.classe + '">' +
+                        '<span class="rs-alert-pallino">' + livello.pallino + '</span>' +
                         '<span class="rs-alert-msg">' + _esc(alert.messaggio) + '</span>' +
                     '</div>';
         });
