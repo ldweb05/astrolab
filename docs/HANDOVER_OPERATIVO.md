@@ -1284,3 +1284,37 @@ la conclusione o l'annullamento del dialogo del browser.
 - Working Tree CLEAN.
 - Stato del progetto pronto per la preparazione della Release stabile.
 
+------------------------------------------------------------------------
+
+## 2026-07-16 — V6.1 Refactoring UI e CSS
+
+Completato il refactoring degli stili delle quattro pagine principali:
+
+- `www/index.php`;
+- `www/tema.php`;
+- `www/rs.php`;
+- `www/rl.php`.
+
+Interventi eseguiti:
+
+- eliminazione degli inline style statici;
+- centralizzazione degli stili in `www/css/style.css`;
+- introduzione di classi CSS riutilizzabili;
+- utilizzo della classe `is-hidden` per gli elementi inizialmente nascosti;
+- mantenimento invariato del comportamento PHP e JavaScript;
+- test browser desktop e iPhone completati con esito positivo;
+- lint PHP e `git diff --check` completati con esito positivo.
+
+Commit:
+
+- `a824d80` — `refactor(ui): remove inline styles from subjects page`;
+- `fb22cd6` — `refactor(ui): remove inline styles from natal chart page`;
+- `8aa5b6c` — `refactor(ui): remove inline styles from solar return page`;
+- `c411ee3` — `refactor(ui): remove inline styles from lunar return page`.
+
+Stato corrente:
+
+- branch: `feature/v6.1`;
+- Rule Engine: FREEZE a 120 Rule;
+- Working Tree: CLEAN;
+- prossimo passo: rifiniture UX/UI finali e preparazione della release V6.1.

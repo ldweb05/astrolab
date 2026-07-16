@@ -47,6 +47,7 @@ Le evoluzioni future riguardano esclusivamente:
 - Docker + PostgreSQL 16
 - Frontend Vanilla JavaScript + SVG
 - Header condiviso con menu hamburger responsive e sottomenu Rivoluzioni
+- CSS centralizzato senza inline style nelle pagine principali
 - Architettura modulare
 - Knowledge Coverage 100%
 - Full Regression automatica
@@ -225,20 +226,23 @@ WORKING TREE CLEAN
 - V3 — Forecast Engine: completata
 - V4 — Rule Engine 120/120: completata
 - V5 — Consolidamento Report Professionale: completata
-- V6 — Hardening e Release 1.0: RC2 superata
+- V6 — Hardening e Release stabile: completata
+- V6.1 — Consolidamento UX/UI e centralizzazione CSS: in corso
 
 Per i dettagli consultare `docs/ROADMAP.md`.
 
 ## Punto di ripresa
 
-Lo sviluppo riparte dalla base stabile della V6 RC2.
+La release V6 stabile è completata.
+
+Lo sviluppo prosegue sul branch `feature/v6.1`.
 
 Prossime priorità operative:
 
-1. Preparazione della release stabile
-2. Verifica finale della configurazione production
-3. Rifiniture UX/UI
-4. Validazione finale browser e PDF
-5. Rilascio della versione stabile
+1. Rifiniture UX/UI finali
+2. Consolidamento frontend
+3. Ottimizzazione CSS condiviso
+4. Validazione browser desktop/mobile
+5. Preparazione della release V6.1
 
 Per lo stato dettagliato consultare `docs/ROADMAP.md` e `docs/HANDOVER_OPERATIVO.md`.
