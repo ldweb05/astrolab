@@ -29,7 +29,7 @@ futuro sviluppatore.
 
 # Astro-Val — Handover operativo
 
-Ultimo aggiornamento: 2026-07-12
+Ultimo aggiornamento: 2026-07-16
 
 ## Regola principale
 
@@ -1389,3 +1389,35 @@ Stato corrente:
 - Rule Engine: FREEZE a 120 Rule;
 - Working Tree attesa: CLEAN;
 - prossimo passo: validazione manuale completa desktop e mobile.
+
+## 2026-07-16 — Stabilizzazione markup pagine principali
+
+- Branch: `feature/v6.1`.
+- Obiettivo: correggere piccoli problemi reali di markup emersi durante la validazione desktop, senza introdurre refactoring non necessari.
+- Modificato `www/tema.php`:
+  - rimossi i contenitori `table` che producevano tabelle HTML annidate;
+  - sostituiti con contenitori `div`;
+  - commit: `fb5d8b0` — `fix(ui): avoid nested tables in natal chart page`.
+- Modificato `www/rs.php`:
+  - corretta la costruzione della tabella pianeti;
+  - aggiunti `thead`, `tbody` e chiusure HTML valide;
+  - commit: `d62e465` — `fix(ui): correct planetary table markup in solar return page`.
+- Modificato `www/js/rl.js`:
+  - corretta `_popolaTabellaPianeti()`;
+  - aggiunti `thead`, `tbody` e chiusure delle righe;
+  - mantenuta la tabella contenitore già presente in `www/rl.php`;
+  - commit: `6025743` — `fix(ui): correct lunar return planetary table markup`.
+- Rule Engine non modificato.
+- Rule Engine Freeze confermato: 120 Rule, 122 file protetti.
+- Verifiche eseguite:
+  - `php -l`: OK;
+  - `node --check`: OK;
+  - `git diff --check`: OK;
+  - test dedicato RL: 13 rivoluzioni lunari OK;
+  - Full Regression: OK;
+  - V6 Hardening Suite: OK;
+  - V6 Release Check: OK.
+- Tempo V6 Release Check: 27 secondi.
+- Working tree finale: CLEAN.
+- Prossimo passo: proseguire con la validazione manuale desktop e mobile; intervenire solo su bug concreti eventualmente emersi.
+
