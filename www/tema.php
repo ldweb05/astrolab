@@ -74,7 +74,7 @@ if ($soggetto) {
     </div>
 
     <!-- NUOVO BLOCCO: pulsante stampa -->
-    <div class="page-title" style="margin-bottom:10px">
+    <div class="page-title page-title-compact">
         <button class="btn-stampa-diretta" onclick="stampaPagina('print-tema')">🖨️ Stampa Tema Natale</button>
     </div>
 
@@ -87,7 +87,7 @@ if ($soggetto) {
                 <button class="btn-toggle-gradi" id="btn-toggle-gradi"
                         onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
-            <svg id="wheel-natale" width="500" height="500" style="max-width:100%;height:auto"></svg>
+            <svg id="wheel-natale" width="500" height="500" class="zodiac-wheel-responsive"></svg>
             <p class="tema-info" id="info-natale">Caricamento...</p>
             <table class="tabella-pianeti" id="tab-natale"></table>
         </div>
