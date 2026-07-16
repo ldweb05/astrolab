@@ -24,43 +24,49 @@ Ogni nuova decisione architetturale significativa deve:
 
 -------------------------------------------------------------------------------
 
-# DIRETTIVA OPERATIVA PERMANENTE (V4.2)
+# DIRETTIVA OPERATIVA PERMANENTE
 
-A partire dalla versione V4.2 l'architettura di Astro-Val è considerata
-STABILE.
+L'architettura di Astro-Val e il Rule Engine sono considerati
+**STABILI**.
 
-Non devono più essere introdotte modifiche architetturali,
-refactoring generali o riprogettazioni del dominio, salvo la correzione
-di bug documentati.
+Il Rule Engine è completo a 120 Rule e rimane in stato di **FREEZE**.
 
-L'obiettivo esclusivo del progetto diventa il completamento della base
-di conoscenza astrologica fino alla copertura totale dell'Atlas.
+Non devono essere introdotte modifiche architetturali o modifiche al
+dominio astrologico, salvo:
 
-Le attività consentite sono esclusivamente:
+- bug documentati;
+- incompatibilità tecniche;
+- refactoring che non alterino il comportamento;
+- decisioni esplicite formalizzate tramite ADR.
 
-- implementazione delle nuove Rule;
-- implementazione delle Composite Rule previste;
-- aggiunta di test automatici;
-- esecuzione della Full Regression;
-- aggiornamento della documentazione;
-- commit Git.
+Le attività correnti possono riguardare:
 
-Ogni attività completata DEVE essere registrata nel file:
+- Evidence Engine;
+- Theme Engine;
+- Narrative Engine;
+- Annual Report;
+- PDF;
+- UX/UI;
+- frontend e CSS condiviso;
+- test automatici;
+- documentazione;
+- preparazione delle release.
 
-docs/HANDOVER_OPERATIVO.md
+Ogni attività completata deve essere registrata cronologicamente in:
 
-L'Handover rappresenta il diario ufficiale del progetto.
+`docs/HANDOVER_OPERATIVO.md`
 
-Ogni sviluppatore dovrà poter riprendere il lavoro leggendo solamente:
+Per riprendere il lavoro leggere nell'ordine:
 
-1. HANDOVER_OPERATIVO.md
-2. ROADMAP.md
-3. KNOWLEDGE_COVERAGE.md
-4. RULE_BACKLOG.md
+1. `START_HERE.md`;
+2. `HANDOVER_OPERATIVO.md`;
+3. `ROADMAP.md`;
+4. `ADR_INDEX.md`.
 
 Non è richiesto reinterpretare l'architettura.
 
-È richiesto esclusivamente proseguire il completamento del progetto.
+Qualsiasi nuova decisione architetturale significativa deve essere
+formalizzata tramite un nuovo ADR.
 
 -------------------------------------------------------------------------------
 

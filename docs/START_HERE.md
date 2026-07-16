@@ -9,15 +9,15 @@ stato del progetto e sapere da dove riprendere lo sviluppo.
 
 # Ultima milestone completata
 
-**Commit:** `2b471fa`
+**Commit:** `c411ee3`
 
-**Descrizione:** Menu hamburger responsive e pulizia dell'header condiviso
+**Descrizione:** Refactoring UI/CSS completato sulle quattro pagine principali
 
 **Stato:** COMPLETATA
 
 **Branch di sviluppo:** `feature/v6.1`
 
-**Milestone corrente:** V6.1 — Rifiniture UX
+**Milestone corrente:** V6.1 — Consolidamento UX/UI e CSS
 
 ------------------------------------------------------------------------
 
@@ -45,7 +45,8 @@ salvo correzioni di bug documentati.
 -   V3 --- Forecast Engine ✅
 -   V4 --- Rule Engine (120 Rule) ✅
 -   V5 --- Consolidamento Report Professionale ✅
--   V6 --- Hardening e Release 1.0 — RC2 superata ✅
+-   V6 --- Hardening e Release stabile completata ✅
+-   V6.1 --- Consolidamento UX/UI e CSS in corso 🚧
 
 ------------------------------------------------------------------------
 
@@ -70,15 +71,20 @@ Le prossime attività NON riguardano il Rule Engine.
 
 Lo sviluppo prosegue esclusivamente su:
 
--   Executive Summary
--   Narrative Engine
--   Theme Profile
--   Cross Dynamics
--   Conclusion
--   qualità narrativa
--   qualità del PDF
--   UX del report
--   validazione su casi reali
+-   rifiniture UX/UI finali;
+-   consolidamento del frontend condiviso;
+-   ottimizzazione di `www/css/style.css`;
+-   validazione browser desktop e mobile;
+-   preparazione della release V6.1.
+
+Sono già completati:
+
+-   header responsive condiviso con menu hamburger;
+-   refactoring UI di `www/index.php`;
+-   refactoring UI di `www/tema.php`;
+-   refactoring UI di `www/rs.php`;
+-   refactoring UI di `www/rl.php`;
+-   eliminazione degli inline style statici dalle pagine principali.
 
 ------------------------------------------------------------------------
 
@@ -104,7 +110,7 @@ delle 120 Rule.
 
 # Obiettivo finale
 
-Realizzare la Release 1.0 di Astro-Val:
+Consolidare la Release V6.1 di Astro-Val:
 
 -   architettura stabile;
 -   report professionale;
