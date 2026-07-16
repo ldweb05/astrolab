@@ -610,15 +610,21 @@ const RLModule = (function () {
  function _popolaTabellaPianeti(tabId, tema) {
      const el = document.getElementById(tabId);
      if (!el || !tema?.pianeti) return;
-     let html = '<table><th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th></tr>';
+
+     let html = '<thead><tr>'
+         + '<th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th>'
+         + '</tr></thead><tbody>';
+
      Object.values(tema.pianeti).forEach(p => {
          html += `<tr>
              <td>${NOMI_PIANETI[p.id] ?? p.nome}</td>
              <td>${p.posizione?.stringa ?? '?'}</td>
              <td>${p.casa}</td>
              <td>${p.retrogrado ? '<span class="retro">R</span>' : ''}</td>
-         </table>`;
+         </tr>`;
      });
+
+     html += '</tbody>';
      el.innerHTML = html;
  }
  function _popolaTabellaAspetti(aspetti) {
