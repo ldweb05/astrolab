@@ -89,11 +89,11 @@ if ($soggetto) {
             </div>
             <svg id="wheel-natale" width="500" height="500" class="zodiac-wheel-responsive"></svg>
             <p class="tema-info" id="info-natale">Caricamento...</p>
-            <table class="tabella-pianeti" id="tab-natale"></table>
+            <div id="tab-natale"></div>
         </div>
         <div class="tema-box">
             <h3>Case (Placido)</h3>
-            <table class="tabella-pianeti" id="tab-case"></table>
+            <div id="tab-case"></div>
         </div>
     </div>
 
