@@ -194,6 +194,10 @@ nav a.active {
     display: none;
 }
 
+.is-dimmed {
+    opacity: 0.5;
+}
+
 /* ── MAIN ─────────────────────────────────────────────────────────── */
 main {
     max-width: 1400px;
@@ -2702,4 +2706,10 @@ tr.riga-corrente td:first-child::before {
 .rs-alert-msg {
     color: #2C2C2C;
     flex: 1;
+}
+
+.subject-residence {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #5A7AB0;
 }
