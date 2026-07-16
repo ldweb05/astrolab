@@ -1355,3 +1355,37 @@ Stato corrente:
 - branch: `feature/v6.1`;
 - Rule Engine: FREEZE a 120 Rule;
 - prossimo passo: proseguire il censimento degli inline style statici residui nei moduli JavaScript.
+
+------------------------------------------------------------------------
+
+## 2026-07-16 — V6.1 Stabilizzazione automatica
+
+Completata la prima validazione automatica completa dopo il
+consolidamento UX/UI e CSS della V6.1.
+
+Verifiche eseguite:
+
+- Full Regression: OK;
+- V6 Hardening Suite: OK;
+- V6 Release Check: OK;
+- PHP Syntax Check: OK;
+- Shell Syntax Check: OK;
+- Rule Engine FREEZE: 120 Rule e 122 file protetti;
+- API autenticate e non autenticate: OK;
+- Report Annuale: 12 sezioni;
+- determinismo JSON e PDF: OK;
+- casi reali e limiti delle case: OK;
+- performance Forecast Engine: OK;
+- tempo complessivo Release Check: 32 secondi;
+- timeout disponibile: 180 secondi.
+
+Comando eseguito:
+
+`docker exec -e ASTRO_VAL_BASE_URL=http://127.0.0.1 astro-val-web sh -lc '/var/www/html/tests/run_v6_release_check.sh'`
+
+Stato corrente:
+
+- branch: `feature/v6.1`;
+- Rule Engine: FREEZE a 120 Rule;
+- Working Tree attesa: CLEAN;
+- prossimo passo: validazione manuale completa desktop e mobile.
