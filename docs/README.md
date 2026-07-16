@@ -46,6 +46,7 @@ Le evoluzioni future riguardano esclusivamente:
 - Nessun framework
 - Docker + PostgreSQL 16
 - Frontend Vanilla JavaScript + SVG
+- Header condiviso con menu hamburger responsive e sottomenu Rivoluzioni
 - Architettura modulare
 - Knowledge Coverage 100%
 - Full Regression automatica

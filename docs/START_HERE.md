@@ -9,15 +9,15 @@ stato del progetto e sapere da dove riprendere lo sviluppo.
 
 # Ultima milestone completata
 
-**Commit:** `0bc53d0`
+**Commit:** `2b471fa`
 
-**Descrizione:** Rule Engine completato (120/120)
+**Descrizione:** Menu hamburger responsive e pulizia dell'header condiviso
 
-**Stato:** FREEZE
+**Stato:** COMPLETATA
 
-**Branch di sviluppo:** `feature/sintesi-rsm`
+**Branch di sviluppo:** `feature/v6.1`
 
-**Milestone corrente:** V6 — Release Candidate 2 superata
+**Milestone corrente:** V6.1 — Rifiniture UX
 
 ------------------------------------------------------------------------
 

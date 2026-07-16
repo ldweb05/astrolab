@@ -1260,6 +1260,20 @@ la conclusione o l'annullamento del dialogo del browser.
 - Ultimo commit RC2: `ff94c69`.
 - Prossimo passo: configurazione production e RC finale.
 
+## 2026-07-15 — V6.1 UX Mobile: Header Responsive
+
+- Implementato menu hamburger responsive condiviso.
+- Header unificato tramite `includes/header_nav.php`.
+- Creato `www/js/header_nav.js` per la gestione della navigazione mobile.
+- Refactoring degli stili dell'header centralizzati in `www/css/style.css`.
+- Sottomenu "Rivoluzioni" con tre voci:
+  - Rivoluzione Solare
+  - Rivoluzione Lunare
+  - Rilocazione
+- Sezione utente integrata nel menu mobile (utente, soggetto, Password, Esci).
+- Test browser desktop e iPhone completati con esito positivo.
+- Commit: `2b471fa`.
+
 ## 2026-07-15 — Consolidamento documentazione V6 RC2
 
 - README aggiornato allo stato reale della piattaforma.
