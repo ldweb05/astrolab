@@ -552,6 +552,23 @@ main {
     margin-bottom: 8px;
 }
 
+.rl-time-label {
+    color: #88AACC;
+}
+
+.rl-time-label-spaced {
+    margin-left: 8px;
+}
+
+.rl-time-value {
+    color: #C8E8FF;
+}
+
+.cuspide-angolare-rl {
+    font-weight: bold;
+    color: #7C3AED;
+}
+
 .table-empty-cell {
     text-align: center;
     color: #999;
