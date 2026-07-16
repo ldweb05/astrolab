@@ -129,26 +129,26 @@ if ($soggetto) {
                 <option value="">— Calcola prima le RL —</option>
             </select>
         </div>
-        <div class="form-group" style="flex:1;min-width:200px">
+        <div class="form-group rl-location-group">
             <label>Luogo RL</label>
             <div class="luogo-wrap">
                 <input type="text" id="luogo-rl-input" placeholder="Cerca città..."
-                       value="<?= htmlspecialchars($defaultLuogo) ?>" style="flex:1">
+                       value="<?= htmlspecialchars($defaultLuogo) ?>" class="flex-1">
                 <button class="btn-search" onclick="cercaLuogoRL()">🔍 Cerca</button>
             </div>
             <div id="luogo-rl-risultati" class="dropdown-risultati"></div>
         </div>
         <div class="form-group">
             <label>Lat</label>
-            <input type="number" id="rl-lat" step="0.0001" value="<?= htmlspecialchars($defaultLat) ?>" style="width:90px">
+            <input type="number" id="rl-lat" step="0.0001" value="<?= htmlspecialchars($defaultLat) ?>" class="rl-coordinate-input">
         </div>
         <div class="form-group">
             <label>Lon</label>
-            <input type="number" id="rl-lon" step="0.0001" value="<?= htmlspecialchars($defaultLon) ?>" style="width:90px">
+            <input type="number" id="rl-lon" step="0.0001" value="<?= htmlspecialchars($defaultLon) ?>" class="rl-coordinate-input">
         </div>
-        <div style="width:100%;display:flex;gap:10px;align-items:center;padding-top:2px;">
+        <div class="rl-actions-row">
             <button class="btn-primary" id="btn-calcola-rl" onclick="RLModule.calcolaListaRL()">☽ Calcola RL</button>
-            <button class="btn-mappa-rl" id="btn-apri-mappa-rl" onclick="toggleMappaRL()" style="display:none">🌍 Mappa</button>
+            <button class="btn-mappa-rl is-hidden" id="btn-apri-mappa-rl" onclick="toggleMappaRL()">🌍 Mappa</button>
         </div>
     </div>
  
@@ -161,28 +161,28 @@ if ($soggetto) {
         <div><span>MC: </span><b id="rl-mc-label">—</b></div>
     </div>
  
-    <div class="page-title" style="margin-bottom:10px">
+    <div class="page-title page-title-compact">
         <button class="btn-stampa-diretta" onclick="prepareStampaRL()">🖨️ Stampa Rivoluzione Lunare</button>
     </div>
 
-    <div class="card" id="card-salva-rl" style="display:none">
-        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-            <div class="form-group" id="wrap-collega-rs" style="display:none;flex:1;min-width:160px">
+    <div class="card is-hidden" id="card-salva-rl">
+        <div class="rs-save-row">
+            <div class="form-group rl-link-rs-group is-hidden" id="wrap-collega-rs">
                 <label>Collega a sessione RS (opzionale)</label>
                 <select id="salva-rl-sessione-rs">
                     <option value="">— Nessuna —</option>
                 </select>
             </div>
-            <div class="form-group" style="flex:1;min-width:200px">
+            <div class="form-group rs-save-note-group">
                 <label>Note per questa RL</label>
                 <input type="text" id="salva-rl-note" placeholder="Es: mese più favorevole per...">
             </div>
             <button class="btn-rl" id="btn-salva-rl" onclick="RLModule.salvaSessioneRL()">💾 Salva questa RL</button>
         </div>
-        <div id="salva-rl-msg" style="margin-top:8px;font-size:12px"></div>
+        <div id="salva-rl-msg" class="rs-save-message"></div>
     </div>
  
-    <div class="card" id="card-sessioni-rl" style="display:none">
+    <div class="card is-hidden" id="card-sessioni-rl">
         <h3>☽ Sessioni RL salvate per questo soggetto</h3>
         <div id="lista-sessioni-rl"></div>
     </div>
@@ -207,7 +207,7 @@ if ($soggetto) {
         <div id="val-veti"></div>
     </div>
  
-    <div class="temi-wrapper" id="temi-wrapper" style="display:none">
+    <div class="temi-wrapper is-hidden" id="temi-wrapper">
         <div class="tema-box">
             <div class="tema-box-header">
                 <button class="btn-toggle-gradi" id="btn-toggle-cuspidi"
@@ -216,15 +216,15 @@ if ($soggetto) {
                 <button class="btn-toggle-gradi" id="btn-toggle-gradi"
                         onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
-            <svg id="wheel-natale" width="480" height="480" style="max-width:100%;height:auto"></svg>
+            <svg id="wheel-natale" width="480" height="480" class="zodiac-wheel-responsive"></svg>
             <p class="tema-info" id="info-natale">—</p>
             <table class="tabella-pianeti" id="tab-natale"></table>
             <div class="aspetti-container">
-                <h4 style="font-size:11px;color:#7C3AED;text-align:center;margin-bottom:8px">📐 Aspetti nella Rivoluzione Lunare</h4>
+                <h4 class="rl-table-section-title">📐 Aspetti nella Rivoluzione Lunare</h4>
                 <table class="tabella-aspetti">
                     <thead><tr><th>Pianeta 1</th><th></th><th>Pianeta 2</th><th>Aspetto</th><th>Orbe</th></tr></thead>
                     <tbody id="aspetti-rl-body">
-                        <tr><td colspan="5" style="text-align:center;color:#999">Nessun aspetto rilevante</td></tr>
+                        <tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -232,14 +232,14 @@ if ($soggetto) {
         <div class="tema-box">
             <h3 id="rl-titolo">Rivoluzione Lunare</h3>
             <div class="rl-loading-overlay" id="rl-overlay">⟳ Ricalcolo RL...</div>
-            <svg id="wheel-rl" width="480" height="480" style="max-width:100%;height:auto"></svg>
+            <svg id="wheel-rl" width="480" height="480" class="zodiac-wheel-responsive"></svg>
             <p class="tema-info" id="info-rl">—</p>
             <table class="tabella-pianeti" id="tab-rl"></table>
             <div class="cuspidi-container">
-                <h4 style="font-size:11px;color:#7C3AED;text-align:center;margin-bottom:8px">🏠 Cuspidi Case RL</h4>
+                <h4 class="rl-table-section-title">🏠 Cuspidi Case RL</h4>
                 <table class="tabella-cuspidi">
                     <thead><tr><th>Casa</th><th>Gradi Cuspide</th></tr></thead>
-                    <tbody id="cuspidi-rl-body"><tr><td colspan="2" style="text-align:center;color:#999">—</td></tr>
+                    <tbody id="cuspidi-rl-body"><tr><td colspan="2" class="table-empty-cell">—</td></tr>
                 </tbody>
             </table>
             </div>
@@ -256,7 +256,7 @@ if ($soggetto) {
         </div>
         <div class="map-leaflet-inner">
             <div class="map-loading-overlay" id="mappa-rl-ricalcolo">⟳ Ricalcolo...</div>
-            <div id="leaflet-map-rl" style="width:100%;height:100%"></div>
+            <div id="leaflet-map-rl" class="map-fill"></div>
         </div>
         <div class="map-float-footer">
             <span class="info-drag">Trascina il marker · la RL si aggiorna in tempo reale</span>
