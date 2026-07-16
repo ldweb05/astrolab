@@ -39,7 +39,7 @@ const RSAlert = (function () {
         // Reset visivo immediato (evita di mostrare alert della RS precedente
         // mentre la nuova è ancora in calcolo)
         el.innerHTML = '';
-        el.style.display = 'none';
+        el.classList.add('is-hidden');
 
         const url = 'api/rs_alert_api.php?' + new URLSearchParams({
             g:       params.g,
@@ -75,7 +75,7 @@ const RSAlert = (function () {
         const el = document.getElementById(CONTAINER_ID);
         if (!el) return;
         el.innerHTML = '';
-        el.style.display = 'none';
+        el.classList.add('is-hidden');
     }
 
     /**
@@ -98,7 +98,7 @@ const RSAlert = (function () {
         });
 
         el.innerHTML = html;
-        el.style.display = 'block';
+        el.classList.remove('is-hidden');
     }
 
     /**
