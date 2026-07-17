@@ -1501,7 +1501,24 @@ document.getElementById('risultati-area').addEventListener('click', function(eve
     const button = event.target.closest('#btn-confronta-selezioni');
     if (!button) return;
 
-    alert(`Confronto di ${stato.confronto.length} selezioni pronto per il prossimo passaggio.`);
+    const risultati = getRisultatiConfronto();
+    if (risultati.length < 2) {
+        alert('Seleziona almeno 2 RS o rilocazioni da confrontare.');
+        return;
+    }
+
+    const soggetto = getSoggetto();
+    const payload = {
+        soggetto,
+        anno: document.getElementById('anno-rs').value,
+        condizione: stato.modalita === 'astri'
+            ? 'Decima'
+            : document.getElementById('condizione').value,
+        risultati
+    };
+
+    sessionStorage.setItem('astroDssConfrontoRs', JSON.stringify(payload));
+    window.location.href = 'compare_rs.php';
 });
 
 // Preset orbe sincronizza con pannello cuspidi in tempo reale
