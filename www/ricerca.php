@@ -1335,15 +1335,12 @@ vetiRighe +
 : '';
 return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
-<td>
-<label>
+<td style="text-align:center">
 <input
 type="checkbox"
 class="confronto-checkbox"
 data-confronto-key="${confrontoKey}"
 ${stato.confronto.includes(confrontoKey) ? 'checked' : ''}>
-Confronta
-</label>
 </td>
 <td>${stelleHtml(r.stelline)}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
