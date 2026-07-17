@@ -9,6 +9,7 @@ $auth = new Auth($pdo);
 $auth->richiediLogin();
 
 $isAdmin = $auth->isAdmin();
+$soggettoNome = $auth->getSoggettoNome();
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -119,7 +120,7 @@ if (!raw) {
                 <p><strong>Soggetto:</strong> ${nomeSoggetto}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
 
-                <details style="margin:20px 0">
+                <details open style="margin:20px 0">
                     <summary><strong>Payload JSON</strong></summary>
                     <pre>${JSON.stringify(payload, null, 2)}</pre>
                 </details>
