@@ -1333,7 +1333,8 @@ return `<tr class="${rigaCls}">
 <input
 type="checkbox"
 class="confronto-checkbox"
-data-confronto-key="${confrontoKey}">
+data-confronto-key="${confrontoKey}"
+${stato.confronto.includes(confrontoKey) ? 'checked' : ''}>
 Confronta
 </label>
 </td>
@@ -1454,6 +1455,28 @@ document.addEventListener('DOMContentLoaded', function() {
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
+
+document.getElementById('risultati-area').addEventListener('change', function(event) {
+    const checkbox = event.target.closest('.confronto-checkbox');
+    if (!checkbox) return;
+
+    const key = checkbox.dataset.confrontoKey;
+
+    if (checkbox.checked) {
+        if (stato.confronto.includes(key)) return;
+
+        if (stato.confronto.length >= 3) {
+            checkbox.checked = false;
+            alert('Puoi confrontare al massimo 3 RS o rilocazioni.');
+            return;
+        }
+
+        stato.confronto.push(key);
+    } else {
+        stato.confronto = stato.confronto.filter(item => item !== key);
+    }
+});
+
 // Preset orbe sincronizza con pannello cuspidi in tempo reale
 document.getElementById('filt-orbe-preset').addEventListener('change', function() {
 applicaOrbePreset(this.value);
