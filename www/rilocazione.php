@@ -1491,6 +1491,7 @@ function selezionaLuogoRiloc(lat, lon, nome) {
 let _eventoAngolari = null;  // EventSource attivo
 let _tuttiRisultati = [];    // Cache dei risultati totali ricevuti
 let _paginaCorrente = 1;     // Stato della pagina corrente
+let _rilocConfronto = [];    // Max 3 rilocazioni selezionate
 
 function _setProgress(perc, label, sub) {
     const fill  = document.getElementById('ang-bar-fill');
@@ -1555,6 +1556,12 @@ function _rigaTabella(r, idx) {
                 ☿ Usa
             </button>
         </td>
+        <td style="text-align:center">
+            <input
+                type="checkbox"
+                class="compare-riloc-checkbox"
+                data-index="${idx}">
+        </td>
     </tr>`;
 }
 
@@ -1597,6 +1604,7 @@ function _renderTabellaPaginata() {
                     <th>Naz.</th>
                     <th>Match pianeti → cuspidi</th>
                     <th>Rilocazione</th>
+                    <th>Confronta</th>
                 </tr>
             </thead>
             <tbody>
