@@ -9,6 +9,7 @@ $auth = new Auth($pdo);
 $auth->richiediLogin();
 
 $isAdmin = $auth->isAdmin();
+$username = $auth->getCurrentUsername();
 $soggettoNome = $auth->getSoggettoNome();
 ?>
 <!DOCTYPE html>
