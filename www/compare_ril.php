@@ -52,6 +52,24 @@ $soggettoNome = $auth->getSoggettoNome();
     min-height: 160px;
 }
 
+.compare-ril-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 13px;
+}
+
+.compare-ril-table th,
+.compare-ril-table td {
+    padding: 8px;
+    border-bottom: 1px solid #dfe3eb;
+    text-align: left;
+}
+
+.compare-ril-table th {
+    background: #f4f6fa;
+}
+
 @media (max-width: 900px) {
     .compare-ril-grid {
         grid-template-columns: 1fr;
@@ -91,6 +109,26 @@ if (!raw) {
             : [];
         const nomeSoggetto = payload.soggetto?.nome || 'Non disponibile';
 
+        const renderMatch = (matches, pianeta) => {
+            if (!Array.isArray(matches) || matches.length === 0) {
+                return `
+                    <tr>
+                        <td>${pianeta}</td>
+                        <td colspan="3">Nessun match</td>
+                    </tr>
+                `;
+            }
+
+            return matches.map(match => `
+                <tr>
+                    <td>${pianeta}</td>
+                    <td>${match.nome || match.casa || '—'}</td>
+                    <td>${match.cuspide || '—'}</td>
+                    <td>${match.distanza ?? '—'}°</td>
+                </tr>
+            `).join('');
+        };
+
         const schede = risultati.map((r, i) => {
             const localita = r.citta || r.nome || r.iata || r.icao || 'Località';
             const aeroporto = r.nome || 'Aeroporto non disponibile';
@@ -108,9 +146,20 @@ if (!raw) {
                         Grafico rilocazione ${localita}
                     </div>
 
-                    <div class="compare-table-placeholder">
-                        Dati rilocazione ${localita}
-                    </div>
+                    <table class="compare-ril-table">
+                        <thead>
+                            <tr>
+                                <th>Pianeta</th>
+                                <th>Casa</th>
+                                <th>Cuspide</th>
+                                <th>Distanza</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${renderMatch(r.match_venere, '♀ Venere')}
+                            ${renderMatch(r.match_giove, '♃ Giove')}
+                        </tbody>
+                    </table>
                 </section>
             `;
         }).join('');
@@ -121,7 +170,7 @@ if (!raw) {
                 <p><strong>Soggetto:</strong> ${nomeSoggetto}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
 
-                <details open style="margin:20px 0">
+                <details style="margin:20px 0">
                     <summary><strong>Payload JSON</strong></summary>
                     <pre>${JSON.stringify(payload, null, 2)}</pre>
                 </details>
