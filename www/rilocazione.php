@@ -1501,6 +1501,16 @@ function _chiaveRilocConfronto(r) {
     ].join('|');
 }
 
+function _aggiornaAzioneConfrontoRiloc() {
+    const azione = document.getElementById('riloc-confronto-azione');
+    const conteggio = document.getElementById('riloc-confronto-count');
+
+    if (!azione || !conteggio) return;
+
+    conteggio.textContent = _rilocConfronto.length;
+    azione.style.display = _rilocConfronto.length > 0 ? 'inline-flex' : 'none';
+}
+
 function _setProgress(perc, label, sub) {
     const fill  = document.getElementById('ang-bar-fill');
     const percEl= document.getElementById('ang-progress-perc');
@@ -1602,9 +1612,18 @@ function _renderTabellaPaginata() {
     const countStr = totaleRecord === 1 ? '1 luogo trovato' : totaleRecord + ' luoghi trovati';
 
     let html = `
-        <div style="font-size:12px;color:#3a2c6b;font-weight:500;margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:12px;color:#3a2c6b;font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
             <span>✅ ${countStr} (ordinati per distanza minima)</span>
-            <span>Mostrati ${inizio + 1}-${fine} di ${totaleRecord}</span>
+            <span style="display:flex;align-items:center;gap:10px">
+                <button
+                    type="button"
+                    id="riloc-confronto-azione"
+                    class="btn-usa-riloc"
+                    style="display:${_rilocConfronto.length > 0 ? 'inline-flex' : 'none'}">
+                    Confronta (<span id="riloc-confronto-count">${_rilocConfronto.length}</span>)
+                </button>
+                <span>Mostrati ${inizio + 1}-${fine} di ${totaleRecord}</span>
+            </span>
         </div>
         <div style="overflow-x:auto">
         <table class="tabella-angolari">
@@ -1667,6 +1686,8 @@ function _renderTabellaPaginata() {
                     elemento => _chiaveRilocConfronto(elemento) !== chiave
                 );
             }
+
+            _aggiornaAzioneConfrontoRiloc();
         });
     });
 
