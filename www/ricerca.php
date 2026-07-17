@@ -1276,6 +1276,13 @@ let ris = [...stato.tutti];
 if (stato.filtroNaz)    ris = ris.filter(r => (r.nazione||'').toUpperCase() === stato.filtroNaz.toUpperCase());
 if (stato.filtroStelle > 0) ris = ris.filter(r => r.stelline >= stato.filtroStelle);
 const totale    = ris.length;
+const confrontoToolbar = stato.confronto.length >= 2
+? `<div class="confronto-toolbar">
+<button type="button" id="btn-confronta-selezioni">
+Confronta le ${stato.confronto.length} selezioni
+</button>
+</div>`
+: '';
 const totPagine = Math.max(1, Math.ceil(totale / stato.perPagina));
 const pagina    = Math.min(stato.pagina, totPagine);
 const offset    = (pagina - 1) * stato.perPagina;
@@ -1364,6 +1371,7 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
+${confrontoToolbar}
 <div style="overflow-x:auto">
 <table class="tabella-risultati">
 <thead><tr>
@@ -1475,6 +1483,15 @@ document.getElementById('risultati-area').addEventListener('change', function(ev
     } else {
         stato.confronto = stato.confronto.filter(item => item !== key);
     }
+
+    renderTabella();
+});
+
+document.getElementById('risultati-area').addEventListener('click', function(event) {
+    const button = event.target.closest('#btn-confronta-selezioni');
+    if (!button) return;
+
+    alert(`Confronto di ${stato.confronto.length} selezioni pronto per il prossimo passaggio.`);
 });
 
 // Preset orbe sincronizza con pannello cuspidi in tempo reale
