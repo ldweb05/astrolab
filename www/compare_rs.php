@@ -39,9 +39,15 @@ const raw = sessionStorage.getItem('astroDssConfrontoRs');
 if (!raw) {
     out.innerHTML = '<p><strong>Nessun dato di confronto disponibile.</strong></p>';
 } else {
+    const payload = JSON.parse(raw);
+
+    const h3 = document.createElement('h3');
+    h3.textContent = `Ricevute ${payload.risultati.length} selezioni`;
+
     const pre = document.createElement('pre');
-    pre.textContent = JSON.stringify(JSON.parse(raw), null, 2);
-    out.replaceChildren(pre);
+    pre.textContent = JSON.stringify(payload, null, 2);
+
+    out.replaceChildren(h3, pre);
 }
 </script>
 
