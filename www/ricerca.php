@@ -1291,6 +1291,12 @@ const sogg = getSoggetto();
 const anno = document.getElementById('anno-rs').value;
 const cond = stato.modalita === 'astri' ? 'Decima' : document.getElementById('condizione').value;
 const righe = pagRis.map((r, idx) => {
+const confrontoKey = [
+r.lat,
+r.lon,
+r.iata || '',
+r.icao || ''
+].join('|');
 const rsUrl = 'rs.php?id=' + (sogg?.id||'') +
 '&lat_rs=' + r.lat + '&lon_rs=' + r.lon +
 '&luogo_rs=' + encodeURIComponent((r.citta||'')+', '+(r.nazione||'')) +
@@ -1322,6 +1328,15 @@ vetiRighe +
 : '';
 return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
+<td>
+<label>
+<input
+type="checkbox"
+class="confronto-checkbox"
+data-confronto-key="${confrontoKey}">
+Confronta
+</label>
+</td>
 <td>${stelleHtml(r.stelline)}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
 <td><strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||''}</span></td>
@@ -1351,11 +1366,11 @@ document.getElementById('risultati-area').innerHTML = `
 <div style="overflow-x:auto">
 <table class="tabella-risultati">
 <thead><tr>
-<th>#</th><th>Stelle</th><th>VAL</th>
+<th>#</th><th>Confronta</th><th>Stelle</th><th>VAL</th>
 <th>IATA / ICAO</th><th>Aeroporto</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th>
 </tr></thead>
-<tbody>${righe||'<tr><td colspan="10" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
+<tbody>${righe||'<tr><td colspan="11" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
 </table>
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
