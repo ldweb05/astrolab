@@ -41,13 +41,15 @@ if (!raw) {
 } else {
     const payload = JSON.parse(raw);
 
-    const h3 = document.createElement('h3');
-    h3.textContent = `Ricevute ${payload.risultati.length} selezioni`;
-
-    const pre = document.createElement('pre');
-    pre.textContent = JSON.stringify(payload, null, 2);
-
-    out.replaceChildren(h3, pre);
+    out.innerHTML = `
+        <div class="card">
+            <h3>Comparator RS</h3>
+            <p><strong>Soggetto:</strong> ${payload.soggetto.nome}</p>
+            <p><strong>Anno:</strong> ${payload.anno}</p>
+            <p><strong>Condizione:</strong> ${payload.condizione}</p>
+            <p><strong>Località confrontate:</strong> ${payload.risultati.length}</p>
+        </div>
+    `;
 }
 </script>
 
