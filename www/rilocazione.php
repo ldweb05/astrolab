@@ -1691,6 +1691,25 @@ function _renderTabellaPaginata() {
         });
     });
 
+    document.getElementById('riloc-confronto-azione')?.addEventListener('click', () => {
+        if (_rilocConfronto.length < 2) {
+            alert('Seleziona almeno 2 rilocazioni da confrontare.');
+            return;
+        }
+
+        const payload = {
+            soggetto: typeof DS !== 'undefined' ? DS : null,
+            risultati: _rilocConfronto
+        };
+
+        sessionStorage.setItem(
+            'astroDssConfrontoRiloc',
+            JSON.stringify(payload)
+        );
+
+        window.location.href = 'compare_ril.php';
+    });
+
     // Aggancio dei listener sui nuovi pulsanti appena creati
     document.getElementById('ang-prev-btn')?.addEventListener('click', () => {
         _paginaCorrente--;
