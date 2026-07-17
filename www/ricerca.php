@@ -1450,6 +1450,19 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
 }
+// ── Comparator ────────────────────────────────────────────────────────────────
+
+function getRisultatiConfronto() {
+    return stato.confronto.map(key => {
+        return stato.tutti.find(r => [
+            r.lat,
+            r.lon,
+            r.iata || '',
+            r.icao || ''
+        ].join('|') === key);
+    }).filter(Boolean);
+}
+
 // ── Filtri Risultati ─────────────────────────────────────────────────────────────
 
 function setFiltroNaz(v)    { stato.filtroNaz = v; stato.pagina = 1; renderTabella(); }
