@@ -417,6 +417,7 @@ filtroNaz:    '',
 filtroStelle: 0,
 pagina:       1,
 perPagina:    50,
+confronto:    [],
 // Dati dell'ultimo "done" ricevuto dall'API, usati da espandi-orbe
 ultimiParams: null,
 };
@@ -621,6 +622,7 @@ function avviaRicerca(espansioneOrbe) {
     stato.filtroNaz    = '';
     stato.filtroStelle = 0;
     stato.pagina       = 1;
+    stato.confronto    = [];
 
     // Applica preset orbe se selezionato (solo cuspidi)
     const orbePreset = document.getElementById('filt-orbe-preset').value;
