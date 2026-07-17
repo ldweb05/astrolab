@@ -1,13 +1,13 @@
-name: astro-val
+name: astro-dss
 
 services:
 
-  astro-val-web:
+  astro-dss-web:
     build: .
-    container_name: astro-val-web
+    container_name: astro-dss-web
     restart: unless-stopped
     ports:
-      - "8190:80"
+      - "8192:80"
     volumes:
       - ./www:/var/www/html
       - ./php-config/php.ini:/usr/local/etc/php/php.ini
@@ -16,16 +16,16 @@ services:
     environment:
       - TZ=Europe/Rome
     depends_on:
-      - astro-val-db
+      - astro-dss-db
     networks:
-      - astro-val-net
+      - astro-dss-net
 
-  astro-val-db:
+  astro-dss-db:
     image: postgres:16-alpine
-    container_name: astro-val-db
+    container_name: astro-dss-db
     restart: unless-stopped
     ports:
-      - "5441:5432"
+      - "5442:5432"
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     env_file:
@@ -33,21 +33,21 @@ services:
     environment:
       - TZ=Europe/Rome
     networks:
-      - astro-val-net
+      - astro-dss-net
 
-  astro-val-adminer:
+  astro-dss-adminer:
     image: adminer:latest
-    container_name: astro-val-adminer
+    container_name: astro-dss-adminer
     restart: unless-stopped
     ports:
-      - "8191:8080"
+      - "8193:8080"
     environment:
       - TZ=Europe/Rome
     depends_on:
-      - astro-val-db
+      - astro-dss-db
     networks:
-      - astro-val-net
+      - astro-dss-net
 
 networks:
-  astro-val-net:
+  astro-dss-net:
     driver: bridge
