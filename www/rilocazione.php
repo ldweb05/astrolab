@@ -1493,6 +1493,14 @@ let _tuttiRisultati = [];    // Cache dei risultati totali ricevuti
 let _paginaCorrente = 1;     // Stato della pagina corrente
 let _rilocConfronto = [];    // Max 3 rilocazioni selezionate
 
+function _chiaveRilocConfronto(r) {
+    return [
+        Number(r.lat).toFixed(4),
+        Number(r.lon).toFixed(4),
+        r.iata || r.icao || ''
+    ].join('|');
+}
+
 function _setProgress(perc, label, sub) {
     const fill  = document.getElementById('ang-bar-fill');
     const percEl= document.getElementById('ang-progress-perc');
@@ -1538,6 +1546,10 @@ function _rigaTabella(r, idx) {
     const bG = _badgeMatch(r.match_giove,  'badge-giove',  '♃');
     const haVenere = r.match_venere && r.match_venere.length > 0;
     const haGiove  = r.match_giove  && r.match_giove.length  > 0;
+    const chiave = _chiaveRilocConfronto(r);
+    const selezionata = _rilocConfronto.some(
+        elemento => _chiaveRilocConfronto(elemento) === chiave
+    );
 
     // Evidenzia riga se entrambi i pianeti hanno match
     const rowCls = (haVenere && haGiove) ? 'style="background:#F8F0FF"' : '';
@@ -1560,7 +1572,8 @@ function _rigaTabella(r, idx) {
             <input
                 type="checkbox"
                 class="compare-riloc-checkbox"
-                data-index="${idx}">
+                data-index="${idx}"
+                ${selezionata ? 'checked' : ''}>
         </td>
     </tr>`;
 }
@@ -1625,6 +1638,38 @@ function _renderTabellaPaginata() {
 
     area.innerHTML = html;
 
+    document.querySelectorAll('.compare-riloc-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const indice = Number(checkbox.dataset.index);
+            const risultato = _tuttiRisultati[indice];
+
+            if (!risultato) {
+                checkbox.checked = false;
+                return;
+            }
+
+            const chiave = _chiaveRilocConfronto(risultato);
+
+            if (checkbox.checked) {
+                if (_rilocConfronto.length >= 3) {
+                    checkbox.checked = false;
+                    alert('Puoi confrontare al massimo 3 rilocazioni.');
+                    return;
+                }
+
+                if (!_rilocConfronto.some(
+                    elemento => _chiaveRilocConfronto(elemento) === chiave
+                )) {
+                    _rilocConfronto.push(risultato);
+                }
+            } else {
+                _rilocConfronto = _rilocConfronto.filter(
+                    elemento => _chiaveRilocConfronto(elemento) !== chiave
+                );
+            }
+        });
+    });
+
     // Aggancio dei listener sui nuovi pulsanti appena creati
     document.getElementById('ang-prev-btn')?.addEventListener('click', () => {
         _paginaCorrente--;
@@ -1684,6 +1729,7 @@ window.avviaRicercaAngolari = function() {
 
     _tuttiRisultati = [];
     _paginaCorrente = 1;
+    _rilocConfronto = [];
 
     // Costruisci URL SSE
     const params = new URLSearchParams({
