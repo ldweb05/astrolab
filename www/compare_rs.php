@@ -84,6 +84,8 @@ if (!raw) {
     out.innerHTML = '<p><strong>Nessun dato di confronto disponibile.</strong></p>';
 } else {
     const payload = JSON.parse(raw);
+    const nomeSoggetto = payload.soggetto?.nome
+        || <?= json_encode($soggettoNome ?: 'Non disponibile') ?>;
 
     const schede = payload.risultati.map((r, i) => `
         <section class="compare-rsm-card ${i === 2 ? 'compare-rsm-card-wide' : ''}">
@@ -103,7 +105,7 @@ if (!raw) {
     out.innerHTML = `
         <div class="card">
             <h3>Comparator RS</h3>
-            <p><strong>Soggetto:</strong> ${payload.soggetto.nome}</p>
+            <p><strong>Soggetto:</strong> ${nomeSoggetto}</p>
             <p><strong>Anno:</strong> ${payload.anno}</p>
             <p><strong>Condizione:</strong> ${payload.condizione}</p>
             <p><strong>Località confrontate:</strong> ${payload.risultati.length}</p>
