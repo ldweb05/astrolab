@@ -1,6 +1,6 @@
-# Astro-Val
+# Astro-DSS
 
-Motore professionale per l’interpretazione della Rivoluzione Solare, basato su un’architettura a livelli, con Rule Engine completamente tracciabile e Report Annuale narrativo.
+Decision Support System per il confronto di due Rivoluzioni Solari Mirate (RSM), costruito sulla base architetturale consolidata di Astro-Val.
 
 ## Per iniziare
 
@@ -100,7 +100,7 @@ Il backend storico basato su `swetest` non è più presente e non deve essere re
 Container applicativo principale:
 
 ```text
-astro-val-web
+astro-dss-web
 ```
 
 Il nome del container PostgreSQL, i volumi e le reti devono essere verificati nel file `docker-compose.yml` della baseline corrente.
@@ -110,7 +110,7 @@ Il nome del container PostgreSQL, i volumi e le reti devono essere verificati ne
 Repository:
 
 ```text
-~/astro-val
+~/astro-dss
 ```
 
 Document root nel container:
@@ -152,7 +152,7 @@ docs/
 Tema grafico:
 
 ```text
-www/style.css
+www/css/style.css
 ```
 
 Swiss Ephemeris / binding FFI:
@@ -180,7 +180,7 @@ I valori effettivi non devono essere duplicati nel README se già definiti nella
 ### Full Regression
 
 ```bash
-docker exec astro-val-web php /var/www/html/tests/test_regression_v3.php
+docker exec astro-dss-web php /var/www/html/tests/test_regression_v3.php
 ```
 
 Il risultato valido deve terminare con:
@@ -192,7 +192,7 @@ FULL REGRESSION OK
 ### Conteggio Rule registrate
 
 ```bash
-docker exec astro-val-web php -r 'require "/var/www/html/includes/forecast/AARuleEngine.php"; echo count(RuleRegistry::all()).PHP_EOL;'
+docker exec astro-dss-web php -r 'require "/var/www/html/includes/forecast/AARuleEngine.php"; echo count(RuleRegistry::all()).PHP_EOL;'
 ```
 
 Risultato atteso:
@@ -204,7 +204,7 @@ Risultato atteso:
 ### Lint PHP
 
 ```bash
-docker exec astro-val-web php -l /var/www/html/<percorso-file>.php
+docker exec astro-dss-web php -l /var/www/html/<percorso-file>.php
 ```
 
 ### Stato Git
@@ -221,28 +221,20 @@ WORKING TREE CLEAN
 
 ## Roadmap
 
-- V1 — Motore astronomico: completata
-- V2 — Base Interpretation: completata
-- V3 — Forecast Engine: completata
-- V4 — Rule Engine 120/120: completata
-- V5 — Consolidamento Report Professionale: completata
-- V6 — Hardening e Release stabile: completata
-- V6.1 — Consolidamento UX/UI e centralizzazione CSS: in corso
-
-Per i dettagli consultare `docs/ROADMAP.md`.
+La roadmap specifica del progetto è descritta in `docs/ROADMAP.md`.
 
 ## Punto di ripresa
 
-La release V6 stabile è completata.
+Lo sviluppo corrente riguarda esclusivamente Astro-DSS.
 
-Lo sviluppo prosegue sul branch `feature/v6.1`.
+Priorità attuale:
 
-Prossime priorità operative:
+1. progettazione del Comparator Engine;
+2. definizione del modello dati confrontabile;
+3. progettazione del Decision Support System.
 
-1. Rifiniture UX/UI finali
-2. Consolidamento frontend
-3. Ottimizzazione CSS condiviso
-4. Validazione browser desktop/mobile
-5. Preparazione della release V6.1
+Per i dettagli consultare:
 
-Per lo stato dettagliato consultare `docs/ROADMAP.md` e `docs/HANDOVER_OPERATIVO.md`.
+- `docs/START_HERE.md`
+- `docs/ROADMAP.md`
+- `docs/HANDOVER_OPERATIVO.md`
