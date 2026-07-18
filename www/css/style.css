@@ -2713,3 +2713,25 @@ tr.riga-corrente td:first-child::before {
     font-size: 11px;
     color: #5A7AB0;
 }
+
+/* ── Comparatore RS ──────────────────────────────────────────── */
+.confronto-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 8px 0;
+}
+
+#btn-confronta-selezioni {
+    background: #2E7D32;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+#btn-confronta-selezioni:hover {
+    background: #388E3C;
+}
