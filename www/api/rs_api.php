@@ -33,8 +33,46 @@ $lon    = floatval($_GET['lon']);
 $anno   = intval($_GET['anno'] ?? date('Y'));
 $latRS  = floatval($_GET['lat_rs'] ?? $lat);
 $lonRS  = floatval($_GET['lon_rs'] ?? $lon);
-$cond   = $_GET['condizione'] ?? 'Decima';
-$luogo  = $_GET['luogo_rs']   ?? '';
+$cond     = $_GET['condizione'] ?? 'Decima';
+$modalita = ($_GET['modalita'] ?? 'standard') === 'astri'
+    ? 'astri'
+    : 'standard';
+$luogo    = $_GET['luogo_rs'] ?? '';
+
+$astriInCasaConfronto = [];
+if ($modalita === 'astri' && !empty($_GET['astri_in_casa'])) {
+    $regoleRicevute = json_decode($_GET['astri_in_casa'], true);
+
+    if (is_array($regoleRicevute)) {
+        foreach ($regoleRicevute as $regola) {
+            if (!is_array($regola) || !isset($regola['pianeta'], $regola['casa'])) {
+                continue;
+            }
+
+            $idPianeta = filter_var(
+                $regola['pianeta'],
+                FILTER_VALIDATE_INT
+            );
+            $casaRichiesta = filter_var(
+                $regola['casa'],
+                FILTER_VALIDATE_INT
+            );
+
+            if ($idPianeta === false ||
+                $casaRichiesta === false ||
+                $casaRichiesta < 1 ||
+                $casaRichiesta > 12) {
+                continue;
+            }
+
+            $astriInCasaConfronto[] = [
+                'pianeta' => (int)$idPianeta,
+                'casa'     => (int)$casaRichiesta,
+                'vuole'    => !empty($regola['vuole']),
+            ];
+        }
+    }
+}
 
 // Calcola tema natale
 $temaNatale = $swe->calcolaTema($g, $m, $a, $oraGmt, $lat, $lon);
@@ -57,6 +95,58 @@ try {
 // Valuta con RuleEngine
 $val = $engine->valuta($temaNatale, $temaRS, $cond);
 $previsioneAnnuale = $forecast->genera($temaRS, $val);
+
+// Tabella sintetica per Comparator RS: Pianeta | Casa | stato cromatico.
+// La classificazione usa direttamente le regole della condizione selezionata.
+$nomiPianetiConfronto = [
+    0 => 'Sole',
+    1 => 'Luna',
+    2 => 'Mercurio',
+    3 => 'Venere',
+    4 => 'Marte',
+    5 => 'Giove',
+    6 => 'Saturno',
+    7 => 'Urano',
+    8 => 'Nettuno',
+    9 => 'Plutone',
+    11 => 'Nodo',
+];
+
+$regoleCondizione = RuleEngine::CONDIZIONI[$cond]
+    ?? RuleEngine::CONDIZIONI['Decima'];
+
+$tabellaConfronto = [];
+
+foreach ($temaRS['pianeti'] as $idPianeta => $pianeta) {
+    $idPianeta = (int)$idPianeta;
+    $casa = (int)($pianeta['casa'] ?? 0);
+    $stato = 'neutro';
+
+    if (isset($regoleCondizione['bonus'][$idPianeta][$casa])) {
+        $stato = 'positivo';
+    } elseif (isset($regoleCondizione['penalita'][$idPianeta][$casa])) {
+        $stato = 'negativo';
+    }
+
+    // Solo in modalità "Astri nelle case", una richiesta positiva rispettata
+    // prevale sulla valutazione astrologica ordinaria.
+    if ($modalita === 'astri') {
+        foreach ($astriInCasaConfronto as $regolaScelta) {
+            if ($regolaScelta['vuole'] &&
+                $regolaScelta['pianeta'] === $idPianeta &&
+                $regolaScelta['casa'] === $casa) {
+                $stato = 'positivo';
+                break;
+            }
+        }
+    }
+
+    $tabellaConfronto[] = [
+        'pianeta' => $nomiPianetiConfronto[$idPianeta] ?? ('Pianeta ' . $idPianeta),
+        'casa'     => $casa,
+        'stato'    => $stato,
+    ];
+}
 
 // ── Filtro di esclusione RS (aggiuntivo, non RuleEngine) ─────────────────
 // Sole/Marte in I/VI/XII RS, ASC RS in I/VI/XII natale, Saturno in X RS,
@@ -145,6 +235,7 @@ echo json_encode([
     'valutazione'=> $val,
     'previsione_annuale' => $previsioneAnnuale,
     'relazione_annuale' => $previsioneAnnuale['relazione_annuale'] ?? [],
+    'tabella_confronto' => $tabellaConfronto,
     'aspetti'    => $aspetti,
     'escluso_filtro' => $motiviEsclusioneRS,
 ]);

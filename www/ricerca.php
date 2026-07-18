@@ -1508,12 +1508,17 @@ document.getElementById('risultati-area').addEventListener('click', function(eve
     }
 
     const soggetto = getSoggetto();
+    const modalitaConfronto = stato.modalita === 'astri' ? 'astri' : 'standard';
     const payload = {
         soggetto,
         anno: document.getElementById('anno-rs').value,
-        condizione: stato.modalita === 'astri'
+        modalita: modalitaConfronto,
+        condizione: modalitaConfronto === 'astri'
             ? 'Decima'
             : document.getElementById('condizione').value,
+        astri_in_casa: modalitaConfronto === 'astri'
+            ? buildAstriInCasaParam()
+            : [],
         risultati
     };
 
