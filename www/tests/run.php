@@ -248,6 +248,16 @@ foreach ($caseFiles as $caseFile) {
         }
     }
 
+    if (isset($data['atteso']['val'])) {
+        $attesaVal = (string)$data['atteso']['val'];
+        $ottenutaVal = (string)$valutazione['val'];
+
+        if ($ottenutaVal !== $attesaVal) {
+            echo "✗ {$caseName}: val attesa '{$attesaVal}', ottenuta '{$ottenutaVal}'\n";
+            exit(1);
+        }
+    }
+
     echo "✓ {$caseName}: valido — stelline {$valutazione['stelline']} | val {$valutazione['val']}\n";
 
     if (!empty($valutazione['veti'])) {

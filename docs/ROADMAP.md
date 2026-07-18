@@ -1,176 +1,316 @@
-# Astro-Val Roadmap
+# Astro-DSS Roadmap
 
-Documento di avanzamento del progetto.
-Da mantenere aggiornato a ogni milestone.
+Documento di avanzamento del progetto Astro-DSS.
+
+Deve essere aggiornato al completamento di ogni milestone significativa.
 
 ---
 
 # Visione
 
-Trasformare dati astronomici in una relazione professionale,
-deterministica, spiegabile e conforme all'Astrologia Attiva di
-Ciro Discepolo.
+Trasformare i risultati prodotti da due Rivoluzioni Solari Mirate in un
+confronto strutturato, spiegabile e orientato alla decisione.
+
+Astro-DSS deve supportare l'utente nell'individuare:
+
+- la soluzione complessivamente preferibile;
+- i miglioramenti ottenuti;
+- i peggioramenti introdotti;
+- i compromessi necessari;
+- le aree astrologiche maggiormente coinvolte;
+- le evidenze e le Rule che sostengono la raccomandazione.
+
+La decisione finale non deve dipendere esclusivamente da un punteggio
+totale, ma da un insieme tracciabile di dati, condizioni, evidenze e
+criteri di priorità.
 
 ---
 
 # Stato attuale
 
-Data: 2026-07-16
+Data di avvio operativo: 2026-07-17
 
-Versione stabile:
-V6 — tag `v6.0.0`
+Progetto:
 
-Versione di lavoro:
-V6.1
+Astro-DSS
 
 Branch di sviluppo:
-`feature/v6.1`
 
-Architettura:
-✅ Completata e stabile
+`feature/astro-dss`
 
-Rule Engine:
-✅ 120/120 Rule
-✅ Knowledge Coverage 100%
-✅ FREEZE attivo
+Baseline tecnica:
 
-Explainability:
-✅ End-to-End
+clone indipendente della versione stabile di Astro-Val
 
-Full Regression:
-✅ Completa
+Infrastruttura:
+
+- repository Git indipendente;
+- stack Docker indipendente;
+- database PostgreSQL indipendente;
+- rete Docker indipendente;
+- applicazione disponibile sulla porta `8192`;
+- Adminer disponibile sulla porta `8193`;
+- PostgreSQL disponibile sulla porta `5442`.
+
+Database iniziale:
+
+- 7 tabelle applicative;
+- dati ripristinati dalla baseline Astro-Val;
+- dimensione iniziale verificata: circa 28 MB.
+
+Rule Engine ereditato:
+
+- 120 Rule registrate;
+- Knowledge Coverage 100%;
+- Full Regression disponibile;
+- stato consolidato;
+- freeze operativo durante la prima fase DSS.
 
 ---
 
-# Timeline
+# Baseline ereditata da Astro-Val
 
-## V1 — Motore astronomico
+Astro-DSS eredita una piattaforma applicativa già funzionante composta da:
 
-✅ Completata
-
+- motore astronomico;
 - Swiss Ephemeris tramite PHP FFI;
-- calcolo pianeti e case;
-- Rivoluzioni Solari;
-- Rivoluzioni Lunari.
-
----
-
-## V2 — Base Interpretation
-
-✅ Completata
-
----
-
-## V3 — Forecast Engine
-
-✅ Completata
-
+- calcolo delle Rivoluzioni Solari;
+- calcolo delle Rivoluzioni Lunari;
 - Planet Condition Engine;
+- Rule Engine;
 - Evidence Engine;
 - Theme Engine;
 - Narrative Engine;
 - Annual Report;
-- explainability completa.
+- gestione soggetti e utenti;
+- gestione sessioni;
+- persistenza PostgreSQL;
+- frontend web esistente;
+- suite di test e regressione.
+
+Questa baseline non rappresenta la roadmap futura di Astro-DSS.
+
+Costituisce invece il punto di partenza tecnico sul quale costruire il
+Decision Support System.
 
 ---
 
-## V4 — Rule Engine
-
-✅ Completata
-
-- Rule Registry centralizzato;
-- 120 Rule implementate;
-- Knowledge Coverage 100%;
-- Full Regression superata;
-- Rule Engine congelato.
-
----
-
-## V5 — Report Professionale
-
-✅ Completata
-
-- Report Annuale narrativo;
-- Executive Summary;
-- Theme Summary;
-- Cross Dynamics;
-- Conclusion;
-- stampa browser;
-- PDF Dompdf deterministico.
-
----
-
-## V6 — Hardening e Release stabile
-
-✅ Completata
-
-- Hardening Suite;
-- Release Check;
-- RC1;
-- RC2;
-- backup e restore PostgreSQL;
-- ambienti Development e Production separati;
-- verifica browser e PDF;
-- configurazione PHP consolidata;
-- release stabile taggata `v6.0.0`.
-
----
-
-## V6.1 — Consolidamento UX/UI
+# DSS V1 — Inventario e modello di confronto
 
 🚧 In corso
 
-### Completato
+## Obiettivo
 
-- header responsive condiviso;
-- menu hamburger mobile;
-- sottomenu Rivoluzioni;
-- navigazione utente integrata nel menu mobile;
-- test desktop e iPhone;
-- centralizzazione degli stili in `www/css/style.css`;
-- rimozione degli inline style statici da:
-  - `www/index.php`;
-  - `www/tema.php`;
-  - `www/rs.php`;
-  - `www/rl.php`.
+Individuare quali dati prodotti dall'applicazione siano realmente
+confrontabili tra due RSM e definire un modello dati comune.
 
-Commit principali:
+## Attività
 
-- `2b471fa` — header responsive e menu mobile;
-- `a824d80` — refactoring UI pagina soggetti;
-- `fb22cd6` — refactoring UI Tema Natale;
-- `8aa5b6c` — refactoring UI Rivoluzione Solare;
-- `c411ee3` — refactoring UI Rivoluzione Lunare.
+1. censire tutti gli output prodotti per una Rivoluzione Solare;
+2. individuare le strutture PHP che contengono i risultati;
+3. identificare i dati salvati nel database;
+4. identificare i dati presenti soltanto in memoria o in sessione;
+5. distinguere:
+   - dati numerici;
+   - dati categorici;
+   - condizioni planetarie;
+   - Rule attivate;
+   - evidenze;
+   - testi narrativi;
+   - metadati;
+6. stabilire quali valori siano confrontabili direttamente;
+7. individuare i dati che richiedono normalizzazione;
+8. progettare una struttura dati comune per RSM A e RSM B;
+9. documentare i limiti informativi della baseline.
 
-### Prossimi obiettivi
+## Deliverable
 
-1. rifiniture UX/UI finali;
-2. controllo degli stili dinamici JavaScript;
-3. validazione completa desktop e mobile;
-4. consolidamento del CSS condiviso;
-5. aggiornamento finale della documentazione;
-6. preparazione della release V6.1.
+- inventario tecnico degli output;
+- mappa delle fonti dati;
+- modello normalizzato di una RSM;
+- specifica iniziale del Comparator Engine;
+- criteri minimi di tracciabilità.
+
+## Vincoli
+
+- nessuna modifica funzionale al Rule Engine;
+- nessuna UI definitiva;
+- nessuna raccomandazione automatica prematura;
+- nessuna logica basata esclusivamente sul punteggio totale.
+
+---
+
+# DSS V2 — Comparator Engine
+
+⏳ Pianificata
+
+## Obiettivo
+
+Realizzare il motore deterministico che confronta due strutture RSM
+normalizzate.
+
+## Funzioni previste
+
+- confronto valore per valore;
+- classificazione delle differenze;
+- identificazione di miglioramenti e peggioramenti;
+- gestione dei valori mancanti;
+- confronto delle condizioni planetarie;
+- confronto delle Rule attivate;
+- confronto delle evidenze;
+- produzione di un risultato strutturato e verificabile.
+
+## Output previsto
+
+Per ogni elemento confrontato:
+
+- valore RSM A;
+- valore RSM B;
+- differenza;
+- direzione del cambiamento;
+- rilevanza;
+- fonte del dato;
+- motivazione tecnica.
+
+---
+
+# DSS V3 — Impact Evaluator e Rule Correlator
+
+⏳ Pianificata
+
+## Obiettivo
+
+Attribuire significato decisionale alle differenze prodotte dal
+Comparator Engine.
+
+## Funzioni previste
+
+- classificazione degli impatti;
+- valutazione delle priorità;
+- correlazione con le Rule;
+- correlazione con le evidenze;
+- rilevazione di bonus e penalità;
+- individuazione dei conflitti;
+- individuazione dei compromessi;
+- aggregazione per ambito astrologico.
+
+## Principio
+
+Una differenza numerica non è automaticamente un miglioramento.
+
+Il significato deve essere derivato dal contesto astrologico, dalle Rule,
+dalle evidenze e dalle priorità definite.
+
+---
+
+# DSS V4 — Recommendation Engine
+
+⏳ Pianificata
+
+## Obiettivo
+
+Produrre una raccomandazione finale motivata e tracciabile.
+
+## Funzioni previste
+
+- sintesi dei vantaggi di RSM A;
+- sintesi dei vantaggi di RSM B;
+- individuazione delle criticità residue;
+- classificazione dei compromessi;
+- gestione dei casi equivalenti;
+- gestione dei casi non decidibili;
+- raccomandazione finale;
+- confidence level;
+- elenco delle evidenze principali.
+
+## Requisito fondamentale
+
+Il sistema deve poter dichiarare che non esistono dati sufficienti per
+una raccomandazione affidabile.
+
+---
+
+# DSS V5 — Narrative e interfaccia di confronto
+
+⏳ Pianificata
+
+## Obiettivo
+
+Rendere il confronto comprensibile e utilizzabile attraverso una
+interfaccia dedicata.
+
+## Funzioni previste
+
+- selezione di due RSM;
+- visualizzazione affiancata;
+- evidenziazione dei miglioramenti;
+- evidenziazione dei peggioramenti;
+- visualizzazione dei compromessi;
+- dettaglio delle Rule coinvolte;
+- dettaglio delle evidenze;
+- sintesi narrativa;
+- raccomandazione finale;
+- esportazione del confronto.
+
+## Vincolo
+
+La UI deve rappresentare dati già prodotti dai motori sottostanti.
+
+Non deve contenere logica decisionale non tracciata.
 
 ---
 
 # Direttiva operativa permanente
 
-L'architettura e il Rule Engine sono considerati stabili.
+L'architettura ereditata e il Rule Engine sono considerati componenti
+stabili della baseline.
 
-Il Rule Engine non deve essere riaperto salvo:
+Il Rule Engine non deve essere modificato salvo:
 
 - bug documentati;
 - incompatibilità tecniche;
 - refactoring che non alterino il comportamento;
-- decisione esplicita e documentata.
+- decisione architetturale esplicita e documentata.
 
-Ogni milestone deve aggiornare:
+Ogni nuova logica DSS deve essere:
+
+- separata dal Rule Engine;
+- deterministica;
+- testabile;
+- tracciabile;
+- spiegabile;
+- documentata.
+
+---
+
+# Documentazione da aggiornare
+
+Ogni milestone deve aggiornare almeno:
 
 - `docs/README.md`;
 - `docs/START_HERE.md`;
 - `docs/ROADMAP.md`;
-- `docs/HANDOVER_OPERATIVO.md`.
+- `docs/HANDOVER_OPERATIVO.md`;
+- `docs/ADR_INDEX.md`, quando viene introdotta una nuova decisione
+  architetturale.
 
 Ogni attività completata deve essere registrata cronologicamente in:
 
 `docs/HANDOVER_OPERATIVO.md`
+
+---
+
+# Prossimo passo operativo
+
+Il prossimo passo è l'inventario tecnico degli output prodotti da una
+Rivoluzione Solare.
+
+L'analisi deve partire da:
+
+- struttura del database;
+- file PHP coinvolti nel calcolo RS;
+- strutture dati restituite dal motore;
+- sessioni applicative;
+- Rule ed evidenze generate;
+- dati usati dal report annuale;
+- informazioni calcolate ma non persistite.

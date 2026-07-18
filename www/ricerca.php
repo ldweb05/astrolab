@@ -417,6 +417,7 @@ filtroNaz:    '',
 filtroStelle: 0,
 pagina:       1,
 perPagina:    50,
+confronto:    [],
 // Dati dell'ultimo "done" ricevuto dall'API, usati da espandi-orbe
 ultimiParams: null,
 };
@@ -621,6 +622,7 @@ function avviaRicerca(espansioneOrbe) {
     stato.filtroNaz    = '';
     stato.filtroStelle = 0;
     stato.pagina       = 1;
+    stato.confronto    = [];
 
     // Applica preset orbe se selezionato (solo cuspidi)
     const orbePreset = document.getElementById('filt-orbe-preset').value;
@@ -1274,6 +1276,13 @@ let ris = [...stato.tutti];
 if (stato.filtroNaz)    ris = ris.filter(r => (r.nazione||'').toUpperCase() === stato.filtroNaz.toUpperCase());
 if (stato.filtroStelle > 0) ris = ris.filter(r => r.stelline >= stato.filtroStelle);
 const totale    = ris.length;
+const confrontoToolbar = stato.confronto.length >= 2
+? `<div class="confronto-toolbar">
+<button type="button" id="btn-confronta-selezioni">
+Confronta le ${stato.confronto.length} selezioni
+</button>
+</div>`
+: '';
 const totPagine = Math.max(1, Math.ceil(totale / stato.perPagina));
 const pagina    = Math.min(stato.pagina, totPagine);
 const offset    = (pagina - 1) * stato.perPagina;
@@ -1289,6 +1298,12 @@ const sogg = getSoggetto();
 const anno = document.getElementById('anno-rs').value;
 const cond = stato.modalita === 'astri' ? 'Decima' : document.getElementById('condizione').value;
 const righe = pagRis.map((r, idx) => {
+const confrontoKey = [
+r.lat,
+r.lon,
+r.iata || '',
+r.icao || ''
+].join('|');
 const rsUrl = 'rs.php?id=' + (sogg?.id||'') +
 '&lat_rs=' + r.lat + '&lon_rs=' + r.lon +
 '&luogo_rs=' + encodeURIComponent((r.citta||'')+', '+(r.nazione||'')) +
@@ -1320,6 +1335,13 @@ vetiRighe +
 : '';
 return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
+<td style="text-align:center">
+<input
+type="checkbox"
+class="confronto-checkbox"
+data-confronto-key="${confrontoKey}"
+${stato.confronto.includes(confrontoKey) ? 'checked' : ''}>
+</td>
 <td>${stelleHtml(r.stelline)}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
 <td><strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||''}</span></td>
@@ -1346,14 +1368,15 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
+${confrontoToolbar}
 <div style="overflow-x:auto">
 <table class="tabella-risultati">
 <thead><tr>
-<th>#</th><th>Stelle</th><th>VAL</th>
+<th>#</th><th>Confronta</th><th>Stelle</th><th>VAL</th>
 <th>IATA / ICAO</th><th>Aeroporto</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th>
 </tr></thead>
-<tbody>${righe||'<tr><td colspan="10" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
+<tbody>${righe||'<tr><td colspan="11" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
 </table>
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
@@ -1427,6 +1450,19 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
 }
+// ── Comparator ────────────────────────────────────────────────────────────────
+
+function getRisultatiConfronto() {
+    return stato.confronto.map(key => {
+        return stato.tutti.find(r => [
+            r.lat,
+            r.lon,
+            r.iata || '',
+            r.icao || ''
+        ].join('|') === key);
+    }).filter(Boolean);
+}
+
 // ── Filtri Risultati ─────────────────────────────────────────────────────────────
 
 function setFiltroNaz(v)    { stato.filtroNaz = v; stato.pagina = 1; renderTabella(); }
@@ -1437,6 +1473,59 @@ document.addEventListener('DOMContentLoaded', function() {
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
+
+document.getElementById('risultati-area').addEventListener('change', function(event) {
+    const checkbox = event.target.closest('.confronto-checkbox');
+    if (!checkbox) return;
+
+    const key = checkbox.dataset.confrontoKey;
+
+    if (checkbox.checked) {
+        if (stato.confronto.includes(key)) return;
+
+        if (stato.confronto.length >= 3) {
+            checkbox.checked = false;
+            alert('Puoi confrontare al massimo 3 RS o rilocazioni.');
+            return;
+        }
+
+        stato.confronto.push(key);
+    } else {
+        stato.confronto = stato.confronto.filter(item => item !== key);
+    }
+
+    renderTabella();
+});
+
+document.getElementById('risultati-area').addEventListener('click', function(event) {
+    const button = event.target.closest('#btn-confronta-selezioni');
+    if (!button) return;
+
+    const risultati = getRisultatiConfronto();
+    if (risultati.length < 2) {
+        alert('Seleziona almeno 2 RS o rilocazioni da confrontare.');
+        return;
+    }
+
+    const soggetto = getSoggetto();
+    const modalitaConfronto = stato.modalita === 'astri' ? 'astri' : 'standard';
+    const payload = {
+        soggetto,
+        anno: document.getElementById('anno-rs').value,
+        modalita: modalitaConfronto,
+        condizione: modalitaConfronto === 'astri'
+            ? 'Decima'
+            : document.getElementById('condizione').value,
+        astri_in_casa: modalitaConfronto === 'astri'
+            ? buildAstriInCasaParam()
+            : [],
+        risultati
+    };
+
+    sessionStorage.setItem('astroDssConfrontoRs', JSON.stringify(payload));
+    window.location.href = 'compare_rs.php';
+});
+
 // Preset orbe sincronizza con pannello cuspidi in tempo reale
 document.getElementById('filt-orbe-preset').addEventListener('change', function() {
 applicaOrbePreset(this.value);

@@ -1,120 +1,185 @@
 # START HERE
 
-Benvenuto nel progetto **Astro-Val**.
+Benvenuto nel progetto **Astro-DSS**.
 
-Questo documento è il punto di ingresso per comprendere rapidamente lo
-stato del progetto e sapere da dove riprendere lo sviluppo.
+Astro-DSS è un progetto indipendente nato dalla base stabile di
+**Astro-Val** con l'obiettivo di sviluppare un **Decision Support System**
+per il confronto ragionato tra due Rivoluzioni Solari Mirate.
 
-------------------------------------------------------------------------
-
-# Ultima milestone completata
-
-**Commit:** `c411ee3`
-
-**Descrizione:** Refactoring UI/CSS completato sulle quattro pagine principali
-
-**Stato:** COMPLETATA
-
-**Branch di sviluppo:** `feature/v6.1`
-
-**Milestone corrente:** V6.1 — Consolidamento UX/UI e CSS
+Questo documento è il punto di ingresso per comprendere lo stato del
+progetto e sapere da dove riprendere lo sviluppo.
 
 ------------------------------------------------------------------------
 
-# Stato del progetto
+# Stato iniziale del progetto
 
-**Versione architetturale:** V4 completata
+**Progetto:** Astro-DSS
 
--   ✅ Rule Engine: **120/120**
--   ✅ Rule Registry: **120 Rule registrate**
--   ✅ Full Regression: OK
--   ✅ Knowledge Coverage: **100%**
--   ✅ Repository stabile
+**Tipologia:** Decision Support System astrologico
 
-Il Rule Engine è considerato **completo** e **congelato (freeze)**.
+**Branch di sviluppo:** `feature/astro-dss`
 
-Non devono essere aggiunte nuove Rule né modificate quelle esistenti,
-salvo correzioni di bug documentati.
+**Base applicativa:** clone indipendente di Astro-Val
 
-------------------------------------------------------------------------
+**Stato infrastruttura:** OPERATIVA
 
-# Percorso del progetto
+Sono già stati completati:
 
--   V1 --- Motore astronomico ✅
--   V2 --- Base Interpretation ✅
--   V3 --- Forecast Engine ✅
--   V4 --- Rule Engine (120 Rule) ✅
--   V5 --- Consolidamento Report Professionale ✅
--   V6 --- Hardening e Release stabile completata ✅
--   V6.1 --- Consolidamento UX/UI e CSS in corso 🚧
+-   repository Git indipendente;
+-   stack Docker indipendente;
+-   database PostgreSQL indipendente;
+-   rete Docker indipendente;
+-   ripristino completo dei dati iniziali;
+-   verifica dell'applicazione sulla porta `8192`.
 
 ------------------------------------------------------------------------
 
-# Da leggere in quest'ordine
+# Separazione da Astro-Val
 
-1.  **ADR_INDEX.md**
-    -   decisioni architetturali
-    -   freeze del Rule Engine
-2.  **ROADMAP.md**
-    -   roadmap del progetto
-    -   milestone raggiunte
-    -   prossimi obiettivi
-3.  **HANDOVER_OPERATIVO.md**
-    -   stato operativo corrente
-    -   punto esatto da cui riprendere
+Astro-Val rimane il progetto stabile dedicato al calcolo, alla valutazione
+e alla produzione dei report astrologici.
+
+Astro-DSS utilizza la base tecnica di Astro-Val, ma evolve come progetto
+separato.
+
+Le modifiche effettuate in Astro-DSS non devono alterare:
+
+-   il repository di Astro-Val;
+-   i container di Astro-Val;
+-   il database di Astro-Val;
+-   le porte e le reti Docker di Astro-Val;
+-   la stabilità della versione operativa di Astro-Val.
+
+------------------------------------------------------------------------
+
+# Obiettivo del progetto
+
+Astro-DSS deve confrontare due Rivoluzioni Solari Mirate già calcolate e
+supportare una decisione motivata.
+
+Il sistema dovrà evidenziare:
+
+-   miglioramenti;
+-   peggioramenti;
+-   compromessi;
+-   differenze rilevanti;
+-   condizioni planetarie coinvolte;
+-   regole ed evidenze applicabili;
+-   bonus e penalità;
+-   motivazioni della raccomandazione finale.
+
+Astro-DSS non nasce per sostituire il motore astrologico di Astro-Val.
+
+Il suo compito principale è trasformare risultati già disponibili in un
+confronto strutturato, spiegabile e orientato alla decisione.
+
+------------------------------------------------------------------------
+
+# Principi architetturali
+
+Il DSS dovrà essere costruito per livelli separati.
+
+1.  Acquisizione dei risultati delle due RSM
+2.  Normalizzazione dei dati confrontabili
+3.  Comparator Engine
+4.  Difference Analyzer
+5.  Impact Evaluator
+6.  Rule Correlator
+7.  Narrative Generator
+8.  Recommendation Engine
+9.  UI di confronto
+
+Ogni livello dovrà produrre dati verificabili e tracciabili.
+
+La raccomandazione finale non dovrà essere una semplice differenza tra
+punteggi, ma il risultato di evidenze esplicite e comprensibili.
+
+------------------------------------------------------------------------
+
+# Componenti ereditati da Astro-Val
+
+La base iniziale comprende:
+
+-   motore astronomico;
+-   Planet Conditions;
+-   Rule Engine;
+-   Evidence Engine;
+-   Theme Engine;
+-   Narrative Engine;
+-   gestione delle sessioni;
+-   database applicativo;
+-   interfaccia web esistente.
+
+Questi componenti costituiscono la base tecnica iniziale.
+
+Il Rule Engine ereditato contiene **120 Rule** ed è considerato
+consolidato.
+
+Non devono essere aggiunte o modificate Rule durante la prima fase di
+sviluppo del DSS, salvo correzioni di bug documentati.
+
+------------------------------------------------------------------------
+
+# Prima milestone
+
+## DSS V1 — Analisi e modello di confronto
+
+La prima milestone non riguarda la nuova interfaccia grafica.
+
+Le attività iniziali sono:
+
+1.  censire tutti gli output prodotti da Astro-Val;
+2.  identificare gli output disponibili per ogni RSM;
+3.  distinguere dati numerici, categorici, narrativi ed evidenze;
+4.  stabilire quali informazioni siano confrontabili;
+5.  definire una struttura dati comune per due RSM;
+6.  documentare criteri, priorità e limiti del confronto;
+7.  progettare il primo Comparator Engine senza modificare il Rule Engine.
 
 ------------------------------------------------------------------------
 
 # Dove riprendere
 
-Le prossime attività NON riguardano il Rule Engine.
+La prossima attività consiste nell'eseguire un inventario tecnico degli
+output prodotti dall'applicazione.
 
-Lo sviluppo prosegue esclusivamente su:
+L'analisi dovrà individuare:
 
--   rifiniture UX/UI finali;
--   consolidamento del frontend condiviso;
--   ottimizzazione di `www/css/style.css`;
--   validazione browser desktop e mobile;
--   preparazione della release V6.1.
+-   tabelle e colonne coinvolte;
+-   strutture PHP che rappresentano una RSM;
+-   risultati numerici disponibili;
+-   condizioni planetarie;
+-   Rule attivate;
+-   evidenze generate;
+-   testi narrativi;
+-   dati persistiti nelle sessioni;
+-   eventuali informazioni calcolate ma non salvate.
 
-Sono già completati:
-
--   header responsive condiviso con menu hamburger;
--   refactoring UI di `www/index.php`;
--   refactoring UI di `www/tema.php`;
--   refactoring UI di `www/rs.php`;
--   refactoring UI di `www/rl.php`;
--   eliminazione degli inline style statici dalle pagine principali.
+Non deve ancora essere sviluppata la UI definitiva del confronto.
 
 ------------------------------------------------------------------------
 
-# Filosofia del progetto
+# Criteri di qualità
 
-L'architettura è organizzata a livelli.
+Ogni confronto prodotto da Astro-DSS dovrà essere:
 
-1.  Calcoli astronomici
-2.  Planet Conditions
-3.  Rule Engine
-4.  Evidence Engine
-5.  Theme Engine
-6.  Narrative Engine
-7.  Annual Report
-
-I livelli inferiori sono ormai consolidati.
-
-L'evoluzione del progetto avverrà esclusivamente nei livelli superiori,
-migliorando la qualità del report professionale senza alterare la logica
-delle 120 Rule.
+-   riproducibile;
+-   spiegabile;
+-   tracciabile;
+-   indipendente dalla sola differenza di punteggio;
+-   coerente con le evidenze astrologiche disponibili;
+-   leggibile anche da un utente non tecnico;
+-   verificabile a livello di regole e dati sorgente.
 
 ------------------------------------------------------------------------
 
 # Obiettivo finale
 
-Consolidare la Release V6.1 di Astro-Val:
+Realizzare un Decision Support System capace di confrontare due RSM e
+fornire una raccomandazione motivata, mostrando chiaramente:
 
--   architettura stabile;
--   report professionale;
--   piena tracciabilità delle evidenze;
--   qualità narrativa elevata;
--   documentazione completa;
--   prodotto pronto per l'utilizzo operativo.
+-   quale soluzione risulta preferibile;
+-   in quali ambiti risulta migliore;
+-   quali criticità rimangono;
+-   quali compromessi sono necessari;
+-   quali dati, condizioni e regole sostengono la decisione.
