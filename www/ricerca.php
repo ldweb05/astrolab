@@ -1335,13 +1335,6 @@ vetiRighe +
 : '';
 return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
-<td style="text-align:center">
-<input
-type="checkbox"
-class="confronto-checkbox"
-data-confronto-key="${confrontoKey}"
-${stato.confronto.includes(confrontoKey) ? 'checked' : ''}>
-</td>
 <td>${stelleHtml(r.stelline)}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
 <td><strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||''}</span></td>
@@ -1351,6 +1344,13 @@ ${stato.confronto.includes(confrontoKey) ? 'checked' : ''}>
 <td style="color:#888">${parseFloat(r.lat||0).toFixed(2)}</td>
 <td style="color:#888">${parseFloat(r.lon||0).toFixed(2)}</td>
 <td><a href="${rsUrl}" class="btn-usa">↺ Usa</a></td>
+<td style="text-align:center">
+<input
+type="checkbox"
+class="confronto-checkbox"
+data-confronto-key="${confrontoKey}"
+${stato.confronto.includes(confrontoKey) ? 'checked' : ''}>
+</td>
 </tr>`;
 }).join('');
 document.getElementById('risultati-area').innerHTML = `
@@ -1372,9 +1372,9 @@ ${confrontoToolbar}
 <div style="overflow-x:auto">
 <table class="tabella-risultati">
 <thead><tr>
-<th>#</th><th>Confronta</th><th>Stelle</th><th>VAL</th>
+<th>#</th><th>Stelle</th><th>VAL</th>
 <th>IATA / ICAO</th><th>Aeroporto</th>
-<th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th>
+<th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th><th>Confronta</th>
 </tr></thead>
 <tbody>${righe||'<tr><td colspan="11" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
 </table>
