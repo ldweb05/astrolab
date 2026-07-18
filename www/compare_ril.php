@@ -48,6 +48,21 @@ $soggettoNome = $auth->getSoggettoNome();
     min-height: 420px;
 }
 
+.compare-wheel-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.compare-wheel-status {
+    margin: 0 0 12px;
+}
+
+.compare-wheel-angles {
+    margin: 12px 0 0;
+    font-weight: 600;
+}
+
 .compare-table-placeholder {
     min-height: 160px;
 }
@@ -95,6 +110,8 @@ $soggettoNome = $auth->getSoggettoNome();
 </div>
 </main>
 
+<script src="js/zodiac_wheel.js"></script>
+<script src="js/svg_zoom.js"></script>
 <script>
 const out = document.getElementById('compare-output');
 const raw = sessionStorage.getItem('astroDssConfrontoRiloc');
@@ -107,7 +124,14 @@ if (!raw) {
         const risultati = Array.isArray(payload.risultati)
             ? payload.risultati
             : [];
-        const nomeSoggetto = payload.soggetto?.nome || 'Non disponibile';
+        const soggetto = payload.soggetto;
+        const nomeSoggetto = soggetto?.nome || 'Non disponibile';
+        const datiSoggettoValidi = soggetto &&
+            ['giorno', 'mese', 'anno', 'ora_gmt'].every(campo =>
+                soggetto[campo] !== undefined &&
+                soggetto[campo] !== null &&
+                soggetto[campo] !== ''
+            );
 
         const renderMatch = (matches, pianeta) => {
             if (!Array.isArray(matches) || matches.length === 0) {
@@ -142,8 +166,19 @@ if (!raw) {
                     <p><strong>Nazione:</strong> ${nazione}</p>
                     <p><strong>Coordinate:</strong> ${r.lat}, ${r.lon}</p>
 
-                    <div class="compare-chart-placeholder">
-                        Grafico rilocazione ${localita}
+                    <div class="compare-chart-placeholder tema-box">
+                        <p id="wheel-status-${i}" class="compare-wheel-status">
+                            Caricamento tema rilocato...
+                        </p>
+                        <svg
+                            id="wheel-riloc-${i}"
+                            class="compare-wheel-svg"
+                            role="img"
+                            aria-label="Ruota astrologica rilocata per ${localita}">
+                        </svg>
+                        <p id="wheel-angles-${i}" class="compare-wheel-angles">
+                            ASC: — · MC: —
+                        </p>
                     </div>
 
                     <table class="compare-ril-table">
@@ -169,17 +204,65 @@ if (!raw) {
                 <h3>Comparatore rilocazioni</h3>
                 <p><strong>Soggetto:</strong> ${nomeSoggetto}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
-
-                <details style="margin:20px 0">
-                    <summary><strong>Payload JSON</strong></summary>
-                    <pre>${JSON.stringify(payload, null, 2)}</pre>
-                </details>
-
                 <div class="compare-ril-grid">
                     ${schede}
                 </div>
             </div>
         `;
+
+        const caricaRuotaRilocata = async (risultato, indice) => {
+            const status = document.getElementById(`wheel-status-${indice}`);
+            const angles = document.getElementById(`wheel-angles-${indice}`);
+            const svgId = `wheel-riloc-${indice}`;
+            const lat = Number.parseFloat(risultato.lat);
+            const lon = Number.parseFloat(risultato.lon);
+
+            try {
+                if (!datiSoggettoValidi) {
+                    throw new Error('Dati natali del soggetto incompleti');
+                }
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+                    throw new Error('Coordinate della località non valide');
+                }
+
+                const url = 'api/tema_api.php?tipo=natale' +
+                    '&g='       + encodeURIComponent(soggetto.giorno) +
+                    '&m='       + encodeURIComponent(soggetto.mese) +
+                    '&a='       + encodeURIComponent(soggetto.anno) +
+                    '&ora_gmt=' + encodeURIComponent(soggetto.ora_gmt) +
+                    '&lat='     + encodeURIComponent(lat) +
+                    '&lon='     + encodeURIComponent(lon);
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`Richiesta HTTP ${response.status}`);
+                }
+
+                const temaRiloc = await response.json();
+
+                if (temaRiloc?.errore) {
+                    throw new Error(temaRiloc.errore);
+                }
+
+                ZodiacWheel.disegna(svgId, temaRiloc, {size: 480});
+                initSvgZoom(svgId);
+
+                const asc = temaRiloc.case?.ASC?.posizione?.stringa ?? '—';
+                const mc = temaRiloc.case?.MC?.posizione?.stringa ?? '—';
+
+                angles.textContent = `ASC: ${asc} · MC: ${mc}`;
+                status.hidden = true;
+            } catch (errore) {
+                status.textContent = `Impossibile caricare la ruota: ${errore.message}`;
+                angles.textContent = 'ASC: — · MC: —';
+            }
+        };
+
+        risultati.forEach((risultato, indice) => {
+            caricaRuotaRilocata(risultato, indice);
+        });
     } catch (errore) {
         out.innerHTML = '<p><strong>Dati di confronto non validi.</strong></p>';
     }
