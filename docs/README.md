@@ -36,6 +36,44 @@ Le evoluzioni future riguardano esclusivamente:
 - UX e presentazione;
 - validazione con casi reali.
 
+## Stato attuale dello sviluppo
+
+Dopo la creazione della baseline di Astro-DSS il progetto è entrato nella
+prima fase di sviluppo del Comparator Engine.
+
+Ad oggi risultano completate le seguenti funzionalità:
+
+- confronto multiplo delle Rivoluzioni Solari (fino a tre risultati);
+- confronto multiplo delle Rilocazioni (fino a tre risultati);
+- persistenza della selezione durante la navigazione;
+- costruzione e gestione del payload di confronto;
+- pagine dedicate `compare_rs.php` e `compare_ril.php`;
+- layout responsive per il confronto;
+- riepilogo dei soggetti selezionati;
+- visualizzazione delle tabelle dei match astrologici;
+- correzione dei warning PHP e delle inizializzazioni mancanti;
+- debug JSON collassabile per il controllo del payload.
+
+L'applicazione è stabile e tutte le verifiche PHP vengono eseguite
+all'interno del container Docker `astro-dss-web`.
+
+Successivamente sono stati completati anche:
+
+- integrazione delle ruote astrologiche nel Comparator delle Rilocazioni;
+- preservazione delle regole personalizzate delle case nel Comparator RS;
+- consolidamento dell'interfaccia del Comparator RS;
+- mantenimento della compatibilità con il Rule Engine congelato;
+- merge delle funzionalità nel branch `feature/v6.1`.
+
+Le verifiche finali della milestone comprendono:
+
+- lint PHP eseguito con successo;
+- `git diff --check` senza anomalie;
+- working tree pulita.
+
+L'architettura continua a riutilizzare il motore astrologico di Astro-Val
+senza modificarne la logica di calcolo.
+
 ## Caratteristiche distintive
 
 - 120 Rule completamente tracciabili
@@ -225,16 +263,25 @@ La roadmap specifica del progetto è descritta in `docs/ROADMAP.md`.
 
 ## Punto di ripresa
 
-Lo sviluppo corrente riguarda esclusivamente Astro-DSS.
+Il Comparator Engine è ora operativo sia per le Rivoluzioni Solari sia
+per le Rilocazioni.
 
-Priorità attuale:
+Le funzionalità disponibili comprendono:
 
-1. progettazione del Comparator Engine;
-2. definizione del modello dati confrontabile;
-3. progettazione del Decision Support System.
+- confronto RS;
+- confronto Rilocazioni;
+- selezione multipla fino a tre risultati;
+- ruote astrologiche integrate;
+- tabelle comparative;
+- preservazione delle regole personalizzate delle case;
+- interfaccia consolidata del Comparator RS.
 
-Per i dettagli consultare:
+La prossima evoluzione del progetto riguarda i livelli superiori del DSS:
 
-- `docs/START_HERE.md`
-- `docs/ROADMAP.md`
-- `docs/HANDOVER_OPERATIVO.md`
+- Difference Analyzer;
+- Impact Evaluator;
+- Rule Correlator;
+- Recommendation Engine.
+
+Il Rule Engine rimane congelato e non deve essere modificato.
+

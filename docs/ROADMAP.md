@@ -40,9 +40,9 @@ Branch di sviluppo:
 
 Baseline tecnica:
 
-clone indipendente della versione stabile di Astro-Val
+clone indipendente della versione stabile di Astro-Val.
 
-Infrastruttura:
+Infrastruttura operativa:
 
 - repository Git indipendente;
 - stack Docker indipendente;
@@ -52,19 +52,15 @@ Infrastruttura:
 - Adminer disponibile sulla porta `8193`;
 - PostgreSQL disponibile sulla porta `5442`.
 
-Database iniziale:
-
-- 7 tabelle applicative;
-- dati ripristinati dalla baseline Astro-Val;
-- dimensione iniziale verificata: circa 28 MB.
-
-Rule Engine ereditato:
+Il Rule Engine ereditato rimane invariato:
 
 - 120 Rule registrate;
 - Knowledge Coverage 100%;
 - Full Regression disponibile;
-- stato consolidato;
-- freeze operativo durante la prima fase DSS.
+- Rule Engine in freeze.
+
+Lo sviluppo si è concentrato sull'implementazione del primo Comparator
+Engine e dell'interfaccia di confronto.
 
 ---
 
@@ -88,89 +84,53 @@ Astro-DSS eredita una piattaforma applicativa già funzionante composta da:
 - frontend web esistente;
 - suite di test e regressione.
 
-Questa baseline non rappresenta la roadmap futura di Astro-DSS.
-
-Costituisce invece il punto di partenza tecnico sul quale costruire il
-Decision Support System.
-
 ---
 
 # DSS V1 — Inventario e modello di confronto
 
-🚧 In corso
+✅ Completata
 
-## Obiettivo
+Sono stati censiti gli output dell'applicazione e definita la struttura
+dei dati utilizzata per il confronto.
 
-Individuare quali dati prodotti dall'applicazione siano realmente
-confrontabili tra due RSM e definire un modello dati comune.
-
-## Attività
-
-1. censire tutti gli output prodotti per una Rivoluzione Solare;
-2. individuare le strutture PHP che contengono i risultati;
-3. identificare i dati salvati nel database;
-4. identificare i dati presenti soltanto in memoria o in sessione;
-5. distinguere:
-   - dati numerici;
-   - dati categorici;
-   - condizioni planetarie;
-   - Rule attivate;
-   - evidenze;
-   - testi narrativi;
-   - metadati;
-6. stabilire quali valori siano confrontabili direttamente;
-7. individuare i dati che richiedono normalizzazione;
-8. progettare una struttura dati comune per RSM A e RSM B;
-9. documentare i limiti informativi della baseline.
-
-## Deliverable
-
-- inventario tecnico degli output;
-- mappa delle fonti dati;
-- modello normalizzato di una RSM;
-- specifica iniziale del Comparator Engine;
-- criteri minimi di tracciabilità.
-
-## Vincoli
-
-- nessuna modifica funzionale al Rule Engine;
-- nessuna UI definitiva;
-- nessuna raccomandazione automatica prematura;
-- nessuna logica basata esclusivamente sul punteggio totale.
+Il lavoro svolto ha permesso di identificare le informazioni necessarie
+alla costruzione del payload di confronto e delle pagine dedicate al
+Comparator Engine.
 
 ---
 
 # DSS V2 — Comparator Engine
 
-⏳ Pianificata
+✅ Completata
 
-## Obiettivo
+Risultano già implementati:
 
-Realizzare il motore deterministico che confronta due strutture RSM
-normalizzate.
+- confronto multiplo delle Rivoluzioni Solari;
+- confronto multiplo delle Rilocazioni;
+- selezione fino a tre risultati;
+- persistenza della selezione;
+- costruzione del payload di confronto;
+- pagine `compare_rs.php` e `compare_ril.php`;
+- riepilogo dei soggetti confrontati;
+- layout responsive;
+- tabelle dei match astrologici;
+- correzione dei warning PHP e delle inizializzazioni mancanti.
 
-## Funzioni previste
+Sono inoltre stati completati:
 
-- confronto valore per valore;
-- classificazione delle differenze;
-- identificazione di miglioramenti e peggioramenti;
-- gestione dei valori mancanti;
-- confronto delle condizioni planetarie;
-- confronto delle Rule attivate;
-- confronto delle evidenze;
-- produzione di un risultato strutturato e verificabile.
+- integrazione delle ruote astrologiche nel Comparator delle Rilocazioni;
+- preservazione delle regole personalizzate delle case nel Comparator RS;
+- consolidamento dell'interfaccia del Comparator RS;
+- merge delle funzionalità nel branch `feature/v6.1`.
 
-## Output previsto
+La milestone Comparator Engine può considerarsi conclusa.
 
-Per ogni elemento confrontato:
+Commit conclusivi della milestone:
 
-- valore RSM A;
-- valore RSM B;
-- differenza;
-- direzione del cambiamento;
-- rilevanza;
-- fonte del dato;
-- motivazione tecnica.
+- `984d4bd` — integrazione delle ruote astrologiche;
+- `57fbba4` — preservazione delle regole personalizzate delle case;
+- `faf8462` — merge in `feature/v6.1`;
+- `37d15be` — consolidamento dell'interfaccia del Comparator RS.
 
 ---
 
@@ -178,28 +138,10 @@ Per ogni elemento confrontato:
 
 ⏳ Pianificata
 
-## Obiettivo
+Obiettivo:
 
-Attribuire significato decisionale alle differenze prodotte dal
-Comparator Engine.
-
-## Funzioni previste
-
-- classificazione degli impatti;
-- valutazione delle priorità;
-- correlazione con le Rule;
-- correlazione con le evidenze;
-- rilevazione di bonus e penalità;
-- individuazione dei conflitti;
-- individuazione dei compromessi;
-- aggregazione per ambito astrologico.
-
-## Principio
-
-Una differenza numerica non è automaticamente un miglioramento.
-
-Il significato deve essere derivato dal contesto astrologico, dalle Rule,
-dalle evidenze e dalle priorità definite.
+attribuire un significato decisionale alle differenze individuate dal
+Comparator Engine correlando Rule, evidenze e priorità astrologiche.
 
 ---
 
@@ -207,26 +149,10 @@ dalle evidenze e dalle priorità definite.
 
 ⏳ Pianificata
 
-## Obiettivo
+Obiettivo:
 
-Produrre una raccomandazione finale motivata e tracciabile.
-
-## Funzioni previste
-
-- sintesi dei vantaggi di RSM A;
-- sintesi dei vantaggi di RSM B;
-- individuazione delle criticità residue;
-- classificazione dei compromessi;
-- gestione dei casi equivalenti;
-- gestione dei casi non decidibili;
-- raccomandazione finale;
-- confidence level;
-- elenco delle evidenze principali.
-
-## Requisito fondamentale
-
-Il sistema deve poter dichiarare che non esistono dati sufficienti per
-una raccomandazione affidabile.
+produrre una raccomandazione finale spiegabile e completamente
+tracciabile.
 
 ---
 
@@ -234,29 +160,10 @@ una raccomandazione affidabile.
 
 ⏳ Pianificata
 
-## Obiettivo
+Obiettivo:
 
-Rendere il confronto comprensibile e utilizzabile attraverso una
-interfaccia dedicata.
-
-## Funzioni previste
-
-- selezione di due RSM;
-- visualizzazione affiancata;
-- evidenziazione dei miglioramenti;
-- evidenziazione dei peggioramenti;
-- visualizzazione dei compromessi;
-- dettaglio delle Rule coinvolte;
-- dettaglio delle evidenze;
-- sintesi narrativa;
-- raccomandazione finale;
-- esportazione del confronto.
-
-## Vincolo
-
-La UI deve rappresentare dati già prodotti dai motori sottostanti.
-
-Non deve contenere logica decisionale non tracciata.
+realizzare l'interfaccia definitiva del Decision Support System con
+narrativa, spiegazioni e visualizzazione completa del confronto.
 
 ---
 
@@ -291,26 +198,26 @@ Ogni milestone deve aggiornare almeno:
 - `docs/START_HERE.md`;
 - `docs/ROADMAP.md`;
 - `docs/HANDOVER_OPERATIVO.md`;
-- `docs/ADR_INDEX.md`, quando viene introdotta una nuova decisione
-  architetturale.
+- `docs/ADR_INDEX.md`, quando viene introdotta una nuova decisione architetturale.
 
-Ogni attività completata deve essere registrata cronologicamente in:
-
-`docs/HANDOVER_OPERATIVO.md`
+Ogni attività completata deve essere registrata cronologicamente in
+`docs/HANDOVER_OPERATIVO.md`.
 
 ---
 
 # Prossimo passo operativo
 
-Il prossimo passo è l'inventario tecnico degli output prodotti da una
-Rivoluzione Solare.
+Il Comparator Engine costituisce ora la baseline stabile del progetto.
 
-L'analisi deve partire da:
+La prossima milestone riguarda l'avvio del livello decisionale del DSS:
 
-- struttura del database;
-- file PHP coinvolti nel calcolo RS;
-- strutture dati restituite dal motore;
-- sessioni applicative;
-- Rule ed evidenze generate;
-- dati usati dal report annuale;
-- informazioni calcolate ma non persistite.
+- Difference Analyzer;
+- Impact Evaluator;
+- Rule Correlator;
+- Recommendation Engine.
+
+Il Rule Engine rimane congelato e non deve essere modificato.
+
+Le nuove funzionalità dovranno utilizzare esclusivamente i risultati
+prodotti dal Comparator Engine senza alterare la logica astrologica
+ereditata da Astro-Val.
