@@ -26,6 +26,8 @@ $segni = [
     9=>'Sagittario', 10=>'Capricorno', 11=>'Acquario', 12=>'Pesci',
 ];
 
+
+
 $annoCorrente = (int)date('Y');
 $soggettoId   = intval($_GET['id'] ?? $soggettoAttivo ?? 0);
 
@@ -43,3 +45,8 @@ $MACRO_AREE = [
     'asia'       => ['AF','AM','AZ','BD','BN','BT','CN','GE','HK','ID','IN','JP','KG','KH','KP','KR','KZ','LA','LK','MN','MO','MM','MV','MY','NP','PH','PK','SG','TH','TJ','TL','TM','TW','UZ','VN'],
     'oceania'    => ['AU','FJ','FM','GU','KI','MH','MP','NC','NR','NZ','PF','PG','PW','SB','TO','TV','UY','VC','VE','VG','VI'],
 ];
+
+$MACRO_AREE['americhe'] = array_values(array_unique(array_merge(
+    $MACRO_AREE['nord_america'],
+    $MACRO_AREE['centro_sud']
+)));

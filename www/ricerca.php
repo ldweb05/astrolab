@@ -222,6 +222,7 @@ Macro-Area / Regione
 <select id="filtro-macro-area" onchange="onMacroAreaChange(this.value)">
 <option value="">— Tutto il mondo —</option>
 <option value="europa">🇪🇺 Solo Europa</option>
+<option value="americhe">🌎 Continente Americano</option>
 <option value="nord_america">🌎 Solo Nord America</option>
 <option value="centro_sud">🌎 Centro e Sud America</option>
 <option value="africa">🌍 Solo Africa</option>
