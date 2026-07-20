@@ -1,0 +1,15 @@
+{
+  "tipo": "RS",
+  "soggetto_id": 23,
+  "anno": 2026,
+  "luogo": "New York",
+  "lat": 40.7128,
+  "lon": -74.006,
+  "condizione": "Decima",
+  "atteso": {
+    "stelline": 2,
+    "veto": false,
+    "is_valida": true,
+    "val": "**/MA8/SA5/UR7/NE5/SO10/+SO10/+VE12"
+  }
+}

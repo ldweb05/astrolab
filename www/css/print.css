@@ -1,0 +1,691 @@
+/**
+ * print.css — Stili di stampa e PDF per Astrologia Attiva
+ * Scuola di Ciro Discepolo
+ *
+ * Struttura classi:
+ *   .fmt-a4-portrait   → @page A4 verticale
+ *   .fmt-a4-landscape  → @page A4 orizzontale
+ *   .fmt-a3-portrait   → @page A3 verticale
+ *   .fmt-a3-landscape  → @page A3 orizzontale
+ *
+ * Il layout affiancato (.ruote-affiancate) è SEMPRE in modalità
+ * landscape per permettere la comparazione visiva Natale vs RS,
+ * indipendentemente dal formato scelto. Su A4 portrait il blocco
+ * affiancato viene reso con font e ruote ridotte ma sempre side-by-side.
+ *
+ * Classi utility:
+ *   .no-print     → nascosto in stampa
+ *   .page-break   → forza interruzione di pagina
+ *   .only-print   → visibile SOLO in stampa (nascosto a schermo)
+ */
+
+/* ══════════════════════════════════════════════════════════════════════
+   VARIABILI COLORE (coerenti con style.css del progetto)
+══════════════════════════════════════════════════════════════════════ */
+:root {
+    --print-blue:    #2C3E6B;
+    --print-cream:   #F2EDE4;
+    --print-gold:    #C8960C;
+    --print-border:  #D0C8BC;
+    --print-text:    #2C2C2C;
+    --print-muted:   #666666;
+    --print-green:   #2E7D32;
+    --print-red:     #B71C1C;
+    --print-orange:  #E65100;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   STILI SCHERMO — Anteprima report in stampa.php
+   (non influenzano la stampa reale, solo la preview a schermo)
+══════════════════════════════════════════════════════════════════════ */
+
+/* Wrapper anteprima — simula foglio */
+.report-preview-inner {
+    background: white;
+    padding: 16px;
+    border: 1px solid #D0C8BC;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    font-family: 'Montserrat', 'Verdana', sans-serif;
+    font-size: 11px;
+    color: var(--print-text);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ── Header report ──────────────────────────────────────────────── */
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid var(--print-blue);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+}
+.report-header-sinistra { flex: 1; }
+.report-header-destra   { flex: 1; text-align: right; }
+
+.report-titolo {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--print-blue);
+    letter-spacing: 0.08em;
+}
+.report-sottotitolo {
+    font-size: 10px;
+    color: var(--print-muted);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+.report-soggetto {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--print-blue);
+}
+.report-dati {
+    font-size: 10px;
+    color: var(--print-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+/* ── Sezioni ────────────────────────────────────────────────────── */
+.report-section {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--print-border);
+}
+.report-section-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--print-blue);
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+}
+
+/* ── Ruote affiancate (LAYOUT CHIAVE) ──────────────────────────── */
+/*
+ * Questo è il blocco critico: i due grafici zodiacali (Natale + RS)
+ * vengono sempre mostrati affiancati al 50% ciascuno.
+ * Su A4 portrait il blocco ruota le ruote in orizzontale sfruttando
+ * la larghezza disponibile. I box SVG scalano via max-width: 100%.
+ */
+.ruote-affiancate {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    width: 100%;
+}
+.ruota-singola {
+    display: block;
+    width: 100%;
+}
+.ruota-col {
+    flex: 1;
+    min-width: 0;     /* fondamentale per flex-shrink con SVG */
+}
+.ruota-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--print-blue);
+    text-align: center;
+    margin-bottom: 6px;
+    background: var(--print-cream);
+    padding: 3px 8px;
+    border-radius: 3px;
+}
+.ruota-svg-wrap {
+    text-align: center;
+}
+.ruota-svg-wrap svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+.ruota-info {
+    font-size: 10px;
+    text-align: center;
+    color: var(--print-muted);
+    margin: 4px 0 8px;
+    line-height: 1.4;
+}
+
+/* ── Tabelle pianeti / case ─────────────────────────────────────── */
+.report-tabella-wrap {
+    margin-top: 8px;
+}
+.report-tabella-title {
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--print-blue);
+    margin-bottom: 3px;
+}
+.report-tabella-pianeti {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+}
+.report-tabella-pianeti th {
+    background: var(--print-blue);
+    color: #D4C9A8;
+    padding: 3px 5px;
+    text-align: left;
+    font-weight: normal;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.report-tabella-pianeti td {
+    padding: 2px 5px;
+    border-bottom: 1px solid #EDE8E0;
+    vertical-align: middle;
+}
+.report-tabella-pianeti tr:nth-child(even) td {
+    background: #FAFAF8;
+}
+
+/* ── Valutazione RS ─────────────────────────────────────────────── */
+.report-valutazione {
+    background: #F8F6F0;
+    border: 1px solid var(--print-border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin: 8px 0;
+}
+.val-header-print {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+.stelle-print {
+    font-size: 14px;
+    color: var(--print-gold);
+    letter-spacing: 2px;
+}
+.val-str-print {
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--print-blue);
+    background: #EEF0FF;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+.val-cond-print {
+    font-size: 10px;
+    color: var(--print-muted);
+    font-style: italic;
+}
+.val-body-print {
+    font-size: 9px;
+    line-height: 1.5;
+}
+.val-cols-print {
+    display: flex;
+    gap: 8px;
+}
+.val-cols-print > div { flex: 1; }
+.val-item-print {
+    padding: 2px 5px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+    border-left: 2px solid;
+    font-size: 9px;
+}
+.val-veto-print  { background: #FFEBEE; border-color: #F44336; color: var(--print-red);    }
+.val-bonus-print { background: #E8F5E9; border-color: #4CAF50; color: var(--print-green);  }
+.val-pen-print   { background: #FFF3E0; border-color: #FF9800; color: var(--print-orange); }
+
+/* ── Page break ─────────────────────────────────────────────────── */
+.page-break {
+    page-break-after: always;
+    break-after: page;
+    height: 0;
+    display: block;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.report-footer {
+    margin-top: 20px;
+    padding-top: 6px;
+    border-top: 1px solid var(--print-border);
+    font-size: 8px;
+    color: var(--print-muted);
+    text-align: center;
+    letter-spacing: 0.03em;
+}
+
+/* ── Solo schermo ───────────────────────────────────────────────── */
+.only-print { display: none; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   @MEDIA PRINT — Regole attivate da window.print()
+   Le classi fmt-* vengono applicate al <body> da JS prima di print()
+══════════════════════════════════════════════════════════════════════ */
+
+@media print {
+
+    /* ── Nascondi tutto tranne l'area di stampa ──────────────────── */
+    /* Applicato SOLO quando si stampa via stampa.php (nessuna delle
+       classi print-XXX della stampa diretta è attiva sul body) */
+    body:not(.print-tema):not(.print-rs):not(.print-rl):not(.print-riloc) > * {
+        display: none !important;
+    }
+    body:not(.print-tema):not(.print-rs):not(.print-rl):not(.print-riloc) #area-stampa {
+        display: block !important;
+    }
+
+    /* ── Elementi UI da nascondere ───────────────────────────────── */
+    header, nav, .no-print,
+    .stampa-controlli, .stampa-azioni,
+    #card-anteprima, footer,
+    .btn-stampa-browser, .btn-stampa-pdf,
+    .nota-stampa { display: none !important; }
+
+    /* ── Elementi solo-stampa ────────────────────────────────────── */
+    .only-print { display: block !important; }
+
+    /* ── Reset margini body ──────────────────────────────────────── */
+    body, html {
+        margin:  0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+
+    /* ── Root stampa ─────────────────────────────────────────────── */
+    .report-print-root {
+        font-family: 'Montserrat', 'Verdana', Arial, sans-serif;
+        font-size:   10pt;
+        color:       #000;
+        background:  white;
+        margin:      0;
+        padding:     0;
+        width:       100%;
+    }
+
+    /* ── Page break ──────────────────────────────────────────────── */
+    .page-break {
+        page-break-after: always;
+        break-after: page;
+    }
+
+    /* Evita interruzioni di pagina indesiderate all'interno dei blocchi */
+    .ruota-col,
+    .report-valutazione,
+    .report-tabella-wrap {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* ── Ruote affiancate: sempre layout orizzontale in stampa ────── */
+    .ruote-affiancate {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 8pt !important;
+        width: 100% !important;
+        align-items: flex-start;
+    }
+    .ruota-col {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+    }
+    .ruota-svg-wrap svg {
+        max-width: 100% !important;
+        height:    auto !important;
+        display:   block;
+    }
+
+    /* ── Tabelle ─────────────────────────────────────────────────── */
+    .report-tabella-pianeti th {
+        /* Webkit: stampa background colori */
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .report-tabella-pianeti tr:nth-child(even) td {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .val-item-print { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       REGOLE @PAGE PER OGNI FORMATO
+       Vengono attivate dalla classe sul <body> impostata da JS
+    ═══════════════════════════════════════════════════════════════ */
+
+    /* Default: A4 portrait */
+    @page {
+        size: A4 portrait;
+        margin: 12mm 14mm 12mm 14mm;
+    }
+
+    /* A4 portrait esplicito */
+    body.fmt-a4-portrait @page {
+        size: A4 portrait;
+        margin: 12mm 14mm 12mm 14mm;
+    }
+    /* Su A4 portrait le ruote vengono ridotte un po' */
+    body.fmt-a4-portrait .ruota-svg-wrap svg {
+        max-width: 90% !important;
+    }
+
+    /* A4 landscape */
+    body.fmt-a4-landscape @page {
+        size: A4 landscape;
+        margin: 10mm 12mm 10mm 12mm;
+    }
+
+    /* A3 portrait */
+    body.fmt-a3-portrait @page {
+        size: A3 portrait;
+        margin: 14mm 16mm 14mm 16mm;
+    }
+    body.fmt-a3-portrait .report-print-root {
+        font-size: 11pt;
+    }
+    body.fmt-a3-portrait .ruote-affiancate {
+        gap: 12pt !important;
+    }
+
+    /* A3 landscape — formato ideale per il doppio tema affiancato */
+    body.fmt-a3-landscape @page {
+        size: A3 landscape;
+        margin: 10mm 14mm 10mm 14mm;
+    }
+    body.fmt-a3-landscape .report-print-root {
+        font-size: 10pt;
+    }
+    body.fmt-a3-landscape .ruote-affiancate {
+        gap: 14pt !important;
+    }
+    /* Su A3 landscape le ruote possono essere più grandi */
+    body.fmt-a3-landscape .ruota-svg-wrap svg {
+        max-width: 95% !important;
+    }
+
+    .annual-report-print {
+    font-size: 10pt;
+    line-height: 1.58;
+}
+
+.annual-report-note {
+    margin: 0 0 14pt;
+    padding: 9pt 11pt;
+    color: #4A4A4A;
+    background: #F4F0E8;
+    border-left: 3pt solid #2C3E6B;
+    font-size: 8.5pt;
+}
+
+.annual-report-note p,
+.annual-report-section-text p {
+    margin-top: 0;
+    margin-bottom: 7pt;
+}
+
+.annual-report-section {
+    margin-bottom: 14pt;
+    page-break-inside: auto;
+    break-inside: auto;
+}
+
+.annual-report-section-title {
+    margin-bottom: 5pt;
+    color: #2C3E6B;
+    font-size: 11pt;
+    font-weight: bold;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.annual-report-section-text {
+    text-align: justify;
+}
+
+.annual-report-section-text p {
+    orphans: 3;
+    widows: 3;
+}
+
+/* ── Continuità editoriale Report Annuale ─────────────────────── */
+.report-section {
+    margin-bottom: 18pt;
+    page-break-inside: auto;
+    break-inside: auto;
+}
+
+.report-section-title {
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.report-section-title + * {
+    page-break-before: avoid;
+    break-before: avoid;
+}
+
+.report-section p {
+    margin-top: 0;
+    margin-bottom: 8pt;
+    orphans: 3;
+    widows: 3;
+}
+
+/* ── Stili font ridotti in stampa ────────────────────────────── */
+    .report-titolo     { font-size: 16pt !important; }
+    .report-soggetto   { font-size: 13pt !important; }
+    .report-sottotitolo,
+    .report-dati       { font-size:  8pt !important; }
+    .ruota-title       { font-size:  9pt !important; }
+    .ruota-info        { font-size:  8pt !important; }
+    .report-tabella-pianeti,
+    .report-tabella-pianeti td,
+    .report-tabella-pianeti th { font-size: 7pt !important; }
+    .val-header-print  { font-size:  9pt !important; }
+    .stelle-print      { font-size: 12pt !important; }
+    .val-str-print     { font-size:  9pt !important; }
+    .val-item-print,
+    .val-body-print    { font-size:  7pt !important; }
+    .report-footer     { font-size:  7pt !important; }
+    .report-section-title { font-size: 11pt !important; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   STILI AGGIUNTIVI PER IL PDF SERVER-SIDE (Dompdf)
+   Dompdf renderizza HTML/CSS senza JS: le stesse classi vengono usate
+   nell'HTML generato da stampa_pdf_api.php.
+   Dompdf supporta float ma non flexbox completo, quindi per il layout
+   affiancato l'API usa table-layout come fallback robusto.
+══════════════════════════════════════════════════════════════════════ */
+
+/*
+ * Classe aggiuntiva .ruote-affiancate-pdf:
+ * Usata dall'API PHP per garantire compatibilità con Dompdf
+ * (che ha supporto flexbox limitato).
+ */
+.ruote-affiancate-pdf {
+    width: 100%;
+    border-collapse: collapse;
+}
+.ruote-affiancate-pdf td {
+    width: 50%;
+    vertical-align: top;
+    padding: 0 5pt;
+}
+.ruote-affiancate-pdf td:first-child { padding-left: 0; }
+.ruote-affiancate-pdf td:last-child  { padding-right: 0; }
+/* ════════════════════════════════════════════════════════════════════
+   STAMPA DIRETTA v3 — Foglio unico, header nero su bianco,
+   grafici ingranditi, tabella aspetti orizzontale (trasposta)
+   ════════════════════════════════════════════════════════════════════ */
+
+.btn-stampa-diretta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #2C3E6B;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.2s;
+}
+.btn-stampa-diretta:hover { background: #3A5090; }
+
+.print-only-header, .print-only-aspetti { display: none; }
+
+@media print {
+
+    body, html { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+
+    @page { size: A4 landscape; margin: 10mm; }
+    /* Per A3: @page { size: A3 landscape; margin: 10mm; } */
+
+    header, nav, .no-print,
+    .controlli, .controlli-riloc,
+    .luogo-rs-wrap, .luogo-wrap, .luogo-ricerca-wrap,
+    .map-float-win, .time-controls,
+    #pannello-sensibilita, #rs-alert-stellium,
+    #rs-filtro-esclusione, #rs-loading, #rl-loading,
+    #card-ricerca-angolari, #card-comparativa,
+    #rs-btn-report-wrap, #rs-link-viaggio,
+    .card#card-salva-rs, .card#card-sessioni-rs,
+    .card#card-salva-rl, .card#card-sessioni-rl,
+    .valutazione,
+    .tabella-pianeti, .cuspidi-container, .tema-info,
+    .tema-box-header button,
+    .btn-stampa-diretta, .page-title, .page-title button,
+    .header-user a, #btn-apri-mappa, #btn-apri-mappa-rl,
+    .rl-timeline, .progress-bar-wrap,
+    .soggetto-banner,
+    .header-soggetto, .header-rs, .header-rl, .header-riloc,
+    .aspetti-container
+        { display: none !important; }
+
+    .report-print-root, main { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+
+    /* ── HEADER STAMPA: nero su bianco, sinistra/destra ─────────────── */
+    .print-only-header {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 100%;
+        border-bottom: 1px solid #000;
+        padding-bottom: 2mm;
+        margin-bottom: 4mm;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .print-only-header * { color: #000 !important; background: transparent !important; }
+    .print-header-left, .print-header-right {
+        display: flex;
+        flex-direction: column;
+        gap: 1mm;
+        font-size: 9pt;
+        line-height: 1.4;
+    }
+    .print-header-right { text-align: right; }
+    .print-h-nome, .print-h-gmt { font-weight: bold; font-size: 11pt; }
+
+    /* ── GRAFICI: affiancati, ingranditi ─────────────────────────────── */
+    .temi-wrapper {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 6mm !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .tema-box {
+        flex: 0 0 auto !important;
+        min-width: 0 !important;
+        max-width: 135mm !important;
+        padding: 2mm !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .tema-box svg {
+        width: 130mm !important;
+        height: 130mm !important;
+        max-width: 130mm !important;
+        display: block !important;
+        margin: 0 auto !important;
+    }
+    /* ── Rimuove SOLO gli sfondi colorati interni ai cerchi, in stampa ── */
+    .tema-box svg .print-nofill {
+        fill: none !important;
+    }
+    .tema-box-header {
+        margin-bottom: 1mm !important;
+        padding-bottom: 1mm !important;
+        border-bottom: none !important;
+    }
+    .tema-box-header h3, .ruota-title,
+    #rs-titolo, #rl-titolo, #riloc-titolo {
+        font-size: 9pt !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        background: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        text-align: center !important;
+        letter-spacing: 0.04em !important;
+    }
+
+    /* ── TABELLA ASPETTI ORIZZONTALE (trasposta via JS) ──────────────── */
+    .print-only-aspetti {
+        display: block !important;
+        width: 100%;
+        margin-top: 4mm;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .tabella-aspetti-orizzontale {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 7pt;
+        table-layout: fixed;
+    }
+    .tabella-aspetti-orizzontale th {
+        text-align: left;
+        white-space: nowrap;
+        padding: 1.5pt 4pt;
+        border: 1px solid #000;
+        font-weight: bold;
+        background: #f0f0f0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        width: 60pt;
+    }
+    .tabella-aspetti-orizzontale td {
+        text-align: center;
+        padding: 1.5pt 4pt;
+        border: 1px solid #000;
+        color: #000 !important;
+    }
+
+    body.print-tema .tema-box.svg-zoomable { resize: none !important; }
+    body.print-tema .tema-box:nth-of-type(2) { display: none !important; }
+
+    body.print-riloc .tema-box svg {
+        width: 145mm !important;
+        height: 145mm !important;
+        max-width: 145mm !important;
+    }
+    body.print-riloc .tema-box { max-width: 150mm !important; }
+}
