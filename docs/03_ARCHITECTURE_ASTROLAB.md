@@ -1428,3 +1428,203 @@ Non è richiesto reinterpretare l'architettura.
 È richiesto esclusivamente proseguire il completamento del progetto.
 
 ------------------------------------------------------------------------
+
+
+---
+
+# Pipeline futura della Ricerca RS (Decisione architetturale)
+
+## Stato attuale
+
+PostgreSQL → Repository → PHP → Deduplicazione → Rule Engine → Calcolo astrologico → Ranking → Streaming API
+
+## Stato obiettivo
+
+PostgreSQL
+→ Filtri SQL
+→ Deduplicazione spaziale SQL (bucket geografici)
+→ Repository
+→ Rule Engine
+→ Calcolo Placido
+→ Scoring
+→ Ranking
+→ Streaming API
+→ Frontend
+
+## Motivazione
+
+I benchmark effettuati sul Raspberry mostrano che oltre il 98–99% delle località viene eliminato durante la deduplicazione.
+Pertanto la deduplicazione è una responsabilità del database e non del livello PHP.
+
+La modifica è considerata strutturale e costituisce la base per gli sviluppi futuri (RS, Cuspidi, Angularità, ricerca mondiale e cache).
+
+
+---
+
+# Ricerca RS — riduzione spaziale SQL
+
+**Decisione collegata:** ADR-015
+**Stato:** architettura obiettivo approvata; implementazione pianificata.
+
+## Contesto
+
+La ricerca delle località per le Rivoluzioni Solari deve comprendere anche
+centri abitati molto piccoli. Non è quindi ammessa una soglia minima di
+popolazione come soluzione permanente per ridurre il carico.
+
+I benchmark eseguiti sul Raspberry Pi hanno dimostrato che il processo
+attuale trasferisce dal database a PHP decine o centinaia di migliaia di
+righe, delle quali oltre il 98% viene successivamente eliminato dalla
+deduplicazione geografica.
+
+La riduzione spaziale non è pertanto una semplice ottimizzazione
+prestazionale: costituisce una responsabilità strutturale del livello dati.
+
+## Pipeline attuale
+
+PostgreSQL
+→ recupero di aeroporti e località
+→ trasferimento delle righe al Repository/PHP
+→ deduplicazione geografica PHP
+→ Rule Engine
+→ calcolo astrologico
+→ scoring e ranking
+→ Streaming API
+→ frontend
+
+## Pipeline obiettivo
+
+PostgreSQL
+→ applicazione dei filtri geografici
+→ costruzione deterministica dei bucket spaziali
+→ selezione del rappresentante di ciascun bucket
+→ conservazione della precedenza degli aeroporti
+→ Repository
+→ Rule Engine
+→ calcolo astrologico
+→ scoring e ranking
+→ Streaming API
+→ frontend
+
+## Responsabilità dei livelli
+
+### PostgreSQL
+
+PostgreSQL è responsabile di:
+
+- applicare i filtri geografici richiesti;
+- eseguire la riduzione spaziale prima del trasferimento dei dati;
+- produrre un solo rappresentante deterministico per bucket;
+- preservare la precedenza funzionale degli aeroporti;
+- utilizzare tutte le località attive senza soglie di popolazione;
+- restituire un risultato stabile a parità di dati e parametri.
+
+### RicercaRSAirportRepository
+
+Il Repository è l’unico punto di accesso alle sorgenti geografiche della
+Ricerca RS.
+
+È responsabile di:
+
+- costruire ed eseguire la query;
+- mappare il risultato SQL nel contratto applicativo;
+- isolare l’API dalla struttura fisica del database;
+- permettere future strategie SQL senza modificare il motore astrologico.
+
+Il file legacy `search_engine.php` non deve essere modificato.
+
+### PHP e orchestrazione
+
+PHP è responsabile di:
+
+- orchestrare la ricerca;
+- applicare il Rule Engine;
+- invocare il calcolo astrologico;
+- eseguire scoring e ranking;
+- trasmettere i risultati attraverso la Streaming API.
+
+PHP non deve mantenere in produzione una seconda implementazione della
+deduplicazione spaziale dopo il completamento della migrazione.
+
+### Rule Engine e motore astrologico
+
+Il Rule Engine e il motore astrologico rimangono congelati.
+
+La migrazione della deduplicazione:
+
+- non modifica regole astrologiche;
+- non modifica pesi o classificazioni;
+- non modifica il calcolo delle case;
+- non modifica i contratti dei risultati;
+- non deve produrre differenze astrologiche rispetto alla pipeline validata.
+
+### Streaming API e frontend
+
+La Streaming API espone i risultati senza reinterpretarli.
+
+Il frontend presenta i dati e non deve:
+
+- deduplicare località;
+- applicare regole astrologiche;
+- modificare ranking o punteggi;
+- ricostruire risultati mancanti.
+
+## Strategia di migrazione
+
+La migrazione deve avvenire progressivamente:
+
+1. definizione della query SQL equivalente;
+2. esecuzione parallela della deduplicazione SQL e PHP;
+3. confronto automatico dei bucket e dei rappresentanti;
+4. verifica dei casi limite;
+5. benchmark su Raspberry Pi;
+6. benchmark sul VPS;
+7. attivazione della pipeline SQL;
+8. rimozione della deduplicazione PHP soltanto dopo equivalenza verificata.
+
+Durante la fase di confronto, la deduplicazione PHP rimane l’oracolo
+funzionale di riferimento e non viene eliminata prematuramente.
+
+## Invarianti funzionali
+
+La futura implementazione deve garantire:
+
+- assenza di soglie minime di popolazione;
+- inclusione delle località attive;
+- stessa dimensione geografica dei bucket attuali;
+- precedenza degli aeroporti sulle località equivalenti;
+- ordinamento deterministico;
+- risultato identico a parità di input;
+- assenza di regressioni astrologiche;
+- compatibilità con il contratto della Streaming API.
+
+## Evoluzioni future previste
+
+La responsabilità SQL deve poter essere riutilizzata o estesa per:
+
+- ricerca mondiale delle Rivoluzioni Solari;
+- ricerca delle cuspidi;
+- ricerca delle angularità;
+- rilocazioni;
+- differenti livelli di precisione geografica;
+- esecuzione concorrente di più ricerche;
+- cache dei risultati;
+- code di elaborazione asincrone;
+- separazione futura tra database e nodi applicativi;
+- osservabilità e metriche di produzione;
+- eventuali estensioni geospaziali PostgreSQL/PostGIS.
+
+L’introduzione di PostGIS non è necessaria per la prima implementazione:
+dovrà essere valutata tramite benchmark e formalizzata con un nuovo ADR
+qualora cambi il modello dati o il contratto del Repository.
+
+## Criteri di accettazione architetturali
+
+La migrazione potrà essere considerata completata quando:
+
+- SQL e PHP produrranno risultati equivalenti sui dataset di regressione;
+- i casi limite saranno coperti da test;
+- il volume trasferito a PHP sarà ridotto prima del calcolo astrologico;
+- memoria e tempi saranno misurati su Raspberry Pi e VPS;
+- il contratto dell’API resterà invariato;
+- la deduplicazione PHP potrà essere rimossa senza perdita funzionale.
