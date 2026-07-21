@@ -194,14 +194,14 @@ Ogni nuova logica DSS deve essere:
 
 Ogni milestone deve aggiornare almeno:
 
-- `docs/README.md`;
+- `docs/README_ASTROLAB.md`;
 - `docs/START_HERE.md`;
 - `docs/ROADMAP.md`;
-- `docs/HANDOVER_OPERATIVO.md`;
-- `docs/ADR_INDEX.md`, quando viene introdotta una nuova decisione architetturale.
+- `docs/HANDOVER_OPERATIVO_astrolab.md`;
+- `docs/ADR_INDEX_ASTROLAB.md`, quando viene introdotta una nuova decisione architetturale.
 
 Ogni attività completata deve essere registrata cronologicamente in
-`docs/HANDOVER_OPERATIVO.md`.
+`docs/HANDOVER_OPERATIVO_astrolab.md`.
 
 ---
 
@@ -221,3 +221,93 @@ Il Rule Engine rimane congelato e non deve essere modificato.
 Le nuove funzionalità dovranno utilizzare esclusivamente i risultati
 prodotti dal Comparator Engine senza alterare la logica astrologica
 ereditata da Astro-Val.
+
+
+---
+
+## Ricerca RS v2 — Riduzione spaziale SQL
+
+**Decisione:** ADR-015
+
+**Priorità:** strutturale
+
+**Vincolo:** nessuna soglia minima di popolazione.
+
+### Specifica e architettura
+
+- [x] Importare il dataset GeoNames completo.
+- [x] Mantenere ricercabili tutte le località attive.
+- [x] Verificare la distribuzione dei bucket SQL.
+- [x] Raccogliere la baseline della pipeline PHP.
+- [x] Formalizzare ADR-015.
+- [x] Aggiornare architettura e handover.
+- [ ] Definire formalmente la formula dei bucket.
+- [ ] Definire l'ordinamento deterministico dei rappresentanti.
+- [ ] Formalizzare la precedenza aeroporto-località.
+- [ ] Definire i casi limite geografici.
+
+### Implementazione SQL
+
+- [ ] Introdurre la riduzione spaziale in
+      `www/includes/RicercaRSAirportRepository.php`.
+- [ ] Mantenere invariato il contratto del Repository.
+- [ ] Non modificare il file legacy `search_engine.php`.
+- [ ] Mantenere tutte le località attive.
+- [ ] Non utilizzare soglie minime di popolazione.
+- [ ] Analizzare la query con `EXPLAIN (ANALYZE, BUFFERS)`.
+- [ ] Verificare gli indici PostgreSQL necessari.
+- [ ] Preservare la precedenza degli aeroporti.
+
+### Confronto e regressione
+
+- [ ] Mantenere temporaneamente la deduplicazione PHP.
+- [ ] Eseguire SQL e PHP in parallelo durante i test.
+- [ ] Confrontare automaticamente i conteggi dei bucket.
+- [ ] Confrontare i rappresentanti selezionati.
+- [ ] Verificare la precedenza degli aeroporti.
+- [ ] Verificare ordinamento e determinismo.
+- [ ] Coprire coordinate negative.
+- [ ] Coprire i confini dei bucket.
+- [ ] Coprire il meridiano 180 gradi.
+- [ ] Coprire località senza popolazione.
+- [ ] Coprire località omonime.
+- [ ] Coprire aeroporto e località nello stesso bucket.
+- [ ] Verificare l'assenza di regressioni astrologiche.
+- [ ] Verificare la compatibilità della Streaming API.
+
+### Benchmark
+
+- [x] Registrare la baseline sul Raspberry Pi.
+- [x] Misurare il caso Italia.
+- [x] Misurare il caso Italia, Francia e Germania.
+- [x] Misurare la fascia longitudinale da -81 a -79.
+- [ ] Misurare la query SQL ottimizzata sul Raspberry Pi.
+- [ ] Misurare la memoria PHP dopo la riduzione SQL.
+- [ ] Misurare le righe trasferite PostgreSQL-PHP.
+- [ ] Eseguire benchmark sul VPS.
+- [ ] Eseguire test con ricerche concorrenti.
+- [ ] Documentare latenza p50, p95 e p99.
+- [ ] Confrontare i risultati con la baseline corrente.
+
+### Attivazione
+
+- [ ] Predisporre un rollback semplice.
+- [ ] Attivare la pipeline SQL.
+- [ ] Monitorare errori, memoria e latenze.
+- [ ] Verificare il comportamento in produzione.
+- [ ] Rimuovere la deduplicazione PHP solo dopo equivalenza verificata.
+- [ ] Aggiornare definitivamente i test.
+- [ ] Aggiornare handover e ADR con i benchmark finali.
+
+### Evoluzioni successive
+
+- [ ] Cache dei risultati.
+- [ ] Metriche e osservabilità.
+- [ ] Ricerca mondiale.
+- [ ] Ricerca delle cuspidi.
+- [ ] Ricerca delle angularità.
+- [ ] Riuso per le rilocazioni.
+- [ ] Valutazione di job asincroni.
+- [ ] Valutazione di Redis.
+- [ ] Valutazione di PostgreSQL separato.
+- [ ] Valutazione di PostGIS mediante ADR dedicato.

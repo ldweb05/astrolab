@@ -321,7 +321,7 @@ La Rule deve:
 - Commit: feat(rule): implement RULE-0020 Sun House 11.
 - Prossimo passo: RULE-0021, Sole in Casa XII.
 
-### 2026-07-12 
+### 2026-07-12
 — RULE-0021
 
 - Obiettivo: implementare Sole in Casa XII.
@@ -1824,3 +1824,174 @@ Rifinire l'interfaccia del Comparator mantenendo invariato il comportamento funz
 ### Prossimo passo
 
 Aggiornare la documentazione tecnica e proseguire con la progettazione dell'Impact Evaluator e del Rule Correlator previsti dalla roadmap Astro-DSS.
+
+
+---
+
+# 2026-07-21 — ADR-015: deduplicazione spaziale SQL
+
+## Stato operativo
+
+L'import GeoNames è completato.
+
+La tabella `localita` contiene 5.220.791 record e mantiene ricercabili
+anche i centri abitati con popolazione minima o non valorizzata.
+
+Componenti coinvolti:
+
+- `www/api/ricerca_stream_api.php`;
+- `www/includes/RicercaRSAirportRepository.php`;
+- deduplicatore geografico PHP corrente.
+
+Il file legacy `search_engine.php` non deve essere modificato.
+
+Il Rule Engine e il motore astrologico rimangono congelati.
+
+## Decisione architetturale
+
+La deduplicazione spaziale verrà trasferita progressivamente dal livello
+PHP al database PostgreSQL.
+
+La decisione è formalizzata in ADR-015 e descritta nel documento
+`docs/03_ARCHITECTURE_ASTROLAB.md`.
+
+Non saranno introdotte soglie minime di popolazione.
+
+Tutte le località attive devono rimanere ricercabili.
+
+## Responsabilità congelate
+
+- PostgreSQL applica filtri geografici, bucket e riduzione dei risultati.
+- `RicercaRSAirportRepository` resta l'unico accesso alle sorgenti geografiche.
+- PHP orchestra la ricerca, il Rule Engine, il calcolo e il ranking.
+- Il Rule Engine non modifica il proprio comportamento.
+- Il motore astrologico non modifica il proprio comportamento.
+- La Streaming API trasmette i risultati senza reinterpretarli.
+- Il frontend presenta i dati senza deduplicarli o ricalcolarli.
+
+## Benchmark di riferimento
+
+### Italia
+
+- località grezze: 63.029;
+- aeroporti: 56;
+- bucket SQL delle località: 330;
+- risultato finale PHP: 330;
+- query: circa 977 ms;
+- deduplicazione PHP: circa 153 ms;
+- memoria: circa 34 MB.
+
+### Italia, Francia e Germania
+
+- località grezze: 226.829;
+- aeroporti: 228;
+- bucket SQL delle località: 1.191;
+- risultato finale PHP: 1.213;
+- query: circa 4,3 secondi;
+- deduplicazione PHP: circa 533 ms;
+- picco di memoria: circa 130 MB.
+
+### Fascia longitudinale da -81 a -79
+
+- località grezze: 39.178;
+- aeroporti: 86;
+- bucket SQL delle località: 496;
+- risultato finale PHP: 499;
+- query: circa 935 ms.
+
+La riduzione osservata è superiore al 98% e raggiunge circa il 99,5%
+negli scenari europei.
+
+La differenza tra bucket delle sole località e risultato finale è
+compatibile con la presenza e la precedenza degli aeroporti.
+
+## Vincoli funzionali
+
+La futura implementazione SQL deve garantire:
+
+- nessuna soglia minima di popolazione;
+- inclusione di tutte le località attive;
+- bucket compatibili con il deduplicatore corrente;
+- precedenza degli aeroporti;
+- rappresentanti deterministici;
+- risultato stabile a parità di input;
+- contratto del Repository invariato;
+- Streaming API invariata;
+- assenza di regressioni astrologiche.
+
+## Strategia di migrazione
+
+### Fase 1 — Specifica SQL
+
+- definire con precisione la formula dei bucket;
+- definire l'ordinamento deterministico;
+- definire il rappresentante di ciascun bucket;
+- formalizzare la precedenza aeroporto-località;
+- analizzare la query con `EXPLAIN (ANALYZE, BUFFERS)`.
+
+### Fase 2 — Esecuzione parallela
+
+- mantenere attivo il deduplicatore PHP;
+- produrre in parallelo il risultato SQL;
+- confrontare bucket, chiavi e rappresentanti;
+- registrare ogni divergenza;
+- utilizzare PHP come oracolo funzionale temporaneo.
+
+### Fase 3 — Regressione
+
+Verificare almeno:
+
+- Italia;
+- Italia, Francia e Germania;
+- fascia longitudinale da -81 a -79;
+- coordinate negative;
+- confini dei bucket;
+- meridiano 180 gradi;
+- località senza popolazione;
+- località omonime;
+- aeroporto e località nello stesso bucket.
+
+### Fase 4 — Benchmark
+
+Misurare:
+
+- Raspberry Pi;
+- VPS;
+- memoria PHP;
+- righe trasferite PostgreSQL-PHP;
+- tempo della query SQL;
+- latenza end-to-end;
+- comportamento con ricerche concorrenti.
+
+### Fase 5 — Attivazione
+
+- predisporre un rollback semplice;
+- attivare la deduplicazione SQL;
+- monitorare errori, memoria e latenze;
+- rimuovere la deduplicazione PHP solo dopo equivalenza verificata.
+
+## Stato Git da preservare
+
+Prima del prossimo intervento risultano:
+
+- modificato `www/includes/RicercaRSAirportRepository.php`;
+- presente il backup non tracciato
+  `www/includes/RicercaRSAirportRepository.php.bak`;
+- modificati i documenti Astrolab;
+- eliminati dal working tree alcuni documenti legacy senza suffisso Astrolab.
+
+Le eliminazioni dei documenti legacy devono essere verificate prima del
+commit e non devono essere ripristinate o confermate automaticamente.
+
+## Punto di ripresa
+
+Il prossimo intervento applicativo deve riguardare esclusivamente:
+
+1. definizione della query SQL di deduplicazione;
+2. implementazione nel Repository;
+3. confronto automatico SQL-PHP;
+4. benchmark;
+5. verifica di equivalenza.
+
+La deduplicazione PHP non deve essere eliminata prima della validazione
+completa del risultato SQL.

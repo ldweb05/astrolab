@@ -6,28 +6,32 @@ Indice delle decisioni architetturali permanenti.
   ADR               Decisione          Stato             Versione
   ----------------- ------------------ ----------------- -----------------
   ADR-001           Atlas come Single  Accettata         V4.1
-                    Source of Truth                      
+                    Source of Truth
 
   ADR-002           Rule Engine        Da formalizzare   V4.2
-                    alimentato solo da                   
-                    PlanetCondition                      
+                    alimentato solo da
+                    PlanetCondition
 
   ADR-003           Evidence Contract  Da formalizzare   V4.2
-                    V4                                   
-                    retrocompatibile                     
+                    V4
+                    retrocompatibile
 
   ADR-004           Generazione        Pianificata       V4.2
-                    assistita delle                      
-                    Rule                                 
+                    assistita delle
+                    Rule
 
   ADR-005           Validazione        Pianificata       V4.2
-                    automatica delle                     
-                    Rule                                 
+                    automatica delle
+                    Rule
 
   ADR-012           Freeze del Rule    Accettata         V5
-                    Engine dopo il                       
-                    completamento                        
-                    delle 120 Rule                       
+                    Engine dopo il
+                    completamento
+                    delle 120 Rule
+
+  ADR-015           Deduplicazione     Accettata         Ricerca RS v2
+                    spaziale SQL
+                    della Ricerca RS
   ------------------------------------------------------------------------
 
 ## Regola
@@ -241,3 +245,49 @@ dati prodotti dal Comparator senza alterarne il significato.
 
 -   `57fbba4` --- preserve custom planet house rules in RS comparison
 -   `37d15be` --- refine RS comparison controls layout
+
+---
+
+# ADR-015 --- Deduplicazione spaziale SQL della Ricerca RS
+
+**Stato:** Accettata
+
+**Versione:** Ricerca RS v2
+
+## Contesto
+
+La Ricerca RS utilizza aeroporti e località GeoNames.
+
+La deduplicazione geografica viene oggi eseguita nel livello PHP dopo il
+trasferimento dei dati dal database.
+
+I benchmark hanno mostrato che oltre il 99% delle località candidate viene
+eliminato durante questa fase.
+
+## Decisione
+
+La deduplicazione spaziale viene trasferita progressivamente nel database
+PostgreSQL.
+
+Il Repository continuerà a rappresentare l'unico punto di accesso ai dati.
+
+Rule Engine, motore astrologico e Streaming API rimangono invariati.
+
+Non vengono introdotte soglie minime di popolazione.
+
+## Motivazione
+
+La decisione consente:
+
+- riduzione del traffico PostgreSQL → PHP;
+- riduzione della memoria utilizzata;
+- maggiore scalabilità;
+- mantenimento del comportamento astrologico;
+- preparazione della Ricerca RS mondiale.
+
+## Conseguenze
+
+La deduplicazione PHP rimane temporaneamente come riferimento durante la
+fase di equivalenza.
+
+Verrà rimossa soltanto dopo la completa validazione della pipeline SQL.
