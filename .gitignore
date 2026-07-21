@@ -1,5 +1,8 @@
 postgres-data/
 *.sql
+# Script SQL applicativi versionati
+!sql/
+!sql/*.sql
 *.dump
 
 .env
@@ -23,3 +26,6 @@ www/tmp/
 .env.*.bak
 backup*.sql
 bkup*.sql
+# Dataset geografici scaricabili e rigenerabili
+import/data/
+
