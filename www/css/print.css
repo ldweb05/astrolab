@@ -408,7 +408,76 @@
         max-width: 95% !important;
     }
 
-    /* ── Stili font ridotti in stampa ────────────────────────────── */
+    .annual-report-print {
+    font-size: 10pt;
+    line-height: 1.58;
+}
+
+.annual-report-note {
+    margin: 0 0 14pt;
+    padding: 9pt 11pt;
+    color: #4A4A4A;
+    background: #F4F0E8;
+    border-left: 3pt solid #2C3E6B;
+    font-size: 8.5pt;
+}
+
+.annual-report-note p,
+.annual-report-section-text p {
+    margin-top: 0;
+    margin-bottom: 7pt;
+}
+
+.annual-report-section {
+    margin-bottom: 14pt;
+    page-break-inside: auto;
+    break-inside: auto;
+}
+
+.annual-report-section-title {
+    margin-bottom: 5pt;
+    color: #2C3E6B;
+    font-size: 11pt;
+    font-weight: bold;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.annual-report-section-text {
+    text-align: justify;
+}
+
+.annual-report-section-text p {
+    orphans: 3;
+    widows: 3;
+}
+
+/* ── Continuità editoriale Report Annuale ─────────────────────── */
+.report-section {
+    margin-bottom: 18pt;
+    page-break-inside: auto;
+    break-inside: auto;
+}
+
+.report-section-title {
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.report-section-title + * {
+    page-break-before: avoid;
+    break-before: avoid;
+}
+
+.report-section p {
+    margin-top: 0;
+    margin-bottom: 8pt;
+    orphans: 3;
+    widows: 3;
+}
+
+/* ── Stili font ridotti in stampa ────────────────────────────── */
     .report-titolo     { font-size: 16pt !important; }
     .report-soggetto   { font-size: 13pt !important; }
     .report-sottotitolo,

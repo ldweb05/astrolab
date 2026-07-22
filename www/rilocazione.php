@@ -1491,6 +1491,25 @@ function selezionaLuogoRiloc(lat, lon, nome) {
 let _eventoAngolari = null;  // EventSource attivo
 let _tuttiRisultati = [];    // Cache dei risultati totali ricevuti
 let _paginaCorrente = 1;     // Stato della pagina corrente
+let _rilocConfronto = [];    // Max 3 rilocazioni selezionate
+
+function _chiaveRilocConfronto(r) {
+    return [
+        Number(r.lat).toFixed(4),
+        Number(r.lon).toFixed(4),
+        r.iata || r.icao || ''
+    ].join('|');
+}
+
+function _aggiornaAzioneConfrontoRiloc() {
+    const azione = document.getElementById('riloc-confronto-azione');
+    const conteggio = document.getElementById('riloc-confronto-count');
+
+    if (!azione || !conteggio) return;
+
+    conteggio.textContent = _rilocConfronto.length;
+    azione.style.display = _rilocConfronto.length > 0 ? 'inline-flex' : 'none';
+}
 
 function _setProgress(perc, label, sub) {
     const fill  = document.getElementById('ang-bar-fill');
@@ -1537,6 +1556,10 @@ function _rigaTabella(r, idx) {
     const bG = _badgeMatch(r.match_giove,  'badge-giove',  '♃');
     const haVenere = r.match_venere && r.match_venere.length > 0;
     const haGiove  = r.match_giove  && r.match_giove.length  > 0;
+    const chiave = _chiaveRilocConfronto(r);
+    const selezionata = _rilocConfronto.some(
+        elemento => _chiaveRilocConfronto(elemento) === chiave
+    );
 
     // Evidenzia riga se entrambi i pianeti hanno match
     const rowCls = (haVenere && haGiove) ? 'style="background:#F8F0FF"' : '';
@@ -1554,6 +1577,13 @@ function _rigaTabella(r, idx) {
                     onclick="_usaLuogoAngolari(${r.lat}, ${r.lon}, '${(r.citta || '').replace(/'/g,"\\'")}')">
                 ☿ Usa
             </button>
+        </td>
+        <td style="text-align:center">
+            <input
+                type="checkbox"
+                class="compare-riloc-checkbox"
+                data-index="${idx}"
+                ${selezionata ? 'checked' : ''}>
         </td>
     </tr>`;
 }
@@ -1582,9 +1612,18 @@ function _renderTabellaPaginata() {
     const countStr = totaleRecord === 1 ? '1 luogo trovato' : totaleRecord + ' luoghi trovati';
 
     let html = `
-        <div style="font-size:12px;color:#3a2c6b;font-weight:500;margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:12px;color:#3a2c6b;font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
             <span>✅ ${countStr} (ordinati per distanza minima)</span>
-            <span>Mostrati ${inizio + 1}-${fine} di ${totaleRecord}</span>
+            <span style="display:flex;align-items:center;gap:10px">
+                <button
+                    type="button"
+                    id="riloc-confronto-azione"
+                    class="btn-usa-riloc"
+                    style="display:${_rilocConfronto.length > 0 ? 'inline-flex' : 'none'}">
+                    Confronta (<span id="riloc-confronto-count">${_rilocConfronto.length}</span>)
+                </button>
+                <span>Mostrati ${inizio + 1}-${fine} di ${totaleRecord}</span>
+            </span>
         </div>
         <div style="overflow-x:auto">
         <table class="tabella-angolari">
@@ -1597,6 +1636,7 @@ function _renderTabellaPaginata() {
                     <th>Naz.</th>
                     <th>Match pianeti → cuspidi</th>
                     <th>Rilocazione</th>
+                    <th>Confronta</th>
                 </tr>
             </thead>
             <tbody>
@@ -1616,6 +1656,59 @@ function _renderTabellaPaginata() {
     }
 
     area.innerHTML = html;
+
+    document.querySelectorAll('.compare-riloc-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const indice = Number(checkbox.dataset.index);
+            const risultato = _tuttiRisultati[indice];
+
+            if (!risultato) {
+                checkbox.checked = false;
+                return;
+            }
+
+            const chiave = _chiaveRilocConfronto(risultato);
+
+            if (checkbox.checked) {
+                if (_rilocConfronto.length >= 3) {
+                    checkbox.checked = false;
+                    alert('Puoi confrontare al massimo 3 rilocazioni.');
+                    return;
+                }
+
+                if (!_rilocConfronto.some(
+                    elemento => _chiaveRilocConfronto(elemento) === chiave
+                )) {
+                    _rilocConfronto.push(risultato);
+                }
+            } else {
+                _rilocConfronto = _rilocConfronto.filter(
+                    elemento => _chiaveRilocConfronto(elemento) !== chiave
+                );
+            }
+
+            _aggiornaAzioneConfrontoRiloc();
+        });
+    });
+
+    document.getElementById('riloc-confronto-azione')?.addEventListener('click', () => {
+        if (_rilocConfronto.length < 2) {
+            alert('Seleziona almeno 2 rilocazioni da confrontare.');
+            return;
+        }
+
+        const payload = {
+            soggetto: typeof DS !== 'undefined' ? DS : null,
+            risultati: _rilocConfronto
+        };
+
+        sessionStorage.setItem(
+            'astroDssConfrontoRiloc',
+            JSON.stringify(payload)
+        );
+
+        window.location.href = 'compare_ril.php';
+    });
 
     // Aggancio dei listener sui nuovi pulsanti appena creati
     document.getElementById('ang-prev-btn')?.addEventListener('click', () => {
@@ -1676,6 +1769,7 @@ window.avviaRicercaAngolari = function() {
 
     _tuttiRisultati = [];
     _paginaCorrente = 1;
+    _rilocConfronto = [];
 
     // Costruisci URL SSE
     const params = new URLSearchParams({

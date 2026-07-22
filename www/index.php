@@ -23,7 +23,7 @@ $soggettoNome = $auth->getSoggettoNome();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astrologia Attiva — Soggetti</title>
+    <title>AstroLab — Soggetti</title>
     <link rel="stylesheet" href="css/style.css">
    
 </head>
@@ -32,8 +32,14 @@ $soggettoNome = $auth->getSoggettoNome();
 <!-- ── Header ──────────────────────────────────────────────────── -->
 <header>
     <div class="header-inner">
-        <h1>☉ Astrologia Attiva</h1>
-        <nav>
+        <h1>☉ AstroLab</h1>
+        <button class="nav-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="main-nav"
+                aria-label="Apri menu di navigazione">☰</button>
+
+        <nav id="main-nav" class="main-nav">
             <a href="index.php" class="active">Soggetti</a>
             <a href="tema.php">Tema Natale</a>
             <a href="rs.php">Rivoluzione Solare</a>
@@ -41,16 +47,23 @@ $soggettoNome = $auth->getSoggettoNome();
             <?php if ($isAdmin): ?>
             <a href="admin_utenti.php">⚙️ Utenti</a>
             <?php endif; ?>
-        </nav>
-        <div class="header-user">
+        
+
+            <hr class="nav-separator">
+
+<div class="header-user">
             <span>👤 <?= htmlspecialchars($username) ?>
-                <?php if ($isAdmin): ?><span style="color:#D4C9A8;font-size:10px"> (admin)</span><?php endif; ?>
+                <?php if ($isAdmin): ?><span class="header-role header-role-admin"> (admin)</span><?php endif; ?>
             </span>
             <?php if ($soggettoNome): ?>
             <span class="soggetto-attivo">⭐ <?= htmlspecialchars($soggettoNome) ?></span>
             <?php endif; ?>
-            <a href="logout.php">Esci</a>
+            <a href="cambia_password.php" class="header-link">🔑 Password</a>
+            <a href="logout.php" class="header-link">Esci</a>
         </div>
+
+</nav>
+        
     </div>
 </header>
 
@@ -72,18 +85,18 @@ $soggettoNome = $auth->getSoggettoNome();
             Tema natale, RS e ricerca useranno: <b><?= htmlspecialchars($soggettoNome) ?></b>
         </span>
         <?php else: ?>
-        <span style="font-size:12px;color:#888" id="info-soggetto-attivo">
+        <span class="info-soggetto-inattivo" id="info-soggetto-attivo">
             Seleziona un soggetto per usarlo in tutte le pagine.
         </span>
         <?php endif; ?>
         <?php if ($soggettoId): ?>
-        <button class="btn-secondary" style="font-size:11px;padding:5px 10px"
+        <button class="btn-secondary btn-cambia-soggetto"
                 onclick="cambiaSoggetto()">↺ Cambia soggetto</button>
         <?php endif; ?>
     </div>
 
     <!-- Form inserimento/modifica -->
-    <div id="form-soggetto" class="card" style="display:none">
+    <div id="form-soggetto" class="card is-hidden">
         <h3 id="form-titolo">Nuovo Soggetto</h3>
         <form id="frm-soggetto">
             <input type="hidden" id="soggetto-id">
@@ -106,13 +119,13 @@ $soggettoNome = $auth->getSoggettoNome();
                 </div>
                 <div class="form-group">
                     <label>Ora Locale *</label>
-                    <div style="display:flex;align-items:center;gap:4px">
-                        <input type="time" id="ora-nascita" step="60" required style="flex:1">
-                        <div style="display:flex;flex-direction:column;gap:2px">
+                    <div class="time-input-row">
+                        <input type="time" id="ora-nascita" step="60" required class="time-input-field">
+                        <div class="time-step-controls">
                             <button type="button" class="btn-time" onclick="modificaOra(1)">▲</button>
                             <button type="button" class="btn-time" onclick="modificaOra(-1)">▼</button>
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:2px">
+                        <div class="time-step-controls">
                             <button type="button" class="btn-time" onclick="modificaMinuti(1)">▲</button>
                             <button type="button" class="btn-time" onclick="modificaMinuti(-1)">▼</button>
                         </div>
@@ -120,13 +133,13 @@ $soggettoNome = $auth->getSoggettoNome();
                 </div>
                 <div class="form-group">
                     <label>Ora GMT</label>
-                    <div style="display:flex;align-items:center;gap:4px">
-                        <input type="time" id="ora-gmt" step="60" readonly style="background:#f5f5f5;flex:1">
-                        <div style="display:flex;flex-direction:column;gap:2px">
+                    <div class="time-input-row">
+                        <input type="time" id="ora-gmt" step="60" readonly class="time-input-field readonly-field">
+                        <div class="time-step-controls">
                             <button type="button" class="btn-time" onclick="modificaOraGMT(1)">▲</button>
                             <button type="button" class="btn-time" onclick="modificaOraGMT(-1)">▼</button>
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:2px">
+                        <div class="time-step-controls">
                             <button type="button" class="btn-time" onclick="modificaMinutiGMT(1)">▲</button>
                             <button type="button" class="btn-time" onclick="modificaMinutiGMT(-1)">▼</button>
                         </div>
@@ -134,21 +147,20 @@ $soggettoNome = $auth->getSoggettoNome();
                 </div>
                 <div class="form-group">
                     <label>Offset GMT</label>
-                    <div style="display:flex;align-items:center;gap:6px">
-                        <input type="number" id="offset-gmt" step="0.5" placeholder="Es: 1" style="width:72px">
+                    <div class="offset-gmt-row">
+                        <input type="number" id="offset-gmt" step="0.5" placeholder="Es: 1" class="offset-gmt-input">
                         <button type="button" id="btn-ricalcola-offset"
                                 onclick="ricalcolaOffset()"
                                 title="Ricalcola offset GMT da TimeZoneDB (usa lat/lon e data)"
-                                style="background:#5A7AB0;color:white;border:none;border-radius:4px;
-                                       padding:5px 8px;cursor:pointer;font-size:13px;white-space:nowrap">
+                                class="btn-ricalcola-offset">
                             🔄
                         </button>
                         <span id="offset-loading"
-                              style="display:none;font-size:11px;color:#888;font-style:italic">
+                              class="offset-loading is-hidden">
                             ⟳ calcolo...
                         </span>
                     </div>
-                    <div style="font-size:10px;color:#999;margin-top:2px">
+                    <div class="offset-gmt-hint">
                         🔄 = ricalcola da TimeZoneDB (richiede luogo e data)
                     </div>
                 </div>
@@ -166,26 +178,26 @@ $soggettoNome = $auth->getSoggettoNome();
             <div class="form-grid form-grid-4">
                 <div class="form-group">
                     <label>Latitudine</label>
-                    <input type="number" id="latitudine" step="0.0001" readonly style="background:#f5f5f5">
+                    <input type="number" id="latitudine" step="0.0001" readonly class="readonly-field">
                 </div>
                 <div class="form-group">
                     <label>Longitudine</label>
-                    <input type="number" id="longitudine" step="0.0001" readonly style="background:#f5f5f5">
+                    <input type="number" id="longitudine" step="0.0001" readonly class="readonly-field">
                 </div>
                 <div class="form-group">
                     <label>Paese</label>
-                    <input type="text" id="nazione" readonly style="background:#f5f5f5">
+                    <input type="text" id="nazione" readonly class="readonly-field">
                 </div>
                 <div class="form-group">
                     <label>Timezone</label>
-                    <input type="text" id="timezone" readonly style="background:#f5f5f5">
+                    <input type="text" id="timezone" readonly class="readonly-field">
                 </div>
             </div>
 
             <!-- Residenza -->
-            <div class="card" style="background:#F8F5F0;border:1px solid #E0D8CC;margin-top:16px;padding:12px">
-                <h3 style="font-size:13px;color:#5A6A8A;margin:0 0 8px 0">🏠 Luogo di Residenza
-                    <span style="font-weight:normal;color:#999;font-size:11px">— opzionale, usato come default per le RS</span>
+            <div class="card residenza-card">
+                <h3 class="residenza-card-title">🏠 Luogo di Residenza
+                    <span class="residenza-card-subtitle">— opzionale, usato come default per le RS</span>
                 </h3>
                 <div class="form-group">
                     <label>Città di Residenza</label>
@@ -197,14 +209,13 @@ $soggettoNome = $auth->getSoggettoNome();
                 </div>
                 <div class="form-grid form-grid-4">
                     <div class="form-group"><label>Latitudine</label>
-                        <input type="number" id="residenza-latitudine" step="0.0001" readonly style="background:#f5f5f5"></div>
+                        <input type="number" id="residenza-latitudine" step="0.0001" readonly class="readonly-field"></div>
                     <div class="form-group"><label>Longitudine</label>
-                        <input type="number" id="residenza-longitudine" step="0.0001" readonly style="background:#f5f5f5"></div>
+                        <input type="number" id="residenza-longitudine" step="0.0001" readonly class="readonly-field"></div>
                     <div class="form-group"><label>Paese</label>
-                        <input type="text" id="residenza-nazione" readonly style="background:#f5f5f5"></div>
-                    <div class="form-group" style="align-self:flex-end">
-                        <button type="button" class="btn-secondary" onclick="cancellaResidenza()"
-                                style="font-size:12px;padding:6px 12px">✕ Cancella</button>
+                        <input type="text" id="residenza-nazione" readonly class="readonly-field"></div>
+                    <div class="form-group form-group-end">
+                        <button type="button" class="btn-secondary btn-cancella-residenza" onclick="cancellaResidenza()">✕ Cancella</button>
                     </div>
                 </div>
             </div>
@@ -229,6 +240,7 @@ $soggettoNome = $auth->getSoggettoNome();
     </div>
 </main>
 
+<script src="js/header_nav.js" defer></script>
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/app.js"></script>
 <script>
@@ -297,7 +309,7 @@ function caricaSoggettiConDropdown() {
 
             // Colonna Proprietario — solo per admin
             const thProp = IS_ADMIN
-                ? '<th style="white-space:nowrap">Proprietario</th>'
+                ? '<th class="th-nowrap">Proprietario</th>'
                 : '';
 
             let html = `<table class="tabella-soggetti">
@@ -309,7 +321,7 @@ function caricaSoggettiConDropdown() {
             data.forEach(s => {
                 const isAttivo = s.id == soggettoAttivoId;
                 const residenzaHtml = s.residenza_luogo
-                    ? `<div style="font-size:11px;color:#5A7AB0;margin-top:4px">🏠 ${s.residenza_luogo}${s.residenza_nazione ? ', ' + s.residenza_nazione : ''}</div>`
+                    ? `<div class="soggetto-residenza">🏠 ${s.residenza_luogo}${s.residenza_nazione ? ', ' + s.residenza_nazione : ''}</div>`
                     : '';
 
                 // Badge "Soggetto di: [Nome Completo o username]" — solo per admin
@@ -322,28 +334,16 @@ function caricaSoggettiConDropdown() {
                     const tooltip  = username ? `Utente: ${username}` : '';
 
                     tdProp = `<td>
-                        <span style="
-                            font-size:12px;
-                            color:#2C3E6B;
-                            display:inline-block;
-                            line-height:1.3;
-                        " title="${tooltip}">
-                            <span style="
-                                font-size:10px;
-                                color:#888;
-                                display:block;
-                                text-transform:uppercase;
-                                letter-spacing:0.04em;
-                                margin-bottom:1px;
-                            ">Soggetto di:</span>
+                        <span class="soggetto-proprietario" title="${tooltip}">
+                            <span class="soggetto-proprietario-label">Soggetto di:</span>
                             <strong>${nomeDisplay}</strong>
                         </span>
                     </td>`;
                 }
 
-                html += `<tr ${isAttivo ? 'style="background:#FFFFF0"' : ''}>
+                html += `<tr class="${isAttivo ? 'riga-soggetto-attivo' : ''}">
                     <td>${s.codice || '—'}</td>
-                    <td><b>${s.nome}</b>${isAttivo ? ' <span style="color:#C8960C;font-size:11px">⭐ attivo</span>' : ''}</td>
+                    <td><b>${s.nome}</b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
                     <td>${formatData(s.data_nascita)}</td>
                     <td>${s.ora_nascita}</td>
                     <td>

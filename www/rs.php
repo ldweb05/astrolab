@@ -85,6 +85,7 @@ if ($soggetto) {
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rivoluzione Solare</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
@@ -138,7 +139,7 @@ if ($soggetto) {
             <label>Luogo RS</label>
             <div class="luogo-rs-wrap">
                 <input type="text" id="luogo-rs-input" placeholder="Cerca città RS..."
-                       value="<?= htmlspecialchars($defaultLuogo) ?>" style="flex:1">
+                       value="<?= htmlspecialchars($defaultLuogo) ?>" class="flex-1">
                 <button class="btn-search" onclick="cercaLuogoRS()">🔍 Cerca</button>
             </div>
             <div id="luogo-rs-risultati" class="dropdown-risultati"></div>
@@ -157,59 +158,75 @@ if ($soggetto) {
                 Mostra avviso RS escluse
             </label>
         </div>
-       <div style="width:100%;display:flex;gap:10px;align-items:center;padding-top:2px;">
+       <div class="rs-actions-row">
             <button class="btn-primary" onclick="calcolaRS()">↺ Calcola RS</button>
-            <button class="btn-mappa" id="btn-apri-mappa" onclick="toggleMappa()" style="display:none">🌍 Mappa</button>
+            <button class="btn-mappa is-hidden" id="btn-apri-mappa" onclick="toggleMappa()">🌍 Mappa</button>
+            <button class="btn-mappa is-hidden" id="btn-previsione-annuale" onclick="togglePrevisioneAnnuale()">📖 Relazione Annuale</button>
         </div>
     </div>
  
-    <div class="header-rs" id="header-rs" style="display:none">
+    <div class="header-rs is-hidden" id="header-rs">
         <div><span>RS: </span><b id="rs-anno-label"></b></div>
         <div><span>GMT: </span><b id="rs-gmt-label"></b></div>
         <div><span>Luogo: </span><b id="rs-luogo-label"></b></div>
         <div><span>Ora Locale RS: </span><b id="rs-ora-locale-label">--:--:--</b></div>
         <div><span>Fuso Orario: </span><b id="rs-fuso-label">GMT --</b></div>
-        <div id="rs-giorno-succ-label" style="display:none;background:#CC3333;color:white;padding:2px 6px;border-radius:4px;font-weight:bold">+1 Giorno</div>
-        <div id="rs-link-viaggio" style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+        <div id="rs-giorno-succ-label" class="rs-next-day-label is-hidden">+1 Giorno</div>
+        <div id="rs-link-viaggio" class="rs-travel-links"></div>
     </div>
 
-    <div class="page-title" style="margin-bottom:10px">
+    <div class="page-title page-title-compact">
     <button class="btn-stampa-diretta" onclick="prepareStampaRS()">🖨️ Stampa Rivoluzione Solare</button>
 </div>
-    <div id="rs-btn-report-wrap" style="display:none;margin-bottom:10px;text-align:right">
-        <a id="rs-btn-report" href="#" target="_blank"
-           style="display:inline-flex;align-items:center;gap:6px;
-                  background:#2C3E6B;color:white;text-decoration:none;
-                  border-radius:6px;padding:7px 16px;font-size:12px;
-                  letter-spacing:0.03em;transition:background 0.2s"
-           onmouseover="this.style.background='#3A5090'"
-           onmouseout="this.style.background='#2C3E6B'">
+    <div id="rs-btn-report-wrap" class="rs-report-wrap is-hidden">
+        <a id="rs-btn-report" href="#" target="_blank" class="rs-report-link">
             📄 Stampa / PDF Report
         </a>
     </div>
-    <div class="card" id="card-salva-rs" style="display:none">
-        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-            <div class="form-group" style="flex:1;min-width:200px">
+    <div class="card is-hidden" id="card-salva-rs">
+        <div class="rs-save-row">
+            <div class="form-group rs-save-note-group">
                 <label>Note per questa sessione</label>
                 <input type="text" id="salva-rs-note" placeholder="Es: opzione preferita, da verificare con il cliente...">
             </div>
             <button class="btn-primary" id="btn-salva-rs" onclick="salvaSessioneRS()">💾 Salva questa RS</button>
         </div>
-        <div id="salva-rs-msg" style="margin-top:8px;font-size:12px"></div>
+        <div id="salva-rs-msg" class="rs-save-message"></div>
     </div>
  
-    <div class="card" id="card-sessioni-rs" style="display:none">
+    <div class="card is-hidden" id="card-sessioni-rs">
         <h3>📂 Sessioni RS salvate per questo soggetto</h3>
         <div id="lista-sessioni-rs"></div>
     </div>
  
-    <div id="rs-loading" style="display:none"><p>⟳ Calcolo in corso...</p></div>
+    <div id="rs-loading" class="is-hidden"><p>⟳ Calcolo in corso...</p></div>
  
-    <div id="rs-filtro-esclusione" class="val-item val-veto" style="display:none;margin-bottom:14px;font-size:13px;line-height:1.6"></div>
+    <div id="rs-filtro-esclusione" class="val-item val-veto rs-filter-exclusion is-hidden"></div>
 
     <div id="rs-alert-stellium"></div>
+
+    <div id="previsione-annuale" class="annual-report-modal is-hidden">
+        <div id="previsione-annuale-finestra" class="annual-report-window">
+            <div class="annual-report-header">
+                <div class="val-stringa">📖 Relazione Annuale</div>
+                <div class="annual-report-actions">
+                    <button type="button"
+                            onclick="stampaPrevisioneAnnuale()"
+                            title="Stampa Relazione Annuale"
+                            aria-label="Stampa Relazione Annuale"
+                            class="annual-report-icon annual-report-print">🖨️</button>
+                    <button type="button"
+                            onclick="togglePrevisioneAnnuale()"
+                            title="Chiudi"
+                            aria-label="Chiudi"
+                            class="annual-report-icon annual-report-close">×</button>
+                </div>
+            </div>
+            <div id="previsione-annuale-contenuto" class="annual-report-content"></div>
+        </div>
+    </div>
  
-    <div class="valutazione" id="valutazione" style="display:none">
+    <div class="valutazione is-hidden" id="valutazione">
         <div class="val-header">
             <div class="stelle-grandi" id="val-stelle"></div>
             <div class="val-stringa"   id="val-stringa"></div>
@@ -221,15 +238,15 @@ if ($soggetto) {
         </div>
         <div id="val-veti"></div>
     </div>
-        <div id="pannello-sensibilita" style="display:none">
+        <div id="pannello-sensibilita" class="is-hidden">
         <div class="sensib-header" onclick="toggleSensibilita()">
             <span class="sensib-titolo">⏱ Analisi Sensibilità Oraria</span>
             <span class="sensib-sub" id="sensib-badge-header"></span>
             <span class="sensib-chevron" id="sensib-chevron">▶</span>
         </div>
-        <div class="sensib-body" id="sensib-body" style="display:none">
+        <div class="sensib-body is-hidden" id="sensib-body">
             <div class="sensib-controlli">
-                <div class="form-group" style="margin:0">
+                <div class="form-group sensib-form-group">
                     <label>Passo (minuti)</label>
                     <select id="sensib-step">
                         <option value="5">Ogni 5′</option>
@@ -238,7 +255,7 @@ if ($soggetto) {
                         <option value="30">Ogni 30′</option>
                     </select>
                 </div>
-                <div class="form-group" style="margin:0">
+                <div class="form-group sensib-form-group">
                     <label>Finestra (± minuti)</label>
                     <select id="sensib-range">
                         <option value="30">± 30′</option>
@@ -247,27 +264,26 @@ if ($soggetto) {
                         <option value="120">± 120′</option>
                     </select>
                 </div>
-                <button class="btn-secondary" id="btn-calcola-sensib"
-                        onclick="calcolaSensibilita()"
-                        style="font-size:12px;padding:6px 14px;white-space:nowrap">
+                <button class="btn-secondary btn-calcola-sensib" id="btn-calcola-sensib"
+                        onclick="calcolaSensibilita()">
                     ↺ Calcola
                 </button>
                 <div id="sensib-loading"
-                     style="display:none;font-size:12px;color:#667;font-style:italic;align-self:center">
+                     class="sensib-loading is-hidden">
                     ⟳ Calcolo in corso…
                 </div>
             </div>
  
-            <div id="sensib-riepilogo" style="display:none" class="sensib-riepilogo">
+            <div id="sensib-riepilogo" class="sensib-riepilogo is-hidden">
                 <div class="sensib-badge-wrap">
                     <span id="sensib-badge" class="sensib-badge"></span>
                     <span id="sensib-perc"  class="sensib-perc"></span>
                 </div>
                 <p id="sensib-messaggio" class="sensib-messaggio"></p>
-                <div id="sensib-alert-veto" class="sensib-alert" style="display:none"></div>
+                <div id="sensib-alert-veto" class="sensib-alert is-hidden"></div>
             </div>
  
-            <div id="sensib-tabella-wrap" style="display:none;overflow-x:auto;margin-top:12px">
+            <div id="sensib-tabella-wrap" class="sensib-table-wrap is-hidden">
                 <table class="tabella-sensib" id="sensib-tabella">
                     <thead>
                         <tr>
@@ -293,27 +309,27 @@ if ($soggetto) {
             </div>
         </div>
     </div>
-<div class="temi-wrapper" id="temi-wrapper" style="display:none">
+<div class="temi-wrapper is-hidden" id="temi-wrapper">
         <div class="tema-box">
             <div class="tema-box-header">
                 <button class="btn-toggle-gradi" id="btn-toggle-cuspidi" onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
                 <h3>Tema Natale</h3>
                 <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
-            <svg id="wheel-natale" width="480" height="480" style="max-width:100%;height:auto"></svg>
+            <svg id="wheel-natale" width="480" height="480" class="zodiac-wheel-responsive"></svg>
             <p class="tema-info" id="info-natale"></p>
             <table class="tabella-pianeti" id="tab-natale"></table>
             <div class="aspetti-container">
-                <h4 style="font-size:11px;color:#2C3E6B;text-align:center;margin-bottom:8px">📐 Aspetti nella Rivoluzione Solare</h4>
+                <h4 class="rs-table-section-title">📐 Aspetti nella Rivoluzione Solare</h4>
                 <table class="tabella-aspetti">
                     <thead><tr><th>Pianeta 1</th><th></th><th>Pianeta 2</th><th>Aspetto</th><th>Orbe</th></tr></thead>
-                    <tbody id="aspetti-rs-body"><tr><td colspan="5" style="text-align:center;color:#999">Nessun aspetto rilevante</td></tr>
+                    <tbody id="aspetti-rs-body"><tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr>
                 </tbody>
             </table>
             </div>
         </div>
  
-        <div class="time-controls" style="align-self:flex-start">
+        <div class="time-controls time-controls-top">
             <div class="time-btn-group">
                 <button class="time-btn" onclick="modificaOraRS(1)">▲</button>
                 <div class="time-label">ORA</div>
@@ -331,14 +347,14 @@ if ($soggetto) {
         <div class="tema-box">
             <h3 id="rs-titolo">Rivoluzione Solare</h3>
             <div class="map-loading-overlay" id="rs-mappa-loading">⟳ Ricalcolo RS...</div>
-            <svg id="wheel-rs" width="480" height="480" style="max-width:100%;height:auto"></svg>
+            <svg id="wheel-rs" width="480" height="480" class="zodiac-wheel-responsive"></svg>
             <p class="tema-info" id="info-rs"></p>
             <table class="tabella-pianeti" id="tab-rs"></table>
             <div class="cuspidi-container">
-                <h4 style="font-size:11px;color:#2C3E6B;text-align:center;margin-bottom:8px">🏠 Cuspidi Case RS</h4>
+                <h4 class="rs-table-section-title">🏠 Cuspidi Case RS</h4>
                 <table class="tabella-cuspidi">
                     <thead><tr><th>Casa</th><th>Gradi Cuspide</th></tr></thead>
-                    <tbody id="cuspidi-rs-body"><tr><td colspan="2" style="text-align:center;color:#999">—</td></tr>
+                    <tbody id="cuspidi-rs-body"><tr><td colspan="2" class="table-empty-cell">—</td></tr>
                 </tbody>
             </table>
             </div>
@@ -355,7 +371,7 @@ if ($soggetto) {
         </div>
         <div class="map-leaflet-inner">
             <div class="map-loading-overlay" id="mappa-ricalcolo">⟳ Ricalcolo...</div>
-            <div id="leaflet-map" style="width:100%;height:100%"></div>
+            <div id="leaflet-map" class="map-fill"></div>
         </div>
         <div class="map-float-footer">
             <span class="info-drag">Trascina il marker · la RS si aggiorna in tempo reale</span>
@@ -369,6 +385,7 @@ if ($soggetto) {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/svg_zoom.js"></script> 
+
 <script src="js/app.js"></script>
 <script src="js/rs_alert.js"></script>
 <script>
@@ -377,6 +394,170 @@ const DS = <?= json_encode($jsData) ?>;
 let temaNataleCache = null;
 let oraNascitaCorrente = 0, minNascitaCorrente = 0, offsetRS = 0;
 let ultimaDatiRS = null;
+let ultimaPrevisioneAnnuale = null;
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function renderPrevisioneAnnuale(previsione) {
+    const contenuto = document.getElementById('previsione-annuale-contenuto');
+    if (!contenuto || !previsione) return;
+
+    let html = '';
+
+    if (previsione.methodological_note) {
+        html += '<p class="report-methodological-note">'
+            + escapeHtml(previsione.methodological_note)
+            + '</p>';
+    }
+
+    if (Array.isArray(previsione.sections)) {
+        for (const sezione of previsione.sections) {
+            if (sezione.title) {
+                html += '<h3>' + escapeHtml(sezione.title) + '</h3>';
+            }
+
+            if (sezione.text) {
+                html += '<p>' + escapeHtml(sezione.text) + '</p>';
+            }
+        }
+    } else {
+        if (previsione.introduzione) {
+            html += '<p>' + escapeHtml(previsione.introduzione) + '</p>';
+        }
+
+        for (const paragrafo of (previsione.paragrafi || [])) {
+            html += '<p>' + escapeHtml(paragrafo.testo || '');
+
+            if (Array.isArray(paragrafo.fonti) && paragrafo.fonti.length) {
+                html += ' <strong>('
+                    + paragrafo.fonti.map(escapeHtml).join('; ')
+                    + ')</strong>';
+            }
+
+            html += '</p>';
+        }
+    }
+
+    contenuto.innerHTML = html || '<p>Nessuna previsione disponibile.</p>';
+}
+
+function togglePrevisioneAnnuale() {
+    const pannello = document.getElementById('previsione-annuale');
+    if (!pannello || !ultimaPrevisioneAnnuale) return;
+
+    const nascosto = pannello.style.display === 'none' || !pannello.style.display;
+    pannello.style.display = nascosto ? 'block' : 'none';
+}
+
+function stampaPrevisioneAnnuale() {
+    const contenuto = document.getElementById('previsione-annuale-contenuto');
+    if (!contenuto) return;
+
+    const finestra = window.open('', '_blank', 'width=900,height=700');
+
+    if (!finestra) {
+        alert('Il browser ha bloccato la finestra di stampa.');
+        return;
+    }
+
+    finestra.document.write(`<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Relazione Annuale</title>
+    <style>
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            color: #1f2a35;
+            background: #ffffff;
+            margin: 40px;
+            line-height: 1.7;
+        }
+
+        h1 {
+            color: #244a78;
+            border-bottom: 1px solid #d9cdb8;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+
+        p {
+            margin: 0 0 18px;
+        }
+
+        strong {
+            color: #244a78;
+        }
+
+        h3 {
+            color: #244a78;
+            font-size: 18px;
+            margin: 26px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #d9cdb8;
+            page-break-after: avoid;
+        }
+
+        .report-methodological-note {
+            background: #f4ead8;
+            border-left: 4px solid #244a78;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        @page {
+            margin: 18mm;
+        }
+    </style>
+</head>
+<body>
+    <h1>Relazione Annuale</h1>
+    ${contenuto.innerHTML}
+</body>
+</html>`);
+
+    finestra.document.close();
+    finestra.focus();
+
+    let stampaCompletata = false;
+
+    const chiudiFinestraStampa = () => {
+        if (stampaCompletata || finestra.closed) {
+            return;
+        }
+
+        stampaCompletata = true;
+        finestra.close();
+    };
+
+    finestra.addEventListener(
+        'afterprint',
+        chiudiFinestraStampa,
+        { once: true }
+    );
+
+    setTimeout(() => {
+        if (finestra.closed) {
+            return;
+        }
+
+        finestra.print();
+
+        /*
+         * Fallback per browser che non emettono afterprint
+         * in modo affidabile sulla finestra secondaria.
+         */
+        setTimeout(chiudiFinestraStampa, 1500);
+    }, 250);
+}
  
 // ── IPOTESI: toggleGradiPianeti disponibile ─────────────────────
 console.log('RS: toggleGradiPianeti disponibile?', typeof toggleGradiPianeti === 'function');
@@ -529,6 +710,20 @@ function ricalcolaTuttoConNuovaOra() {
                 : DS.luogo + (DS.nazione ? ', '+DS.nazione : '');
             aggiornaLinkViaggio(luogoRS, luogoHome);
             let v = data.valutazione;
+
+            ultimaDatiRS = data;
+            ultimaPrevisioneAnnuale = data.relazione_annuale || data.previsione_annuale || null;
+
+            const btnPrevisione = document.getElementById('btn-previsione-annuale');
+            const pannelloPrevisione = document.getElementById('previsione-annuale');
+
+            if (ultimaPrevisioneAnnuale) {
+                renderPrevisioneAnnuale(ultimaPrevisioneAnnuale);
+                if (btnPrevisione) btnPrevisione.style.display = 'inline-block';
+            } else {
+                if (btnPrevisione) btnPrevisione.style.display = 'none';
+                if (pannelloPrevisione) pannelloPrevisione.style.display = 'none';
+            }
             document.getElementById('val-stelle').textContent  = v.stelle_str;
             document.getElementById('val-stringa').textContent = v.val;
             aggiornaBannerEsclusione(data);
@@ -639,12 +834,10 @@ function aggiornaLinkViaggio(luogoRS, luogoHome) {
     const urlRome2Rio = origin
         ? `https://www.rome2rio.com/it/map/${origin}/${dest}`
         : `https://www.rome2rio.com/it/map/${dest}`;
-    const btnStyle = 'display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.13);color:white;text-decoration:none;border:1px solid rgba(255,255,255,0.28);border-radius:4px;padding:4px 11px;font-size:11px;white-space:nowrap;transition:background 0.2s';
     container.innerHTML = `
-        <span style="font-size:10px;color:#88AACC;white-space:nowrap">Come arrivare:</span>
-        <a href="${urlRome2Rio}" target="_blank" rel="noopener" style="${btnStyle}"
-           onmouseover="this.style.background='rgba(255,255,255,0.25)'"
-           onmouseout="this.style.background='rgba(255,255,255,0.13)'">🗺️ Rome2Rio</a>`;
+        <span class="rs-travel-label">Come arrivare:</span>
+        <a href="${urlRome2Rio}" target="_blank" rel="noopener"
+           class="rs-travel-link">🗺️ Rome2Rio</a>`;
 }
  
 // ── Carica tema natale iniziale ──────────────────────────────────────────
@@ -716,6 +909,20 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
             aggiornaLinkViaggio(luogoRS, lieuHome);
  
             let v = data.valutazione;
+
+            ultimaDatiRS = data;
+            ultimaPrevisioneAnnuale = data.relazione_annuale || data.previsione_annuale || null;
+
+            const btnPrevisione = document.getElementById('btn-previsione-annuale');
+            const pannelloPrevisione = document.getElementById('previsione-annuale');
+
+            if (ultimaPrevisioneAnnuale) {
+                renderPrevisioneAnnuale(ultimaPrevisioneAnnuale);
+                if (btnPrevisione) btnPrevisione.style.display = 'inline-block';
+            } else {
+                if (btnPrevisione) btnPrevisione.style.display = 'none';
+                if (pannelloPrevisione) pannelloPrevisione.style.display = 'none';
+            }
             document.getElementById('val-stelle').textContent    = v.stelle_str;
             document.getElementById('val-stringa').textContent   = v.val;
             document.getElementById('val-condizione').textContent= 'Condizione: '+v.condizione;
@@ -724,13 +931,13 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
                 ? v.veti.map(t => '<div class="val-item val-veto">⛔ '+t+'</div>').join('') : '';
             document.getElementById('val-bonus').innerHTML = v.bonus.length
                 ? v.bonus.map(b => '<div class="val-item val-bonus"><b>'+b.codice+'</b> '+b.nota+'</div>').join('')
-                : '<div style="color:#999;font-size:11px">Nessun bonus significativo</div>';
+                : '<div class="val-empty-message">Nessun bonus significativo</div>';
             const penHtml = [
                 ...v.penalita.map(p => '<div class="val-item val-penali"><b>'+p.codice+'</b> '+p.nota+'</div>'),
                 ...v.note.map(n => '<div class="val-item val-note"><b>'+n.codice+'</b> '+n.nota+'</div>')
             ].join('');
             document.getElementById('val-penali').innerHTML = penHtml
-                || '<div style="color:#999;font-size:11px">Nessuna penalità</div>';
+                || '<div class="val-empty-message">Nessuna penalità</div>';
  
             aggiornaBannerEsclusione(data);
             ultimaDatiRS = data;
@@ -789,11 +996,12 @@ function popolaTabellaPianeti(tabId, tema) {
     const nomi = {0:'☉ Sole',1:'☽ Luna',2:'☿ Mercurio',3:'♀ Venere',4:'♂ Marte',
                   5:'♃ Giove',6:'♄ Saturno',7:'♅ Urano',8:'♆ Nettuno',9:'♇ Plutone',
                   11:'☊ Nodo N.'};
-    let html = '<table><th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th></tr>';
+    let html = '<table class="tabella-pianeti"><thead><tr><th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th></tr></thead><tbody>';
     Object.values(tema.pianeti).forEach(p => {
         html += '<tr><td>'+(nomi[p.id]??p.nome)+'</td><td>'+p.posizione.stringa+'</td>'+
                 '<td>'+p.casa+'</td><td>'+(p.retrogrado?'<span class="retro">R</span>':'')+'</td></tr>';
     });
+    html += '</tbody></table>';
     document.getElementById(tabId).innerHTML = html;
 }
  
@@ -801,7 +1009,7 @@ function popolaTabellaAspetti(aspetti) {
     const tbody = document.getElementById('aspetti-rs-body');
     if (!tbody) return;
     if (!aspetti || aspetti.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999">Nessun aspetto rilevante</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr>';
         return;
     }
     const simboli = {0:'☉',1:'☽',2:'☿',3:'♀',4:'♂',5:'♃',6:'♄',7:'♅',8:'♆',9:'♇'};
@@ -818,7 +1026,7 @@ function popolaTabellaAspetti(aspetti) {
         const ti = tipoMap[a.aspetto || a.tipo] || {sim:'•',cls:'aspetto-altro'};
         return `<tr>
             <td>${simboli[a.pianeta_a]??''} ${nomi[a.pianeta_a]??a.nome_a??'?'}</td>
-            <td style="font-size:14px">→</td>
+            <td class="aspect-arrow">→</td>
             <td>${simboli[a.pianeta_b]??''} ${nomi[a.pianeta_b]??a.nome_b??'?'}</td>
             <td class="${ti.cls}">${ti.sim} ${a.aspetto||a.tipo}</td>
             <td>${a.scarto?.toFixed(1)??'?'}°</td>
@@ -843,13 +1051,13 @@ function popolaTabellaCuspidi(tbodyId, tema) {
         if (!casa) continue;
         const label   = CASE_LABEL[c] || String(c);
         const stringa = casa.posizione?.stringa ?? '—';
-        const bold    = ANGOLARI.has(c) ? ' font-weight:bold;color:#2C3E6B;' : '';
+        const angularClass = ANGOLARI.has(c) ? ' cuspide-angolare' : '';
         html += `<tr>
-            <td style="text-align:center;${bold}">${label}</td>
-            <td style="${bold}">${stringa}</td>
+            <td class="cuspide-label${angularClass}">${label}</td>
+            <td class="${angularClass.trim()}">${stringa}</td>
         </tr>`;
     }
-    tbody.innerHTML = html || '<tr><td colspan="2" style="text-align:center;color:#999">—</td></tr>';
+    tbody.innerHTML = html || '<tr><td colspan="2" class="table-empty-cell">—</td></tr>';
 }
  
 function aggiornaBannerEsclusione(data) {
@@ -1019,22 +1227,22 @@ function _renderSensibilita(data) {
  
         const stelle = p.stelline > 0
             ? `<span class="stelle-sensib">${'★'.repeat(p.stelline)}${'☆'.repeat(5-p.stelline)}</span>`
-            : `<span style="color:#CC3333;font-size:10px">0 ⛔</span>`;
+            : `<span class="sensib-zero-stars">0 ⛔</span>`;
  
         const vetiHtml = p.veti && p.veti.length > 0
             ? `<span class="veto-count" title="${p.veti.join('\n')}">${p.veti.length} veto${p.veti.length>1?'i':''}</span>`
-            : `<span style="color:#4CAF50;font-size:10px">nessuno</span>`;
+            : `<span class="sensib-no-veto">nessuno</span>`;
  
         const valStr = p.val ? p.val.replace(/^\*+/, '') : '—';
  
         html += `<tr class="${rigaCls}">
             <td>${dLabel} ${icona}</td>
-            <td style="font-family:monospace;font-size:10px">${p.rs_gmt}</td>
-            <td style="font-size:11px">${p.asc_rs_str}</td>
-            <td style="text-align:center">${casaBadge}</td>
-            <td style="font-size:11px;color:#667">${p.mc_rs_str}</td>
+            <td class="sensib-mono-small">${p.rs_gmt}</td>
+            <td class="sensib-text-small">${p.asc_rs_str}</td>
+            <td class="table-center">${casaBadge}</td>
+            <td class="sensib-muted-small">${p.mc_rs_str}</td>
             <td>${stelle}</td>
-            <td style="font-family:monospace;font-size:10px;color:#2C3E6B">${valStr}</td>
+            <td class="sensib-val-cell">${valStr}</td>
             <td>${vetiHtml}</td>
         </tr>`;
     });
@@ -1045,7 +1253,7 @@ function _renderSensibilita(data) {
  
 function _mostraErroreSensib(msg) {
     const riepilogo = document.getElementById('sensib-riepilogo');
-    riepilogo.innerHTML = `<p style="color:#CC3333;font-size:12px">❌ ${msg}</p>`;
+    riepilogo.innerHTML = `<p class="sensib-error-message">❌ ${msg}</p>`;
     riepilogo.style.display = 'block';
 }
  
@@ -1137,8 +1345,8 @@ function caricaSessioniRS() {
                     <td>${s.condizione}</td>
                     <td class="stelle">${stelle}</td>
                     <td><span class="val-badge">${s.val || '—'}</span></td>
-                    <td style="max-width:200px;font-size:11px;color:#667">${s.note || ''}</td>
-                    <td style="font-size:11px;color:#888;white-space:nowrap">${dataSalv}</td>
+                    <td class="session-note-cell">${s.note || ''}</td>
+                    <td class="session-date-cell">${dataSalv}</td>
                     <td><div class="azioni">
                         <a href="${url}" class="btn-icon" title="Richiama questa sessione">↺</a>
                         <button class="btn-icon" title="Elimina" onclick="eliminaSessioneRS(${s.id})">🗑️</button>
@@ -1187,18 +1395,18 @@ function salvaSessioneRS() {
         btn.disabled = false;
         btn.textContent = '💾 Salva questa RS';
         if (data.ok) {
-            msg.innerHTML = '<span style="color:#2E7D32">✅ Sessione salvata.</span>';
+            msg.innerHTML = '<span class="message-success-inline">✅ Sessione salvata.</span>';
             document.getElementById('salva-rs-note').value = '';
             caricaSessioniRS();
             setTimeout(() => { msg.innerHTML = ''; }, 3000);
         } else {
-            msg.innerHTML = '<span style="color:#C62828">⚠️ ' + (data.errore || 'Errore salvataggio') + '</span>';
+            msg.innerHTML = '<span class="message-error-inline">⚠️ ' + (data.errore || 'Errore salvataggio') + '</span>';
         }
     })
     .catch(e => {
         btn.disabled = false;
         btn.textContent = '💾 Salva questa RS';
-        msg.innerHTML = '<span style="color:#C62828">⚠️ Errore rete: ' + e.message + '</span>';
+        msg.innerHTML = '<span class="message-error-inline">⚠️ Errore rete: ' + e.message + '</span>';
     });
 }
  

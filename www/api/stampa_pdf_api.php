@@ -46,6 +46,8 @@ if (!$auth->isLoggedIn()) {
 require_once '../includes/SweCalc.php';
 require_once '../includes/RuleEngine.php';
 require_once '../includes/FiltroEsclusione.php';
+require_once '../includes/forecast/AnnualReportPrintRenderer.php';
+require_once '../includes/forecast/AnnualReportPrintSanitizer.php';
 
 // ── Carica Dompdf via Composer ──────────────────────────────────────────
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -88,6 +90,13 @@ $pngNatale = _validaPng($get('png_natale', ''));
 $pngRS     = _validaPng($get('png_rs',     ''));
 $pngRL     = _validaPng($get('png_rl',     ''));
 $pngRiloc  = _validaPng($get('png_riloc',  ''));
+
+$annualReportRaw = $get('annual_report', []);
+$annualReport = (new AnnualReportPrintSanitizer())->sanitize(
+    is_array($annualReportRaw)
+        ? $annualReportRaw
+        : []
+);
 
 // ── Verifica autorizzazione soggetto ────────────────────────────────────
 $soggetto = $auth->verificaSoggetto($soggettoId);
@@ -170,7 +179,8 @@ $html = _buildHtmlReport(
     $temaNatale, $temaRS, $temaRL, $temaRiloc,
     $valRS, $valRL,
     $rsGmt, $rlGmt, $luogoRS, $luogoRiloc,
-    $annoRS, $rlIndex, $condizione
+    $annoRS, $rlIndex, $condizione,
+    $annualReport
 );
 
 // ── Generazione PDF con Dompdf ──────────────────────────────────────────
@@ -369,7 +379,8 @@ function _buildHtmlReport(
     string  $luogoRiloc,
     int     $annoRS,
     int     $rlIndex,
-    string  $condizione
+    string  $condizione,
+    array   $annualReport
 ): string {
 
     $nomeSoggetto = htmlspecialchars($soggetto['nome']);
@@ -461,6 +472,10 @@ function _buildHtmlReport(
             " . _tabellaPianeti($temaRS['pianeti'] ?? null, 'Pianeti RS') . "
             " . _tabellaCase($temaRS['case'] ?? null, 'Case Placido &mdash; RS');
         }
+    }
+
+    if (in_array('rs', $moduli) && $annualReport !== []) {
+        $body .= (new AnnualReportPrintRenderer())->render($annualReport);
     }
 
     if (in_array('rl', $moduli) && ($pngRL || $temaRL)) {
@@ -659,6 +674,36 @@ function _getCSSInline(): string {
         color: #2C3E6B;
         margin-bottom: 8pt;
     }
+    .annual-report-print {
+        font-size: 10pt;
+        line-height: 1.58;
+    }
+    .annual-report-note {
+        margin: 0 0 14pt;
+        padding: 9pt 11pt;
+        background: #F4F0E8;
+        border-left: 3pt solid #2C3E6B;
+        color: #4A4A4A;
+        font-size: 8.5pt;
+    }
+    .annual-report-section {
+        margin-bottom: 14pt;
+        page-break-inside: auto;
+    }
+    .annual-report-section-title {
+        color: #2C3E6B;
+        font-size: 11pt;
+        font-weight: bold;
+        margin-bottom: 5pt;
+        page-break-after: avoid;
+    }
+    .annual-report-section-text p {
+        margin: 0 0 7pt;
+        text-align: justify;
+        orphans: 3;
+        widows: 3;
+    }
+
     .report-footer {
         margin-top: 16pt;
         padding-top: 5pt;

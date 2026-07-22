@@ -20,10 +20,10 @@ const RSAlert = (function () {
     const CONTAINER_ID = 'rs-alert-stellium';
 
     // Pallini colorati (testo) per i tre livelli di severità
-    const PALLINI = {
-        '#dc3545': '🔴',
-        '#ff4500': '🟠',
-        '#28a745': '🟢',
+    const LIVELLI = {
+        '#dc3545': { pallino: '🔴', classe: 'rs-alert-danger' },
+        '#ff4500': { pallino: '🟠', classe: 'rs-alert-warning' },
+        '#28a745': { pallino: '🟢', classe: 'rs-alert-success' },
     };
 
     /**
@@ -39,7 +39,7 @@ const RSAlert = (function () {
         // Reset visivo immediato (evita di mostrare alert della RS precedente
         // mentre la nuova è ancora in calcolo)
         el.innerHTML = '';
-        el.style.display = 'none';
+        el.classList.add('is-hidden');
 
         const url = 'api/rs_alert_api.php?' + new URLSearchParams({
             g:       params.g,
@@ -75,7 +75,7 @@ const RSAlert = (function () {
         const el = document.getElementById(CONTAINER_ID);
         if (!el) return;
         el.innerHTML = '';
-        el.style.display = 'none';
+        el.classList.add('is-hidden');
     }
 
     /**
@@ -86,15 +86,19 @@ const RSAlert = (function () {
         var html = '<div class="rs-alert-header">⚠️ Stellium Natale — Possibili attivazioni nella RS</div>';
 
         alerts.forEach(function (alert) {
-            var pallino = PALLINI[alert.colore] || '●';
-            html += '<div class="rs-alert-item" style="border-left-color:' + alert.colore + '">' +
-                        '<span class="rs-alert-pallino" style="color:' + alert.colore + '">' + pallino + '</span>' +
+            var livello = LIVELLI[alert.colore] || {
+                pallino: '●',
+                classe: 'rs-alert-default'
+            };
+
+            html += '<div class="rs-alert-item ' + livello.classe + '">' +
+                        '<span class="rs-alert-pallino">' + livello.pallino + '</span>' +
                         '<span class="rs-alert-msg">' + _esc(alert.messaggio) + '</span>' +
                     '</div>';
         });
 
         el.innerHTML = html;
-        el.style.display = 'block';
+        el.classList.remove('is-hidden');
     }
 
     /**

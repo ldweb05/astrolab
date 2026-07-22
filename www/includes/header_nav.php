@@ -122,8 +122,14 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 
 <header>
     <div class="header-inner">
-        <h1><a href="index.php" style="color:#D4C9A8;text-decoration:none">☉ Astrologia Attiva</a></h1>
-        <nav>
+        <h1><a href="index.php" class="header-logo">☉ AstroLab</a></h1>
+        <button class="nav-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="main-nav"
+                aria-label="Apri menu di navigazione">☰</button>
+
+        <nav id="main-nav" class="main-nav">
             <!-- Soggetti: va SEMPRE a index.php senza ?id= per permettere la scelta -->
             <a href="index.php"
                <?= ($paginaAttiva??'') === 'soggetti' ? 'class="active"' : '' ?>>Soggetti</a>
@@ -134,9 +140,11 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 
             <!-- ── Dropdown: Rivoluzioni & Rilocazione ──────────────── -->
             <div class="nav-dropdown">
-                <span class="nav-dropdown-trigger<?= $_riviActive ? ' active' : '' ?>">
+                <button type="button"
+                        class="nav-dropdown-trigger<?= $_riviActive ? ' active' : '' ?>"
+                        aria-expanded="false">
                     Rivoluzioni
-                </span>
+                </button>
                 <div class="nav-dropdown-menu">
                     <a href="<?= _navUrl('rs.php', $_navSoggettoId) ?>"
                        <?= ($paginaAttiva??'') === 'rs' ? 'class="active"' : '' ?>>
@@ -162,23 +170,25 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
             <a href="admin_utenti.php"
                <?= ($paginaAttiva??'') === 'admin' ? 'class="active"' : '' ?>>⚙️ Utenti</a>
             <?php endif; ?>
-        </nav>
+        
 
-        <div style="font-size:12px;color:#A8B8D8;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <hr class="nav-separator">
+
+<div class="header-user">
 
             <!-- Utente corrente + ruolo -->
             <span>
                 👤 <?= htmlspecialchars($username) ?>
                 <?php if ($isAdmin): ?>
-                <span style="color:#D4C9A8;font-size:10px"> (admin)</span>
+                <span class="header-role header-role-admin"> (admin)</span>
                 <?php else: ?>
-                <span style="color:#7A9ABB;font-size:10px"> (astrologo)</span>
+                <span class="header-role header-role-user"> (astrologo)</span>
                 <?php endif; ?>
             </span>
 
             <!-- Soggetto attivo (se presente) -->
             <?php if ($soggettoNome): ?>
-            <span style="background:rgba(255,255,255,0.12);border-radius:4px;padding:3px 10px;color:#D4C9A8"
+            <span class="soggetto-attivo"
                   title="Soggetto attivo — vai a Soggetti per cambiarlo">
                 ⭐ <?= htmlspecialchars($soggettoNome) ?>
             </span>
@@ -186,16 +196,21 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 
             <!-- Link: Password -->
             <a href="cambia_password.php"
-               style="color:#A8B8D8;text-decoration:none;border:1px solid #3A5090;padding:3px 10px;border-radius:3px;font-size:11px"
+               class="header-link"
                title="Cambia la tua password">
                 🔑 Password
             </a>
 
             <!-- Link: Logout -->
             <a href="logout.php"
-               style="color:#A8B8D8;text-decoration:none;border:1px solid #3A5090;padding:3px 10px;border-radius:3px;font-size:11px">
+               class="header-link">
                 Esci
             </a>
         </div>
+
+</nav>
+
+        
     </div>
 </header>
+<script src="js/header_nav.js" defer></script>
