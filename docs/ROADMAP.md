@@ -347,7 +347,7 @@ una particolare tipologia di località.
 
 ------------------------------------------------------------
 
-### FASE 1
+### FASE 1 — COMPLETATA
 Analisi del modello geografico
 
 - censimento tabelle GeoNames
@@ -361,7 +361,7 @@ documentazione tecnica.
 
 ------------------------------------------------------------
 
-### FASE 2
+### FASE 2 — COMPLETATA
 Nuovo modello Località
 
 Introduzione del concetto unificato di:
@@ -377,7 +377,7 @@ Ogni risultato dovrà rappresentare una Località.
 
 ------------------------------------------------------------
 
-### FASE 3
+### FASE 3 — IN CORSO
 Backend
 
 Introduzione del parametro:

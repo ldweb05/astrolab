@@ -230,8 +230,12 @@ particolare tipologia di località.
 
 ✔ documentazione aggiornata
 
-🚧 FASE 1 in corso:
-analisi del modello geografico (GeoNames + aeroporti)
+✔ FASE 1 completata: analisi del modello geografico
+
+✔ FASE 2 completata: nuovo modello unificato Località
+
+🚧 FASE 3 in corso:
+backend e introduzione del parametro `tipo_localita`
 
 ---
 
@@ -259,26 +263,27 @@ Durante questo sprint:
 
 ---
 
-## Obiettivo del prossimo sprint
+## Obiettivo della fase corrente
 
-Progettare il nuovo modello logico "Località" che unificherà:
+Aggiornare il backend introducendo il parametro `tipo_localita`.
 
-- aeroporti;
-- eliporti;
-- idroporti;
-- città;
-- villaggi;
-- località remote.
+Valori previsti:
 
-Successivamente verranno aggiornati backend, API e interfaccia senza
-rompere la compatibilità con la Ricerca RSM esistente.
+- `solo_aeroporti`;
+- `aeroporti_e_localita`;
+- `solo_localita`.
+
+L'assenza del parametro deve preservare il comportamento legacy. Il motore
+astrologico e i contratti pubblici esistenti non devono essere modificati.
 
 ## Stato corrente Ricerca RSM v3
 
-Lo Sprint 1 è completato.
+Le FASI 1 e 2 sono completate.
 
 Il repository geografico supporta aeroporti e località, mentre
 `ricerca_stream_api.php` esegue la deduplicazione direttamente in PostgreSQL.
+
+La FASE 3 — Backend è la fase operativa corrente.
 
 Comando di verifica principale:
 
