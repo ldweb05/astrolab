@@ -2066,3 +2066,56 @@ Comportamento verificato:
 Test permanente:
 
 `www/tests/test_rsm_location_repository.php`
+
+## 2026-07-22 — Ricerca RSM v3, FASE 2 completata
+
+### Obiettivo
+
+Completare il nuovo modello unificato `Località`, mantenendo compatibilità con
+la ricerca aeroportuale esistente e spostando la deduplicazione geografica nel
+Repository SQL.
+
+### Risultato
+
+- aeroporti e località GeoNames sono gestiti come punti geografici compatibili;
+- il ramo legacy senza filtro geografico continua a restituire solo aeroporti;
+- il ramo geografico include aeroporti e tutte le località attive;
+- nessuna soglia minima di popolazione è stata introdotta;
+- precedenza, conteggio, ordine e rappresentanti coincidono con la pipeline PHP;
+- il contratto della Streaming API è rimasto invariato;
+- il codice condiviso di preparazione dei filtri è stato consolidato in
+  `preparaFiltriLocalita()`;
+- la selezione storica dei rappresentanti resta legata all'ordine della query
+  legacy, che non deve essere semplificato senza una nuova specifica funzionale.
+
+### Test eseguiti
+
+- `www/tests/test_rsm_location_repository.php`: OK;
+- `www/tests/test_rsm_dedup_sequence.php`: PHP=851, SQL=851, sequenze identiche;
+- confronto con `work_mem` 64kB, 1MB e 64MB: identico;
+- confronto con `enable_incremental_sort = off`: identico;
+- `git diff --check`: OK;
+- working tree pulito dopo il commit.
+
+### Commit Git
+
+`abc54a9` — Aggiunge supporto località alla ricerca RS e test di regressione
+sulla sequenza di deduplica.
+
+### Stato della roadmap
+
+- FASE 1: completata;
+- FASE 2: completata;
+- FASE 3: prossima fase operativa.
+
+### Passo successivo
+
+Avviare la FASE 3 — Backend introducendo il parametro `tipo_localita` con i
+valori:
+
+- `solo_aeroporti`;
+- `aeroporti_e_localita`;
+- `solo_localita`.
+
+Il nuovo parametro deve preservare il comportamento legacy quando assente e
+non deve modificare il motore astrologico.

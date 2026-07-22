@@ -137,15 +137,17 @@ La roadmap ufficiale è descritta in `docs/ROADMAP.md`.
 
 ## Punto di ripresa
 
-Le prossime evoluzioni riguardano:
+Per la Ricerca RSM v3 risultano completate:
 
--   Difference Analyzer
--   Impact Evaluator
--   Rule Correlator
--   Recommendation Engine
+-   FASE 1 — analisi del modello geografico;
+-   FASE 2 — nuovo modello unificato Località.
 
-Il Rule Engine rimane congelato.
+La fase operativa corrente è:
 
-Tutte le nuove funzionalità devono utilizzare esclusivamente i risultati
-prodotti dal Comparator Engine senza alterare la logica astrologica
-consolidata.
+-   FASE 3 — Backend;
+-   introduzione del parametro `tipo_localita`;
+-   valori previsti: `solo_aeroporti`, `aeroporti_e_localita`,
+    `solo_localita`;
+-   compatibilità legacy obbligatoria quando il parametro è assente.
+
+Il Rule Engine e il motore astrologico rimangono congelati.
