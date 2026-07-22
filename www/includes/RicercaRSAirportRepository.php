@@ -104,6 +104,9 @@ function recuperaAeroporti(PDO $pdo, array $where, array $params): array
                 nome,
                 citta,
                 nazione,
+                tipo,
+                NULL::BIGINT AS popolazione,
+                nome AS aeroporto_associato,
                 latitudine,
                 longitudine
             FROM aeroporti
@@ -124,6 +127,9 @@ function recuperaAeroporti(PDO $pdo, array $where, array $params): array
             nome,
             citta,
             nazione,
+            tipo,
+            popolazione,
+            aeroporto_associato,
             latitudine,
             longitudine
         FROM (
@@ -133,6 +139,9 @@ function recuperaAeroporti(PDO $pdo, array $where, array $params): array
                 nome,
                 citta,
                 nazione,
+                tipo,
+                NULL::BIGINT AS popolazione,
+                nome AS aeroporto_associato,
                 latitudine,
                 longitudine,
                 0 AS priorita_origine
@@ -147,6 +156,9 @@ function recuperaAeroporti(PDO $pdo, array $where, array $params): array
                 nome,
                 citta,
                 iso_nazione AS nazione,
+                tipo,
+                popolazione,
+                NULL::VARCHAR(200) AS aeroporto_associato,
                 latitudine,
                 longitudine,
                 1 AS priorita_origine
@@ -207,6 +219,9 @@ function recuperaAeroportiDeduplicati(
                 nome,
                 citta,
                 nazione,
+                tipo,
+                NULL::BIGINT AS popolazione,
+                nome AS aeroporto_associato,
                 latitudine,
                 longitudine,
                 0 AS priorita_origine
@@ -227,6 +242,9 @@ function recuperaAeroportiDeduplicati(
                 nome,
                 citta,
                 iso_nazione AS nazione,
+                tipo,
+                popolazione,
+                NULL::VARCHAR(200) AS aeroporto_associato,
                 latitudine,
                 longitudine,
                 1 AS priorita_origine
@@ -249,6 +267,9 @@ function recuperaAeroportiDeduplicati(
                 nome,
                 citta,
                 nazione,
+                tipo,
+                popolazione,
+                aeroporto_associato,
                 latitudine,
                 longitudine,
                 priorita_origine
@@ -268,6 +289,9 @@ function recuperaAeroportiDeduplicati(
                 nome,
                 citta,
                 nazione,
+                tipo,
+                popolazione,
+                aeroporto_associato,
                 latitudine,
                 longitudine,
                 priorita_origine,
@@ -281,6 +305,9 @@ function recuperaAeroportiDeduplicati(
                 nome,
                 citta,
                 nazione,
+                tipo,
+                popolazione,
+                aeroporto_associato,
                 latitudine,
                 longitudine,
                 priorita_origine,
@@ -310,6 +337,9 @@ function recuperaAeroportiDeduplicati(
             nome,
             citta,
             nazione,
+            tipo,
+            popolazione,
+            aeroporto_associato,
             latitudine,
             longitudine,
             totale_originale

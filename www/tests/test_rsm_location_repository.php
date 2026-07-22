@@ -63,6 +63,9 @@ $normalizza = static fn(array $righe): array => array_map(
         $riga['nome'] ?? null,
         $riga['citta'] ?? null,
         $riga['nazione'] ?? null,
+        $riga['tipo'] ?? null,
+        $riga['popolazione'] ?? null,
+        $riga['aeroporto_associato'] ?? null,
         (string)$riga['latitudine'],
         (string)$riga['longitudine'],
     ],
@@ -113,8 +116,36 @@ foreach ($casi as $nome => $caso) {
 
     $numeroAeroporti = count($grezzi) - $numeroLocalita;
 
+    $contrattoValido = array_reduce(
+        $deduplicatiSql,
+        static function (bool $valido, array $riga): bool {
+            if (!$valido
+                || !array_key_exists('tipo', $riga)
+                || !array_key_exists('popolazione', $riga)
+                || !array_key_exists('aeroporto_associato', $riga)
+            ) {
+                return false;
+            }
+
+            $isAeroporto =
+                ($riga['icao_code'] ?? null) !== null
+                || ($riga['iata_code'] ?? null) !== null;
+
+            if ($isAeroporto) {
+                return $riga['popolazione'] === null
+                    && $riga['aeroporto_associato'] === $riga['nome'];
+            }
+
+            return $riga['icao_code'] === null
+                && $riga['iata_code'] === null
+                && $riga['aeroporto_associato'] === null;
+        },
+        true
+    );
+
     $valido =
         count($grezzi) === $risultatoSql['totale_originale']
+        && $contrattoValido
         && $sequenzaIdentica
         && (($caso['attende_aeroporti'] ?? true) ? true : $numeroAeroporti === 0)
         && (
@@ -131,6 +162,7 @@ foreach ($casi as $nome => $caso) {
         fwrite(STDERR, "Deduplicati PHP: " . count($deduplicatiPhp) . "\n");
         fwrite(STDERR, "Deduplicati SQL: " . count($deduplicatiSql) . "\n");
         fwrite(STDERR, "Sequenza identica: " . ($sequenzaIdentica ? 'SÌ' : 'NO') . "\n");
+        fwrite(STDERR, "Contratto unificato valido: " . ($contrattoValido ? 'SÌ' : 'NO') . "\n");
         exit(1);
     }
 
