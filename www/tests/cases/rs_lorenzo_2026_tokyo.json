@@ -9,6 +9,7 @@
   "atteso": {
     "stelline": 0,
     "veto": true,
-    "is_valida": false
+    "is_valida": false,
+    "val": "0"
   }
 }

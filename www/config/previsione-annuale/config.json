@@ -1,0 +1,17 @@
+{
+  "nome": "Previsione Annuale",
+  "versione": "0.1.0",
+  "stato": "progettazione",
+  "aree": [
+    "carriera",
+    "lavoro",
+    "amore",
+    "figli_creativita",
+    "salute",
+    "denaro",
+    "casa_famiglia",
+    "viaggi_studi",
+    "amicizie_progetti",
+    "trasformazioni_prove"
+  ]
+}

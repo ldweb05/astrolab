@@ -48,6 +48,7 @@ if ($soggetto) {
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tema Natale</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
@@ -73,7 +74,7 @@ if ($soggetto) {
     </div>
 
     <!-- NUOVO BLOCCO: pulsante stampa -->
-    <div class="page-title" style="margin-bottom:10px">
+    <div class="page-title page-title-compact">
         <button class="btn-stampa-diretta" onclick="stampaPagina('print-tema')">🖨️ Stampa Tema Natale</button>
     </div>
 
@@ -86,13 +87,13 @@ if ($soggetto) {
                 <button class="btn-toggle-gradi" id="btn-toggle-gradi"
                         onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
-            <svg id="wheel-natale" width="500" height="500" style="max-width:100%;height:auto"></svg>
+            <svg id="wheel-natale" width="500" height="500" class="zodiac-wheel-responsive"></svg>
             <p class="tema-info" id="info-natale">Caricamento...</p>
-            <table class="tabella-pianeti" id="tab-natale"></table>
+            <div id="tab-natale"></div>
         </div>
         <div class="tema-box">
             <h3>Case (Placido)</h3>
-            <table class="tabella-pianeti" id="tab-case"></table>
+            <div id="tab-case"></div>
         </div>
     </div>
 

@@ -22,6 +22,7 @@ require_once __DIR__ . '/includes/RicercaPageData.php';
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ricerca Località — Astrologia Attiva</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -51,7 +52,7 @@ BARRA CONTROLLI PRINCIPALE
 <div class="form-group">
 <label>Anno RS</label>
 <select id="anno-rs">
-<?php for ($y = $annoCorrente - 2; $y <= $annoCorrente + 5; $y++): ?>
+<?php for ($y = 1960; $y <= $annoCorrente + 5; $y++): ?>
 <option value="<?= $y ?>" <?= $y == $annoCorrente ? 'selected' : '' ?>><?= $y ?></option>
 <?php endfor; ?>
 </select>
@@ -62,6 +63,14 @@ BARRA CONTROLLI PRINCIPALE
 <?php foreach ($condizioni as $c): ?>
 <option value="<?= $c ?>"><?= $c ?></option>
 <?php endforeach; ?>
+</select>
+</div>
+<div class="form-group">
+<label>Tipo località</label>
+<select id="tipo-localita">
+<option value="solo_aeroporti">Solo aeroporti</option>
+<option value="aeroporti_e_localita">Aeroporti + località</option>
+<option value="solo_localita">Solo località</option>
 </select>
 </div>
 <div class="form-group">
@@ -221,6 +230,7 @@ Macro-Area / Regione
 <select id="filtro-macro-area" onchange="onMacroAreaChange(this.value)">
 <option value="">— Tutto il mondo —</option>
 <option value="europa">🇪🇺 Solo Europa</option>
+<option value="americhe">🌎 Continente Americano</option>
 <option value="nord_america">🌎 Solo Nord America</option>
 <option value="centro_sud">🌎 Centro e Sud America</option>
 <option value="africa">🌍 Solo Africa</option>
@@ -416,6 +426,7 @@ filtroNaz:    '',
 filtroStelle: 0,
 pagina:       1,
 perPagina:    50,
+confronto:    [],
 // Dati dell'ultimo "done" ricevuto dall'API, usati da espandi-orbe
 ultimiParams: null,
 };
@@ -620,6 +631,7 @@ function avviaRicerca(espansioneOrbe) {
     stato.filtroNaz    = '';
     stato.filtroStelle = 0;
     stato.pagina       = 1;
+    stato.confronto    = [];
 
     // Applica preset orbe se selezionato (solo cuspidi)
     const orbePreset = document.getElementById('filt-orbe-preset').value;
@@ -708,6 +720,7 @@ function avviaRicercaGriglia(s) {
         const d = JSON.parse(e.data);
         eventoCorrente.close(); eventoCorrente = null;
         stato.tutti = d.risultati;
+console.log('ATL_DOPO_DONE', stato.tutti.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
         document.getElementById('progress-area').style.display = 'none';
         document.getElementById('risultati-live').textContent  = '';
         const infoEl = document.getElementById('info-rs');
@@ -789,6 +802,7 @@ function avviaRicercaGrigliaAstri(s) {
         const d = JSON.parse(e.data);
         eventoCorrente.close(); eventoCorrente = null;
         stato.tutti = d.risultati;
+console.log('ATL_DOPO_DONE', stato.tutti.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
         document.getElementById('progress-area').style.display = 'none';
         document.getElementById('risultati-live').textContent  = '';
         const infoEl = document.getElementById('info-rs');
@@ -871,6 +885,7 @@ function avviaRicercaGrigliaCuspidi(s, espansioneOrbe) {
         const d = JSON.parse(e.data);
         eventoCorrente.close(); eventoCorrente = null;
         stato.tutti = d.risultati;
+console.log('ATL_DOPO_DONE', stato.tutti.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
         document.getElementById('progress-area').style.display = 'none';
         document.getElementById('risultati-live').textContent  = '';
         const infoEl = document.getElementById('info-rs');
@@ -1012,6 +1027,7 @@ eventoCorrente.addEventListener('done', e => {
 const d = JSON.parse(e.data);
 eventoCorrente.close(); eventoCorrente = null;
 stato.tutti = d.risultati;
+console.log('ATL_DOPO_DONE', stato.tutti.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
 document.getElementById('progress-area').style.display = 'none';
 document.getElementById('risultati-live').textContent  = '';
 const infoEl = document.getElementById('info-rs');
@@ -1069,6 +1085,7 @@ ev.addEventListener('done', e => {
 const d = JSON.parse(e.data);
 ev.close(); eventoCorrente = null;
 stato.tutti = d.risultati;
+console.log('ATL_DOPO_DONE', stato.tutti.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
 document.getElementById('progress-area').style.display = 'none';
 document.getElementById('risultati-live').textContent  = '';
 const infoEl = document.getElementById('info-rs');
@@ -1130,11 +1147,13 @@ function renderTabella() {
 function renderTabellaGriglia() {
     let ris = [...stato.tutti];
 
+console.log('ATL_POS', ris.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
     const totale    = ris.length;
     const totPagine = Math.max(1, Math.ceil(totale / stato.perPagina));
     const pagina    = Math.min(stato.pagina, totPagine);
     const offset    = (pagina - 1) * stato.perPagina;
     const pagRis    = ris.slice(offset, offset + stato.perPagina);
+console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
 
     const ppOpt = [25,50,100].map(n =>
         `<option value="${n}" ${stato.perPagina===n?'selected':''}>${n}</option>`).join('');
@@ -1209,11 +1228,13 @@ function renderTabellaGriglia() {
 function renderTabellaGrigliaCuspidi() {
     let ris = [...stato.tutti];
 
+console.log('ATL_POS', ris.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
     const totale    = ris.length;
     const totPagine = Math.max(1, Math.ceil(totale / stato.perPagina));
     const pagina    = Math.min(stato.pagina, totPagine);
     const offset    = (pagina - 1) * stato.perPagina;
     const pagRis    = ris.slice(offset, offset + stato.perPagina);
+console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
 
     const ppOpt = [25,50,100].map(n =>
         `<option value="${n}" ${stato.perPagina===n?'selected':''}>${n}</option>`).join('');
@@ -1272,11 +1293,20 @@ function renderTabellaStandard() {
 let ris = [...stato.tutti];
 if (stato.filtroNaz)    ris = ris.filter(r => (r.nazione||'').toUpperCase() === stato.filtroNaz.toUpperCase());
 if (stato.filtroStelle > 0) ris = ris.filter(r => r.stelline >= stato.filtroStelle);
+console.log('ATL_POS', ris.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
 const totale    = ris.length;
+const confrontoToolbar = stato.confronto.length >= 2
+? `<div class="confronto-toolbar">
+<button type="button" id="btn-confronta-selezioni">
+Confronta le ${stato.confronto.length} selezioni
+</button>
+</div>`
+: '';
 const totPagine = Math.max(1, Math.ceil(totale / stato.perPagina));
 const pagina    = Math.min(stato.pagina, totPagine);
 const offset    = (pagina - 1) * stato.perPagina;
 const pagRis    = ris.slice(offset, offset + stato.perPagina);
+console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
 const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))].sort();
 const nazioniOpt = nazioniSet.map(n =>
 `<option value="${n}" ${stato.filtroNaz===n?'selected':''}>${n}</option>`).join('');
@@ -1288,9 +1318,30 @@ const sogg = getSoggetto();
 const anno = document.getElementById('anno-rs').value;
 const cond = stato.modalita === 'astri' ? 'Decima' : document.getElementById('condizione').value;
 const righe = pagRis.map((r, idx) => {
+const isLocalita = !r.iata && !r.icao && !r.aeroporto_associato;
+const nomePunto = r.nome || r.citta || '—';
+const luogoRs = isLocalita
+? [nomePunto, r.nazione].filter(Boolean).join(', ')
+: [r.citta || nomePunto, r.nazione].filter(Boolean).join(', ');
+const tipoPunto = r.tipo
+? String(r.tipo).replace(/_/g, ' ')
+: (isLocalita ? 'località' : 'aeroporto');
+const popolazione = isLocalita && Number(r.popolazione) > 0
+? `<div style="color:#999;font-size:10px">${Number(r.popolazione).toLocaleString('it-IT')} abitanti</div>`
+: '';
+const codicePunto = isLocalita
+? `<strong>Località</strong><br><span style="color:#999;font-size:10px">${tipoPunto}</span>`
+: `<strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||tipoPunto}</span>`;
+const confrontoKey = [
+r.lat,
+r.lon,
+r.iata || '',
+r.icao || '',
+r.nome || ''
+].join('|');
 const rsUrl = 'rs.php?id=' + (sogg?.id||'') +
 '&lat_rs=' + r.lat + '&lon_rs=' + r.lon +
-'&luogo_rs=' + encodeURIComponent((r.citta||'')+', '+(r.nazione||'')) +
+'&luogo_rs=' + encodeURIComponent(luogoRs) +
 '&anno=' + anno + '&condizione=' + encodeURIComponent(cond);
 const cls     = r.stelline>=5?'stelle-5':r.stelline>=4?'stelle-4':'';
 const hasVeti = r.veti && r.veti.length > 0;
@@ -1321,13 +1372,20 @@ return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
 <td>${stelleHtml(r.stelline)}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
-<td><strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||''}</span></td>
-<td style="max-width:200px">${r.nome||''}</td>
+<td>${codicePunto}</td>
+<td style="max-width:200px"><strong>${nomePunto}</strong>${popolazione}</td>
 <td>${r.citta||''}</td>
 <td>${r.nazione||''}</td>
 <td style="color:#888">${parseFloat(r.lat||0).toFixed(2)}</td>
 <td style="color:#888">${parseFloat(r.lon||0).toFixed(2)}</td>
 <td><a href="${rsUrl}" class="btn-usa">↺ Usa</a></td>
+<td style="text-align:center">
+<input
+type="checkbox"
+class="confronto-checkbox"
+data-confronto-key="${confrontoKey}"
+${stato.confronto.includes(confrontoKey) ? 'checked' : ''}>
+</td>
 </tr>`;
 }).join('');
 document.getElementById('risultati-area').innerHTML = `
@@ -1345,14 +1403,15 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
+${confrontoToolbar}
 <div style="overflow-x:auto">
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Stelle</th><th>VAL</th>
-<th>IATA / ICAO</th><th>Aeroporto</th>
-<th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th>
+<th>Codice / Tipo</th><th>Punto geografico</th>
+<th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th><th>Confronta</th>
 </tr></thead>
-<tbody>${righe||'<tr><td colspan="10" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
+<tbody>${righe||'<tr><td colspan="11" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
 </table>
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
@@ -1360,11 +1419,13 @@ ${buildPaginazione(pagina, totPagine)}`;
 function renderTabellaCuspidi() {
 let ris = [...stato.tutti];
 if (stato.filtroNaz) ris = ris.filter(r => (r.nazione||'').toUpperCase() === stato.filtroNaz.toUpperCase());
+console.log('ATL_POS', ris.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
 const totale    = ris.length;
 const totPagine = Math.max(1, Math.ceil(totale / stato.perPagina));
 const pagina    = Math.min(stato.pagina, totPagine);
 const offset    = (pagina - 1) * stato.perPagina;
 const pagRis    = ris.slice(offset, offset + stato.perPagina);
+console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
 const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))].sort();
 const nazioniOpt = nazioniSet.map(n =>
 `<option value="${n}" ${stato.filtroNaz===n?'selected':''}>${n}</option>`).join('');
@@ -1426,6 +1487,19 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
 }
+// ── Comparator ────────────────────────────────────────────────────────────────
+
+function getRisultatiConfronto() {
+    return stato.confronto.map(key => {
+        return stato.tutti.find(r => [
+            r.lat,
+            r.lon,
+            r.iata || '',
+            r.icao || ''
+        ].join('|') === key);
+    }).filter(Boolean);
+}
+
 // ── Filtri Risultati ─────────────────────────────────────────────────────────────
 
 function setFiltroNaz(v)    { stato.filtroNaz = v; stato.pagina = 1; renderTabella(); }
@@ -1436,6 +1510,59 @@ document.addEventListener('DOMContentLoaded', function() {
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
+
+document.getElementById('risultati-area').addEventListener('change', function(event) {
+    const checkbox = event.target.closest('.confronto-checkbox');
+    if (!checkbox) return;
+
+    const key = checkbox.dataset.confrontoKey;
+
+    if (checkbox.checked) {
+        if (stato.confronto.includes(key)) return;
+
+        if (stato.confronto.length >= 3) {
+            checkbox.checked = false;
+            alert('Puoi confrontare al massimo 3 RS o rilocazioni.');
+            return;
+        }
+
+        stato.confronto.push(key);
+    } else {
+        stato.confronto = stato.confronto.filter(item => item !== key);
+    }
+
+    renderTabella();
+});
+
+document.getElementById('risultati-area').addEventListener('click', function(event) {
+    const button = event.target.closest('#btn-confronta-selezioni');
+    if (!button) return;
+
+    const risultati = getRisultatiConfronto();
+    if (risultati.length < 2) {
+        alert('Seleziona almeno 2 RS o rilocazioni da confrontare.');
+        return;
+    }
+
+    const soggetto = getSoggetto();
+    const modalitaConfronto = stato.modalita === 'astri' ? 'astri' : 'standard';
+    const payload = {
+        soggetto,
+        anno: document.getElementById('anno-rs').value,
+        modalita: modalitaConfronto,
+        condizione: modalitaConfronto === 'astri'
+            ? 'Decima'
+            : document.getElementById('condizione').value,
+        astri_in_casa: modalitaConfronto === 'astri'
+            ? buildAstriInCasaParam()
+            : [],
+        risultati
+    };
+
+    sessionStorage.setItem('astroDssConfrontoRs', JSON.stringify(payload));
+    window.location.href = 'compare_rs.php';
+});
+
 // Preset orbe sincronizza con pannello cuspidi in tempo reale
 document.getElementById('filt-orbe-preset').addEventListener('change', function() {
 applicaOrbePreset(this.value);

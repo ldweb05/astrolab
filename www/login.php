@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accesso — Astrologia Attiva</title>
+    <title>Accesso — AstroLab</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
         body {
@@ -140,8 +140,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="login-box">
         <div class="login-logo">
-            <h1>☉ Astrologia Attiva</h1>
-            <p>Rivoluzioni Solari Mirate — Scuola Ciro Discepolo</p>
+            <h1>☉ AstroLab</h1>
+            <p>Rivoluzioni Solari Mirate — Astrologia Attiva</p>
         </div>
 
         <?php if ($errore): ?>

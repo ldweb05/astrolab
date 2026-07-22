@@ -27,6 +27,11 @@ function getFasceOrarieFiltro() {
 }
 
 function aggiungiParamsGeografici(params) {
+    const tipoLocalitaEl = document.getElementById('tipo-localita');
+    const tipoLocalita = tipoLocalitaEl ? tipoLocalitaEl.value : 'solo_aeroporti';
+
+    params.set('tipo_localita', tipoLocalita);
+
     const nazioni = getNazioniFiltro();
 
     if (nazioni.length > 0) {

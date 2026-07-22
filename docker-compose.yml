@@ -1,13 +1,13 @@
-name: astro-val
+name: astrolab
 
 services:
 
-  astro-val-web:
+  astrolab-web:
     build: .
-    container_name: astro-val-web
+    container_name: astrolab-web
     restart: unless-stopped
     ports:
-      - "8190:80"
+      - "8090:80"
     volumes:
       - ./www:/var/www/html
       - ./php-config/php.ini:/usr/local/etc/php/php.ini
@@ -16,16 +16,16 @@ services:
     environment:
       - TZ=Europe/Rome
     depends_on:
-      - astro-val-db
+      - astrolab-db
     networks:
-      - astro-val-net
+      - astrolab-net
 
-  astro-val-db:
+  astrolab-db:
     image: postgres:16-alpine
-    container_name: astro-val-db
+    container_name: astrolab-db
     restart: unless-stopped
     ports:
-      - "5441:5432"
+      - "5440:5432"
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     env_file:
@@ -33,21 +33,21 @@ services:
     environment:
       - TZ=Europe/Rome
     networks:
-      - astro-val-net
+      - astrolab-net
 
-  astro-val-adminer:
+  astrolab-adminer:
     image: adminer:latest
-    container_name: astro-val-adminer
+    container_name: astrolab-adminer
     restart: unless-stopped
     ports:
-      - "8191:8080"
+      - "8091:8080"
     environment:
       - TZ=Europe/Rome
     depends_on:
-      - astro-val-db
+      - astrolab-db
     networks:
-      - astro-val-net
+      - astrolab-net
 
 networks:
-  astro-val-net:
+  astrolab-net:
     driver: bridge

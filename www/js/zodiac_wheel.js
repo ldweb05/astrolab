@@ -570,7 +570,7 @@ const ZodiacWheel = {
 
     _applicaStatoGradi: function() {
         document.querySelectorAll('.grado-pianeta').forEach(el => {
-            el.style.display = this._gradiVisibili ? 'inline' : 'none';
+            el.classList.toggle('is-hidden', !this._gradiVisibili);
         });
     },
 
@@ -586,7 +586,7 @@ const ZodiacWheel = {
 
     _applicaStatoCuspidi: function() {
         document.querySelectorAll('.grado-cuspide').forEach(el => {
-            el.style.display = this._cuspidiVisibili ? 'inline' : 'none';
+            el.classList.toggle('is-hidden', !this._cuspidiVisibili);
         });
     },
 

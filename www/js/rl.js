@@ -302,8 +302,8 @@ const RLModule = (function () {
                      <td>${s.condizione}</td>
                      <td class="stelle">${stelle}</td>
                      <td><span class="val-badge">${s.val || '—'}</span></td>
-                     <td style="max-width:200px;font-size:11px;color:#667">${s.note || ''}</td>
-                     <td style="font-size:11px;color:#888;white-space:nowrap">${dataSalv}</td>
+                     <td class="session-note-cell">${s.note || ''}</td>
+                     <td class="session-date-cell">${dataSalv}</td>
                      <td><div class="azioni">
                          <a href="${url}" class="btn-icon" title="Richiama questa sessione">↺</a>
                          <button class="btn-icon" title="Elimina" onclick="RLModule.eliminaSessioneRL(${s.id})">🗑️</button>
@@ -351,18 +351,18 @@ const RLModule = (function () {
          btn.disabled = false;
          btn.textContent = '💾 Salva questa RL';
          if (data.ok) {
-             msg.innerHTML = '<span style="color:#2E7D32">✅ Sessione RL salvata.</span>';
+             msg.innerHTML = '<span class="message-success-inline">✅ Sessione RL salvata.</span>';
              document.getElementById('salva-rl-note').value = '';
              caricaSessioniRL();
              setTimeout(() => { msg.innerHTML = ''; }, 3000);
          } else {
-             msg.innerHTML = '<span style="color:#C62828">⚠️ ' + (data.errore || 'Errore salvataggio') + '</span>';
+             msg.innerHTML = '<span class="message-error-inline">⚠️ ' + (data.errore || 'Errore salvataggio') + '</span>';
          }
      })
      .catch(e => {
          btn.disabled = false;
          btn.textContent = '💾 Salva questa RL';
-         msg.innerHTML = '<span style="color:#C62828">⚠️ Errore rete: ' + e.message + '</span>';
+         msg.innerHTML = '<span class="message-error-inline">⚠️ Errore rete: ' + e.message + '</span>';
      });
  }
  function eliminaSessioneRL(id) {
@@ -427,14 +427,14 @@ const RLModule = (function () {
          const bonusEl = document.getElementById('val-bonus');
          if (bonusEl) bonusEl.innerHTML = (v.bonus||[]).length
              ? v.bonus.map(b=>`<div class="val-item val-bonus"><b>${b.codice}</b> ${b.nota||''}</div>`).join('')
-             : '<div style="color:#999;font-size:11px">Nessun bonus significativo</div>';
+             : '<div class="val-empty-message">Nessun bonus significativo</div>';
          const penEl = document.getElementById('val-penali');
          if (penEl) {
              const html = [
                  ...(v.penalita||[]).map(p=>`<div class="val-item val-penali"><b>${p.codice}</b> ${p.nota||''}</div>`),
                  ...(v.note||[]).map(n=>`<div class="val-item val-note"><b>${n.codice}</b> ${n.nota||''}</div>`),
              ].join('');
-             penEl.innerHTML = html || '<div style="color:#999;font-size:11px">Nessuna penalità</div>';
+             penEl.innerHTML = html || '<div class="val-empty-message">Nessuna penalità</div>';
          }
      }
      // ── Aspetti ────────────────────────────────────────────────────
@@ -596,10 +596,10 @@ const RLModule = (function () {
                  const offsetH  = Math.round(tz.gmtOffset / 3600 * 10) / 10;
                  const segno    = offsetH >= 0 ? '+' : '';
                  oraLocEl.innerHTML =
-                     `<span style="color:#88AACC">Ora locale: </span>` +
-                     `<b style="color:#C8E8FF">${oraLocale}</b>` +
-                     `<span style="color:#88AACC;margin-left:8px">Fuso: </span>` +
-                     `<b style="color:#C8E8FF">GMT ${segno}${offsetH}</b>`;
+                     `<span class="rl-time-label">Ora locale: </span>` +
+                     `<b class="rl-time-value">${oraLocale}</b>` +
+                     `<span class="rl-time-label rl-time-label-spaced">Fuso: </span>` +
+                     `<b class="rl-time-value">GMT ${segno}${offsetH}</b>`;
              })
              .catch(() => {});
      } catch(e) {}
@@ -610,29 +610,35 @@ const RLModule = (function () {
  function _popolaTabellaPianeti(tabId, tema) {
      const el = document.getElementById(tabId);
      if (!el || !tema?.pianeti) return;
-     let html = '<table><th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th></tr>';
+
+     let html = '<thead><tr>'
+         + '<th>Pianeta</th><th>Posizione</th><th>Casa</th><th></th>'
+         + '</tr></thead><tbody>';
+
      Object.values(tema.pianeti).forEach(p => {
          html += `<tr>
              <td>${NOMI_PIANETI[p.id] ?? p.nome}</td>
              <td>${p.posizione?.stringa ?? '?'}</td>
              <td>${p.casa}</td>
              <td>${p.retrogrado ? '<span class="retro">R</span>' : ''}</td>
-         </table>`;
+         </tr>`;
      });
+
+     html += '</tbody>';
      el.innerHTML = html;
  }
  function _popolaTabellaAspetti(aspetti) {
      const tbody = document.getElementById('aspetti-rl-body');
      if (!tbody) return;
      if (!aspetti || aspetti.length === 0) {
-         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999">Nessun aspetto rilevante</td></tr>';
+         tbody.innerHTML = '<tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr>';
          return;
      }
      tbody.innerHTML = aspetti.map(a => {
          const ti = TIPO_ASPETTO[a.aspetto || a.tipo] || {sim:'•', cls:'aspetto-altro'};
          return `<tr>
              <td>${SIMBOLI_PIANETI[a.pianeta_a]??''} ${NOMI_PIANETI[a.pianeta_a]||a.nome_a||'?'}</td>
-             <td style="font-size:14px">→</td>
+             <td class="aspect-arrow">→</td>
              <td>${SIMBOLI_PIANETI[a.pianeta_b]??''} ${NOMI_PIANETI[a.pianeta_b]||a.nome_b||'?'}</td>
              <td class="${ti.cls}">${ti.sim} ${a.aspetto||a.tipo}</td>
              <td>${a.scarto?.toFixed(1)??'?'}°</td>
@@ -653,13 +659,13 @@ const RLModule = (function () {
          if (!casa) continue;
          const label   = CASE_LABEL[c] || String(c);
          const stringa = casa.posizione?.stringa ?? '—';
-         const bold    = ANGOLARI.has(c) ? ' font-weight:bold;color:#7C3AED;' : '';
+         const angularClass = ANGOLARI.has(c) ? ' cuspide-angolare-rl' : '';
          html += `<tr>
-             <td style="text-align:center;${bold}">${label}</td>
-             <td style="${bold}">${stringa}</td>
+             <td class="cuspide-label${angularClass}">${label}</td>
+             <td class="${angularClass.trim()}">${stringa}</td>
          </tr>`;
      }
-     tbody.innerHTML = html || '<tr><td colspan="2" style="text-align:center;color:#999">—</td></tr>';
+     tbody.innerHTML = html || '<tr><td colspan="2" class="table-empty-cell">—</td></tr>';
  }
  // ════════════════════════════════════════════════════════════════════════
  //  UTILITIES
@@ -676,7 +682,7 @@ const RLModule = (function () {
      const loadingEl = document.getElementById('rl-loading');
      if (loadingEl) {
          loadingEl.style.display = 'block';
-         loadingEl.innerHTML = `<p style="color:#CC3333">❌ ${msg}</p>`;
+         loadingEl.innerHTML = `<p class="message-error-inline">❌ ${msg}</p>`;
      }
      console.error('[RLModule]', msg);
  }

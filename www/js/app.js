@@ -64,7 +64,7 @@ function caricaSoggetti() {
                 </tr></thead><tbody>`;
             data.forEach(s => {
                 const residenzaHtml = s.residenza_luogo
-                    ? `<div style="font-size:11px;color:#5A7AB0;margin-top:4px">🏠 ${s.residenza_luogo}${s.residenza_nazione ? ', ' + s.residenza_nazione : ''}</div>`
+                    ? `<div class="subject-residence">🏠 ${s.residenza_luogo}${s.residenza_nazione ? ', ' + s.residenza_nazione : ''}</div>`
                     : '';
 
                 html += `<tr>
@@ -94,7 +94,7 @@ function caricaSoggetti() {
 }
 
 function mostraForm(dati = null) {
-    document.getElementById('form-soggetto').style.display = 'block';
+    document.getElementById('form-soggetto').classList.remove('is-hidden');
     document.getElementById('form-titolo').textContent =
         dati ? 'Modifica Soggetto' : 'Nuovo Soggetto';
 
@@ -137,7 +137,7 @@ function mostraForm(dati = null) {
 }
 
 function nascondiForm() {
-    document.getElementById('form-soggetto').style.display = 'none';
+    document.getElementById('form-soggetto').classList.add('is-hidden');
 }
 
 function salvaSoggetto() {
@@ -359,15 +359,15 @@ async function ricalcolaOffset() {
     const btnRicalcola = document.getElementById('btn-ricalcola-offset');
     const indicatore   = document.getElementById('offset-loading');
 
-    if (offsetField)  offsetField.style.opacity = '0.5';
+    if (offsetField)  offsetField.classList.add('is-dimmed');
     if (btnRicalcola) { btnRicalcola.disabled = true; btnRicalcola.textContent = '⟳'; }
-    if (indicatore)   indicatore.style.display = 'inline';
+    if (indicatore)   indicatore.classList.remove('is-hidden');
 
     const offset = await ottieniOffsetTimeZone(lat, lon, data, oraLocale);
 
-    if (offsetField)  { offsetField.value = offset; offsetField.style.opacity = '1'; }
+    if (offsetField)  { offsetField.value = offset; offsetField.classList.remove('is-dimmed'); }
     if (btnRicalcola) { btnRicalcola.disabled = false; btnRicalcola.textContent = '🔄'; }
-    if (indicatore)   indicatore.style.display = 'none';
+    if (indicatore)   indicatore.classList.add('is-hidden');
 
     aggiornaOraGmt();
 }
