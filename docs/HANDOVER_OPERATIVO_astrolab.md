@@ -2157,6 +2157,51 @@ tramite valori `NULL`.
 
 `9fd1fbc` — Completa contratto query unificata FASE 4.
 
-### Passo successivo
+### Stato successivo
 
-Avviare la FASE 5 — Interfaccia.
+La FASE 5 — Interfaccia è completata.
+Le evoluzioni successive dovranno essere pianificate in una nuova fase
+senza modificare il motore astrologico né il comportamento legacy consolidato.
+
+---
+
+## 2026-07-22 — Ricerca RSM v3, FASE 5 completata
+
+### Obiettivo
+
+Completare l'interfaccia della Ricerca RSM v3, rendendo disponibile
+la selezione tra aeroporti, aeroporti e località, oppure sole località.
+
+### Risultato
+
+- aggiunto il filtro `tipo_localita` nell'interfaccia;
+- il parametro viene trasmesso alla Streaming API;
+- i risultati distinguono aeroporti e località geografiche;
+- vengono mostrati il nome della località e la popolazione quando disponibile;
+- IATA e ICAO sono visualizzati solo quando presenti;
+- i collegamenti alla Rivoluzione Solare utilizzano la località selezionata;
+- il comportamento legacy resta compatibile;
+- il motore astrologico non è stato modificato.
+
+### Verifiche
+
+- lint PHP dei file interessati: OK;
+- `git diff --check`: OK;
+- working tree pulito dopo il rilascio;
+- branch locale `main` allineato a `astro-val/main`.
+
+### Riferimenti Git
+
+- commit funzionale: `bad3026` — completa selezione e rendering località;
+- merge su `main`: `49423d1`;
+- tag: `rsm-v3-fase5-completata`.
+
+### Stato della roadmap
+
+- FASE 1: completata;
+- FASE 2: completata;
+- FASE 3: completata;
+- FASE 4: completata;
+- FASE 5: completata.
+
+La roadmap Ricerca RSM v3 — Località geografiche complete è completata.
