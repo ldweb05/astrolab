@@ -66,6 +66,14 @@ BARRA CONTROLLI PRINCIPALE
 </select>
 </div>
 <div class="form-group">
+<label>Tipo località</label>
+<select id="tipo-localita">
+<option value="solo_aeroporti">Solo aeroporti</option>
+<option value="aeroporti_e_localita">Aeroporti + località</option>
+<option value="solo_localita">Solo località</option>
+</select>
+</div>
+<div class="form-group">
 <label>Aeroporti</label>
 <select id="tipo-ricerca">
 <option value="large_medium">Grandi + Medi</option>
@@ -1310,15 +1318,30 @@ const sogg = getSoggetto();
 const anno = document.getElementById('anno-rs').value;
 const cond = stato.modalita === 'astri' ? 'Decima' : document.getElementById('condizione').value;
 const righe = pagRis.map((r, idx) => {
+const isLocalita = !r.iata && !r.icao && !r.aeroporto_associato;
+const nomePunto = r.nome || r.citta || '—';
+const luogoRs = isLocalita
+? [nomePunto, r.nazione].filter(Boolean).join(', ')
+: [r.citta || nomePunto, r.nazione].filter(Boolean).join(', ');
+const tipoPunto = r.tipo
+? String(r.tipo).replace(/_/g, ' ')
+: (isLocalita ? 'località' : 'aeroporto');
+const popolazione = isLocalita && Number(r.popolazione) > 0
+? `<div style="color:#999;font-size:10px">${Number(r.popolazione).toLocaleString('it-IT')} abitanti</div>`
+: '';
+const codicePunto = isLocalita
+? `<strong>Località</strong><br><span style="color:#999;font-size:10px">${tipoPunto}</span>`
+: `<strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||tipoPunto}</span>`;
 const confrontoKey = [
 r.lat,
 r.lon,
 r.iata || '',
-r.icao || ''
+r.icao || '',
+r.nome || ''
 ].join('|');
 const rsUrl = 'rs.php?id=' + (sogg?.id||'') +
 '&lat_rs=' + r.lat + '&lon_rs=' + r.lon +
-'&luogo_rs=' + encodeURIComponent((r.citta||'')+', '+(r.nazione||'')) +
+'&luogo_rs=' + encodeURIComponent(luogoRs) +
 '&anno=' + anno + '&condizione=' + encodeURIComponent(cond);
 const cls     = r.stelline>=5?'stelle-5':r.stelline>=4?'stelle-4':'';
 const hasVeti = r.veti && r.veti.length > 0;
@@ -1349,8 +1372,8 @@ return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
 <td>${stelleHtml(r.stelline)}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
-<td><strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||''}</span></td>
-<td style="max-width:200px">${r.nome||''}</td>
+<td>${codicePunto}</td>
+<td style="max-width:200px"><strong>${nomePunto}</strong>${popolazione}</td>
 <td>${r.citta||''}</td>
 <td>${r.nazione||''}</td>
 <td style="color:#888">${parseFloat(r.lat||0).toFixed(2)}</td>
@@ -1385,7 +1408,7 @@ ${confrontoToolbar}
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Stelle</th><th>VAL</th>
-<th>IATA / ICAO</th><th>Aeroporto</th>
+<th>Codice / Tipo</th><th>Punto geografico</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th><th>Confronta</th>
 </tr></thead>
 <tbody>${righe||'<tr><td colspan="11" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
