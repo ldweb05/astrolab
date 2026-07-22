@@ -240,8 +240,8 @@ backend e supporto al parametro `tipo_localita`
 ✔ FASE 4 completata:
 contratto backend e query unificata
 
-🚧 FASE 5 in corso:
-interfaccia
+✔ FASE 5 completata:
+interfaccia con supporto completo ad aeroporti e località
 
 ---
 
@@ -269,29 +269,36 @@ Durante questo sprint:
 
 ---
 
-## Obiettivo della fase corrente
+## Obiettivo raggiunto
 
-Aggiornare l'interfaccia della Ricerca RSM per esporre in modo chiaro
-la selezione del tipo di località.
-
-Il backend supporta già i valori:
+La Ricerca RSM v3 espone ora nell'interfaccia la selezione del tipo
+di località e supporta i valori:
 
 - `solo_aeroporti`;
 - `aeroporti_e_localita`;
 - `solo_localita`.
 
+I risultati distinguono aeroporti e località geografiche e mostrano,
+quando disponibili, popolazione, aeroporto associato, IATA e ICAO.
+
 L'assenza del parametro continua a preservare il comportamento legacy.
-Il motore astrologico e il contratto backend consolidato non devono
-essere modificati.
+Il motore astrologico non è stato modificato.
 
 ## Stato corrente Ricerca RSM v3
 
-Le FASI 1, 2, 3 e 4 sono completate.
+Le FASI 1, 2, 3, 4 e 5 sono completate.
 
 Il repository geografico supporta aeroporti e località, mentre
 `ricerca_stream_api.php` esegue la deduplicazione direttamente in PostgreSQL.
 
-La FASE 5 — Interfaccia è la fase operativa corrente.
+L'interfaccia supporta la selezione del tipo di località e visualizza
+correttamente i metadati specifici di aeroporti e località geografiche.
+
+Rilascio FASE 5:
+
+- commit funzionale: `bad3026`;
+- merge su `main`: `49423d1`;
+- tag: `rsm-v3-fase5-completata`.
 
 Comando di verifica principale:
 
