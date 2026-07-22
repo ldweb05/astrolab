@@ -311,3 +311,150 @@ ereditata da Astro-Val.
 - [ ] Valutazione di Redis.
 - [ ] Valutazione di PostgreSQL separato.
 - [ ] Valutazione di PostGIS mediante ADR dedicato.
+
+
+# ==========================================================
+## Ricerca RSM v3 — Località geografiche complete
+# ==========================================================
+
+### Visione
+
+La Ricerca RSM non dovrà più essere limitata agli aeroporti.
+
+L'obiettivo finale è permettere la ricerca astrologica su qualsiasi
+località geografica disponibile nel database mondiale (GeoNames),
+compresi piccoli paesi, villaggi, località remote, stazioni polari
+e centri abitati privi di aeroporto.
+
+Gli aeroporti continueranno ad essere supportati ma diventeranno
+una particolare tipologia di località.
+
+------------------------------------------------------------
+
+### Obiettivi
+
+✔ mantenere la compatibilità con la Ricerca RSM attuale
+
+✔ estendere la ricerca a tutti i centri abitati
+
+✔ mantenere elevate prestazioni
+
+✔ nessuna modifica al motore astrologico
+
+✔ utilizzare sempre le coordinate della località selezionata
+
+✔ mostrare eventuali codici IATA / ICAO solo quando disponibili
+
+------------------------------------------------------------
+
+### FASE 1
+Analisi del modello geografico
+
+- censimento tabelle GeoNames
+- censimento aeroporti
+- classificazione feature code
+- studio relazioni città ↔ aeroporto
+- definizione modello "Località"
+
+Output:
+documentazione tecnica.
+
+------------------------------------------------------------
+
+### FASE 2
+Nuovo modello Località
+
+Introduzione del concetto unificato di:
+
+- Aeroporto
+- Eliporto
+- Idroporto
+- Città
+- Villaggio
+- Località
+
+Ogni risultato dovrà rappresentare una Località.
+
+------------------------------------------------------------
+
+### FASE 3
+Backend
+
+Introduzione del parametro:
+
+tipo_localita
+
+valori previsti:
+
+- solo_aeroporti
+- aeroporti_e_localita
+- solo_localita
+
+------------------------------------------------------------
+
+### FASE 4
+Query SQL unificata
+
+Creazione della sorgente unica delle località candidate.
+
+Ogni record dovrà contenere:
+
+- coordinate
+- nome
+- tipo
+- nazione
+- popolazione (quando disponibile)
+- eventuale aeroporto associato
+- eventuale IATA
+- eventuale ICAO
+
+------------------------------------------------------------
+
+### FASE 5
+Interfaccia
+
+Aggiornamenti previsti:
+
+- Nazione con nome completo
+- filtro Tipo località
+- colonna Località
+- colonna Tipo
+- IATA / ICAO opzionale
+
+------------------------------------------------------------
+
+### FASE 6
+Prestazioni
+
+Ottimizzazione SQL
+
+Riduzione query
+
+Caching
+
+Benchmark
+
+------------------------------------------------------------
+
+### FASE 7
+Test
+
+Nuovi test automatici:
+
+✔ solo aeroporti
+
+✔ aeroporti + località
+
+✔ solo località
+
+✔ località senza aeroporto
+
+✔ regressione completa
+
+------------------------------------------------------------
+
+### Criterio di completamento
+
+La funzionalità sarà considerata completata quando la Ricerca RSM sarà
+in grado di proporre qualsiasi località geografica del database mondiale,
+mantenendo la piena compatibilità con il comportamento storico.
