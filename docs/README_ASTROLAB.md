@@ -142,12 +142,15 @@ Per la Ricerca RSM v3 risultano completate:
 -   FASE 1 — analisi del modello geografico;
 -   FASE 2 — nuovo modello unificato Località.
 
+Risultano inoltre completate:
+
+-   FASE 3 — Backend e supporto al parametro `tipo_localita`;
+-   FASE 4 — contratto backend e query unificata;
+-   compatibilità legacy quando il parametro `tipo_localita` è assente.
+
 La fase operativa corrente è:
 
--   FASE 3 — Backend;
--   introduzione del parametro `tipo_localita`;
--   valori previsti: `solo_aeroporti`, `aeroporti_e_localita`,
-    `solo_localita`;
--   compatibilità legacy obbligatoria quando il parametro è assente.
+-   FASE 5 — Interfaccia.
 
-Il Rule Engine e il motore astrologico rimangono congelati.
+Il Rule Engine, il motore astrologico e il contratto backend consolidato
+rimangono invariati.
