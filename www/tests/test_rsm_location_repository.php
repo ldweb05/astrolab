@@ -19,6 +19,17 @@ $casi = [
         ],
         'params' => [],
         'attende_localita' => false,
+        'tipo_localita' => '',
+    ],
+    'v3_solo_aeroporti' => [
+        'where' => [
+            'attivo = true',
+            "tipo IN ('large_airport','medium_airport','small_airport')",
+            'nazione = ?',
+        ],
+        'params' => ['IT'],
+        'attende_localita' => false,
+        'tipo_localita' => 'solo_aeroporti',
     ],
     'v3_localita_multinazione' => [
         'where' => [
@@ -30,6 +41,18 @@ $casi = [
         ],
         'params' => ['IT', 'FR', -6.0, 19.0],
         'attende_localita' => true,
+        'tipo_localita' => 'aeroporti_e_localita',
+    ],
+    'v3_solo_localita' => [
+        'where' => [
+            'attivo = true',
+            "tipo IN ('large_airport','medium_airport','small_airport')",
+            'nazione = ?',
+        ],
+        'params' => ['IT'],
+        'attende_localita' => true,
+        'tipo_localita' => 'solo_localita',
+        'attende_aeroporti' => false,
     ],
 ];
 
@@ -48,6 +71,23 @@ $normalizza = static fn(array $righe): array => array_map(
 
 foreach ($casi as $nome => $caso) {
     $grezzi = recuperaAeroporti($pdo, $caso['where'], $caso['params']);
+
+    if ($caso['tipo_localita'] === 'solo_aeroporti') {
+        $grezzi = array_values(array_filter(
+            $grezzi,
+            static fn(array $riga): bool =>
+                ($riga['icao_code'] ?? null) !== null
+                || ($riga['iata_code'] ?? null) !== null
+        ));
+    } elseif ($caso['tipo_localita'] === 'solo_localita') {
+        $grezzi = array_values(array_filter(
+            $grezzi,
+            static fn(array $riga): bool =>
+                ($riga['icao_code'] ?? null) === null
+                && ($riga['iata_code'] ?? null) === null
+        ));
+    }
+
     $deduplicatiPhp = deduplicaAeroporti($grezzi, $bucketLat, $bucketLon);
 
     $risultatoSql = recuperaAeroportiDeduplicati(
@@ -55,7 +95,8 @@ foreach ($casi as $nome => $caso) {
         $caso['where'],
         $caso['params'],
         $bucketLat,
-        $bucketLon
+        $bucketLon,
+        $caso['tipo_localita']
     );
 
     $deduplicatiSql = $risultatoSql['aeroporti'];
@@ -70,9 +111,12 @@ foreach ($casi as $nome => $caso) {
     $sequenzaIdentica =
         $normalizza($deduplicatiPhp) === $normalizza($deduplicatiSql);
 
+    $numeroAeroporti = count($grezzi) - $numeroLocalita;
+
     $valido =
         count($grezzi) === $risultatoSql['totale_originale']
         && $sequenzaIdentica
+        && (($caso['attende_aeroporti'] ?? true) ? true : $numeroAeroporti === 0)
         && (
             $caso['attende_localita']
                 ? $numeroLocalita > 0

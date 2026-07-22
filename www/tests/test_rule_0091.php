@@ -52,9 +52,9 @@ foreach ($evidences as $evidence) {
 
 $registeredRules = count(RuleRegistry::all());
 
-if ($registeredRules !== 92) {
+if ($registeredRules !== 120) {
     throw new RuntimeException(
-        'RULE-0091: attese 92 Rule registrate, trovate '
+        'RULE-0091: attese 120 Rule registrate, trovate '
         .$registeredRules
     );
 }

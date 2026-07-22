@@ -180,7 +180,8 @@ function recuperaAeroportiDeduplicati(
     array $where,
     array $params,
     float $bucketLat,
-    float $bucketLon
+    float $bucketLon,
+    string $tipoLocalita = ''
 ): array {
     $filtri = preparaFiltriLocalita($where, $params);
 
@@ -190,26 +191,36 @@ function recuperaAeroportiDeduplicati(
     $paramsLocalita = $filtri['paramsLocalita'];
     $haFiltroGeografico = $filtri['haFiltroGeografico'];
 
-    $ramiSql = "
-        SELECT
-            icao_code,
-            iata_code,
-            nome,
-            citta,
-            nazione,
-            latitudine,
-            longitudine,
-            0 AS priorita_origine
-        FROM aeroporti
-        WHERE " . implode(' AND ', $whereAeroporti);
+    $usaAeroporti = $tipoLocalita !== 'solo_localita';
+    $usaLocalita = $tipoLocalita === 'aeroporti_e_localita'
+        || $tipoLocalita === 'solo_localita'
+        || ($tipoLocalita === '' && $haFiltroGeografico);
 
-    $parametriQuery = $paramsAeroporti;
+    $rami = [];
+    $parametriQuery = [];
 
-    if ($haFiltroGeografico) {
-        $ramiSql .= "
+    if ($usaAeroporti) {
+        $rami[] = "
+            SELECT
+                icao_code,
+                iata_code,
+                nome,
+                citta,
+                nazione,
+                latitudine,
+                longitudine,
+                0 AS priorita_origine
+            FROM aeroporti
+            WHERE " . implode(' AND ', $whereAeroporti);
 
-            UNION ALL
+        $parametriQuery = array_merge(
+            $parametriQuery,
+            $paramsAeroporti
+        );
+    }
 
+    if ($usaLocalita) {
+        $rami[] = "
             SELECT
                 NULL AS icao_code,
                 NULL AS iata_code,
@@ -227,6 +238,8 @@ function recuperaAeroportiDeduplicati(
             $paramsLocalita
         );
     }
+
+    $ramiSql = implode("\n\n            UNION ALL\n", $rami);
 
     $sql = "
         WITH punti_geografici AS MATERIALIZED (
