@@ -392,12 +392,12 @@ valori previsti:
 
 ------------------------------------------------------------
 
-### FASE 4
+### FASE 4 — COMPLETATA
 Query SQL unificata
 
-Creazione della sorgente unica delle località candidate.
+Creata la sorgente unica delle località candidate.
 
-Ogni record dovrà contenere:
+Ogni record contiene:
 
 - coordinate
 - nome
@@ -407,6 +407,11 @@ Ogni record dovrà contenere:
 - eventuale aeroporto associato
 - eventuale IATA
 - eventuale ICAO
+
+Il contratto è esposto sia dal repository SQL sia dall'output della Streaming API.
+Per gli aeroporti, `aeroporto_associato` coincide con il nome dell'aeroporto;
+per le località resta `NULL` finché non verrà definita una regola geografica
+di associazione.
 
 ------------------------------------------------------------
 

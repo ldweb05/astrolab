@@ -2107,6 +2107,7 @@ sulla sequenza di deduplica.
 - FASE 1: completata;
 - FASE 2: completata;
 - FASE 3: completata;
+- FASE 4: completata.
 
 ### Chiusura FASE 3 — Backend
 
@@ -2121,6 +2122,41 @@ La deduplicazione PHP e SQL resta equivalente con 851 risultati su 851 e sequenz
 La suite completa è verde. Aggiunti inoltre i test dedicati `RULE-0001`–`RULE-0010`
 e riallineati i test del Rule Engine al freeze ufficiale di 120 Rule.
 
+### Chiusura FASE 4 — Query SQL unificata
+
+Completato il contratto unificato dei candidati geografici.
+
+Il repository restituisce ora, per aeroporti e località:
+
+- coordinate;
+- nome;
+- tipo;
+- nazione;
+- popolazione, quando disponibile;
+- aeroporto associato, quando disponibile;
+- IATA, quando disponibile;
+- ICAO, quando disponibile.
+
+Per gli aeroporti, `popolazione` è `NULL` e `aeroporto_associato` coincide con
+il nome del record. Per le località, IATA, ICAO e `aeroporto_associato` restano
+`NULL`, poiché non è ancora definita una regola geografica di associazione.
+
+Il contratto è propagato da `RicercaRSAirportRepository.php` a
+`RicercaRSResultBuilder.php`, mantenendo la compatibilità con i record legacy
+tramite valori `NULL`.
+
+### Test eseguiti per la FASE 4
+
+- `www/tests/test_rsm_location_repository.php`: OK;
+- `www/tests/test_rsm_result_builder.php`: OK;
+- `www/tests/test_rsm_dedup_sequence.php`: PHP=851, SQL=851, sequenze identiche;
+- lint PHP dei file modificati: OK;
+- `git diff --check`: OK.
+
+### Commit Git FASE 4
+
+`9fd1fbc` — Completa contratto query unificata FASE 4.
+
 ### Passo successivo
 
-Avviare la FASE 4 — Query SQL unificata.
+Avviare la FASE 5 — Interfaccia.
