@@ -415,16 +415,28 @@ di associazione.
 
 ------------------------------------------------------------
 
-### FASE 5
+### FASE 5 — COMPLETATA
 Interfaccia
 
-Aggiornamenti previsti:
+Aggiornamenti realizzati:
 
-- Nazione con nome completo
-- filtro Tipo località
-- colonna Località
-- colonna Tipo
-- IATA / ICAO opzionale
+- filtro `Tipo località` con supporto a:
+  - `solo_aeroporti`;
+  - `aeroporti_e_localita`;
+  - `solo_localita`;
+- invio del parametro `tipo_localita` alla Streaming API;
+- visualizzazione del nome completo della località;
+- distinzione tra aeroporti e località geografiche;
+- visualizzazione della popolazione quando disponibile;
+- visualizzazione opzionale dei codici IATA e ICAO;
+- utilizzo delle coordinate della località selezionata;
+- compatibilità preservata con il comportamento aeroportuale legacy.
+
+Rilascio:
+
+- commit funzionale: `bad3026`;
+- merge su `main`: `49423d1`;
+- tag: `rsm-v3-fase5-completata`.
 
 ------------------------------------------------------------
 
