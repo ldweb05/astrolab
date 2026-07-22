@@ -43,6 +43,10 @@ CREATE INDEX IF NOT EXISTS idx_localita_latitudine
 CREATE INDEX IF NOT EXISTS idx_localita_longitudine
     ON localita (longitudine);
 
+CREATE INDEX IF NOT EXISTS idx_localita_iso_lat_lon_attive
+    ON localita (iso_nazione, latitudine, longitudine)
+    WHERE attivo = true;
+
 CREATE INDEX IF NOT EXISTS idx_localita_nome_lower
     ON localita (LOWER(nome));
 

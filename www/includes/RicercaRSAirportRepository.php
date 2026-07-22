@@ -2,19 +2,18 @@
 declare(strict_types=1);
 
 /**
- * Recupera i punti geografici utilizzati dalla ricerca RS.
+ * Costruisce i filtri utilizzabili dal ramo località partendo dai filtri
+ * storici degli aeroporti.
  *
- * Il ramo aeroporti mantiene integralmente i filtri storici.
- * Il ramo località riceve esclusivamente i filtri geografici compatibili:
- * - attivo
- * - nazione, tradotta in iso_nazione
- * - longitudine minima/massima
- *
- * Per sicurezza, nella prima fase le località vengono aggiunte solo quando
- * è presente almeno un filtro geografico. Non viene applicata alcuna soglia
- * di popolazione: anche i centri molto piccoli restano ricercabili.
+ * @return array{
+ *   whereAeroporti: array,
+ *   paramsAeroporti: array,
+ *   whereLocalita: array,
+ *   paramsLocalita: array,
+ *   haFiltroGeografico: bool
+ * }
  */
-function recuperaAeroporti(PDO $pdo, array $where, array $params): array
+function preparaFiltriLocalita(array $where, array $params): array
 {
     $whereAeroporti = $where;
     $paramsAeroporti = $params;
@@ -41,36 +40,61 @@ function recuperaAeroporti(PDO $pdo, array $where, array $params): array
 
         if ($clausolaNormalizzata === 'nazione = ?') {
             $whereLocalita[] = 'iso_nazione = ?';
-            $paramsLocalita = array_merge(
-                $paramsLocalita,
-                $parametriClausola
-            );
+            $paramsLocalita = array_merge($paramsLocalita, $parametriClausola);
             $haFiltroGeografico = true;
             continue;
         }
 
-        if (preg_match('/^nazione\s+IN\s*\((.+)\)$/i', $clausolaNormalizzata, $match)) {
-            $whereLocalita[] = 'iso_nazione IN (' . $match[1] . ')';
-            $paramsLocalita = array_merge(
-                $paramsLocalita,
-                $parametriClausola
-            );
+        if (preg_match('/^nazione\s+IN\s*\((.+)\)$/i', $clausolaNormalizzata, $m)) {
+            $whereLocalita[] = 'iso_nazione IN (' . $m[1] . ')';
+            $paramsLocalita = array_merge($paramsLocalita, $parametriClausola);
             $haFiltroGeografico = true;
             continue;
         }
 
         if (
-            $clausolaNormalizzata === 'longitudine >= ?'
-            || $clausolaNormalizzata === 'longitudine <= ?'
+            $clausolaNormalizzata === 'longitudine >= ?' ||
+            $clausolaNormalizzata === 'longitudine <= ?'
         ) {
             $whereLocalita[] = $clausolaNormalizzata;
-            $paramsLocalita = array_merge(
-                $paramsLocalita,
-                $parametriClausola
-            );
+            $paramsLocalita = array_merge($paramsLocalita, $parametriClausola);
             $haFiltroGeografico = true;
         }
     }
+
+    return [
+        'whereAeroporti'     => $whereAeroporti,
+        'paramsAeroporti'    => $paramsAeroporti,
+        'whereLocalita'      => $whereLocalita,
+        'paramsLocalita'     => $paramsLocalita,
+        'haFiltroGeografico' => $haFiltroGeografico,
+    ];
+}
+
+
+/**
+ * Recupera i punti geografici utilizzati dalla ricerca RS.
+ *
+ * Il ramo aeroporti mantiene integralmente i filtri storici.
+ * Il ramo località riceve esclusivamente i filtri geografici compatibili:
+ * - attivo
+ * - nazione, tradotta in iso_nazione
+ * - longitudine minima/massima
+ *
+ * Per sicurezza, nella prima fase le località vengono aggiunte solo quando
+ * è presente almeno un filtro geografico. Non viene applicata alcuna soglia
+ * di popolazione: anche i centri molto piccoli restano ricercabili.
+ */
+
+function recuperaAeroporti(PDO $pdo, array $where, array $params): array
+{
+    $filtri = preparaFiltriLocalita($where, $params);
+
+    $whereAeroporti = $filtri['whereAeroporti'];
+    $paramsAeroporti = $filtri['paramsAeroporti'];
+    $whereLocalita = $filtri['whereLocalita'];
+    $paramsLocalita = $filtri['paramsLocalita'];
+    $haFiltroGeografico = $filtri['haFiltroGeografico'];
 
     if (!$haFiltroGeografico) {
         $sql = "
@@ -158,61 +182,13 @@ function recuperaAeroportiDeduplicati(
     float $bucketLat,
     float $bucketLon
 ): array {
-    $whereAeroporti = $where;
-    $paramsAeroporti = $params;
+    $filtri = preparaFiltriLocalita($where, $params);
 
-    $whereLocalita = ['attivo = true'];
-    $paramsLocalita = [];
-    $haFiltroGeografico = false;
-    $indiceParametro = 0;
-
-    foreach ($where as $clausola) {
-        $numeroParametri = substr_count($clausola, '?');
-        $parametriClausola = array_slice(
-            $params,
-            $indiceParametro,
-            $numeroParametri
-        );
-        $indiceParametro += $numeroParametri;
-
-        $clausolaNormalizzata = trim($clausola);
-
-        if ($clausolaNormalizzata === 'attivo = true') {
-            continue;
-        }
-
-        if ($clausolaNormalizzata === 'nazione = ?') {
-            $whereLocalita[] = 'iso_nazione = ?';
-            $paramsLocalita = array_merge(
-                $paramsLocalita,
-                $parametriClausola
-            );
-            $haFiltroGeografico = true;
-            continue;
-        }
-
-        if (preg_match('/^nazione\s+IN\s*\((.+)\)$/i', $clausolaNormalizzata, $match)) {
-            $whereLocalita[] = 'iso_nazione IN (' . $match[1] . ')';
-            $paramsLocalita = array_merge(
-                $paramsLocalita,
-                $parametriClausola
-            );
-            $haFiltroGeografico = true;
-            continue;
-        }
-
-        if (
-            $clausolaNormalizzata === 'longitudine >= ?'
-            || $clausolaNormalizzata === 'longitudine <= ?'
-        ) {
-            $whereLocalita[] = $clausolaNormalizzata;
-            $paramsLocalita = array_merge(
-                $paramsLocalita,
-                $parametriClausola
-            );
-            $haFiltroGeografico = true;
-        }
-    }
+    $whereAeroporti = $filtri['whereAeroporti'];
+    $paramsAeroporti = $filtri['paramsAeroporti'];
+    $whereLocalita = $filtri['whereLocalita'];
+    $paramsLocalita = $filtri['paramsLocalita'];
+    $haFiltroGeografico = $filtri['haFiltroGeografico'];
 
     $ramiSql = "
         SELECT
