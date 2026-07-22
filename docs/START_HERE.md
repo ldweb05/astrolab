@@ -183,3 +183,103 @@ fornire una raccomandazione motivata, mostrando chiaramente:
 -   quali criticità rimangono;
 -   quali compromessi sono necessari;
 -   quali dati, condizioni e regole sostengono la decisione.
+
+
+---
+
+# 🚀 Focus di sviluppo corrente
+
+## Stato del progetto
+
+La piattaforma Astrolab è stabile.
+
+Sono stati completati:
+
+- migrazione della deduplicazione geografica PHP → SQL;
+- regressione completa della Search API;
+- consolidamento della suite automatica dei test;
+- documentazione tecnica aggiornata.
+
+La regressione (`www/tests/run.php`) deve rimanere completamente verde
+durante tutto lo sviluppo.
+
+---
+
+## Sprint attuale
+
+### Ricerca RSM v3 — Località geografiche complete
+
+Lo sviluppo corrente riguarda l'evoluzione della Ricerca RSM.
+
+L'obiettivo è trasformare il sistema da ricerca limitata agli aeroporti
+ad una ricerca su tutte le località geografiche disponibili
+nel database mondiale.
+
+Gli aeroporti continueranno ad essere supportati ma diventeranno una
+particolare tipologia di località.
+
+---
+
+## Stato corrente
+
+✔ infrastruttura stabile
+
+✔ regressione verde
+
+✔ deduplicazione SQL completata
+
+✔ documentazione aggiornata
+
+🚧 FASE 1 in corso:
+analisi del modello geografico (GeoNames + aeroporti)
+
+---
+
+## Documenti da leggere nell'ordine
+
+1. START_HERE.md
+
+2. ROADMAP.md
+
+3. HANDOVER_OPERATIVO_astrolab.md
+
+4. ADR_INDEX_ASTROLAB.md
+
+---
+
+## Regole di sviluppo
+
+Durante questo sprint:
+
+- mantenere sempre verde la regressione automatica;
+- non modificare il motore astrologico;
+- procedere per piccoli commit verificabili;
+- documentare ogni decisione importante;
+- completare una fase prima di iniziare la successiva.
+
+---
+
+## Obiettivo del prossimo sprint
+
+Progettare il nuovo modello logico "Località" che unificherà:
+
+- aeroporti;
+- eliporti;
+- idroporti;
+- città;
+- villaggi;
+- località remote.
+
+Successivamente verranno aggiornati backend, API e interfaccia senza
+rompere la compatibilità con la Ricerca RSM esistente.
+
+## Stato corrente Ricerca RSM v3
+
+Lo Sprint 1 è completato.
+
+Il repository geografico supporta aeroporti e località, mentre
+`ricerca_stream_api.php` esegue la deduplicazione direttamente in PostgreSQL.
+
+Comando di verifica principale:
+
+`docker compose exec -T astrolab-web php /var/www/html/tests/test_rsm_location_repository.php`

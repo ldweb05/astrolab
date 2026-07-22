@@ -307,8 +307,17 @@ try {
         $params[] = $lonMax;
     }
 
-    $aeroporti = recuperaAeroporti($pdo, $where, $params);
-    $totaleAero = count($aeroporti);
+    $recupero = recuperaAeroportiDeduplicati(
+        $pdo,
+        $where,
+        $params,
+        $bucketLat,
+        $bucketLon
+    );
+
+    $selezionati = $recupero['aeroporti'];
+    $totaleAero  = $recupero['totale_originale'];
+    $totaleCalc  = count($selezionati);
 
     // Evento SSE: informa il frontend sul totale grezzo e il momento RS
     sse('start', [
@@ -322,12 +331,8 @@ try {
     ]);
 
     // ─────────────────────────────────────────────────────────────────────
-    //  Step 4 — Deduplicazione geografica a bucket
-    //  Aeroporti nello stesso bucket → ASC Placido identico → uno solo
+    //  Step 4 — Deduplicazione geografica eseguita direttamente in PostgreSQL
     // ─────────────────────────────────────────────────────────────────────
-    $selezionati = deduplicaAeroporti($aeroporti, $bucketLat, $bucketLon);
-
-    $totaleCalc = count($selezionati);
 
     sse('progress', [
         'processed'        => 0,
