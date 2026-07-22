@@ -377,7 +377,7 @@ Ogni risultato dovrà rappresentare una Località.
 
 ------------------------------------------------------------
 
-### FASE 3 — IN CORSO
+### FASE 3 — COMPLETATA
 Backend
 
 Introduzione del parametro:

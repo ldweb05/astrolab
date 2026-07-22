@@ -56,9 +56,9 @@ foreach ($evidences as $evidence) {
 
 $registered = RuleRegistry::all();
 
-if (count($registered) !== 11) {
+if (count($registered) !== 120) {
     throw new RuntimeException(
-        'Attese 11 Rule registrate, trovate '.count($registered)
+        'Attese 120 Rule registrate, trovate '.count($registered)
     );
 }
 

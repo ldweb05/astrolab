@@ -158,6 +158,13 @@ $nazioniFiltro = trim($_GET['nazioni_filtro'] ?? '');
 $lonMin = isset($_GET['lon_min']) && $_GET['lon_min'] !== '' ? floatval($_GET['lon_min']) : null;
 $lonMax = isset($_GET['lon_max']) && $_GET['lon_max'] !== '' ? floatval($_GET['lon_max']) : null;
 
+// Tipo località: parametro opzionale, assenza = comportamento legacy
+$tipoLocalita = trim($_GET['tipo_localita'] ?? '');
+$tipiLocalitaValidi = ['solo_aeroporti', 'aeroporti_e_localita', 'solo_localita'];
+if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true)) {
+    $tipoLocalita = '';
+}
+
 // Validazione condizione
 $condizioniValide = ['Decima', 'Lavoro', 'Amore', 'Salute', 'Denaro', 'Denaro Low', 'Casa'];
 if (!in_array($condizione, $condizioniValide, true)) {
@@ -312,7 +319,8 @@ try {
         $where,
         $params,
         $bucketLat,
-        $bucketLon
+        $bucketLon,
+        $tipoLocalita
     );
 
     $selezionati = $recupero['aeroporti'];

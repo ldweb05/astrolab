@@ -2106,16 +2106,21 @@ sulla sequenza di deduplica.
 
 - FASE 1: completata;
 - FASE 2: completata;
-- FASE 3: prossima fase operativa.
+- FASE 3: completata;
 
-### Passo successivo
+### Chiusura FASE 3 — Backend
 
-Avviare la FASE 3 — Backend introducendo il parametro `tipo_localita` con i
-valori:
+Completata l’introduzione del parametro opzionale `tipo_localita` con i valori:
 
 - `solo_aeroporti`;
 - `aeroporti_e_localita`;
 - `solo_localita`.
 
-Il nuovo parametro deve preservare il comportamento legacy quando assente e
-non deve modificare il motore astrologico.
+Il comportamento legacy è preservato quando il parametro è assente o non valido.
+La deduplicazione PHP e SQL resta equivalente con 851 risultati su 851 e sequenza identica.
+La suite completa è verde. Aggiunti inoltre i test dedicati `RULE-0001`–`RULE-0010`
+e riallineati i test del Rule Engine al freeze ufficiale di 120 Rule.
+
+### Passo successivo
+
+Avviare la FASE 4 — Query SQL unificata.
