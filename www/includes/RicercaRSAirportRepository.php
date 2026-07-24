@@ -388,3 +388,124 @@ function recuperaAeroportiDeduplicati(
         'totale_originale' => $totaleOriginale,
     ];
 }
+
+
+/**
+ * Associa i codici aeroportuali alle sole località finali della ricerca.
+ *
+ * La funzione non modifica l'ordine né il numero dei risultati ricevuti.
+ * Gli aeroporti vengono caricati in un'unica query limitata alle nazioni
+ * presenti nell'elenco finale.
+ *
+ * @param array<int, array<string, mixed>> $risultati
+ * @return array<int, array<string, mixed>>
+ */
+function arricchisciLocalitaConAeroporti(
+    PDO $pdo,
+    array $risultati
+): array {
+    if ($risultati === []) {
+        return $risultati;
+    }
+
+    $nazioni = [];
+
+    foreach ($risultati as $risultato) {
+        if (($risultato['origine_punto'] ?? '') !== 'localita') {
+            continue;
+        }
+
+        $nazione = strtoupper(trim((string)($risultato['nazione'] ?? '')));
+
+        if ($nazione !== '') {
+            $nazioni[$nazione] = true;
+        }
+    }
+
+    if ($nazioni === []) {
+        return $risultati;
+    }
+
+    $codiciNazione = array_keys($nazioni);
+    $placeholders = implode(
+        ', ',
+        array_fill(0, count($codiciNazione), '?')
+    );
+
+    $sql = "
+        SELECT
+            icao_code,
+            iata_code,
+            nome,
+            citta,
+            iso_nazione
+        FROM aeroporti
+        WHERE attivo = true
+          AND iso_nazione IN ({$placeholders})
+        ORDER BY
+            iso_nazione,
+            citta,
+            (iata_code IS NULL OR iata_code = ''),
+            (icao_code IS NULL OR icao_code = ''),
+            nome,
+            icao_code,
+            iata_code
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($codiciNazione);
+
+    $normalizza = static function (string $valore): string {
+        $valore = trim($valore);
+
+        if (function_exists('mb_strtolower')) {
+            return mb_strtolower($valore, 'UTF-8');
+        }
+
+        return strtolower($valore);
+    };
+
+    $aeroportiPerLocalita = [];
+
+    while ($aeroporto = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $nazione = strtoupper(trim((string)$aeroporto['iso_nazione']));
+        $citta = $normalizza((string)$aeroporto['citta']);
+
+        if ($nazione === '' || $citta === '') {
+            continue;
+        }
+
+        $chiave = $nazione . '|' . $citta;
+
+        if (!isset($aeroportiPerLocalita[$chiave])) {
+            $aeroportiPerLocalita[$chiave] = $aeroporto;
+        }
+    }
+
+    foreach ($risultati as &$risultato) {
+        if (($risultato['origine_punto'] ?? '') !== 'localita') {
+            continue;
+        }
+
+        $nazione = strtoupper(trim((string)($risultato['nazione'] ?? '')));
+        $citta = $normalizza((string)($risultato['citta'] ?? ''));
+
+        if ($nazione === '' || $citta === '') {
+            continue;
+        }
+
+        $chiave = $nazione . '|' . $citta;
+        $aeroporto = $aeroportiPerLocalita[$chiave] ?? null;
+
+        if ($aeroporto === null) {
+            continue;
+        }
+
+        $risultato['icao'] = $aeroporto['icao_code'];
+        $risultato['iata'] = $aeroporto['iata_code'];
+        $risultato['aeroporto_associato'] = $aeroporto['nome'];
+    }
+    unset($risultato);
+
+    return $risultati;
+}
