@@ -140,17 +140,18 @@ La roadmap ufficiale è descritta in `docs/ROADMAP.md`.
 Per la Ricerca RSM v3 risultano completate:
 
 -   FASE 1 — analisi del modello geografico;
--   FASE 2 — nuovo modello unificato Località.
+-   FASE 2 — nuovo modello Località;
+-   FASE 3 — Backend;
+-   FASE 4 — Contratto backend;
+-   FASE 5 — Interfaccia;
+-   FASE 6 — Prestazioni e determinismo;
+-   FASE 7 — Test.
 
-Risultano inoltre completate:
+Lo stato corrente prevede una sola evoluzione pianificata:
 
--   FASE 3 — Backend e supporto al parametro `tipo_localita`;
--   FASE 4 — contratto backend e query unificata;
--   compatibilità legacy quando il parametro `tipo_localita` è assente.
-
-La fase operativa corrente è:
-
--   FASE 5 — Interfaccia.
+-   FASE 5A — ricerca delle località limitata ad una nazione con selezione
+    obbligatoria della nazione e limite configurabile di risultati
+    (50/100/150/Tutte).
 
 Il Rule Engine, il motore astrologico e il contratto backend consolidato
 rimangono invariati.
