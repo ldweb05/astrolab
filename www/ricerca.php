@@ -17,6 +17,19 @@ ini_set('display_errors', 0);
 // ---- QUERY SOGGETTI CON FILTRO PER UTENTE ----
 
 require_once __DIR__ . '/includes/RicercaPageData.php';
+
+$stmtNazioniLocalita = $pdo->query(
+    "SELECT
+         iso_nazione,
+         MIN(nazione) AS nome_nazione
+     FROM localita
+     WHERE attivo = true
+       AND iso_nazione IS NOT NULL
+       AND iso_nazione <> ''
+     GROUP BY iso_nazione
+     ORDER BY nome_nazione, iso_nazione"
+);
+$nazioniLocalita = $stmtNazioniLocalita->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -67,34 +80,32 @@ BARRA CONTROLLI PRINCIPALE
 </div>
 <div class="form-group">
 <label>Tipo località</label>
-<select id="tipo-localita">
-<option value="solo_aeroporti">Solo aeroporti</option>
-<option value="solo_localita">Solo località</option>
+<select id="tipo-localita" onchange="onTipoLocalitaChange(this.value)">
+<option value="aeroporti">Aeroporti</option>
+<option value="localita">Località</option>
 </select>
 </div>
-<div class="form-group">
-<label>Aeroporti</label>
-<select id="tipo-ricerca">
-<option value="large_medium">Grandi + Medi</option>
-<option value="iata_only">Solo IATA</option>
-<option value="tutti">Tutti (lento)</option>
+<div class="form-group" id="wrap-nazione-localita" style="display:none">
+<label>Nazione</label>
+<select id="nazione-localita">
+<option value="">— Seleziona —</option>
+<?php foreach ($nazioniLocalita as $nazioneLocalita): ?>
+<option
+    value="<?= htmlspecialchars($nazioneLocalita['iso_nazione']) ?>"
+    data-iso-nazione="<?= htmlspecialchars($nazioneLocalita['iso_nazione']) ?>"
+>
+<?= htmlspecialchars($nazioneLocalita['nome_nazione'] ?: $nazioneLocalita['iso_nazione']) ?>
+</option>
+<?php endforeach; ?>
 </select>
 </div>
-<div class="form-group">
-<label>Militari</label>
-<select id="escludi-militari">
-<option value="1">Escludi</option>
-<option value="0">Includi</option>
-</select>
-</div>
-<!-- Stelline min — nascosta in modalità Cuspidi -->
-<div class="form-group" id="wrap-stelline-min">
-<label>Stelline min.</label>
-<select id="stelline-min-cerca">
-<option value="0">Tutte</option>
-<option value="3">≥ ★★★</option>
-<option value="4">≥ ★★★★</option>
-<option value="5">★★★★★</option>
+<div class="form-group" id="wrap-numero-localita" style="display:none">
+<label>Numero risultati</label>
+<select id="numero-localita">
+<option value="50">50</option>
+<option value="100">100</option>
+<option value="150">150</option>
+<option value="tutte">Tutte</option>
 </select>
 </div>
 <button class="filtri-avanzati-toggle" id="btn-toggle-avanzati" onclick="toggleAvanzati()">
@@ -282,6 +293,32 @@ Tolleranza dinamica (Orbe)
 <option value="larghissimo">Larghissimo: ±5° 0′</option>
 </select>
 </div>
+<!-- Filtri aeroportuali -->
+<div class="avanzati-group">
+<label>Aeroporti</label>
+<select id="tipo-ricerca">
+<option value="large_medium">Grandi + Medi</option>
+<option value="iata_only">Solo IATA</option>
+<option value="tutti">Tutti (lento)</option>
+</select>
+</div>
+<div class="avanzati-group">
+<label>Militari</label>
+<select id="escludi-militari">
+<option value="1">Escludi</option>
+<option value="0">Includi</option>
+</select>
+</div>
+<!-- Stelline min — nascosta in modalità Cuspidi -->
+<div class="avanzati-group" id="wrap-stelline-min">
+<label>Stelline min.</label>
+<select id="stelline-min-cerca">
+<option value="0">Tutte</option>
+<option value="3">≥ ★★★</option>
+<option value="4">≥ ★★★★</option>
+<option value="5">★★★★★</option>
+</select>
+</div>
 <!-- Importanza Aeroporto -->
 <div class="avanzati-group">
 <label>
@@ -294,7 +331,7 @@ Importanza aeroporto
 <select id="filt-importanza">
 <option value="">— Usa il selettore principale —</option>
 <option value="solo_hub">Solo Hub (large + IATA)</option>
-<option value="iata_only">Solo aeroporti IATA</option>
+<option value="iata_only">Aeroporti IATA</option>
 </select>
 </div>
 <!-- Allargamento Automatico Orbe (solo Cuspidi) -->
@@ -439,6 +476,29 @@ const btn   = document.getElementById('btn-toggle-avanzati');
 const vis   = panel.classList.toggle('visibile');
 btn.classList.toggle('aperto', vis);
 }
+function onTipoLocalitaChange(val) {
+const ricercaLocalita = val === 'localita';
+document.getElementById('wrap-nazione-localita').style.display = ricercaLocalita ? '' : 'none';
+document.getElementById('wrap-numero-localita').style.display = ricercaLocalita ? '' : 'none';
+}
+
+function localizzaNomiNazioni() {
+if (typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function') {
+return;
+}
+
+const nomiRegioni = new Intl.DisplayNames(['it'], { type: 'region' });
+
+document.querySelectorAll('#nazione-localita option[data-iso-nazione]').forEach(option => {
+const iso = option.dataset.isoNazione;
+const nomeItaliano = nomiRegioni.of(iso);
+
+if (nomeItaliano && nomeItaliano !== iso) {
+option.textContent = nomeItaliano;
+}
+});
+}
+
 function onCondizioneChange(val) {
 const isCuspidi = val === CONDIZIONE_CUSPIDI;
 const isAstri   = val === CONDIZIONE_ASTRI;
@@ -619,6 +679,14 @@ document.getElementById('btn-cerca').addEventListener('click', avviaRicerca);
 function avviaRicerca(espansioneOrbe) {
     const s = getSoggetto();
     if (!s) { alert('Seleziona prima un soggetto.'); return; }
+
+    const tipoLocalita = document.getElementById('tipo-localita').value;
+    const nazioneLocalita = document.getElementById('nazione-localita').value;
+    if (tipoLocalita === 'localita' && nazioneLocalita === '') {
+        alert('Seleziona una nazione per la ricerca delle località.');
+        document.getElementById('nazione-localita').focus();
+        return;
+    }
 
     if (eventoCorrente) { eventoCorrente.close(); eventoCorrente = null; }
 
@@ -1509,6 +1577,8 @@ document.addEventListener('DOMContentLoaded', function() {
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
+localizzaNomiNazioni();
+onTipoLocalitaChange(document.getElementById('tipo-localita').value);
 
 document.getElementById('risultati-area').addEventListener('change', function(event) {
     const checkbox = event.target.closest('.confronto-checkbox');

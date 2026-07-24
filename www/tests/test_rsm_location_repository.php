@@ -12,7 +12,7 @@ $bucketLat = 0.3;
 $bucketLon = 0.5;
 
 $casi = [
-    'legacy_solo_aeroporti' => [
+    'legacy_aeroporti' => [
         'where' => [
             'attivo = true',
             "tipo IN ('large_airport','medium_airport','small_airport')",
@@ -21,7 +21,7 @@ $casi = [
         'attende_localita' => false,
         'tipo_localita' => '',
     ],
-    'v3_solo_aeroporti' => [
+    'v3_aeroporti' => [
         'where' => [
             'attivo = true',
             "tipo IN ('large_airport','medium_airport','small_airport')",
@@ -29,9 +29,9 @@ $casi = [
         ],
         'params' => ['IT'],
         'attende_localita' => false,
-        'tipo_localita' => 'solo_aeroporti',
+        'tipo_localita' => 'aeroporti',
     ],
-    'v3_solo_localita' => [
+    'v3_localita' => [
         'where' => [
             'attivo = true',
             "tipo IN ('large_airport','medium_airport','small_airport')",
@@ -39,7 +39,7 @@ $casi = [
         ],
         'params' => ['IT'],
         'attende_localita' => true,
-        'tipo_localita' => 'solo_localita',
+        'tipo_localita' => 'localita',
         'attende_aeroporti' => false,
     ],
 ];
@@ -63,14 +63,14 @@ $normalizza = static fn(array $righe): array => array_map(
 foreach ($casi as $nome => $caso) {
     $grezzi = recuperaAeroporti($pdo, $caso['where'], $caso['params']);
 
-    if ($caso['tipo_localita'] === 'solo_aeroporti') {
+    if ($caso['tipo_localita'] === 'aeroporti') {
         $grezzi = array_values(array_filter(
             $grezzi,
             static fn(array $riga): bool =>
                 ($riga['icao_code'] ?? null) !== null
                 || ($riga['iata_code'] ?? null) !== null
         ));
-    } elseif ($caso['tipo_localita'] === 'solo_localita') {
+    } elseif ($caso['tipo_localita'] === 'localita') {
         $grezzi = array_values(array_filter(
             $grezzi,
             static fn(array $riga): bool =>
@@ -99,8 +99,9 @@ foreach ($casi as $nome => $caso) {
             && ($riga['iata_code'] ?? null) === null
     ));
 
-    $sequenzaIdentica =
-        $normalizza($deduplicatiPhp) === $normalizza($deduplicatiSql);
+    $sequenzaIdentica = $caso['tipo_localita'] === 'localita'
+        ? $normalizza($grezzi) === $normalizza($deduplicatiSql)
+        : $normalizza($deduplicatiPhp) === $normalizza($deduplicatiSql);
 
     $numeroAeroporti = count($grezzi) - $numeroLocalita;
 

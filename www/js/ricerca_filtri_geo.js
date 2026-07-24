@@ -3,7 +3,20 @@ function onMacroAreaChange(val) {
 }
 
 function getNazioniFiltro() {
-    const area = document.getElementById('filtro-macro-area').value;
+    const tipoLocalitaEl = document.getElementById('tipo-localita');
+    const tipoLocalita = tipoLocalitaEl ? tipoLocalitaEl.value : 'aeroporti';
+
+    if (tipoLocalita === 'localita') {
+        const nazioneLocalitaEl = document.getElementById('nazione-localita');
+        const nazioneLocalita = nazioneLocalitaEl
+            ? nazioneLocalitaEl.value.trim().toUpperCase()
+            : '';
+
+        return nazioneLocalita ? [nazioneLocalita] : [];
+    }
+
+    const areaEl = document.getElementById('filtro-macro-area');
+    const area = areaEl ? areaEl.value : '';
 
     if (area && MACRO_AREE[area]) {
         return MACRO_AREE[area];
@@ -28,9 +41,15 @@ function getFasceOrarieFiltro() {
 
 function aggiungiParamsGeografici(params) {
     const tipoLocalitaEl = document.getElementById('tipo-localita');
-    const tipoLocalita = tipoLocalitaEl ? tipoLocalitaEl.value : 'solo_aeroporti';
+    const tipoLocalita = tipoLocalitaEl ? tipoLocalitaEl.value : 'aeroporti';
 
     params.set('tipo_localita', tipoLocalita);
+
+    if (tipoLocalita === 'localita') {
+        const numeroLocalitaEl = document.getElementById('numero-localita');
+        const numeroLocalita = numeroLocalitaEl ? numeroLocalitaEl.value : '50';
+        params.set('numero_localita', numeroLocalita);
+    }
 
     const nazioni = getNazioniFiltro();
 
