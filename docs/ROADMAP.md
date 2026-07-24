@@ -319,99 +319,104 @@ ereditata da Astro-Val.
 
 ### Visione
 
-La Ricerca RSM non dovrà più essere limitata agli aeroporti.
+La Ricerca RSM non è più limitata agli aeroporti.
 
-L'obiettivo finale è permettere la ricerca astrologica su qualsiasi
-località geografica disponibile nel database mondiale (GeoNames),
-compresi piccoli paesi, villaggi, località remote, stazioni polari
-e centri abitati privi di aeroporto.
+Il sistema supporta due modalità operative distinte:
 
-Gli aeroporti continueranno ad essere supportati ma diventeranno
-una particolare tipologia di località.
+- `solo_aeroporti`;
+- `solo_localita`.
+
+La precedente modalità mista `aeroporti_e_localita` è stata rimossa per
+separare in modo esplicito la ricerca aeroportuale dalla ricerca sulle
+località geografiche.
+
+La condizione astrologica resta il filtro principale. In modalità
+`solo_localita`, i calcoli utilizzano sempre le coordinate effettive della
+località selezionata. Eventuali codici IATA, ICAO o aeroporti associati
+rimangono informazioni opzionali e non determinano il punto di calcolo.
 
 ------------------------------------------------------------
 
-### Obiettivi
+### Obiettivi completati
 
-✔ mantenere la compatibilità con la Ricerca RSM attuale
+✔ mantenere la compatibilità con la Ricerca RSM storica sugli aeroporti
 
-✔ estendere la ricerca a tutti i centri abitati
+✔ estendere la ricerca a tutte le località geografiche attive
 
 ✔ mantenere elevate prestazioni
 
-✔ nessuna modifica al motore astrologico
+✔ non modificare il motore astrologico
 
-✔ utilizzare sempre le coordinate della località selezionata
+✔ utilizzare le coordinate del punto selezionato
 
-✔ mostrare eventuali codici IATA / ICAO solo quando disponibili
+✔ distinguere esplicitamente aeroporti e località
+
+✔ garantire risultati deterministici nella deduplicazione
 
 ------------------------------------------------------------
 
 ### FASE 1 — COMPLETATA
 Analisi del modello geografico
 
-- censimento tabelle GeoNames
-- censimento aeroporti
-- classificazione feature code
-- studio relazioni città ↔ aeroporto
-- definizione modello "Località"
-
-Output:
-documentazione tecnica.
+- censimento tabelle GeoNames;
+- censimento aeroporti;
+- classificazione feature code;
+- studio relazioni città ↔ aeroporto;
+- definizione del modello geografico.
 
 ------------------------------------------------------------
 
 ### FASE 2 — COMPLETATA
-Nuovo modello Località
+Nuovo modello geografico
 
-Introduzione del concetto unificato di:
+Il repository tratta aeroporti e località come punti geografici compatibili,
+mantenendone però distinta l'origine.
 
-- Aeroporto
-- Eliporto
-- Idroporto
-- Città
-- Villaggio
-- Località
+Ogni risultato espone il campo:
 
-Ogni risultato dovrà rappresentare una Località.
+- `origine_punto = aeroporto`;
+- `origine_punto = localita`.
 
 ------------------------------------------------------------
 
 ### FASE 3 — COMPLETATA
 Backend
 
-Introduzione del parametro:
+Il parametro `tipo_localita` supporta esclusivamente:
 
-tipo_localita
+- `solo_aeroporti`;
+- `solo_localita`.
 
-valori previsti:
-
-- solo_aeroporti
-- aeroporti_e_localita
-- solo_localita
+La Streaming API rifiuta modalità non previste.
 
 ------------------------------------------------------------
 
 ### FASE 4 — COMPLETATA
-Query SQL unificata
+Query SQL e deduplicazione
 
-Creata la sorgente unica delle località candidate.
+La sorgente geografica espone:
 
-Ogni record contiene:
+- coordinate;
+- nome;
+- città;
+- tipo;
+- nazione;
+- popolazione, quando disponibile;
+- aeroporto associato, quando disponibile;
+- codici IATA e ICAO, quando disponibili;
+- `origine_punto`.
 
-- coordinate
-- nome
-- tipo
-- nazione
-- popolazione (quando disponibile)
-- eventuale aeroporto associato
-- eventuale IATA
-- eventuale ICAO
+La deduplicazione SQL mantiene la precedenza prevista dalla modalità di
+ricerca e usa un ordinamento deterministico basato su:
 
-Il contratto è esposto sia dal repository SQL sia dall'output della Streaming API.
-Per gli aeroporti, `aeroporto_associato` coincide con il nome dell'aeroporto;
-per le località resta `NULL` finché non verrà definita una regola geografica
-di associazione.
+- priorità dell'origine;
+- nazione;
+- latitudine;
+- longitudine;
+- nome;
+- città;
+- ICAO;
+- IATA.
 
 ------------------------------------------------------------
 
@@ -420,58 +425,98 @@ Interfaccia
 
 Aggiornamenti realizzati:
 
-- filtro `Tipo località` con supporto a:
+- filtro `Tipo località` limitato a:
   - `solo_aeroporti`;
-  - `aeroporti_e_localita`;
   - `solo_localita`;
 - invio del parametro `tipo_localita` alla Streaming API;
-- visualizzazione del nome completo della località;
-- distinzione tra aeroporti e località geografiche;
+- distinzione del risultato tramite `origine_punto`;
+- visualizzazione del nome completo;
 - visualizzazione della popolazione quando disponibile;
 - visualizzazione opzionale dei codici IATA e ICAO;
-- utilizzo delle coordinate della località selezionata;
+- utilizzo delle coordinate del punto selezionato;
 - compatibilità preservata con il comportamento aeroportuale legacy.
 
-Rilascio:
+------------------------------------------------------------
 
-- commit funzionale: `bad3026`;
-- merge su `main`: `49423d1`;
-- tag: `rsm-v3-fase5-completata`.
+### FASE 5A — PIANIFICATA
+Ricerca nazionale delle località
+
+Motivazione
+
+La ricerca mondiale sulle località geografiche risulta eccessivamente ampia
+(oltre cinque milioni di punti) e comporta tempi di elaborazione non
+compatibili con la Ricerca RSM.
+
+Per questo motivo la modalità `solo_localita` verrà limitata ad una singola
+nazione per ogni ricerca.
+
+Funzionalità previste
+
+- visualizzazione del selettore **Nazione** quando viene scelta la modalità
+  `solo_localita`;
+- selezione della nazione obbligatoria;
+- visualizzazione del limite massimo di risultati:
+  - 50 (predefinito);
+  - 100;
+  - 150;
+  - Tutte;
+- ricerca limitata esclusivamente alla nazione selezionata;
+- inclusione di tutte le località geografiche della nazione
+  (città, paesi, villaggi, borghi, frazioni e insediamenti minori),
+  indipendentemente dalla presenza di un aeroporto;
+- mantenimento della ricerca mondiale senza limitazioni nella modalità
+  `solo_aeroporti`.
 
 ------------------------------------------------------------
 
-### FASE 6
-Prestazioni
+### FASE 6 — COMPLETATA
+Prestazioni e determinismo
 
-Ottimizzazione SQL
+Completati:
 
-Riduzione query
-
-Caching
-
-Benchmark
+- deduplicazione SQL;
+- ordinamento deterministico;
+- equivalenza tra sequenza PHP e sequenza SQL;
+- mantenimento delle prestazioni su dataset geografici estesi.
 
 ------------------------------------------------------------
 
-### FASE 7
+### FASE 7 — COMPLETATA
 Test
 
-Nuovi test automatici:
+Verifiche superate:
 
-✔ solo aeroporti
+✔ `legacy_solo_aeroporti`
 
-✔ aeroporti + località
+✔ `v3_solo_aeroporti`
 
-✔ solo località
+✔ `v3_solo_localita`
 
-✔ località senza aeroporto
+✔ equivalenza deduplicazione PHP/SQL: `851` risultati
 
-✔ regressione completa
+✔ lint PHP
+
+✔ compilazione sintattica dello script Python
+
+✔ `git diff --check`
 
 ------------------------------------------------------------
 
-### Criterio di completamento
+### Rilascio locale
 
-La funzionalità sarà considerata completata quando la Ricerca RSM sarà
-in grado di proporre qualsiasi località geografica del database mondiale,
-mantenendo la piena compatibilità con il comportamento storico.
+- branch: `fix/rsm-v3-localita-nazione-obbligatoria`;
+- commit: `900c8f9`;
+- descrizione: `Rimuove modalità mista e distingue aeroporti e località`;
+- repository Git mantenuto esclusivamente in locale.
+
+------------------------------------------------------------
+
+### Stato attuale
+
+La Ricerca RSM v3 è completata secondo il modello a due modalità.
+
+Gli aeroporti e le località restano entrambi supportati, ma vengono ricercati
+separatamente e identificati esplicitamente tramite `origine_punto`.
+
+La selezione obbligatoria della nazione e il limite 50/100/150/Tutte per
+`solo_localita` restano pianificati nella FASE 5A.

@@ -2114,7 +2114,6 @@ sulla sequenza di deduplica.
 Completata l’introduzione del parametro opzionale `tipo_localita` con i valori:
 
 - `solo_aeroporti`;
-- `aeroporti_e_localita`;
 - `solo_localita`.
 
 Il comportamento legacy è preservato quando il parametro è assente o non valido.
@@ -2170,7 +2169,7 @@ senza modificare il motore astrologico né il comportamento legacy consolidato.
 ### Obiettivo
 
 Completare l'interfaccia della Ricerca RSM v3, rendendo disponibile
-la selezione tra aeroporti, aeroporti e località, oppure sole località.
+la selezione tra sole località aeroportuali oppure sole località geografiche.
 
 ### Risultato
 
@@ -2202,6 +2201,14 @@ la selezione tra aeroporti, aeroporti e località, oppure sole località.
 - FASE 2: completata;
 - FASE 3: completata;
 - FASE 4: completata;
-- FASE 5: completata.
+- FASE 5: completata;
+- FASE 6: completata;
+- FASE 7: completata;
+- FASE 5A: pianificata.
 
-La roadmap Ricerca RSM v3 — Località geografiche complete è completata.
+Il modello attuale supporta esclusivamente `solo_aeroporti` e
+`solo_localita`, distinguendo i risultati tramite `origine_punto`.
+
+La FASE 5A introdurrà, per `solo_localita`, la selezione obbligatoria
+della nazione e il limite 50/100/150/Tutte. La modalità
+`solo_aeroporti` manterrà la ricerca mondiale e il comportamento legacy.

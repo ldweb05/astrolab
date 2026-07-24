@@ -230,18 +230,11 @@ particolare tipologia di località.
 
 ✔ documentazione aggiornata
 
-✔ FASE 1 completata: analisi del modello geografico
+✔ FASI 1-7 completate
 
-✔ FASE 2 completata: nuovo modello unificato Località
-
-✔ FASE 3 completata:
-backend e supporto al parametro `tipo_localita`
-
-✔ FASE 4 completata:
-contratto backend e query unificata
-
-✔ FASE 5 completata:
-interfaccia con supporto completo ad aeroporti e località
+◷ FASE 5A pianificata:
+ricerca `solo_localita` limitata a una nazione, con nazione obbligatoria
+e limite 50/100/150/Tutte
 
 ---
 
@@ -271,28 +264,28 @@ Durante questo sprint:
 
 ## Obiettivo raggiunto
 
-La Ricerca RSM v3 espone ora nell'interfaccia la selezione del tipo
-di località e supporta i valori:
+La Ricerca RSM v3 espone nell'interfaccia due modalità:
 
 - `solo_aeroporti`;
-- `aeroporti_e_localita`;
 - `solo_localita`.
 
-I risultati distinguono aeroporti e località geografiche e mostrano,
-quando disponibili, popolazione, aeroporto associato, IATA e ICAO.
+I risultati distinguono aeroporti e località geografiche tramite
+`origine_punto` e mostrano, quando disponibili, popolazione, nome completo,
+IATA e ICAO.
 
-L'assenza del parametro continua a preservare il comportamento legacy.
-Il motore astrologico non è stato modificato.
+L'assenza del parametro continua a preservare il comportamento legacy
+aeroportuale. Il motore astrologico non è stato modificato.
 
 ## Stato corrente Ricerca RSM v3
 
-Le FASI 1, 2, 3, 4 e 5 sono completate.
+Le FASI 1, 2, 3, 4, 5, 6 e 7 sono completate.
 
 Il repository geografico supporta aeroporti e località, mentre
-`ricerca_stream_api.php` esegue la deduplicazione direttamente in PostgreSQL.
+`ricerca_stream_api.php` esegue la deduplicazione direttamente in PostgreSQL
+con ordinamento deterministico.
 
-L'interfaccia supporta la selezione del tipo di località e visualizza
-correttamente i metadati specifici di aeroporti e località geografiche.
+Resta pianificata la FASE 5A: in modalità `solo_localita` l'utente dovrà
+selezionare obbligatoriamente una nazione e un limite di 50, 100, 150 o Tutte.
 
 Rilascio FASE 5:
 
