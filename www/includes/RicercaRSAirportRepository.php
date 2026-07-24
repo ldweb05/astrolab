@@ -169,7 +169,11 @@ function recuperaAeroporti(PDO $pdo, array $where, array $params): array
             priorita_origine,
             nazione,
             latitudine,
-            longitudine
+            longitudine,
+            nome,
+            citta,
+            icao_code,
+            iata_code
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -204,8 +208,7 @@ function recuperaAeroportiDeduplicati(
     $haFiltroGeografico = $filtri['haFiltroGeografico'];
 
     $usaAeroporti = $tipoLocalita !== 'solo_localita';
-    $usaLocalita = $tipoLocalita === 'aeroporti_e_localita'
-        || $tipoLocalita === 'solo_localita'
+    $usaLocalita = $tipoLocalita === 'solo_localita'
         || ($tipoLocalita === '' && $haFiltroGeografico);
 
     $rami = [];
@@ -224,6 +227,7 @@ function recuperaAeroportiDeduplicati(
                 nome AS aeroporto_associato,
                 latitudine,
                 longitudine,
+                'aeroporto'::VARCHAR(20) AS origine_punto,
                 0 AS priorita_origine
             FROM aeroporti
             WHERE " . implode(' AND ', $whereAeroporti);
@@ -247,6 +251,7 @@ function recuperaAeroportiDeduplicati(
                 NULL::VARCHAR(200) AS aeroporto_associato,
                 latitudine,
                 longitudine,
+                'localita'::VARCHAR(20) AS origine_punto,
                 1 AS priorita_origine
             FROM localita
             WHERE " . implode(' AND ', $whereLocalita);
@@ -272,6 +277,7 @@ function recuperaAeroportiDeduplicati(
                 aeroporto_associato,
                 latitudine,
                 longitudine,
+                origine_punto,
                 priorita_origine
             FROM (
                 {$ramiSql}
@@ -294,8 +300,11 @@ function recuperaAeroportiDeduplicati(
                 aeroporto_associato,
                 latitudine,
                 longitudine,
+                origine_punto,
                 priorita_origine,
-                ROW_NUMBER() OVER () AS ordine_origine
+                ROW_NUMBER() OVER (
+                    ORDER BY priorita_origine, nazione, latitudine, longitudine, nome, citta, icao_code, iata_code
+                ) AS ordine_origine
             FROM punti_geografici
         ),
         classificati AS (
@@ -310,6 +319,7 @@ function recuperaAeroportiDeduplicati(
                 aeroporto_associato,
                 latitudine,
                 longitudine,
+                origine_punto,
                 priorita_origine,
                 ordine_origine,
                 COUNT(*) OVER () AS totale_originale,
@@ -342,6 +352,7 @@ function recuperaAeroportiDeduplicati(
             aeroporto_associato,
             latitudine,
             longitudine,
+            origine_punto,
             totale_originale
         FROM classificati
         WHERE posizione_bucket = 1
@@ -349,7 +360,11 @@ function recuperaAeroportiDeduplicati(
             priorita_origine,
             nazione,
             latitudine,
-            longitudine
+            longitudine,
+            nome,
+            citta,
+            icao_code,
+            iata_code
     ";
 
     $stmt = $pdo->prepare($sql);

@@ -69,7 +69,6 @@ BARRA CONTROLLI PRINCIPALE
 <label>Tipo località</label>
 <select id="tipo-localita">
 <option value="solo_aeroporti">Solo aeroporti</option>
-<option value="aeroporti_e_localita">Aeroporti + località</option>
 <option value="solo_localita">Solo località</option>
 </select>
 </div>
@@ -1318,7 +1317,7 @@ const sogg = getSoggetto();
 const anno = document.getElementById('anno-rs').value;
 const cond = stato.modalita === 'astri' ? 'Decima' : document.getElementById('condizione').value;
 const righe = pagRis.map((r, idx) => {
-const isLocalita = !r.iata && !r.icao && !r.aeroporto_associato;
+const isLocalita = r.origine_punto === 'localita';
 const nomePunto = r.nome || r.citta || '—';
 const luogoRs = isLocalita
 ? [nomePunto, r.nazione].filter(Boolean).join(', ')
