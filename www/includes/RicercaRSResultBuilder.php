@@ -25,6 +25,7 @@ function costruisciRisultatoRicercaRS(
     'tipo'                   => $aero['tipo'] ?? null,
     'popolazione'            => $aero['popolazione'] ?? null,
     'aeroporto_associato'    => $aero['aeroporto_associato'] ?? null,
+    'origine_punto'          => $aero['origine_punto'] ?? 'aeroporto',
     'lat'                    => $latA,
     'lon'            => $lonA,
     'stelline'       => $val['stelline'],

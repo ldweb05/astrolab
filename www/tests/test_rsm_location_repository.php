@@ -31,18 +31,6 @@ $casi = [
         'attende_localita' => false,
         'tipo_localita' => 'solo_aeroporti',
     ],
-    'v3_localita_multinazione' => [
-        'where' => [
-            'attivo = true',
-            "tipo IN ('large_airport','medium_airport','small_airport')",
-            'nazione IN (?,?)',
-            'longitudine >= ?',
-            'longitudine <= ?',
-        ],
-        'params' => ['IT', 'FR', -6.0, 19.0],
-        'attende_localita' => true,
-        'tipo_localita' => 'aeroporti_e_localita',
-    ],
     'v3_solo_localita' => [
         'where' => [
             'attivo = true',

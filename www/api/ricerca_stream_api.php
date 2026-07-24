@@ -160,7 +160,7 @@ $lonMax = isset($_GET['lon_max']) && $_GET['lon_max'] !== '' ? floatval($_GET['l
 
 // Tipo località: parametro opzionale, assenza = comportamento legacy
 $tipoLocalita = trim($_GET['tipo_localita'] ?? '');
-$tipiLocalitaValidi = ['solo_aeroporti', 'aeroporti_e_localita', 'solo_localita'];
+$tipiLocalitaValidi = ['solo_aeroporti', 'solo_localita'];
 if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true)) {
     $tipoLocalita = '';
 }
