@@ -160,7 +160,7 @@ $lonMax = isset($_GET['lon_max']) && $_GET['lon_max'] !== '' ? floatval($_GET['l
 
 // Tipo località: parametro opzionale, assenza = comportamento legacy
 $tipoLocalita = trim($_GET['tipo_localita'] ?? '');
-$tipiLocalitaValidi = ['solo_aeroporti', 'solo_localita'];
+$tipiLocalitaValidi = ['aeroporti', 'localita'];
 if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true)) {
     $tipoLocalita = '';
 }
@@ -736,11 +736,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
         $b['stelline'] <=> $a['stelline']
     );
 
-    if ($tipoLocalita === 'solo_localita' && $numeroLocalita !== null) {
+    if ($tipoLocalita === 'localita' && $numeroLocalita !== null) {
         $risultati = array_slice($risultati, 0, $numeroLocalita);
     }
 
-    if ($tipoLocalita === 'solo_localita') {
+    if ($tipoLocalita === 'localita') {
         $risultati = arricchisciLocalitaConAeroporti(
             $pdo,
             $risultati

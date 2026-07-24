@@ -207,9 +207,11 @@ function recuperaAeroportiDeduplicati(
     $paramsLocalita = $filtri['paramsLocalita'];
     $haFiltroGeografico = $filtri['haFiltroGeografico'];
 
-    $usaAeroporti = $tipoLocalita !== 'solo_localita';
-    $usaLocalita = $tipoLocalita === 'solo_localita'
+    $usaAeroporti = $tipoLocalita !== 'localita';
+    $usaLocalita = $tipoLocalita === 'localita'
         || ($tipoLocalita === '' && $haFiltroGeografico);
+
+    $ricercaLocalita = $tipoLocalita === 'localita';
 
     $rami = [];
     $parametriQuery = [];
@@ -326,17 +328,25 @@ function recuperaAeroportiDeduplicati(
                 ROW_NUMBER() OVER (
                     PARTITION BY
                         CASE
+                            WHEN ? = 1 THEN nazione
                             WHEN latitudine < 0
                                  AND ROUND(ABS(latitudine) / ?) = 0
                             THEN '-0'
                             ELSE ROUND(latitudine / ?)::text
                         END,
                         CASE
+                            WHEN ? = 1 THEN COALESCE(
+                                NULLIF(BTRIM(citta), ''),
+                                NULLIF(BTRIM(nome), ''),
+                                ''
+                            )
                             WHEN longitudine < 0
                                  AND ROUND(ABS(longitudine) / ?) = 0
                             THEN '-0'
                             ELSE ROUND(longitudine / ?)::text
-                        END
+                        END,
+                        CASE WHEN ? = 1 THEN latitudine ELSE NULL END,
+                        CASE WHEN ? = 1 THEN longitudine ELSE NULL END
                     ORDER BY ordine_origine
                 ) AS posizione_bucket
             FROM punti_ordinati
@@ -368,9 +378,20 @@ function recuperaAeroportiDeduplicati(
     ";
 
     $stmt = $pdo->prepare($sql);
+    $modalitaLocalita = $ricercaLocalita ? 1 : 0;
+
     $stmt->execute(array_merge(
         $parametriQuery,
-        [$bucketLat, $bucketLat, $bucketLon, $bucketLon]
+        [
+            $modalitaLocalita,
+            $bucketLat,
+            $bucketLat,
+            $modalitaLocalita,
+            $bucketLon,
+            $bucketLon,
+            $modalitaLocalita,
+            $modalitaLocalita,
+        ]
     ));
 
     $righe = $stmt->fetchAll(PDO::FETCH_ASSOC);
