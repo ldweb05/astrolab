@@ -165,6 +165,12 @@ if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true))
     $tipoLocalita = '';
 }
 
+// Numero massimo di località restituite: 50 default, oppure 100, 150, tutte
+$numeroLocalitaRaw = trim($_GET['numero_localita'] ?? '50');
+$numeroLocalita = in_array($numeroLocalitaRaw, ['50', '100', '150'], true)
+    ? (int)$numeroLocalitaRaw
+    : null;
+
 // Validazione condizione
 $condizioniValide = ['Decima', 'Lavoro', 'Amore', 'Salute', 'Denaro', 'Denaro Low', 'Casa'];
 if (!in_array($condizione, $condizioniValide, true)) {
@@ -729,6 +735,17 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     usort($risultati, static fn(array $a, array $b): int =>
         $b['stelline'] <=> $a['stelline']
     );
+
+    if ($tipoLocalita === 'solo_localita' && $numeroLocalita !== null) {
+        $risultati = array_slice($risultati, 0, $numeroLocalita);
+    }
+
+    if ($tipoLocalita === 'solo_localita') {
+        $risultati = arricchisciLocalitaConAeroporti(
+            $pdo,
+            $risultati
+        );
+    }
 
     sse('done', [
         'risultati'             => $risultati,
