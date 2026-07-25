@@ -189,7 +189,7 @@ function recuperaAeroporti(PDO $pdo, array $where, array $params): array
  * L'ordinamento replica quello consumato da deduplicaAeroporti():
  * il primo record incontrato per ciascun bucket viene mantenuto.
  *
- * @return array{aeroporti: array<int, array<string, mixed>>, totale_originale: int}
+ * @return array{aeroporti: array<int, array<string, mixed>>, totale_originale: int, totale_deduplicato: int}
  */
 function recuperaAeroportiDeduplicati(
     PDO $pdo,
@@ -365,7 +365,8 @@ function recuperaAeroportiDeduplicati(
             latitudine,
             longitudine,
             origine_punto,
-            totale_originale
+            totale_originale,
+            COUNT(*) OVER () AS totale_deduplicato
         FROM classificati
         WHERE posizione_bucket = 1
         ORDER BY
@@ -406,15 +407,19 @@ function recuperaAeroportiDeduplicati(
     $totaleOriginale = $righe === []
         ? 0
         : (int)$righe[0]['totale_originale'];
+    $totaleDeduplicato = $righe === []
+        ? 0
+        : (int)$righe[0]['totale_deduplicato'];
 
     foreach ($righe as &$riga) {
-        unset($riga['totale_originale']);
+        unset($riga['totale_originale'], $riga['totale_deduplicato']);
     }
     unset($riga);
 
     return [
         'aeroporti' => $righe,
         'totale_originale' => $totaleOriginale,
+        'totale_deduplicato' => $totaleDeduplicato,
     ];
 }
 

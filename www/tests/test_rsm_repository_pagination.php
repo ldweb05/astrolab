@@ -69,6 +69,14 @@ if ($attesi !== $ottenuti) {
     exit(1);
 }
 
+if (
+    $pagina1['totale_deduplicato'] !== count($completo['aeroporti'])
+    || $pagina2['totale_deduplicato'] !== count($completo['aeroporti'])
+) {
+    fwrite(STDERR, "Totale deduplicato errato nelle pagine limitate\n");
+    exit(1);
+}
+
 if (count($pagina1['aeroporti']) > 50 || count($pagina2['aeroporti']) > 50) {
     fwrite(STDERR, "Una pagina supera il limite richiesto\n");
     exit(1);
