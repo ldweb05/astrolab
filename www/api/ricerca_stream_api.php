@@ -166,11 +166,15 @@ if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true))
     $tipoLocalita = '';
 }
 
-// Numero massimo di località restituite: 50 default, oppure 100, 150, tutte
+// Numero massimo di località restituite: valori consentiti 50, 100, 150, 200, 250, 500, 1000
 $numeroLocalitaRaw = trim($_GET['numero_localita'] ?? '50');
-$numeroLocalita = in_array($numeroLocalitaRaw, ['50', '100', '150'], true)
+$numeroLocalita = in_array(
+    $numeroLocalitaRaw,
+    ['50', '100', '150', '200', '250', '500', '1000'],
+    true
+)
     ? (int)$numeroLocalitaRaw
-    : null;
+    : 50;
 
 // Validazione condizione
 $condizioniValide = ['Decima', 'Lavoro', 'Amore', 'Salute', 'Denaro', 'Denaro Low', 'Casa'];
