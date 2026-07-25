@@ -1495,14 +1495,14 @@ Le attività consentite sono esclusivamente:
 
 Ogni attività completata DEVE essere registrata nel file:
 
-docs/HANDOVER_OPERATIVO.md
+docs/HANDOVER_OPERATIVO_astrolab.md
 
 L'Handover rappresenta il diario ufficiale del progetto.
 
 Ogni sviluppatore dovrà poter riprendere il lavoro leggendo solamente:
 
-1. HANDOVER_OPERATIVO.md
-2. ROADMAP.md
+1. HANDOVER_OPERATIVO_astrolab.md
+2. docs/ROADMAP.md
 3. KNOWLEDGE_COVERAGE.md
 4. RULE_BACKLOG.md
 

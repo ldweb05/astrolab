@@ -68,11 +68,11 @@ utenti iniziali.
 
 ## Documentazione obbligatoria
 
-1.  START_HERE.md
+1.  docs/START_HERE.md
 2.  README.md
-3.  ROADMAP.md
-4.  HANDOVER_OPERATIVO.md
-5.  ADR_INDEX.md
+3.  docs/ROADMAP.md
+4.  HANDOVER_OPERATIVO_astrolab.md
+5.  docs/ADR_INDEX_ASTROLAB.md
 6.  PROJECT_RESUME_GUIDE.md
 
 ------------------------------------------------------------------------
@@ -88,7 +88,7 @@ utenti iniziali.
 7.  Eseguire i controlli.
 8.  Eseguire git diff --check.
 9.  Commit dedicato.
-10. Aggiornare HANDOVER_OPERATIVO.md.
+10. Aggiornare HANDOVER_OPERATIVO_astrolab.md.
 
 Mai modificare direttamente i file.
 
@@ -126,7 +126,7 @@ SUITE OK - V6 RELEASE CHECK OK
 -   Eseguire i controlli.
 -   Commit autonomo.
 -   Release Check completo.
--   Aggiornare HANDOVER_OPERATIVO.md.
+-   Aggiornare HANDOVER_OPERATIVO_astrolab.md.
 
 ------------------------------------------------------------------------
 

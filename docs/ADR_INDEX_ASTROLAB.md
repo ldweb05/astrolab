@@ -75,14 +75,14 @@ Le attività correnti possono riguardare:
 
 Ogni attività completata deve essere registrata cronologicamente in:
 
-`docs/HANDOVER_OPERATIVO.md`
+`docs/HANDOVER_OPERATIVO_astrolab.md`
 
 Per riprendere il lavoro leggere nell'ordine:
 
-1.  `START_HERE.md`;
-2.  `HANDOVER_OPERATIVO.md`;
-3.  `ROADMAP.md`;
-4.  `ADR_INDEX.md`.
+1.  `docs/START_HERE.md`;
+2.  `docs/HANDOVER_OPERATIVO_astrolab.md`;
+3.  `docs/ROADMAP.md`;
+4.  `docs/ADR_INDEX_ASTROLAB.md`.
 
 Non è richiesto reinterpretare l'architettura.
 

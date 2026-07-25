@@ -12,9 +12,9 @@ Decision Support System) in un'unica piattaforma.
 Leggere nell'ordine:
 
 1.  `docs/START_HERE.md`
-2.  `docs/ADR_INDEX.md`
+2.  `docs/ADR_INDEX_ASTROLAB.md`
 3.  `docs/ROADMAP.md`
-4.  `docs/HANDOVER_OPERATIVO.md`
+4.  `docs/HANDOVER_OPERATIVO_astrolab.md`
 
 Questi documenti costituiscono la documentazione ufficiale del progetto.
 
@@ -28,24 +28,6 @@ Questi documenti costituiscono la documentazione ufficiale del progetto.
 -   Rule Engine: **in freeze**
 
 Le 120 Rule costituiscono il nucleo stabile del sistema.
-
-Le evoluzioni future riguardano esclusivamente i livelli superiori
-dell'architettura:
-
--   Comparator Engine
--   Decision Support System
--   Difference Analyzer
--   Impact Evaluator
--   Rule Correlator
--   Recommendation Engine
--   Narrative Engine
--   Annual Report
--   Executive Summary
--   Theme Profile
--   Cross Dynamics
--   PDF professionale
--   UX/UI
--   validazione con casi reali
 
 ## Funzionalità principali
 
@@ -88,13 +70,14 @@ Sono completati:
 -   `git diff --check` pulito.
 
 ## Architettura logica
-
-``` text
-Swiss Ephemeris (FFI)
+```text
+Swiss Ephemeris
         │
-Planet Conditions
+Planet Resolver
         │
-Rule Engine (120 Rule)
+Planet Condition Engine
+        │
+Rule Engine
         │
 Evidence Engine
         │
@@ -104,9 +87,11 @@ Narrative Engine
         │
 Annual Report
         │
-Comparator Engine
+Comparator
         │
 Decision Support System
+        │
+API / Browser / PDF
 ```
 
 ## Caratteristiche distintive
@@ -144,14 +129,19 @@ Per la Ricerca RSM v3 risultano completate:
 -   FASE 3 — Backend;
 -   FASE 4 — Contratto backend;
 -   FASE 5 — Interfaccia;
--   FASE 6 — Prestazioni e determinismo;
--   FASE 7 — Test.
-
-Lo stato corrente prevede una sola evoluzione pianificata:
-
 -   FASE 5A — ricerca delle località limitata ad una nazione con selezione
     obbligatoria della nazione e limite configurabile di risultati
     (50/100/150/Tutte).
+-   FASE 6 — Prestazioni e determinismo;
+-   FASE 7 — Test.
 
-Il Rule Engine, il motore astrologico e il contratto backend consolidato
-rimangono invariati.
+La baseline del progetto è stabile.
+
+Le attività future riguardano esclusivamente:
+
+- manutenzione correttiva;
+- bug fixing;
+- aggiornamento della documentazione;
+- evoluzioni funzionali future quando realmente necessarie.
+
+Il Rule Engine e il motore astrologico costituiscono la baseline permanente del progetto.
