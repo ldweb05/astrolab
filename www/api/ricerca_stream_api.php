@@ -21,6 +21,7 @@ require_once __DIR__ . '/../includes/RicercaRSDeduplicator.php';
 require_once __DIR__ . '/../includes/RicercaRSThemeBuilder.php';
 require_once __DIR__ . '/../includes/RicercaRSPlanetHouseAssigner.php';
 require_once __DIR__ . '/../includes/RicercaRSResultBuilder.php';
+require_once __DIR__ . '/../includes/RicercaRSTopK.php';
 require_once __DIR__ . '/../includes/RicercaRSExclusionFilter.php';
 
 /**
@@ -320,18 +321,23 @@ try {
         $params[] = $lonMax;
     }
 
+    $dimensioneBlocco = 500;
+    $offsetBlocco = 0;
+
     $recupero = recuperaAeroportiDeduplicati(
         $pdo,
         $where,
         $params,
         $bucketLat,
         $bucketLon,
-        $tipoLocalita
+        $tipoLocalita,
+        $dimensioneBlocco,
+        $offsetBlocco
     );
 
     $selezionati = $recupero['aeroporti'];
     $totaleAero  = $recupero['totale_originale'];
-    $totaleCalc  = count($selezionati);
+    $totaleCalc  = $recupero['totale_deduplicato'];
 
     // Evento SSE: informa il frontend sul totale grezzo e il momento RS
     sse('start', [
@@ -360,6 +366,9 @@ try {
     //  Step 5 — Loop principale: calcolo case + esclusione + valutazione
     // ─────────────────────────────────────────────────────────────────────
     $risultati             = [];
+    $limiteRisultatiInMemoria = ($tipoLocalita === 'localita' && $numeroLocalita !== null)
+        ? $numeroLocalita
+        : null;
     $processed             = 0;
     $totaleEsclusiRadicale = 0; // contatore diagnostico (Rule Map)
     $totaleEsclusiFiltro   = 0; // contatore RS escluse da FiltroEsclusione (checkbox)
@@ -370,363 +379,394 @@ try {
     $totaleEsclusiDenaroLow = 0; // contatore RS escluse dal filtro specifico Denaro Low
 $totaleCalcoliPlacido = 0;   // diagnostica: numero calcoli case Placido eseguiti
 $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::valuta()
+    $ricercaInterrotta = false;
 
-    foreach ($selezionati as $aero) {
+    while ($selezionati !== []) {
+        foreach ($selezionati as $aero) {
 
-        // Interruzione se il client ha chiuso la connessione
-        if ($processed % 200 === 0 && connection_aborted()) {
+            // Interruzione se il client ha chiuso la connessione
+            if ($processed % 200 === 0 && connection_aborted()) {
+                $ricercaInterrotta = true;
+                break;
+            }
+
+            $latA = floatval($aero['latitudine']);
+            $lonA = floatval($aero['longitudine']);
+
+            try {
+                // ── A. Calcolo case Placido per questo aeroporto ──────────────
+                // I pianeti $pianetiRS sono già calcolati — solo le case variano.
+                $totaleCalcoliPlacido++;
+                $caseRS = $swe->calcolaCasePlacido(
+                    $giornoRS, $meseRS, $annoRSeff,
+                    $oraGmtRS, $latA, $lonA
+                );
+
+                // ── B. Assegna casa RS a ogni pianeta (riusa metodo pubblico) ─
+                $pianetiConCase = assegnaCaseAiPianeti($pianetiRS, $caseRS, $swe);
+
+                // ── C. ESCLUSIONE RADICALE ─────────────────────────────────────
+                // Applicata PRIMA del RuleEngine per massima efficienza:
+                // se un malevolo "proibito" è nella casa "proibita" per questa
+                // condizione, l'aeroporto viene scartato immediatamente senza
+                // chiamare valuta() (risparmio CPU significativo su 84k aeroporti).
+                // Nota: per le condizioni "Amore", "Casa" e "Denaro" la Rule Map
+                // può essere vuota (per Amore/Casa) o non applicabile (Denaro gestito
+                // separatamente con pre-ingresso), quindi il controllo viene saltato.
+                if ($hasRuleMap && escludiPerRuleMap($pianetiConCase, $condizione)) {
+                    $totaleEsclusiRadicale++;
+                    $processed++;
+                    // Aggiorna progress ogni 50 anche per gli esclusi
+                    if ($processed % 50 === 0) {
+                        sse('progress', [
+                            'processed'        => $processed,
+                            'totale'           => $totaleCalc,
+                            'perc'             => round($processed / $totaleCalc * 100),
+                            'fase'             => 'calcolo',
+                            'esclusi_radicale' => $totaleEsclusiRadicale,
+                            'esclusi_filtro'   => $totaleEsclusiFiltro,
+                                'calcoli_placido'  => $totaleCalcoliPlacido,
+                        ]);
+                    }
+                    continue;
+                }
+
+                // ── C-bis. FILTRO DI ESCLUSIONE RS (FiltroEsclusione.php) ─────
+                // Sole/Marte in I-VI-XII RS, ASC RS in I-VI-XII natale,
+                // Saturno in X RS, stellium in qualsiasi casa RS. Indipendente
+                // dal RuleEngine e dalla Rule Map radicale qui sopra.
+                // Controllato dal checkbox "Mostra anche le RS escluse dal
+                // filtro" (mostra_escluse): se non spuntato, l'aeroporto viene
+                // saltato come prima; se spuntato, viene comunque incluso nei
+                // risultati ma marcato 'esclusa_filtro' => true.
+                $valutazioneFiltroRS = valutaEsclusioneFiltroRS($pianetiConCase, $caseRS, $temaNatale);
+                $motiviEsclusioneFiltro = $valutazioneFiltroRS['motivi'];
+                $esclusaFiltro = $valutazioneFiltroRS['esclusa'];
+
+                if ($esclusaFiltro) {
+                    $totaleEsclusiFiltro++;
+                    if (!$mostraEscluse) {
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                            ]);
+                        }
+                        continue;
+                    }
+                }
+
+                // ── C-ter. FILTRO SPECIFICO PER AMORE ──────────────────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Verifica che almeno un benefico (VE/GI/SO) sia in V o VII casa RS,
+                // che non ci siano malevoli (MA/SA/UR/NE/PLU) in V o VII,
+                // e che i benefici non siano troppo vicini all'uscita dalla casa.
+                if ($condizione === 'Amore') {
+                    $verificaAmore = verificaCondizioneAmore($pianetiConCase, $caseRS);
+                    if (!$verificaAmore['valida']) {
+                        $totaleEsclusiAmore++;
+                        // Le RS escluse dal filtro Amore NON vengono incluse nei risultati
+                        // (non c'è un checkbox "Mostra anche le RS escluse da Amore")
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                                'esclusi_amore'    => $totaleEsclusiAmore,
+                            ]);
+                        }
+                        continue;
+                    }
+                }
+
+                // ── C-quater. FILTRO SPECIFICO PER CASA (IV Casa) ─────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Verifica che almeno un benefico (SO/GI/VE) sia in IV casa RS
+                // con pre-ingresso di 3°, che non ci siano malevoli (MA/SA/UR/NE/PLU)
+                // in IV casa (con pre-ingresso), e che i benefici non siano
+                // troppo vicini all'uscita dalla IV (cuspide V).
+                if ($condizione === 'Casa') {
+                    $verificaCasa = verificaCondizioneCasa($pianetiConCase, $caseRS);
+                    if (!$verificaCasa['valida']) {
+                        $totaleEsclusiCasa++;
+                        // Le RS escluse dal filtro Casa NON vengono incluse nei risultati
+                        // (non c'è un checkbox "Mostra anche le RS escluse da Casa")
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                                'esclusi_amore'    => $totaleEsclusiAmore,
+                                'esclusi_casa'     => $totaleEsclusiCasa,
+                            ]);
+                        }
+                        continue;
+                    }
+                }
+
+                // ── C-quinquies. FILTRO SPECIFICO PER SALUTE ────────────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Implementa i criteri di protezione massima della scuola di Ciro Discepolo:
+                //   1. Tolleranza pre-ingresso ampliata a 4° per malefici in I/VI/XII
+                //   2. Scudo benefico in I casa (Giove/Venere) con sicurezza uscita 3°
+                //   3. Esclusione Sole in XII casa (spegnimento energia vitale)
+                //   4. Rafforzamento ASC natale con tolleranza 3°
+                //   5. Protezione universale: Giove o Venere in I/VI/XII
+                $scudoBeneficoAttivo = false;
+                $beneficoInI = null;
+            
+                if ($condizione === 'Salute') {
+                    $verificaSalute = verificaCondizioneSalute(
+                        $pianetiConCase,
+                        $caseRS,
+                        $temaNatale['case'],
+                        $latA
+                    );
+                
+                    if (!$verificaSalute['valida']) {
+                        $totaleEsclusiSalute++;
+                        // Le RS escluse dal filtro Salute NON vengono incluse nei risultati
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                                'esclusi_amore'    => $totaleEsclusiAmore,
+                                'esclusi_casa'     => $totaleEsclusiCasa,
+                                'esclusi_salute'   => $totaleEsclusiSalute,
+                            ]);
+                        }
+                        continue;
+                    }
+                
+                    // Se lo scudo benefico è attivo, lo registriamo per il risultato
+                    $scudoBeneficoAttivo = $verificaSalute['scudo_benefico'] ?? false;
+                    $beneficoInI = $verificaSalute['benefico_in_i'] ?? null;
+                }
+
+                // ── C-sexies. FILTRO SPECIFICO PER DENARO ──────────────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Verifica che almeno un benefico (SO/GI/VE) sia in II o VIII casa RS
+                // con pre-ingresso di 3°, che non ci siano malevoli (MA/SA/UR/NE/PLU)
+                // in II o VIII (con pre-ingresso), e che i benefici non siano
+                // troppo vicini all'uscita (III se in II, IX se in VIII).
+                $denaroAlertGiove = false;
+                $denaroBeneficioTrovato = null;
+            
+                if ($condizione === 'Denaro') {
+                    $verificaDenaro = verificaCondizioneDenaro($pianetiConCase, $caseRS);
+                    if (!$verificaDenaro['valida']) {
+                        $totaleEsclusiDenaro++;
+                        // Le RS escluse dal filtro Denaro NON vengono incluse nei risultati
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                                'esclusi_amore'    => $totaleEsclusiAmore,
+                                'esclusi_casa'     => $totaleEsclusiCasa,
+                                'esclusi_salute'   => $totaleEsclusiSalute,
+                                'esclusi_denaro'   => $totaleEsclusiDenaro,
+                            ]);
+                        }
+                        continue;
+                    }
+                
+                    // Registra i dettagli del beneficio trovato e l'alert Giove
+                    $denaroBeneficioTrovato = $verificaDenaro['beneficio_trovato'] ?? null;
+                    $denaroAlertGiove = $verificaDenaro['alert_giove_bistabile'] ?? false;
+                }
+
+                // ── C-septies. FILTRO SPECIFICO PER DENARO LOW ──────────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Implementa la logica di "difesa del patrimonio":
+                //   1. Esclusione assoluta di MA/SA/UR/NE/PLU in II o VIII
+                //   2. Sconfinamento dalla I (per II) o VII (per VIII) a meno di 3°
+                // NOTA: NON richiede la presenza di benefici (Sole/Giove/Venere).
+                if ($condizione === 'Denaro Low') {
+                    $verificaDenaroLow = verificaCondizioneDenaroLow($pianetiConCase, $caseRS);
+                    if (!$verificaDenaroLow['valida']) {
+                        $totaleEsclusiDenaroLow++;
+                        // Le RS escluse dal filtro Denaro Low NON vengono incluse nei risultati
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'           => $processed,
+                                'totale'              => $totaleCalc,
+                                'perc'                => round($processed / $totaleCalc * 100),
+                                'fase'                => 'calcolo',
+                                'esclusi_radicale'    => $totaleEsclusiRadicale,
+                                'esclusi_filtro'      => $totaleEsclusiFiltro,
+                                'esclusi_amore'       => $totaleEsclusiAmore,
+                                'esclusi_casa'        => $totaleEsclusiCasa,
+                                'esclusi_salute'      => $totaleEsclusiSalute,
+                                'esclusi_denaro'      => $totaleEsclusiDenaro,
+                                'esclusi_denaro_low'  => $totaleEsclusiDenaroLow,
+                            ]);
+                        }
+                        continue;
+                    }
+                }
+
+                // ── E. Filtro Astri in Casa anticipato ─────────────────────────
+                if ($modalitaAstri && !empty($astriInCasa)) {
+                    $violazioniDirette = verificaAstriInCasaDirectly($pianetiConCase, $astriInCasa);
+                    if (!empty($violazioniDirette)) {
+                        $processed++;
+                        continue;
+                    }
+                }
+
+                // ── E. Costruzione tema RS per questo aeroporto ───────────────
+                $temaRS = costruisciTemaRS(
+                    $pianetiConCase,
+                    $caseRS,
+                    $latA,
+                    $lonA
+                );
+
+                // ── E. Valutazione RuleEngine (34 regole Discepolo) ───────────
+                $totaleValutazioniRuleEngine++;
+                $val = $engine->valuta($temaNatale, $temaRS, $condizione, $astriInCasa);
+
+                // ── F. Filtro stelline minime ──────────────────────────────────
+                if ($stellineMin > 0 && $val['stelline'] < $stellineMin) {
+                    $processed++;
+                    continue;
+                }
+
+                // ── G. Filtro Astri in Casa personalizzato ────────────────────
+                //
+                // FIX BUG: il vecchio codice leggeva $val['astri_warning'],
+                // prodotto dalla Fase 3 del RuleEngine. Problema: se la Fase 1
+                // del RuleEngine scatta un VETO (Marte in VI, ASC in XII natale,
+                // stellium, reg.33, lat>60°), la funzione valuta() ritorna
+                // immediatamente con astri_warning=[] VUOTO, senza eseguire la
+                // Fase 3. Di conseguenza gli aeroporti con veto passavano sempre
+                // il filtro astri, anche se il pianeta richiesto era in un'altra
+                // casa — e venivano inclusi nei risultati erroneamente.
+                //
+                // SOLUZIONE CHIRURGICA: quando siamo in modalità astri, verifichiamo
+                // i criteri DIRETTAMENTE su $pianetiConCase (già disponibile al
+                // passo B), prima ancora di chiamare il RuleEngine. Il RuleEngine
+                // continua a fare il suo lavoro invariato; usiamo solo il suo
+                // risultato per stelline/VAL/veti, non per il filtro astri.
+                //
+                // Il flag $modalitaAstri garantisce che questo blocco venga eseguito
+                // SOLO quando l'utente ha impostato filtri astri personalizzati;
+                // in tutti gli altri casi il comportamento è identico a prima.
+                $astriWarnings = $val['astri_warning'] ?? []; // compatibilità campo output
+
+                if (!$modalitaAstri && !empty($astriInCasa) && !empty($astriWarnings)) {
+                    // Fallback per il caso non-modalitaAstri con filtri attivi
+                    // (comportamento originale preservato)
+                    $processed++;
+                    continue;
+                }
+
+    // ── H. Costruzione record risultato ───────────────────────────
+            $ris = costruisciRisultatoRicercaRS(
+                $aero,
+                $latA,
+                $lonA,
+                $val,
+                $astriWarnings,
+                $usaEscludiRadicale,
+                $esclusaFiltro,
+                $motiviEsclusioneFiltro,
+                $condizione,
+                $scudoBeneficoAttivo,
+                $beneficoInI,
+                $denaroBeneficioTrovato,
+                $denaroAlertGiove
+            );
+
+            aggiungiRisultatoTopK(
+                $risultati,
+                $ris,
+                $limiteRisultatiInMemoria
+            );
+                // ── I. Streaming live dei risultati top ───────────────────────
+                // Inviamo subito al frontend i risultati sopra la soglia streaming
+                // (default 3 stelle) senza aspettare la fine del loop.
+                if ($val['stelline'] >= $streamingMin) {
+                    sse('result', $ris);
+                }
+
+            } catch (Exception $e) {
+                // Aeroporto saltato (latitudine polare, calcolo impossibile, ecc.)
+                // Non blocca il loop — i fix DST e swetest -house già prevengono
+                // la maggior parte degli errori noti.
+            }
+
+            $processed++;
+
+            // Progress ogni 50 aeroporti calcolati
+            if ($processed % 50 === 0) {
+                sse('progress', [
+                    'processed'           => $processed,
+                    'totale'              => $totaleCalc,
+                    'perc'                => round($processed / $totaleCalc * 100),
+                    'fase'                => 'calcolo',
+                    'esclusi_radicale'    => $totaleEsclusiRadicale,
+                    'esclusi_filtro'      => $totaleEsclusiFiltro,
+                    'esclusi_amore'       => $totaleEsclusiAmore,
+                    'esclusi_casa'        => $totaleEsclusiCasa,
+                    'esclusi_salute'      => $totaleEsclusiSalute,
+                    'esclusi_denaro'      => $totaleEsclusiDenaro,
+                    'esclusi_denaro_low'  => $totaleEsclusiDenaroLow,
+                ]);
+            }
+        }
+
+        if ($ricercaInterrotta) {
             break;
         }
 
-        $latA = floatval($aero['latitudine']);
-        $lonA = floatval($aero['longitudine']);
+        $offsetBlocco += count($selezionati);
+        unset($selezionati);
 
-        try {
-            // ── A. Calcolo case Placido per questo aeroporto ──────────────
-            // I pianeti $pianetiRS sono già calcolati — solo le case variano.
-            $totaleCalcoliPlacido++;
-            $caseRS = $swe->calcolaCasePlacido(
-                $giornoRS, $meseRS, $annoRSeff,
-                $oraGmtRS, $latA, $lonA
-            );
+        if ($offsetBlocco >= $totaleCalc) {
+            break;
+        }
 
-            // ── B. Assegna casa RS a ogni pianeta (riusa metodo pubblico) ─
-            $pianetiConCase = assegnaCaseAiPianeti($pianetiRS, $caseRS, $swe);
-
-            // ── C. ESCLUSIONE RADICALE ─────────────────────────────────────
-            // Applicata PRIMA del RuleEngine per massima efficienza:
-            // se un malevolo "proibito" è nella casa "proibita" per questa
-            // condizione, l'aeroporto viene scartato immediatamente senza
-            // chiamare valuta() (risparmio CPU significativo su 84k aeroporti).
-            // Nota: per le condizioni "Amore", "Casa" e "Denaro" la Rule Map
-            // può essere vuota (per Amore/Casa) o non applicabile (Denaro gestito
-            // separatamente con pre-ingresso), quindi il controllo viene saltato.
-            if ($hasRuleMap && escludiPerRuleMap($pianetiConCase, $condizione)) {
-                $totaleEsclusiRadicale++;
-                $processed++;
-                // Aggiorna progress ogni 50 anche per gli esclusi
-                if ($processed % 50 === 0) {
-                    sse('progress', [
-                        'processed'        => $processed,
-                        'totale'           => $totaleCalc,
-                        'perc'             => round($processed / $totaleCalc * 100),
-                        'fase'             => 'calcolo',
-                        'esclusi_radicale' => $totaleEsclusiRadicale,
-                        'esclusi_filtro'   => $totaleEsclusiFiltro,
-                            'calcoli_placido'  => $totaleCalcoliPlacido,
-                    ]);
-                }
-                continue;
-            }
-
-            // ── C-bis. FILTRO DI ESCLUSIONE RS (FiltroEsclusione.php) ─────
-            // Sole/Marte in I-VI-XII RS, ASC RS in I-VI-XII natale,
-            // Saturno in X RS, stellium in qualsiasi casa RS. Indipendente
-            // dal RuleEngine e dalla Rule Map radicale qui sopra.
-            // Controllato dal checkbox "Mostra anche le RS escluse dal
-            // filtro" (mostra_escluse): se non spuntato, l'aeroporto viene
-            // saltato come prima; se spuntato, viene comunque incluso nei
-            // risultati ma marcato 'esclusa_filtro' => true.
-            $valutazioneFiltroRS = valutaEsclusioneFiltroRS($pianetiConCase, $caseRS, $temaNatale);
-            $motiviEsclusioneFiltro = $valutazioneFiltroRS['motivi'];
-            $esclusaFiltro = $valutazioneFiltroRS['esclusa'];
-
-            if ($esclusaFiltro) {
-                $totaleEsclusiFiltro++;
-                if (!$mostraEscluse) {
-                    $processed++;
-                    if ($processed % 50 === 0) {
-                        sse('progress', [
-                            'processed'        => $processed,
-                            'totale'           => $totaleCalc,
-                            'perc'             => round($processed / $totaleCalc * 100),
-                            'fase'             => 'calcolo',
-                            'esclusi_radicale' => $totaleEsclusiRadicale,
-                            'esclusi_filtro'   => $totaleEsclusiFiltro,
-                        'calcoli_placido'  => $totaleCalcoliPlacido,
-                        ]);
-                    }
-                    continue;
-                }
-            }
-
-            // ── C-ter. FILTRO SPECIFICO PER AMORE ──────────────────────────
-            // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-            // Verifica che almeno un benefico (VE/GI/SO) sia in V o VII casa RS,
-            // che non ci siano malevoli (MA/SA/UR/NE/PLU) in V o VII,
-            // e che i benefici non siano troppo vicini all'uscita dalla casa.
-            if ($condizione === 'Amore') {
-                $verificaAmore = verificaCondizioneAmore($pianetiConCase, $caseRS);
-                if (!$verificaAmore['valida']) {
-                    $totaleEsclusiAmore++;
-                    // Le RS escluse dal filtro Amore NON vengono incluse nei risultati
-                    // (non c'è un checkbox "Mostra anche le RS escluse da Amore")
-                    $processed++;
-                    if ($processed % 50 === 0) {
-                        sse('progress', [
-                            'processed'        => $processed,
-                            'totale'           => $totaleCalc,
-                            'perc'             => round($processed / $totaleCalc * 100),
-                            'fase'             => 'calcolo',
-                            'esclusi_radicale' => $totaleEsclusiRadicale,
-                            'esclusi_filtro'   => $totaleEsclusiFiltro,
-                        'calcoli_placido'  => $totaleCalcoliPlacido,
-                            'esclusi_amore'    => $totaleEsclusiAmore,
-                        ]);
-                    }
-                    continue;
-                }
-            }
-
-            // ── C-quater. FILTRO SPECIFICO PER CASA (IV Casa) ─────────────
-            // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-            // Verifica che almeno un benefico (SO/GI/VE) sia in IV casa RS
-            // con pre-ingresso di 3°, che non ci siano malevoli (MA/SA/UR/NE/PLU)
-            // in IV casa (con pre-ingresso), e che i benefici non siano
-            // troppo vicini all'uscita dalla IV (cuspide V).
-            if ($condizione === 'Casa') {
-                $verificaCasa = verificaCondizioneCasa($pianetiConCase, $caseRS);
-                if (!$verificaCasa['valida']) {
-                    $totaleEsclusiCasa++;
-                    // Le RS escluse dal filtro Casa NON vengono incluse nei risultati
-                    // (non c'è un checkbox "Mostra anche le RS escluse da Casa")
-                    $processed++;
-                    if ($processed % 50 === 0) {
-                        sse('progress', [
-                            'processed'        => $processed,
-                            'totale'           => $totaleCalc,
-                            'perc'             => round($processed / $totaleCalc * 100),
-                            'fase'             => 'calcolo',
-                            'esclusi_radicale' => $totaleEsclusiRadicale,
-                            'esclusi_filtro'   => $totaleEsclusiFiltro,
-                        'calcoli_placido'  => $totaleCalcoliPlacido,
-                            'esclusi_amore'    => $totaleEsclusiAmore,
-                            'esclusi_casa'     => $totaleEsclusiCasa,
-                        ]);
-                    }
-                    continue;
-                }
-            }
-
-            // ── C-quinquies. FILTRO SPECIFICO PER SALUTE ────────────────────
-            // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-            // Implementa i criteri di protezione massima della scuola di Ciro Discepolo:
-            //   1. Tolleranza pre-ingresso ampliata a 4° per malefici in I/VI/XII
-            //   2. Scudo benefico in I casa (Giove/Venere) con sicurezza uscita 3°
-            //   3. Esclusione Sole in XII casa (spegnimento energia vitale)
-            //   4. Rafforzamento ASC natale con tolleranza 3°
-            //   5. Protezione universale: Giove o Venere in I/VI/XII
-            $scudoBeneficoAttivo = false;
-            $beneficoInI = null;
-            
-            if ($condizione === 'Salute') {
-                $verificaSalute = verificaCondizioneSalute(
-                    $pianetiConCase,
-                    $caseRS,
-                    $temaNatale['case'],
-                    $latA
-                );
-                
-                if (!$verificaSalute['valida']) {
-                    $totaleEsclusiSalute++;
-                    // Le RS escluse dal filtro Salute NON vengono incluse nei risultati
-                    $processed++;
-                    if ($processed % 50 === 0) {
-                        sse('progress', [
-                            'processed'        => $processed,
-                            'totale'           => $totaleCalc,
-                            'perc'             => round($processed / $totaleCalc * 100),
-                            'fase'             => 'calcolo',
-                            'esclusi_radicale' => $totaleEsclusiRadicale,
-                            'esclusi_filtro'   => $totaleEsclusiFiltro,
-                        'calcoli_placido'  => $totaleCalcoliPlacido,
-                            'esclusi_amore'    => $totaleEsclusiAmore,
-                            'esclusi_casa'     => $totaleEsclusiCasa,
-                            'esclusi_salute'   => $totaleEsclusiSalute,
-                        ]);
-                    }
-                    continue;
-                }
-                
-                // Se lo scudo benefico è attivo, lo registriamo per il risultato
-                $scudoBeneficoAttivo = $verificaSalute['scudo_benefico'] ?? false;
-                $beneficoInI = $verificaSalute['benefico_in_i'] ?? null;
-            }
-
-            // ── C-sexies. FILTRO SPECIFICO PER DENARO ──────────────────────
-            // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-            // Verifica che almeno un benefico (SO/GI/VE) sia in II o VIII casa RS
-            // con pre-ingresso di 3°, che non ci siano malevoli (MA/SA/UR/NE/PLU)
-            // in II o VIII (con pre-ingresso), e che i benefici non siano
-            // troppo vicini all'uscita (III se in II, IX se in VIII).
-            $denaroAlertGiove = false;
-            $denaroBeneficioTrovato = null;
-            
-            if ($condizione === 'Denaro') {
-                $verificaDenaro = verificaCondizioneDenaro($pianetiConCase, $caseRS);
-                if (!$verificaDenaro['valida']) {
-                    $totaleEsclusiDenaro++;
-                    // Le RS escluse dal filtro Denaro NON vengono incluse nei risultati
-                    $processed++;
-                    if ($processed % 50 === 0) {
-                        sse('progress', [
-                            'processed'        => $processed,
-                            'totale'           => $totaleCalc,
-                            'perc'             => round($processed / $totaleCalc * 100),
-                            'fase'             => 'calcolo',
-                            'esclusi_radicale' => $totaleEsclusiRadicale,
-                            'esclusi_filtro'   => $totaleEsclusiFiltro,
-                        'calcoli_placido'  => $totaleCalcoliPlacido,
-                            'esclusi_amore'    => $totaleEsclusiAmore,
-                            'esclusi_casa'     => $totaleEsclusiCasa,
-                            'esclusi_salute'   => $totaleEsclusiSalute,
-                            'esclusi_denaro'   => $totaleEsclusiDenaro,
-                        ]);
-                    }
-                    continue;
-                }
-                
-                // Registra i dettagli del beneficio trovato e l'alert Giove
-                $denaroBeneficioTrovato = $verificaDenaro['beneficio_trovato'] ?? null;
-                $denaroAlertGiove = $verificaDenaro['alert_giove_bistabile'] ?? false;
-            }
-
-            // ── C-septies. FILTRO SPECIFICO PER DENARO LOW ──────────────────
-            // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-            // Implementa la logica di "difesa del patrimonio":
-            //   1. Esclusione assoluta di MA/SA/UR/NE/PLU in II o VIII
-            //   2. Sconfinamento dalla I (per II) o VII (per VIII) a meno di 3°
-            // NOTA: NON richiede la presenza di benefici (Sole/Giove/Venere).
-            if ($condizione === 'Denaro Low') {
-                $verificaDenaroLow = verificaCondizioneDenaroLow($pianetiConCase, $caseRS);
-                if (!$verificaDenaroLow['valida']) {
-                    $totaleEsclusiDenaroLow++;
-                    // Le RS escluse dal filtro Denaro Low NON vengono incluse nei risultati
-                    $processed++;
-                    if ($processed % 50 === 0) {
-                        sse('progress', [
-                            'processed'           => $processed,
-                            'totale'              => $totaleCalc,
-                            'perc'                => round($processed / $totaleCalc * 100),
-                            'fase'                => 'calcolo',
-                            'esclusi_radicale'    => $totaleEsclusiRadicale,
-                            'esclusi_filtro'      => $totaleEsclusiFiltro,
-                            'esclusi_amore'       => $totaleEsclusiAmore,
-                            'esclusi_casa'        => $totaleEsclusiCasa,
-                            'esclusi_salute'      => $totaleEsclusiSalute,
-                            'esclusi_denaro'      => $totaleEsclusiDenaro,
-                            'esclusi_denaro_low'  => $totaleEsclusiDenaroLow,
-                        ]);
-                    }
-                    continue;
-                }
-            }
-
-            // ── E. Filtro Astri in Casa anticipato ─────────────────────────
-            if ($modalitaAstri && !empty($astriInCasa)) {
-                $violazioniDirette = verificaAstriInCasaDirectly($pianetiConCase, $astriInCasa);
-                if (!empty($violazioniDirette)) {
-                    $processed++;
-                    continue;
-                }
-            }
-
-            // ── E. Costruzione tema RS per questo aeroporto ───────────────
-            $temaRS = costruisciTemaRS(
-                $pianetiConCase,
-                $caseRS,
-                $latA,
-                $lonA
-            );
-
-            // ── E. Valutazione RuleEngine (34 regole Discepolo) ───────────
-            $totaleValutazioniRuleEngine++;
-            $val = $engine->valuta($temaNatale, $temaRS, $condizione, $astriInCasa);
-
-            // ── F. Filtro stelline minime ──────────────────────────────────
-            if ($stellineMin > 0 && $val['stelline'] < $stellineMin) {
-                $processed++;
-                continue;
-            }
-
-            // ── G. Filtro Astri in Casa personalizzato ────────────────────
-            //
-            // FIX BUG: il vecchio codice leggeva $val['astri_warning'],
-            // prodotto dalla Fase 3 del RuleEngine. Problema: se la Fase 1
-            // del RuleEngine scatta un VETO (Marte in VI, ASC in XII natale,
-            // stellium, reg.33, lat>60°), la funzione valuta() ritorna
-            // immediatamente con astri_warning=[] VUOTO, senza eseguire la
-            // Fase 3. Di conseguenza gli aeroporti con veto passavano sempre
-            // il filtro astri, anche se il pianeta richiesto era in un'altra
-            // casa — e venivano inclusi nei risultati erroneamente.
-            //
-            // SOLUZIONE CHIRURGICA: quando siamo in modalità astri, verifichiamo
-            // i criteri DIRETTAMENTE su $pianetiConCase (già disponibile al
-            // passo B), prima ancora di chiamare il RuleEngine. Il RuleEngine
-            // continua a fare il suo lavoro invariato; usiamo solo il suo
-            // risultato per stelline/VAL/veti, non per il filtro astri.
-            //
-            // Il flag $modalitaAstri garantisce che questo blocco venga eseguito
-            // SOLO quando l'utente ha impostato filtri astri personalizzati;
-            // in tutti gli altri casi il comportamento è identico a prima.
-            $astriWarnings = $val['astri_warning'] ?? []; // compatibilità campo output
-
-            if (!$modalitaAstri && !empty($astriInCasa) && !empty($astriWarnings)) {
-                // Fallback per il caso non-modalitaAstri con filtri attivi
-                // (comportamento originale preservato)
-                $processed++;
-                continue;
-            }
-
-// ── H. Costruzione record risultato ───────────────────────────
-        $ris = costruisciRisultatoRicercaRS(
-            $aero,
-            $latA,
-            $lonA,
-            $val,
-            $astriWarnings,
-            $usaEscludiRadicale,
-            $esclusaFiltro,
-            $motiviEsclusioneFiltro,
-            $condizione,
-            $scudoBeneficoAttivo,
-            $beneficoInI,
-            $denaroBeneficioTrovato,
-            $denaroAlertGiove
+        $recuperoBlocco = recuperaAeroportiDeduplicati(
+            $pdo,
+            $where,
+            $params,
+            $bucketLat,
+            $bucketLon,
+            $tipoLocalita,
+            $dimensioneBlocco,
+            $offsetBlocco
         );
-
-        $risultati[] = $ris;
-            // ── I. Streaming live dei risultati top ───────────────────────
-            // Inviamo subito al frontend i risultati sopra la soglia streaming
-            // (default 3 stelle) senza aspettare la fine del loop.
-            if ($val['stelline'] >= $streamingMin) {
-                sse('result', $ris);
-            }
-
-        } catch (Exception $e) {
-            // Aeroporto saltato (latitudine polare, calcolo impossibile, ecc.)
-            // Non blocca il loop — i fix DST e swetest -house già prevengono
-            // la maggior parte degli errori noti.
-        }
-
-        $processed++;
-
-        // Progress ogni 50 aeroporti calcolati
-        if ($processed % 50 === 0) {
-            sse('progress', [
-                'processed'           => $processed,
-                'totale'              => $totaleCalc,
-                'perc'                => round($processed / $totaleCalc * 100),
-                'fase'                => 'calcolo',
-                'esclusi_radicale'    => $totaleEsclusiRadicale,
-                'esclusi_filtro'      => $totaleEsclusiFiltro,
-                'esclusi_amore'       => $totaleEsclusiAmore,
-                'esclusi_casa'        => $totaleEsclusiCasa,
-                'esclusi_salute'      => $totaleEsclusiSalute,
-                'esclusi_denaro'      => $totaleEsclusiDenaro,
-                'esclusi_denaro_low'  => $totaleEsclusiDenaroLow,
-            ]);
-        }
+        $selezionati = $recuperoBlocco['aeroporti'];
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -735,10 +775,6 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     usort($risultati, static fn(array $a, array $b): int =>
         $b['stelline'] <=> $a['stelline']
     );
-
-    if ($tipoLocalita === 'localita' && $numeroLocalita !== null) {
-        $risultati = array_slice($risultati, 0, $numeroLocalita);
-    }
 
     if ($tipoLocalita === 'localita') {
         $risultati = arricchisciLocalitaConAeroporti(
