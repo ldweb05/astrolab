@@ -326,23 +326,10 @@ class SweCalc {
         float $longitudine
     ): array {
 
-        static $cache = [];
-
-        $cacheKey = sprintf(
-            '%04d-%02d-%02d|%.6F|%.6F|%.6F',
-            $anno,
-            $mese,
-            $giorno,
-            $oraGmt,
-            $latitudine,
-            $longitudine
-        );
-
-        if (isset($cache[$cacheKey])) {
-            return $cache[$cacheKey];
-        }
-
-        return $cache[$cacheKey] = $this->calcolaCasePlacidoBackendLibswe(
+        // Non memorizzare le case per coordinate: durante le ricerche geografiche
+        // ogni località ha latitudine/longitudine differenti e una cache statica
+        // crescerebbe fino a esaurire la memoria del processo PHP.
+        return $this->calcolaCasePlacidoBackendLibswe(
             $giorno,
             $mese,
             $anno,
