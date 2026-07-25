@@ -197,7 +197,9 @@ function recuperaAeroportiDeduplicati(
     array $params,
     float $bucketLat,
     float $bucketLon,
-    string $tipoLocalita = ''
+    string $tipoLocalita = '',
+    ?int $limite = null,
+    int $offset = 0
 ): array {
     $filtri = preparaFiltriLocalita($where, $params);
 
@@ -376,6 +378,12 @@ function recuperaAeroportiDeduplicati(
             icao_code,
             iata_code
     ";
+
+    if ($limite !== null) {
+        $limite = max(1, $limite);
+        $offset = max(0, $offset);
+        $sql .= " LIMIT {$limite} OFFSET {$offset}";
+    }
 
     $stmt = $pdo->prepare($sql);
     $modalitaLocalita = $ricercaLocalita ? 1 : 0;
