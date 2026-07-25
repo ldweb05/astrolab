@@ -1,298 +1,438 @@
 # START HERE
 
-Benvenuto nel progetto **Astro-DSS**.
+Benvenuto nel progetto **ASTROLAB**.
 
-Astro-DSS è un progetto indipendente nato dalla base stabile di
-**Astro-Val** con l'obiettivo di sviluppare un **Decision Support System**
-per il confronto ragionato tra due Rivoluzioni Solari Mirate.
+Questo documento costituisce il punto di ingresso ufficiale del progetto.
 
-Questo documento è il punto di ingresso per comprendere lo stato del
-progetto e sapere da dove riprendere lo sviluppo.
+Il suo scopo è descrivere:
 
-------------------------------------------------------------------------
+- lo stato reale dell'applicazione;
+- l'architettura generale;
+- le funzionalità consolidate;
+- le regole permanenti di sviluppo;
+- il punto esatto dal quale riprendere eventuali lavori futuri.
 
-# Stato iniziale del progetto
-
-**Progetto:** Astro-DSS
-
-**Tipologia:** Decision Support System astrologico
-
-**Branch di sviluppo:** `feature/astro-dss`
-
-**Base applicativa:** clone indipendente di Astro-Val
-
-**Stato infrastruttura:** OPERATIVA
-
-Sono già stati completati:
-
--   repository Git indipendente;
--   stack Docker indipendente;
--   database PostgreSQL indipendente;
--   rete Docker indipendente;
--   ripristino completo dei dati iniziali;
--   verifica dell'applicazione sulla porta `8192`.
-
-------------------------------------------------------------------------
-
-# Separazione da Astro-Val
-
-Astro-Val rimane il progetto stabile dedicato al calcolo, alla valutazione
-e alla produzione dei report astrologici.
-
-Astro-DSS utilizza la base tecnica di Astro-Val, ma evolve come progetto
-separato.
-
-Le modifiche effettuate in Astro-DSS non devono alterare:
-
--   il repository di Astro-Val;
--   i container di Astro-Val;
--   il database di Astro-Val;
--   le porte e le reti Docker di Astro-Val;
--   la stabilità della versione operativa di Astro-Val.
-
-------------------------------------------------------------------------
-
-# Obiettivo del progetto
-
-Astro-DSS deve confrontare due Rivoluzioni Solari Mirate già calcolate e
-supportare una decisione motivata.
-
-Il sistema dovrà evidenziare:
-
--   miglioramenti;
--   peggioramenti;
--   compromessi;
--   differenze rilevanti;
--   condizioni planetarie coinvolte;
--   regole ed evidenze applicabili;
--   bonus e penalità;
--   motivazioni della raccomandazione finale.
-
-Astro-DSS non nasce per sostituire il motore astrologico di Astro-Val.
-
-Il suo compito principale è trasformare risultati già disponibili in un
-confronto strutturato, spiegabile e orientato alla decisione.
-
-------------------------------------------------------------------------
-
-# Principi architetturali
-
-Il DSS dovrà essere costruito per livelli separati.
-
-1.  Acquisizione dei risultati delle due RSM
-2.  Normalizzazione dei dati confrontabili
-3.  Comparator Engine
-4.  Difference Analyzer
-5.  Impact Evaluator
-6.  Rule Correlator
-7.  Narrative Generator
-8.  Recommendation Engine
-9.  UI di confronto
-
-Ogni livello dovrà produrre dati verificabili e tracciabili.
-
-La raccomandazione finale non dovrà essere una semplice differenza tra
-punteggi, ma il risultato di evidenze esplicite e comprensibili.
-
-------------------------------------------------------------------------
-
-# Componenti ereditati da Astro-Val
-
-La base iniziale comprende:
-
--   motore astronomico;
--   Planet Conditions;
--   Rule Engine;
--   Evidence Engine;
--   Theme Engine;
--   Narrative Engine;
--   gestione delle sessioni;
--   database applicativo;
--   interfaccia web esistente.
-
-Questi componenti costituiscono la base tecnica iniziale.
-
-Il Rule Engine ereditato contiene **120 Rule** ed è considerato
-consolidato.
-
-Non devono essere aggiunte o modificate Rule durante la prima fase di
-sviluppo del DSS, salvo correzioni di bug documentati.
-
-------------------------------------------------------------------------
-
-# Prima milestone
-
-## DSS V1 — Analisi e modello di confronto
-
-La prima milestone non riguarda la nuova interfaccia grafica.
-
-Le attività iniziali sono:
-
-1.  censire tutti gli output prodotti da Astro-Val;
-2.  identificare gli output disponibili per ogni RSM;
-3.  distinguere dati numerici, categorici, narrativi ed evidenze;
-4.  stabilire quali informazioni siano confrontabili;
-5.  definire una struttura dati comune per due RSM;
-6.  documentare criteri, priorità e limiti del confronto;
-7.  progettare il primo Comparator Engine senza modificare il Rule Engine.
-
-------------------------------------------------------------------------
-
-# Dove riprendere
-
-La prossima attività consiste nell'eseguire un inventario tecnico degli
-output prodotti dall'applicazione.
-
-L'analisi dovrà individuare:
-
--   tabelle e colonne coinvolte;
--   strutture PHP che rappresentano una RSM;
--   risultati numerici disponibili;
--   condizioni planetarie;
--   Rule attivate;
--   evidenze generate;
--   testi narrativi;
--   dati persistiti nelle sessioni;
--   eventuali informazioni calcolate ma non salvate.
-
-Non deve ancora essere sviluppata la UI definitiva del confronto.
-
-------------------------------------------------------------------------
-
-# Criteri di qualità
-
-Ogni confronto prodotto da Astro-DSS dovrà essere:
-
--   riproducibile;
--   spiegabile;
--   tracciabile;
--   indipendente dalla sola differenza di punteggio;
--   coerente con le evidenze astrologiche disponibili;
--   leggibile anche da un utente non tecnico;
--   verificabile a livello di regole e dati sorgente.
-
-------------------------------------------------------------------------
-
-# Obiettivo finale
-
-Realizzare un Decision Support System capace di confrontare due RSM e
-fornire una raccomandazione motivata, mostrando chiaramente:
-
--   quale soluzione risulta preferibile;
--   in quali ambiti risulta migliore;
--   quali criticità rimangono;
--   quali compromessi sono necessari;
--   quali dati, condizioni e regole sostengono la decisione.
-
+Questo documento deve sempre rappresentare lo stato corrente del
+repository.
 
 ---
 
-# 🚀 Focus di sviluppo corrente
+# Stato del progetto
 
-## Stato del progetto
+**Nome progetto**
 
-La piattaforma Astrolab è stabile.
+ASTROLAB
 
-Sono stati completati:
+**Repository**
 
-- migrazione della deduplicazione geografica PHP → SQL;
-- regressione completa della Search API;
-- consolidamento della suite automatica dei test;
-- documentazione tecnica aggiornata.
+Repository unico.
 
-La regressione (`www/tests/run.php`) deve rimanere completamente verde
-durante tutto lo sviluppo.
+**Branch stabile**
 
----
+`master`
 
-## Sprint attuale
+**Stato**
 
-### Ricerca RSM v3 — Località geografiche complete
+Stabile.
 
-Lo sviluppo corrente riguarda l'evoluzione della Ricerca RSM.
+**Rule Engine**
 
-L'obiettivo è trasformare il sistema da ricerca limitata agli aeroporti
-ad una ricerca su tutte le località geografiche disponibili
-nel database mondiale.
+Congelato.
 
-Gli aeroporti continueranno ad essere supportati ma diventeranno una
-particolare tipologia di località.
+**Knowledge Coverage**
 
----
+100%
 
-## Stato corrente
+**Regressione**
 
-✔ infrastruttura stabile
-
-✔ regressione verde
-
-✔ deduplicazione SQL completata
-
-✔ documentazione aggiornata
-
-✔ FASI 1-7 completate
-
-◷ FASE 5A pianificata:
-ricerca `solo_localita` limitata a una nazione, con nazione obbligatoria
-e limite 50/100/150/Tutte
+Verde.
 
 ---
 
-## Documenti da leggere nell'ordine
+# Cos'è ASTROLAB
 
-1. START_HERE.md
+ASTROLAB è una piattaforma professionale dedicata
+all'astrologia previsionale.
 
-2. ROADMAP.md
+Integra in un unico progetto le funzionalità nate durante
+l'evoluzione di Astro-Val e Astro-DSS.
 
-3. HANDOVER_OPERATIVO_astrolab.md
+L'applicazione comprende:
 
-4. ADR_INDEX_ASTROLAB.md
+- Tema Natale;
+- Rivoluzione Solare;
+- Rivoluzione Lunare;
+- Rilocazioni;
+- Annual Report;
+- Comparator;
+- Decision Support System;
+- Narrative Engine;
+- Theme Engine;
+- Rule Engine;
+- Search API geografica.
+
+I precedenti riferimenti ad Astro-Val e Astro-DSS rimangono
+utili esclusivamente come documentazione storica.
+
+L'applicazione operativa è ASTROLAB.
 
 ---
 
-## Regole di sviluppo
+# Stato della piattaforma
 
-Durante questo sprint:
+La piattaforma è considerata stabile.
 
-- mantenere sempre verde la regressione automatica;
-- non modificare il motore astrologico;
-- procedere per piccoli commit verificabili;
-- documentare ogni decisione importante;
-- completare una fase prima di iniziare la successiva.
+Sono consolidati:
+
+- motore astronomico;
+- Swiss Ephemeris tramite PHP FFI;
+- Planet Condition Engine;
+- Rule Engine;
+- Evidence Engine;
+- Theme Engine;
+- Narrative Engine;
+- Annual Report;
+- Comparator;
+- Decision Support System;
+- gestione utenti;
+- gestione soggetti;
+- gestione sessioni;
+- PostgreSQL;
+- Docker;
+- interfaccia web;
+- suite automatica dei test.
+
+Il Rule Engine contiene 120 Rule ed è considerato
+parte della baseline permanente.
+
+Non deve essere modificato salvo:
+
+- bug documentati;
+- incompatibilità tecniche;
+- decisioni architetturali esplicite.
 
 ---
 
-## Obiettivo raggiunto
+# Architettura
 
-La Ricerca RSM v3 espone nell'interfaccia due modalità:
+La pipeline principale è:
 
-- `solo_aeroporti`;
-- `solo_localita`.
+```text
+Swiss Ephemeris
+        │
+Planet Resolver
+        │
+Planet Condition Engine
+        │
+Rule Engine
+        │
+Evidence Engine
+        │
+Theme Engine
+        │
+Narrative Engine
+        │
+Annual Report
+        │
+Comparator
+        │
+Decision Support System
+        │
+API / Browser / PDF
+```
 
-I risultati distinguono aeroporti e località geografiche tramite
-`origine_punto` e mostrano, quando disponibili, popolazione, nome completo,
-IATA e ICAO.
+---
 
-L'assenza del parametro continua a preservare il comportamento legacy
-aeroportuale. Il motore astrologico non è stato modificato.
+# Ricerca RSM v3
 
-## Stato corrente Ricerca RSM v3
+La Ricerca RSM v3 costituisce il più recente consolidamento della
+piattaforma.
 
-Le FASI 1, 2, 3, 4, 5, 6 e 7 sono completate.
+L'obiettivo dell'evoluzione era superare la ricerca limitata ai soli
+aeroporti introducendo un repository geografico mondiale composto da
+aeroporti e località.
 
-Il repository geografico supporta aeroporti e località, mentre
-`ricerca_stream_api.php` esegue la deduplicazione direttamente in PostgreSQL
-con ordinamento deterministico.
+Le principali funzionalità implementate sono:
 
-Resta pianificata la FASE 5A: in modalità `solo_localita` l'utente dovrà
-selezionare obbligatoriamente una nazione e un limite di 50, 100, 150 o Tutte.
+- modalità `solo_aeroporti`;
+- modalità `solo_localita`;
+- ricerca delle località limitata alla nazione selezionata;
+- selezione obbligatoria della nazione nella modalità località;
+- limite configurabile dei risultati;
+- ordinamento alfabetico delle nazioni;
+- distinzione tra aeroporti e località tramite `origine_punto`;
+- visualizzazione del nome geografico completo;
+- visualizzazione della popolazione quando disponibile;
+- visualizzazione dei codici IATA e ICAO quando disponibili.
 
-Rilascio FASE 5:
+Il repository geografico supporta ormai entrambe le tipologie di
+risultati senza alterare il comportamento storico della modalità
+aeroportuale.
 
-- commit funzionale: `bad3026`;
-- merge su `main`: `49423d1`;
-- tag: `rsm-v3-fase5-completata`.
+La deduplicazione viene eseguita direttamente in PostgreSQL.
 
-Comando di verifica principale:
+L'ordinamento è deterministico.
 
-`docker compose exec -T astrolab-web php /var/www/html/tests/test_rsm_location_repository.php`
+La priorità dei risultati è determinata esclusivamente dalla condizione
+astrologica.
+
+Il limite dei risultati viene applicato soltanto dopo la valutazione
+completa di tutti i candidati.
+
+Durante questa evoluzione il motore astrologico non è stato modificato.
+
+---
+
+# Comparator
+
+Il Comparator Engine è operativo.
+
+Sono disponibili:
+
+- confronto multiplo delle Rivoluzioni Solari;
+- confronto multiplo delle Rilocazioni;
+- selezione fino a tre risultati;
+- payload condiviso;
+- tabelle comparative;
+- riepilogo soggetti;
+- layout responsive;
+- ruote astrologiche integrate;
+- preservazione delle regole personalizzate.
+
+Il Comparator rappresenta la base del Decision Support System.
+
+---
+
+# Decision Support System
+
+Il Decision Support System utilizza i risultati già prodotti
+dall'applicazione.
+
+Il suo compito consiste nel costruire confronti spiegabili e
+tracciabili.
+
+Ogni raccomandazione deve poter essere ricondotta a:
+
+- Rule;
+- Evidence;
+- Theme;
+- Planet Conditions;
+- dati sorgente.
+
+Il DSS non sostituisce il Rule Engine.
+
+Utilizza esclusivamente risultati già consolidati.
+
+---
+
+# Stato dello sviluppo
+
+Alla data di questo documento risultano completati:
+
+- infrastruttura;
+- architettura;
+- Rule Engine;
+- Theme Engine;
+- Narrative Engine;
+- Annual Report;
+- Comparator;
+- Ricerca RSM v3;
+- Search API;
+- deduplicazione SQL;
+- regressione automatica;
+- documentazione tecnica.
+
+Il ciclo principale di sviluppo funzionale può essere considerato
+completato.
+
+Le attività residue riguardano esclusivamente:
+
+- consolidamento documentale;
+- verifiche finali;
+- manutenzione;
+- eventuali correzioni di bug.
+
+Non risultano milestone funzionali obbligatorie ancora aperte.
+
+---
+
+# Verifiche permanenti
+
+Ogni modifica deve rispettare le seguenti regole.
+
+La regressione automatica deve rimanere completamente verde.
+
+Ogni modifica deve essere:
+
+- deterministica;
+- tracciabile;
+- spiegabile;
+- documentata;
+- verificabile.
+
+Prima di ogni commit devono essere verificati almeno:
+
+- sintassi PHP;
+- test interessati;
+- regressione;
+- `git diff --check`;
+- documentazione coinvolta.
+
+Il Rule Engine non deve essere modificato senza una motivazione
+architetturale esplicita.
+
+---
+
+# Documentazione ufficiale
+
+La documentazione principale del progetto è composta dai seguenti file.
+
+1. `docs/START_HERE.md`
+2. `docs/README_ASTROLAB.md`
+3. `docs/03_ARCHITECTURE_ASTROLAB.md`
+4. `docs/ROADMAP.md`
+5. `docs/HANDOVER_OPERATIVO_astrolab.md`
+6. `docs/ADR_INDEX_ASTROLAB.md`
+7. `docs/01_PROJECT_MANIFESTO.md`
+8. `docs/02_ASTROLOGY.md`
+9. `docs/10_THEME_ENGINE.md`
+10. `docs/11_ANNUAL_REPORT_SPEC.md`
+
+I documenti devono essere mantenuti coerenti tra loro.
+
+Ogni modifica significativa del progetto deve aggiornare almeno:
+
+- README;
+- START_HERE;
+- ROADMAP;
+- HANDOVER.
+
+---
+
+# Filosofia del progetto
+
+ASTROLAB privilegia:
+
+- semplicità;
+- stabilità;
+- prevedibilità;
+- tracciabilità;
+- spiegabilità.
+
+Non costituiscono obiettivi del progetto:
+
+- introdurre framework;
+- introdurre livelli architetturali superflui;
+- duplicare la conoscenza astrologica;
+- creare nuove versioni della pipeline senza necessità.
+
+Ogni evoluzione deve avere un beneficio concreto e verificabile.
+
+---
+
+# Stato del repository
+
+Alla data di questo documento il repository presenta:
+
+- branch principale `master`;
+- working tree pulita;
+- Rule Engine congelato;
+- regressione disponibile;
+- documentazione in fase di allineamento finale.
+
+La Ricerca RSM v3 è completata.
+
+L'ultima evoluzione ha introdotto:
+
+- selezione obbligatoria della nazione;
+- ordinamento alfabetico delle nazioni;
+- visualizzazione IATA e ICAO;
+- priorità della condizione astrologica mantenuta durante la ricerca;
+- tag stabile della funzionalità.
+
+La baseline applicativa può essere considerata stabile.
+
+---
+
+# Punto di ripresa
+
+Nel caso in cui il progetto venga riaperto in futuro, l'ordine di lavoro
+raccomandato è il seguente.
+
+1. Verificare lo stato del repository.
+2. Eseguire la regressione completa.
+3. Verificare la documentazione.
+4. Analizzare eventuali bug aperti.
+5. Pianificare nuove funzionalità solo dopo avere confermato la stabilità
+   della baseline.
+
+Qualunque nuova evoluzione dovrà rispettare i principi architetturali
+descritti nella documentazione ufficiale.
+
+---
+
+# Obiettivo raggiunto
+
+ASTROLAB dispone oggi di una piattaforma completa per:
+
+- calcolo astrologico;
+- produzione dei report;
+- confronto delle Rivoluzioni Solari;
+- confronto delle Rilocazioni;
+- supporto decisionale;
+- ricerca geografica mondiale;
+- gestione completa dei soggetti;
+- tracciabilità delle Rule;
+- spiegabilità delle evidenze;
+- regressione automatica.
+
+Il progetto è stato sviluppato mantenendo:
+
+- separazione delle responsabilità;
+- architettura modulare;
+- compatibilità della baseline;
+- determinismo dei risultati;
+- elevata manutenibilità.
+
+---
+
+# Stato finale
+
+Lo sviluppo funzionale previsto dalla roadmap iniziale può essere
+considerato concluso.
+
+L'attività futura del progetto è orientata principalmente a:
+
+- manutenzione correttiva;
+- aggiornamenti tecnologici;
+- miglioramenti incrementali;
+- evoluzioni richieste da esigenze reali;
+- aggiornamento continuo della documentazione.
+
+La baseline corrente costituisce il riferimento ufficiale per ogni
+sviluppo successivo.
+
+---
+
+# Regola finale
+
+Prima di qualsiasi modifica futura verificare sempre:
+
+- stato del repository;
+- regressione;
+- documentazione;
+- compatibilità con il Rule Engine;
+- impatto architetturale.
+
+Ogni modifica deve lasciare il progetto in uno stato almeno equivalente,
+o migliore, rispetto a quello precedente.
+
+---
+
+**Ultimo aggiornamento**
+
+Versione documentale allineata alla baseline stabile di ASTROLAB.
+
+Repository: `master`
+
+Stato: **Baseline stabile – sviluppo funzionale completato, manutenzione evolutiva e documentale.**

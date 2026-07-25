@@ -109,7 +109,7 @@ SweCalc
 
 - Creato docs/ROADMAP.md.
 - Creato docs/01_PROJECT_MANIFESTO.md.
-- Creato docs/ADR_INDEX.md.
+- Creato docs/ADR_INDEX_ASTROLAB.md.
 - Creato docs/status/KNOWLEDGE_COVERAGE.md.
 - Creato docs/status/RULE_BACKLOG.md.
 - Documentato Atlas come Single Source of Truth.
@@ -208,7 +208,9 @@ La Rule deve:
 - Consolidati i campi ThemeProfile già introdotti.
 - Rimossi backup e prototipi temporanei non necessari.
 - Architettura congelata: nessun ulteriore refactoring.
-- Prossimo passo: RULE-0012, Sole in Casa II.\n\n### 2026-07-12 — RULE-0012
+- Prossimo passo: RULE-0012, Sole in Casa II.
+
+### 2026-07-12 — RULE-0012
 
 - Implementata RULE-0012: Sole in Casa II.
 - Evidenze prodotte: denaro, patrimonio.
@@ -217,7 +219,8 @@ La Rule deve:
 - Test dedicato: OK.
 - Full Regression: OK.
 - Commit: feat(rule): implement RULE-0012 Sun House 2.
-- Prossimo passo: RULE-0013, Sole in Casa III.\n
+- Prossimo passo: RULE-0013, Sole in Casa III.
+
 
 ### 2026-07-12 — Direttiva operativa permanente
 
@@ -225,7 +228,7 @@ La Rule deve:
 - Vietate nuove versioni, riprogettazioni e refactoring non necessari.
 - Obiettivo esclusivo: completare il progetto con i contratti esistenti.
 - Aggiornati tutti i documenti operativi e normativi.
-- Reso obbligatorio registrare ogni passaggio in HANDOVER_OPERATIVO.md.
+- Reso obbligatorio registrare ogni passaggio in HANDOVER_OPERATIVO_astrolab.md.
 - Test richiesti: nessuno, modifica esclusivamente documentale.
 - Commit: docs: enforce frozen architecture and mandatory handover.
 - Prossimo passo: RULE-0013, Sole in Casa III.
@@ -1511,7 +1514,7 @@ ripristinato e verificato il database;
 
 verificata l'applicazione sulla porta 8192;
 
-aggiornati START_HERE.md, README.md e ROADMAP.md.
+aggiornati docs/START_HERE.md, README.md e docs/ROADMAP.md.
 
 Test eseguiti:
 
