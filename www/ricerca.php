@@ -27,7 +27,7 @@ $stmtNazioniLocalita = $pdo->query(
        AND iso_nazione IS NOT NULL
        AND iso_nazione <> ''
      GROUP BY iso_nazione
-     ORDER BY nome_nazione, iso_nazione"
+     ORDER BY LOWER(MIN(nazione)), iso_nazione"
 );
 $nazioniLocalita = $stmtNazioniLocalita->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -1397,7 +1397,9 @@ const popolazione = isLocalita && Number(r.popolazione) > 0
 ? `<div style="color:#999;font-size:10px">${Number(r.popolazione).toLocaleString('it-IT')} abitanti</div>`
 : '';
 const codicePunto = isLocalita
-? `<strong>Località</strong><br><span style="color:#999;font-size:10px">${tipoPunto}</span>`
+? ((r.iata || r.icao)
+    ? `<strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||'aeroporto associato'}</span>`
+    : `<strong>Località</strong><br><span style="color:#999;font-size:10px">${tipoPunto}</span>`)
 : `<strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||tipoPunto}</span>`;
 const confrontoKey = [
 r.lat,
