@@ -183,3 +183,116 @@ fornire una raccomandazione motivata, mostrando chiaramente:
 -   quali criticità rimangono;
 -   quali compromessi sono necessari;
 -   quali dati, condizioni e regole sostengono la decisione.
+
+
+---
+
+# 🚀 Focus di sviluppo corrente
+
+## Stato del progetto
+
+La piattaforma Astrolab è stabile.
+
+Sono stati completati:
+
+- migrazione della deduplicazione geografica PHP → SQL;
+- regressione completa della Search API;
+- consolidamento della suite automatica dei test;
+- documentazione tecnica aggiornata.
+
+La regressione (`www/tests/run.php`) deve rimanere completamente verde
+durante tutto lo sviluppo.
+
+---
+
+## Sprint attuale
+
+### Ricerca RSM v3 — Località geografiche complete
+
+Lo sviluppo corrente riguarda l'evoluzione della Ricerca RSM.
+
+L'obiettivo è trasformare il sistema da ricerca limitata agli aeroporti
+ad una ricerca su tutte le località geografiche disponibili
+nel database mondiale.
+
+Gli aeroporti continueranno ad essere supportati ma diventeranno una
+particolare tipologia di località.
+
+---
+
+## Stato corrente
+
+✔ infrastruttura stabile
+
+✔ regressione verde
+
+✔ deduplicazione SQL completata
+
+✔ documentazione aggiornata
+
+✔ FASI 1-7 completate
+
+◷ FASE 5A pianificata:
+ricerca `solo_localita` limitata a una nazione, con nazione obbligatoria
+e limite 50/100/150/Tutte
+
+---
+
+## Documenti da leggere nell'ordine
+
+1. START_HERE.md
+
+2. ROADMAP.md
+
+3. HANDOVER_OPERATIVO_astrolab.md
+
+4. ADR_INDEX_ASTROLAB.md
+
+---
+
+## Regole di sviluppo
+
+Durante questo sprint:
+
+- mantenere sempre verde la regressione automatica;
+- non modificare il motore astrologico;
+- procedere per piccoli commit verificabili;
+- documentare ogni decisione importante;
+- completare una fase prima di iniziare la successiva.
+
+---
+
+## Obiettivo raggiunto
+
+La Ricerca RSM v3 espone nell'interfaccia due modalità:
+
+- `solo_aeroporti`;
+- `solo_localita`.
+
+I risultati distinguono aeroporti e località geografiche tramite
+`origine_punto` e mostrano, quando disponibili, popolazione, nome completo,
+IATA e ICAO.
+
+L'assenza del parametro continua a preservare il comportamento legacy
+aeroportuale. Il motore astrologico non è stato modificato.
+
+## Stato corrente Ricerca RSM v3
+
+Le FASI 1, 2, 3, 4, 5, 6 e 7 sono completate.
+
+Il repository geografico supporta aeroporti e località, mentre
+`ricerca_stream_api.php` esegue la deduplicazione direttamente in PostgreSQL
+con ordinamento deterministico.
+
+Resta pianificata la FASE 5A: in modalità `solo_localita` l'utente dovrà
+selezionare obbligatoriamente una nazione e un limite di 50, 100, 150 o Tutte.
+
+Rilascio FASE 5:
+
+- commit funzionale: `bad3026`;
+- merge su `main`: `49423d1`;
+- tag: `rsm-v3-fase5-completata`.
+
+Comando di verifica principale:
+
+`docker compose exec -T astrolab-web php /var/www/html/tests/test_rsm_location_repository.php`

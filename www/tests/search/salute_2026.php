@@ -1,6 +1,17 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../search_auth.php';
+[$httpContext, $sessionFile] = searchTestHttpContext();
+
+register_shutdown_function(
+    static function () use ($sessionFile): void {
+        if (is_file($sessionFile)) {
+            @unlink($sessionFile);
+        }
+    }
+);
+
 $url = 'http://localhost/api/ricerca_stream_api.php?' . http_build_query([
     'g' => 5,
     'm' => 9,
@@ -16,7 +27,7 @@ $url = 'http://localhost/api/ricerca_stream_api.php?' . http_build_query([
     'mostra_escluse' => '1',
 ]);
 
-$raw = @file_get_contents($url);
+$raw = @file_get_contents($url, false, $httpContext);
 
 if ($raw === false) {
     echo "✗ ricerca Salute 2026: impossibile chiamare API\n";

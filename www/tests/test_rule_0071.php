@@ -43,7 +43,7 @@ foreach ($evidences as $e) {
     }
 }
 
-if (count(RuleRegistry::all()) !== 72) {
+if (count(RuleRegistry::all()) !== 120) {
     throw new RuntimeException('RULE-0071: numero Rule errato');
 }
 
