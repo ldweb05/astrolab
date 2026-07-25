@@ -158,6 +158,19 @@ $nazioniFiltro = trim($_GET['nazioni_filtro'] ?? '');
 $lonMin = isset($_GET['lon_min']) && $_GET['lon_min'] !== '' ? floatval($_GET['lon_min']) : null;
 $lonMax = isset($_GET['lon_max']) && $_GET['lon_max'] !== '' ? floatval($_GET['lon_max']) : null;
 
+// Tipo località: parametro opzionale, assenza = comportamento legacy
+$tipoLocalita = trim($_GET['tipo_localita'] ?? '');
+$tipiLocalitaValidi = ['aeroporti', 'localita'];
+if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true)) {
+    $tipoLocalita = '';
+}
+
+// Numero massimo di località restituite: 50 default, oppure 100, 150, tutte
+$numeroLocalitaRaw = trim($_GET['numero_localita'] ?? '50');
+$numeroLocalita = in_array($numeroLocalitaRaw, ['50', '100', '150'], true)
+    ? (int)$numeroLocalitaRaw
+    : null;
+
 // Validazione condizione
 $condizioniValide = ['Decima', 'Lavoro', 'Amore', 'Salute', 'Denaro', 'Denaro Low', 'Casa'];
 if (!in_array($condizione, $condizioniValide, true)) {
@@ -307,8 +320,18 @@ try {
         $params[] = $lonMax;
     }
 
-    $aeroporti = recuperaAeroporti($pdo, $where, $params);
-    $totaleAero = count($aeroporti);
+    $recupero = recuperaAeroportiDeduplicati(
+        $pdo,
+        $where,
+        $params,
+        $bucketLat,
+        $bucketLon,
+        $tipoLocalita
+    );
+
+    $selezionati = $recupero['aeroporti'];
+    $totaleAero  = $recupero['totale_originale'];
+    $totaleCalc  = count($selezionati);
 
     // Evento SSE: informa il frontend sul totale grezzo e il momento RS
     sse('start', [
@@ -322,12 +345,8 @@ try {
     ]);
 
     // ─────────────────────────────────────────────────────────────────────
-    //  Step 4 — Deduplicazione geografica a bucket
-    //  Aeroporti nello stesso bucket → ASC Placido identico → uno solo
+    //  Step 4 — Deduplicazione geografica eseguita direttamente in PostgreSQL
     // ─────────────────────────────────────────────────────────────────────
-    $selezionati = deduplicaAeroporti($aeroporti, $bucketLat, $bucketLon);
-
-    $totaleCalc = count($selezionati);
 
     sse('progress', [
         'processed'        => 0,
@@ -716,6 +735,17 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     usort($risultati, static fn(array $a, array $b): int =>
         $b['stelline'] <=> $a['stelline']
     );
+
+    if ($tipoLocalita === 'localita' && $numeroLocalita !== null) {
+        $risultati = array_slice($risultati, 0, $numeroLocalita);
+    }
+
+    if ($tipoLocalita === 'localita') {
+        $risultati = arricchisciLocalitaConAeroporti(
+            $pdo,
+            $risultati
+        );
+    }
 
     sse('done', [
         'risultati'             => $risultati,

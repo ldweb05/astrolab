@@ -50,7 +50,7 @@ $atlantaScenario = [
 
 assertSameValue(
     false,
-    escludiPerRuleMap($atlantaScenario, $ruleMap),
+    escludiPerRuleMap($atlantaScenario, 'Decima'),
     'DECIMA: Sole e Giove in X sono stati esclusi erroneamente'
 );
 
@@ -68,7 +68,7 @@ foreach ($malevoli as $planetId => $planetName) {
 
     assertSameValue(
         true,
-        escludiPerRuleMap($scenario, $ruleMap),
+        escludiPerRuleMap($scenario, 'Decima'),
         "DECIMA: {$planetName} in X non è stato escluso"
     );
 
@@ -76,7 +76,7 @@ foreach ($malevoli as $planetId => $planetName) {
 
     assertSameValue(
         false,
-        escludiPerRuleMap($scenario, $ruleMap),
+        escludiPerRuleMap($scenario, 'Decima'),
         "DECIMA: {$planetName} in XI è stato escluso erroneamente"
     );
 }

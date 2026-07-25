@@ -42,7 +42,7 @@ foreach($evidences as $e){
 
 $registeredRules=count(RuleRegistry::all());
 
-if($registeredRules!==34){
+if($registeredRules !== 120){
     throw new RuntimeException('RULE-0033: registry errato');
 }
 

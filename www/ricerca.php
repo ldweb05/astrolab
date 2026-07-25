@@ -17,6 +17,19 @@ ini_set('display_errors', 0);
 // ---- QUERY SOGGETTI CON FILTRO PER UTENTE ----
 
 require_once __DIR__ . '/includes/RicercaPageData.php';
+
+$stmtNazioniLocalita = $pdo->query(
+    "SELECT
+         iso_nazione,
+         MIN(nazione) AS nome_nazione
+     FROM localita
+     WHERE attivo = true
+       AND iso_nazione IS NOT NULL
+       AND iso_nazione <> ''
+     GROUP BY iso_nazione
+     ORDER BY LOWER(MIN(nazione)), iso_nazione"
+);
+$nazioniLocalita = $stmtNazioniLocalita->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -66,28 +79,33 @@ BARRA CONTROLLI PRINCIPALE
 </select>
 </div>
 <div class="form-group">
-<label>Aeroporti</label>
-<select id="tipo-ricerca">
-<option value="large_medium">Grandi + Medi</option>
-<option value="iata_only">Solo IATA</option>
-<option value="tutti">Tutti (lento)</option>
+<label>Tipo località</label>
+<select id="tipo-localita" onchange="onTipoLocalitaChange(this.value)">
+<option value="aeroporti">Aeroporti</option>
+<option value="localita">Località</option>
 </select>
 </div>
-<div class="form-group">
-<label>Militari</label>
-<select id="escludi-militari">
-<option value="1">Escludi</option>
-<option value="0">Includi</option>
+<div class="form-group" id="wrap-nazione-localita" style="display:none">
+<label>Nazione</label>
+<select id="nazione-localita">
+<option value="">— Seleziona —</option>
+<?php foreach ($nazioniLocalita as $nazioneLocalita): ?>
+<option
+    value="<?= htmlspecialchars($nazioneLocalita['iso_nazione']) ?>"
+    data-iso-nazione="<?= htmlspecialchars($nazioneLocalita['iso_nazione']) ?>"
+>
+<?= htmlspecialchars($nazioneLocalita['nome_nazione'] ?: $nazioneLocalita['iso_nazione']) ?>
+</option>
+<?php endforeach; ?>
 </select>
 </div>
-<!-- Stelline min — nascosta in modalità Cuspidi -->
-<div class="form-group" id="wrap-stelline-min">
-<label>Stelline min.</label>
-<select id="stelline-min-cerca">
-<option value="0">Tutte</option>
-<option value="3">≥ ★★★</option>
-<option value="4">≥ ★★★★</option>
-<option value="5">★★★★★</option>
+<div class="form-group" id="wrap-numero-localita" style="display:none">
+<label>Numero risultati</label>
+<select id="numero-localita">
+<option value="50">50</option>
+<option value="100">100</option>
+<option value="150">150</option>
+<option value="tutte">Tutte</option>
 </select>
 </div>
 <button class="filtri-avanzati-toggle" id="btn-toggle-avanzati" onclick="toggleAvanzati()">
@@ -275,6 +293,32 @@ Tolleranza dinamica (Orbe)
 <option value="larghissimo">Larghissimo: ±5° 0′</option>
 </select>
 </div>
+<!-- Filtri aeroportuali -->
+<div class="avanzati-group">
+<label>Aeroporti</label>
+<select id="tipo-ricerca">
+<option value="large_medium">Grandi + Medi</option>
+<option value="iata_only">Solo IATA</option>
+<option value="tutti">Tutti (lento)</option>
+</select>
+</div>
+<div class="avanzati-group">
+<label>Militari</label>
+<select id="escludi-militari">
+<option value="1">Escludi</option>
+<option value="0">Includi</option>
+</select>
+</div>
+<!-- Stelline min — nascosta in modalità Cuspidi -->
+<div class="avanzati-group" id="wrap-stelline-min">
+<label>Stelline min.</label>
+<select id="stelline-min-cerca">
+<option value="0">Tutte</option>
+<option value="3">≥ ★★★</option>
+<option value="4">≥ ★★★★</option>
+<option value="5">★★★★★</option>
+</select>
+</div>
 <!-- Importanza Aeroporto -->
 <div class="avanzati-group">
 <label>
@@ -287,7 +331,7 @@ Importanza aeroporto
 <select id="filt-importanza">
 <option value="">— Usa il selettore principale —</option>
 <option value="solo_hub">Solo Hub (large + IATA)</option>
-<option value="iata_only">Solo aeroporti IATA</option>
+<option value="iata_only">Aeroporti IATA</option>
 </select>
 </div>
 <!-- Allargamento Automatico Orbe (solo Cuspidi) -->
@@ -432,6 +476,29 @@ const btn   = document.getElementById('btn-toggle-avanzati');
 const vis   = panel.classList.toggle('visibile');
 btn.classList.toggle('aperto', vis);
 }
+function onTipoLocalitaChange(val) {
+const ricercaLocalita = val === 'localita';
+document.getElementById('wrap-nazione-localita').style.display = ricercaLocalita ? '' : 'none';
+document.getElementById('wrap-numero-localita').style.display = ricercaLocalita ? '' : 'none';
+}
+
+function localizzaNomiNazioni() {
+if (typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function') {
+return;
+}
+
+const nomiRegioni = new Intl.DisplayNames(['it'], { type: 'region' });
+
+document.querySelectorAll('#nazione-localita option[data-iso-nazione]').forEach(option => {
+const iso = option.dataset.isoNazione;
+const nomeItaliano = nomiRegioni.of(iso);
+
+if (nomeItaliano && nomeItaliano !== iso) {
+option.textContent = nomeItaliano;
+}
+});
+}
+
 function onCondizioneChange(val) {
 const isCuspidi = val === CONDIZIONE_CUSPIDI;
 const isAstri   = val === CONDIZIONE_ASTRI;
@@ -612,6 +679,14 @@ document.getElementById('btn-cerca').addEventListener('click', avviaRicerca);
 function avviaRicerca(espansioneOrbe) {
     const s = getSoggetto();
     if (!s) { alert('Seleziona prima un soggetto.'); return; }
+
+    const tipoLocalita = document.getElementById('tipo-localita').value;
+    const nazioneLocalita = document.getElementById('nazione-localita').value;
+    if (tipoLocalita === 'localita' && nazioneLocalita === '') {
+        alert('Seleziona una nazione per la ricerca delle località.');
+        document.getElementById('nazione-localita').focus();
+        return;
+    }
 
     if (eventoCorrente) { eventoCorrente.close(); eventoCorrente = null; }
 
@@ -1310,15 +1385,32 @@ const sogg = getSoggetto();
 const anno = document.getElementById('anno-rs').value;
 const cond = stato.modalita === 'astri' ? 'Decima' : document.getElementById('condizione').value;
 const righe = pagRis.map((r, idx) => {
+const isLocalita = r.origine_punto === 'localita';
+const nomePunto = r.nome || r.citta || '—';
+const luogoRs = isLocalita
+? [nomePunto, r.nazione].filter(Boolean).join(', ')
+: [r.citta || nomePunto, r.nazione].filter(Boolean).join(', ');
+const tipoPunto = r.tipo
+? String(r.tipo).replace(/_/g, ' ')
+: (isLocalita ? 'località' : 'aeroporto');
+const popolazione = isLocalita && Number(r.popolazione) > 0
+? `<div style="color:#999;font-size:10px">${Number(r.popolazione).toLocaleString('it-IT')} abitanti</div>`
+: '';
+const codicePunto = isLocalita
+? ((r.iata || r.icao)
+    ? `<strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||'aeroporto associato'}</span>`
+    : `<strong>Località</strong><br><span style="color:#999;font-size:10px">${tipoPunto}</span>`)
+: `<strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||tipoPunto}</span>`;
 const confrontoKey = [
 r.lat,
 r.lon,
 r.iata || '',
-r.icao || ''
+r.icao || '',
+r.nome || ''
 ].join('|');
 const rsUrl = 'rs.php?id=' + (sogg?.id||'') +
 '&lat_rs=' + r.lat + '&lon_rs=' + r.lon +
-'&luogo_rs=' + encodeURIComponent((r.citta||'')+', '+(r.nazione||'')) +
+'&luogo_rs=' + encodeURIComponent(luogoRs) +
 '&anno=' + anno + '&condizione=' + encodeURIComponent(cond);
 const cls     = r.stelline>=5?'stelle-5':r.stelline>=4?'stelle-4':'';
 const hasVeti = r.veti && r.veti.length > 0;
@@ -1349,8 +1441,8 @@ return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
 <td>${stelleHtml(r.stelline)}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
-<td><strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||''}</span></td>
-<td style="max-width:200px">${r.nome||''}</td>
+<td>${codicePunto}</td>
+<td style="max-width:200px"><strong>${nomePunto}</strong>${popolazione}</td>
 <td>${r.citta||''}</td>
 <td>${r.nazione||''}</td>
 <td style="color:#888">${parseFloat(r.lat||0).toFixed(2)}</td>
@@ -1385,7 +1477,7 @@ ${confrontoToolbar}
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Stelle</th><th>VAL</th>
-<th>IATA / ICAO</th><th>Aeroporto</th>
+<th>Codice / Tipo</th><th>Punto geografico</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th><th>Confronta</th>
 </tr></thead>
 <tbody>${righe||'<tr><td colspan="11" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
@@ -1487,6 +1579,8 @@ document.addEventListener('DOMContentLoaded', function() {
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
+localizzaNomiNazioni();
+onTipoLocalitaChange(document.getElementById('tipo-localita').value);
 
 document.getElementById('risultati-area').addEventListener('change', function(event) {
     const checkbox = event.target.closest('.confronto-checkbox');

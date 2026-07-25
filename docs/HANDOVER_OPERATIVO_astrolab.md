@@ -1995,3 +1995,220 @@ Il prossimo intervento applicativo deve riguardare esclusivamente:
 
 La deduplicazione PHP non deve essere eliminata prima della validazione
 completa del risultato SQL.
+
+
+## 2026-07-22 — Ricerca RS v2: deduplicazione spaziale SQL e autenticazione test
+
+- Completata la migrazione della deduplicazione geografica dal livello PHP al Repository SQL (`www/includes/RicercaRSAirportRepository.php`).
+- Verificata la compatibilità funzionale mediante regressione completa.
+- Introdotto il helper condiviso `www/tests/search_auth.php` per i test delle Search API protette.
+- Aggiornati tutti i test in `www/tests/search/` affinché creino una sessione autenticata e inviino il cookie `PHPSESSID` tramite `stream_context_create()`.
+- La suite "Validazione ricerca API" è nuovamente completamente verde.
+- Regressione completa (`www/tests/run.php`): OK.
+- Commit: `44438f8` — Fix authenticated search API tests.
+
+### Nota permanente
+
+Le API di ricerca (`ricerca_stream_api.php` e `ricerca_griglia_api.php`) richiedono autenticazione.
+
+Ogni nuovo test che invoca tali endpoint deve utilizzare il helper:
+
+`www/tests/search_auth.php`
+
+e non deve effettuare chiamate HTTP anonime tramite `file_get_contents()`.
+
+Prossimo passo: proseguire con le ottimizzazioni della Ricerca RS mantenendo invariati i contratti pubblici e la copertura della regressione.
+
+
+
+------------------------------------------------------------
+
+## Avvio Ricerca RSM v3
+
+Terminata con successo la migrazione della deduplicazione SQL degli
+aeroporti e ripristinata la regressione completa della Search API.
+
+Da questo punto inizia l'evoluzione della Ricerca RSM.
+
+Obiettivo:
+
+trasformare il sistema da ricerca limitata agli aeroporti ad una
+ricerca globale delle località geografiche.
+
+Le decisioni già prese sono:
+
+- gli aeroporti rimangono pienamente supportati;
+- le località diventeranno il nuovo oggetto principale della ricerca;
+- aeroporti, eliporti e idroporti saranno informazioni opzionali
+  associate alla località;
+- la UI permetterà di scegliere il tipo di località da ricercare;
+- il motore astrologico non verrà modificato;
+- la regressione automatica dovrà rimanere completamente verde durante
+  ogni fase dello sviluppo.
+
+La prima attività prevista consiste nello studio del modello dati
+GeoNames e nella progettazione del nuovo modello "Località".
+
+## Handover — Ricerca RSM v3, Sprint 1 completato
+
+La ricerca streaming usa ora `recuperaAeroportiDeduplicati()` invece della sequenza
+`recuperaAeroporti()` + `deduplicaAeroporti()`.
+
+Comportamento verificato:
+
+- modalità legacy senza filtro geografico: 9.293 aeroporti grezzi, nessuna località;
+- modalità v3 con IT/FR e intervallo longitudinale: 144.856 punti grezzi,
+  dei quali 144.627 località;
+- deduplicazione PHP e SQL identiche per conteggio, ordine e record selezionati;
+- contratto SSE invariato;
+- test autenticati superati.
+
+Test permanente:
+
+`www/tests/test_rsm_location_repository.php`
+
+## 2026-07-22 — Ricerca RSM v3, FASE 2 completata
+
+### Obiettivo
+
+Completare il nuovo modello unificato `Località`, mantenendo compatibilità con
+la ricerca aeroportuale esistente e spostando la deduplicazione geografica nel
+Repository SQL.
+
+### Risultato
+
+- aeroporti e località GeoNames sono gestiti come punti geografici compatibili;
+- il ramo legacy senza filtro geografico continua a restituire solo aeroporti;
+- il ramo geografico include aeroporti e tutte le località attive;
+- nessuna soglia minima di popolazione è stata introdotta;
+- precedenza, conteggio, ordine e rappresentanti coincidono con la pipeline PHP;
+- il contratto della Streaming API è rimasto invariato;
+- il codice condiviso di preparazione dei filtri è stato consolidato in
+  `preparaFiltriLocalita()`;
+- la selezione storica dei rappresentanti resta legata all'ordine della query
+  legacy, che non deve essere semplificato senza una nuova specifica funzionale.
+
+### Test eseguiti
+
+- `www/tests/test_rsm_location_repository.php`: OK;
+- `www/tests/test_rsm_dedup_sequence.php`: PHP=851, SQL=851, sequenze identiche;
+- confronto con `work_mem` 64kB, 1MB e 64MB: identico;
+- confronto con `enable_incremental_sort = off`: identico;
+- `git diff --check`: OK;
+- working tree pulito dopo il commit.
+
+### Commit Git
+
+`abc54a9` — Aggiunge supporto località alla ricerca RS e test di regressione
+sulla sequenza di deduplica.
+
+### Stato della roadmap
+
+- FASE 1: completata;
+- FASE 2: completata;
+- FASE 3: completata;
+- FASE 4: completata.
+
+### Chiusura FASE 3 — Backend
+
+Completata l’introduzione del parametro opzionale `tipo_localita` con i valori:
+
+- `solo_aeroporti`;
+- `solo_localita`.
+
+Il comportamento legacy è preservato quando il parametro è assente o non valido.
+La deduplicazione PHP e SQL resta equivalente con 851 risultati su 851 e sequenza identica.
+La suite completa è verde. Aggiunti inoltre i test dedicati `RULE-0001`–`RULE-0010`
+e riallineati i test del Rule Engine al freeze ufficiale di 120 Rule.
+
+### Chiusura FASE 4 — Query SQL unificata
+
+Completato il contratto unificato dei candidati geografici.
+
+Il repository restituisce ora, per aeroporti e località:
+
+- coordinate;
+- nome;
+- tipo;
+- nazione;
+- popolazione, quando disponibile;
+- aeroporto associato, quando disponibile;
+- IATA, quando disponibile;
+- ICAO, quando disponibile.
+
+Per gli aeroporti, `popolazione` è `NULL` e `aeroporto_associato` coincide con
+il nome del record. Per le località, IATA, ICAO e `aeroporto_associato` restano
+`NULL`, poiché non è ancora definita una regola geografica di associazione.
+
+Il contratto è propagato da `RicercaRSAirportRepository.php` a
+`RicercaRSResultBuilder.php`, mantenendo la compatibilità con i record legacy
+tramite valori `NULL`.
+
+### Test eseguiti per la FASE 4
+
+- `www/tests/test_rsm_location_repository.php`: OK;
+- `www/tests/test_rsm_result_builder.php`: OK;
+- `www/tests/test_rsm_dedup_sequence.php`: PHP=851, SQL=851, sequenze identiche;
+- lint PHP dei file modificati: OK;
+- `git diff --check`: OK.
+
+### Commit Git FASE 4
+
+`9fd1fbc` — Completa contratto query unificata FASE 4.
+
+### Stato successivo
+
+La FASE 5 — Interfaccia è completata.
+Le evoluzioni successive dovranno essere pianificate in una nuova fase
+senza modificare il motore astrologico né il comportamento legacy consolidato.
+
+---
+
+## 2026-07-22 — Ricerca RSM v3, FASE 5 completata
+
+### Obiettivo
+
+Completare l'interfaccia della Ricerca RSM v3, rendendo disponibile
+la selezione tra sole località aeroportuali oppure sole località geografiche.
+
+### Risultato
+
+- aggiunto il filtro `tipo_localita` nell'interfaccia;
+- il parametro viene trasmesso alla Streaming API;
+- i risultati distinguono aeroporti e località geografiche;
+- vengono mostrati il nome della località e la popolazione quando disponibile;
+- IATA e ICAO sono visualizzati solo quando presenti;
+- i collegamenti alla Rivoluzione Solare utilizzano la località selezionata;
+- il comportamento legacy resta compatibile;
+- il motore astrologico non è stato modificato.
+
+### Verifiche
+
+- lint PHP dei file interessati: OK;
+- `git diff --check`: OK;
+- working tree pulito dopo il rilascio;
+- branch locale `main` allineato a `astro-val/main`.
+
+### Riferimenti Git
+
+- commit funzionale: `bad3026` — completa selezione e rendering località;
+- merge su `main`: `49423d1`;
+- tag: `rsm-v3-fase5-completata`.
+
+### Stato della roadmap
+
+- FASE 1: completata;
+- FASE 2: completata;
+- FASE 3: completata;
+- FASE 4: completata;
+- FASE 5: completata;
+- FASE 6: completata;
+- FASE 7: completata;
+- FASE 5A: pianificata.
+
+Il modello attuale supporta esclusivamente `solo_aeroporti` e
+`solo_localita`, distinguendo i risultati tramite `origine_punto`.
+
+La FASE 5A introdurrà, per `solo_localita`, la selezione obbligatoria
+della nazione e il limite 50/100/150/Tutte. La modalità
+`solo_aeroporti` manterrà la ricerca mondiale e il comportamento legacy.

@@ -1,6 +1,17 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../search_auth.php';
+[$httpContext, $sessionFile] = searchTestHttpContext();
+
+register_shutdown_function(
+    static function () use ($sessionFile): void {
+        if (is_file($sessionFile)) {
+            @unlink($sessionFile);
+        }
+    }
+);
+
 $condizione = 'Lavoro';
 $atteso = 4281;
 
@@ -19,7 +30,7 @@ $url = 'http://localhost/api/ricerca_griglia_api.php?' . http_build_query([
     'mostra_escluse' => '1',
 ]);
 
-$raw = @file_get_contents($url);
+$raw = @file_get_contents($url, false, $httpContext);
 
 if ($raw === false) {
     echo "✗ griglia {$condizione} 2026: impossibile chiamare API\n";
