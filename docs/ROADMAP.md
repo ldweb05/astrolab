@@ -205,6 +205,22 @@ Ogni attività completata deve essere registrata cronologicamente in
 
 ---
 
+
+
+# Manutenzione Ricerca RSM v3 (2026-07-26)
+
+✅ Rifiniture completate
+
+- percentuale con due decimali;
+- barra mantenuta visibile al completamento.
+
+Prossime attività:
+
+- valutazione incremento tranche di ricerca;
+- eventuale caricamento lazy delle nazioni;
+- solo manutenzione correttiva senza modifiche architetturali.
+
+
 # Prossimo passo operativo
 
 Il Comparator Engine costituisce ora la baseline stabile del progetto.
