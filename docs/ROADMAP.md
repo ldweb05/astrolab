@@ -216,8 +216,6 @@ Ogni attività completata deve essere registrata cronologicamente in
 
 Prossime attività:
 
-- valutazione incremento tranche di ricerca;
-- eventuale caricamento lazy delle nazioni;
 - solo manutenzione correttiva senza modifiche architetturali.
 
 

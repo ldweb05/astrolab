@@ -160,6 +160,7 @@ Le principali funzionalità implementate sono:
 - selezione obbligatoria della nazione nella modalità località;
 - limite configurabile dei risultati;
 - ordinamento alfabetico delle nazioni;
+- caricamento asincrono delle nazioni all'apertura della pagina;
 - distinzione tra aeroporti e località tramite `origine_punto`;
 - visualizzazione del nome geografico completo;
 - visualizzazione della popolazione quando disponibile;

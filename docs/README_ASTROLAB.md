@@ -143,7 +143,9 @@ Le attività future riguardano esclusivamente:
 Aggiornamento manutentivo Ricerca RSM v3:
 
 - percentuale visualizzata con due decimali;
-- barra di avanzamento mantenuta visibile al completamento.
+- barra di avanzamento mantenuta visibile al completamento;
+- tranche di ricerca aumentata da 20.000 a 30.000;
+- caricamento asincrono delle nazioni nella modalità Località.
 
 
 - manutenzione correttiva;
