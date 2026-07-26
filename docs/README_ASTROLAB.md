@@ -139,6 +139,13 @@ La baseline del progetto è stabile.
 
 Le attività future riguardano esclusivamente:
 
+
+Aggiornamento manutentivo Ricerca RSM v3:
+
+- percentuale visualizzata con due decimali;
+- barra di avanzamento mantenuta visibile al completamento.
+
+
 - manutenzione correttiva;
 - bug fixing;
 - aggiornamento della documentazione;

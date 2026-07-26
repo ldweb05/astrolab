@@ -468,6 +468,9 @@ perPagina:    50,
 confronto:    [],
 // Dati dell'ultimo "done" ricevuto dall'API, usati da espandi-orbe
 ultimiParams: null,
+offsetRicerca: 0,
+analizzatiFinoA: 0,
+ricercaCompletata: true,
 };
 let eventoCorrente = null;
 // ════════════════════════════════════════════════════════════════════════
@@ -653,8 +656,9 @@ const mf = Math.round((g - gi) * 60);
 return '~' + gi + '°' + (mf ? mf + '′' : '') + ' dal target';
 }
 function setProgress(perc, label) {
-document.getElementById('progress-fill').style.width = perc + '%';
-document.getElementById('progress-perc').textContent = perc + '%';
+const percentuale = Number(perc);
+document.getElementById('progress-fill').style.width = percentuale + '%';
+document.getElementById('progress-perc').textContent = percentuale.toFixed(2) + '%';
 if (label) document.getElementById('progress-label').textContent = label;
 }
 /**
@@ -702,6 +706,9 @@ function avviaRicerca(espansioneOrbe) {
     stato.filtroStelle = 0;
     stato.pagina       = 1;
     stato.confronto    = [];
+    stato.offsetRicerca = 0;
+    stato.analizzatiFinoA = 0;
+    stato.ricercaCompletata = true;
 
     // Applica preset orbe se selezionato (solo cuspidi)
     const orbePreset = document.getElementById('filt-orbe-preset').value;
@@ -997,11 +1004,17 @@ ora_gmt: s.ora_gmt, lat: s.lat, lon: s.lon,
 anno:            document.getElementById('anno-rs').value,
 condizione:      document.getElementById('condizione').value,
 tipo_ricerca:    getTipoRicercaEffettivo(),
+tipo_localita:   document.getElementById('tipo-localita').value,
+nazione_localita:document.getElementById('nazione-localita').value,
+numero_localita: document.getElementById('numero-localita').value,
+offset_ricerca:  0,
+limite_ricerca:  20000,
 escludi_militari:document.getElementById('escludi-militari').value,
 stelline_min:    document.getElementById('stelline-min-cerca').value,
 mostra_escluse: getMostraEscluse(),
 });
 aggiungiParamsGeografici(params);
+stato.ultimiParams = new URLSearchParams(params.toString());
 eventoCorrente = new EventSource('api/ricerca_stream_api.php?' + params.toString());
 collegaHandlerStandard(eventoCorrente, params);
 }
@@ -1025,6 +1038,7 @@ astri_in_casa:   JSON.stringify(regole),
 mostra_escluse: getMostraEscluse(),
 });
 aggiungiParamsGeografici(params);
+stato.ultimiParams = new URLSearchParams(params.toString());
 eventoCorrente = new EventSource('api/ricerca_stream_api.php?' + params.toString());
 eventoCorrente.addEventListener('start', e => {
 const d = JSON.parse(e.data);
@@ -1132,18 +1146,35 @@ document.getElementById('risultati-area').innerHTML =
 '<div class="msg-error-box">❌ ' + msg + '</div>';
 });
 }
+function aggiungiRisultatoTopKFrontend(risultati, nuovoRisultato, limite) {
+if (risultati.length < limite) { risultati.push(nuovoRisultato); return; }
+let stellineMinime = Infinity;
+let ultimoIndiceMinimo = null;
+risultati.forEach((risultato, indice) => {
+const stelline = Number(risultato.stelline || 0);
+if (stelline < stellineMinime) { stellineMinime = stelline; ultimoIndiceMinimo = indice; }
+else if (stelline === stellineMinime) { ultimoIndiceMinimo = indice; }
+});
+if (Number(nuovoRisultato.stelline || 0) <= stellineMinime || ultimoIndiceMinimo === null) return;
+risultati.splice(ultimoIndiceMinimo, 1);
+risultati.push(nuovoRisultato);
+}
 // ── Handler SSE comune (progress + done) per standard e astri ─────────────
-function collegaHandlerProgressEDone(ev) {
+function collegaHandlerProgressEDone(ev, params = null, risultatiPrecedenti = []) {
 ev.addEventListener('progress', e => {
 const d = JSON.parse(e.data);
+const offsetTranche = Number(params?.get('offset_ricerca') || 0);
+const processatiCumulativi = Math.min(d.totale, offsetTranche + Number(d.processed || 0));
+const percentualeCumulativa = d.totale > 0
+? Math.min(100, processatiCumulativi / d.totale * 100)
+: 0;
 if (d.fase === 'dedup_done') {
-document.getElementById('progress-sub').textContent =
-'Deduplicati: ' + d.totale.toLocaleString() + ' su ' + d.totale_originale.toLocaleString() + ' aeroporti';
-setProgress(1, 'Calcolo in corso...');
+setProgress(percentualeCumulativa,
+'Calcolate ' + processatiCumulativi.toLocaleString() + ' / ' + d.totale.toLocaleString() + ' località...');
 return;
 }
-setProgress(Math.max(2, d.perc),
-'Calcolati ' + d.processed.toLocaleString() + ' / ' + d.totale.toLocaleString() + ' aeroporti...');
+setProgress(percentualeCumulativa,
+'Calcolate ' + processatiCumulativi.toLocaleString() + ' / ' + d.totale.toLocaleString() + ' località...');
 });
 ev.addEventListener('result', e => {
 const r = JSON.parse(e.data);
@@ -1154,9 +1185,22 @@ document.getElementById('risultati-live').textContent =
 ev.addEventListener('done', e => {
 const d = JSON.parse(e.data);
 ev.close(); eventoCorrente = null;
+stato.offsetRicerca = d.offset_ricerca || 0;
+stato.analizzatiFinoA = d.analizzati_fino_a || 0;
+stato.ricercaCompletata = d.ricerca_completata !== false;
 stato.tutti = d.risultati;
+if (params && risultatiPrecedenti.length > 0) {
+const limite = Number(params.get('numero_localita') || 0);
+if (limite > 0) {
+stato.tutti = [...risultatiPrecedenti];
+d.risultati.forEach(r => aggiungiRisultatoTopKFrontend(stato.tutti, r, limite));
+}
+}
 console.log('ATL_DOPO_DONE', stato.tutti.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
-document.getElementById('progress-area').style.display = 'none';
+document.getElementById('progress-area').style.display = 'block';
+if (stato.ricercaCompletata) {
+setProgress(100, 'Ricerca completata');
+}
 document.getElementById('risultati-live').textContent  = '';
 const infoEl = document.getElementById('info-rs');
 infoEl.style.display = 'flex';
@@ -1167,6 +1211,9 @@ document.getElementById('info-rs-tempo').textContent =
 aggiornaInfoEsclusiFiltro(d);
 stato.pagina = 1;
 renderTabella();
+if (params && !stato.ricercaCompletata) {
+mostraBottoneProseguiRicerca(params);
+}
 });
 ev.addEventListener('error', e => {
 ev.close(); eventoCorrente = null;
@@ -1177,6 +1224,36 @@ document.getElementById('risultati-area').innerHTML =
 '<div class="msg-error-box">❌ ' + msg + '</div>';
 });
 }
+function avviaTrancheSuccessiva(params) {
+const wrap = document.getElementById('btn-prosegui-ricerca-wrap');
+if (wrap) wrap.remove();
+document.getElementById('progress-area').style.display = 'block';
+const prossimiParams = new URLSearchParams(params.toString());
+prossimiParams.set('offset_ricerca', stato.analizzatiFinoA);
+eventoCorrente = new EventSource('api/ricerca_stream_api.php?' + prossimiParams.toString());
+collegaHandlerStandard(eventoCorrente, prossimiParams);
+}
+function mostraBottoneProseguiRicerca(params) {
+const precedente = document.getElementById('btn-prosegui-ricerca-wrap');
+if (precedente) precedente.remove();
+const area = document.getElementById('risultati-area');
+const wrap = document.createElement('div');
+wrap.id = 'btn-prosegui-ricerca-wrap';
+wrap.className = 'espandi-wrap';
+const limite = Number(params.get('limite_ricerca') || 20000);
+const inizio = stato.analizzatiFinoA + 1;
+const fine = stato.analizzatiFinoA + limite;
+const paramsSalvati = new URLSearchParams(params.toString());
+const bottone = document.createElement('button');
+bottone.type = 'button';
+bottone.textContent = '▶ Prosegui la Ricerca';
+bottone.style.cssText =
+'background:#1976D2;color:white;border:none;border-radius:4px;' +
+'padding:8px 20px;font-size:13px;cursor:pointer;';
+bottone.addEventListener('click', () => avviaTrancheSuccessiva(paramsSalvati));
+wrap.appendChild(bottone);
+area.prepend(wrap);
+}
 function collegaHandlerStandard(ev, params) {
 ev.addEventListener('start', e => {
 const d = JSON.parse(e.data);
@@ -1185,7 +1262,7 @@ document.getElementById('progress-sub').textContent =
 document.getElementById('info-rs-gmt').textContent  = d.rs_gmt;
 document.getElementById('info-rs-cond').textContent = d.condizione;
 });
-collegaHandlerProgressEDone(ev);
+collegaHandlerProgressEDone(ev, params, [...stato.tutti]);
 }
 // ── Pulsante espandi orbe (fallback manuale) ──────────────────────────────
 function mostraBottoneEspandi() {

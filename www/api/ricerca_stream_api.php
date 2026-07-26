@@ -166,6 +166,11 @@ if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true))
     $tipoLocalita = '';
 }
 
+// Ricerca progressiva delle località.
+// Ogni richiesta analizza una tranche del dataset deduplicato.
+$offsetRicerca = max(0, intval($_GET['offset_ricerca'] ?? 0));
+$limiteRicerca = max(1, min(20000, intval($_GET['limite_ricerca'] ?? 20000)));
+
 // Numero massimo di località restituite: valori consentiti 50, 100, 150, 200, 250, 500, 1000
 $numeroLocalitaRaw = trim($_GET['numero_localita'] ?? '50');
 $numeroLocalita = in_array(
@@ -325,8 +330,18 @@ try {
         $params[] = $lonMax;
     }
 
-    $dimensioneBlocco = 500;
-    $offsetBlocco = 0;
+    $dimensioneBlocco = $tipoLocalita === 'localita' ? 20000 : 500;
+
+    // Per gli aeroporti manteniamo il comportamento storico.
+    // Per le località partiamo invece dall'offset della tranche richiesta.
+    $offsetBlocco = $tipoLocalita === 'localita' ? $offsetRicerca : 0;
+    $fineTranche = $tipoLocalita === 'localita'
+        ? $offsetRicerca + $limiteRicerca
+        : null;
+
+    $dimensionePrimoBlocco = $fineTranche !== null
+        ? min($dimensioneBlocco, $fineTranche - $offsetBlocco)
+        : $dimensioneBlocco;
 
     $recupero = recuperaAeroportiDeduplicati(
         $pdo,
@@ -335,7 +350,7 @@ try {
         $bucketLat,
         $bucketLon,
         $tipoLocalita,
-        $dimensioneBlocco,
+        $dimensionePrimoBlocco,
         $offsetBlocco
     );
 
@@ -760,6 +775,19 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             break;
         }
 
+        // La modalità località procede per tranche, normalmente da 20.000.
+        if ($fineTranche !== null && $offsetBlocco >= $fineTranche) {
+            break;
+        }
+
+        $dimensioneProssimoBlocco = $dimensioneBlocco;
+        if ($fineTranche !== null) {
+            $dimensioneProssimoBlocco = min(
+                $dimensioneBlocco,
+                $fineTranche - $offsetBlocco
+            );
+        }
+
         $recuperoBlocco = recuperaAeroportiDeduplicati(
             $pdo,
             $where,
@@ -767,7 +795,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             $bucketLat,
             $bucketLon,
             $tipoLocalita,
-            $dimensioneBlocco,
+            $dimensioneProssimoBlocco,
             $offsetBlocco
         );
         $selezionati = $recuperoBlocco['aeroporti'];
@@ -792,6 +820,13 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
         'totale_risultati'      => count($risultati),
         'totale_calcolati'      => $totaleCalc,
         'totale_originale'      => $totaleAero,
+        'offset_ricerca'         => $tipoLocalita === 'localita' ? $offsetRicerca : 0,
+        'limite_ricerca'         => $tipoLocalita === 'localita' ? $limiteRicerca : $totaleCalc,
+        'analizzati_fino_a'      => $tipoLocalita === 'localita'
+            ? min($offsetBlocco, $totaleCalc)
+            : $totaleCalc,
+        'ricerca_completata'     => $tipoLocalita !== 'localita'
+            || $offsetBlocco >= $totaleCalc,
         'totale_esclusi_radicale' => $totaleEsclusiRadicale,
         'totale_esclusi_filtro'   => $totaleEsclusiFiltro,
         'totale_calcoli_placido' => $totaleCalcoliPlacido,

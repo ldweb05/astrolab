@@ -2215,3 +2215,21 @@ Il modello attuale supporta esclusivamente `solo_aeroporti` e
 La FASE 5A introdurrà, per `solo_localita`, la selezione obbligatoria
 della nazione e il limite 50/100/150/Tutte. La modalità
 `solo_aeroporti` manterrà la ricerca mondiale e il comportamento legacy.
+
+
+### 2026-07-26 — Ricerca RSM v3: rifinitura UX avanzamento
+
+- Componente: `www/ricerca.php`
+- Obiettivo:
+  - visualizzare la percentuale con due decimali;
+  - mantenere visibile la barra di avanzamento al termine della ricerca.
+- Risultato:
+  - `setProgress()` ora mostra il valore con `toFixed(2)`;
+  - al completamento definitivo la barra rimane visibile e viene portata al 100%.
+- Test eseguiti:
+  - `php -l` (Docker): OK;
+  - `git diff --check`: OK.
+- Commit Git:
+  - da eseguire.
+- Passo successivo:
+  - valutare l'aumento della dimensione delle tranche (20.000 → 30.000/40.000) e successivamente il caricamento lazy delle nazioni.
