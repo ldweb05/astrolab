@@ -2233,3 +2233,24 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - da eseguire.
 - Passo successivo:
   - valutare l'aumento della dimensione delle tranche (20.000 → 30.000/40.000) e successivamente il caricamento lazy delle nazioni.
+
+### 2026-07-26 — Ricerca RSM v3: incremento tranche a 30.000
+
+- Componenti:
+  - `www/api/ricerca_stream_api.php`;
+  - `www/ricerca.php`.
+- Obiettivo:
+  - aumentare la dimensione delle tranche da 20.000 a 30.000 località;
+  - mantenere invariata l'architettura della ricerca progressiva.
+- Motivazione:
+  - scelta prudenziale rispetto all'alternativa da 40.000;
+  - ambiente con `memory_limit=256M` e swap già in uso.
+- Risultato:
+  - limite e valore predefinito backend portati a 30.000;
+  - dimensione blocco backend portata a 30.000;
+  - parametro e fallback frontend allineati a 30.000.
+- Test eseguiti:
+  - `php -l` in Docker sui due file PHP: OK;
+  - `git diff --check`: OK.
+- Commit Git:
+  - da eseguire.

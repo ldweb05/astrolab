@@ -169,7 +169,7 @@ if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true))
 // Ricerca progressiva delle località.
 // Ogni richiesta analizza una tranche del dataset deduplicato.
 $offsetRicerca = max(0, intval($_GET['offset_ricerca'] ?? 0));
-$limiteRicerca = max(1, min(20000, intval($_GET['limite_ricerca'] ?? 20000)));
+$limiteRicerca = max(1, min(30000, intval($_GET['limite_ricerca'] ?? 30000)));
 
 // Numero massimo di località restituite: valori consentiti 50, 100, 150, 200, 250, 500, 1000
 $numeroLocalitaRaw = trim($_GET['numero_localita'] ?? '50');
@@ -330,7 +330,7 @@ try {
         $params[] = $lonMax;
     }
 
-    $dimensioneBlocco = $tipoLocalita === 'localita' ? 20000 : 500;
+    $dimensioneBlocco = $tipoLocalita === 'localita' ? 30000 : 500;
 
     // Per gli aeroporti manteniamo il comportamento storico.
     // Per le località partiamo invece dall'offset della tranche richiesta.
