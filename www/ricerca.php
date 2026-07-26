@@ -1008,7 +1008,7 @@ tipo_localita:   document.getElementById('tipo-localita').value,
 nazione_localita:document.getElementById('nazione-localita').value,
 numero_localita: document.getElementById('numero-localita').value,
 offset_ricerca:  0,
-limite_ricerca:  20000,
+limite_ricerca:  30000,
 escludi_militari:document.getElementById('escludi-militari').value,
 stelline_min:    document.getElementById('stelline-min-cerca').value,
 mostra_escluse: getMostraEscluse(),
@@ -1240,7 +1240,7 @@ const area = document.getElementById('risultati-area');
 const wrap = document.createElement('div');
 wrap.id = 'btn-prosegui-ricerca-wrap';
 wrap.className = 'espandi-wrap';
-const limite = Number(params.get('limite_ricerca') || 20000);
+const limite = Number(params.get('limite_ricerca') || 30000);
 const inizio = stato.analizzatiFinoA + 1;
 const fine = stato.analizzatiFinoA + limite;
 const paramsSalvati = new URLSearchParams(params.toString());
