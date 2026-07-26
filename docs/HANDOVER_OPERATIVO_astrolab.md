@@ -2230,9 +2230,28 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - `php -l` (Docker): OK;
   - `git diff --check`: OK.
 - Commit Git:
-  - da eseguire.
+  - `b25178b` — Ricerca: carica nazioni località in modo asincrono.
+
+### 2026-07-26 — Ricerca RSM v3: caricamento asincrono nazioni
+
+- Componenti:
+  - `www/ricerca.php`;
+  - `www/api/nazioni_localita_api.php`.
+- Obiettivo:
+  - alleggerire il rendering iniziale della pagina;
+  - mantenere invariata la logica della ricerca.
+- Risultato:
+  - elenco nazioni rimosso dall'HTML iniziale;
+  - recupero via AJAX all'avvio della pagina;
+  - selettore popolato in background;
+  - comportamento della ricerca invariato.
+- Test eseguiti:
+  - `php -l` (Docker): OK;
+  - endpoint HTTP: 401 da anonimo;
+  - query SQL: 248 nazioni restituite;
+  - `git diff --check`: OK.
 - Passo successivo:
-  - valutare l'aumento della dimensione delle tranche (20.000 → 30.000/40.000) e successivamente il caricamento lazy delle nazioni.
+  - sola manutenzione correttiva e futuri miglioramenti incrementali della Ricerca RSM v3.
 
 ### 2026-07-26 — Ricerca RSM v3: incremento tranche a 30.000
 
