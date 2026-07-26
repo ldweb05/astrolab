@@ -18,18 +18,6 @@ ini_set('display_errors', 0);
 
 require_once __DIR__ . '/includes/RicercaPageData.php';
 
-$stmtNazioniLocalita = $pdo->query(
-    "SELECT
-         iso_nazione,
-         MIN(nazione) AS nome_nazione
-     FROM localita
-     WHERE attivo = true
-       AND iso_nazione IS NOT NULL
-       AND iso_nazione <> ''
-     GROUP BY iso_nazione
-     ORDER BY LOWER(MIN(nazione)), iso_nazione"
-);
-$nazioniLocalita = $stmtNazioniLocalita->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -89,14 +77,6 @@ BARRA CONTROLLI PRINCIPALE
 <label>Nazione</label>
 <select id="nazione-localita">
 <option value="">— Seleziona —</option>
-<?php foreach ($nazioniLocalita as $nazioneLocalita): ?>
-<option
-    value="<?= htmlspecialchars($nazioneLocalita['iso_nazione']) ?>"
-    data-iso-nazione="<?= htmlspecialchars($nazioneLocalita['iso_nazione']) ?>"
->
-<?= htmlspecialchars($nazioneLocalita['nome_nazione'] ?: $nazioneLocalita['iso_nazione']) ?>
-</option>
-<?php endforeach; ?>
 </select>
 </div>
 <div class="form-group" id="wrap-numero-localita" style="display:none">
@@ -503,6 +483,41 @@ if (nomeItaliano && nomeItaliano !== iso) {
 option.textContent = nomeItaliano;
 }
 });
+}
+
+let caricamentoNazioniPromise = null;
+
+function caricaNazioniLocalita() {
+if (caricamentoNazioniPromise) {
+return caricamentoNazioniPromise;
+}
+
+const select = document.getElementById('nazione-localita');
+
+caricamentoNazioniPromise = fetch('api/nazioni_localita_api.php')
+.then(response => {
+if (!response.ok) {
+throw new Error('Caricamento nazioni non riuscito');
+}
+return response.json();
+})
+.then(nazioni => {
+nazioni.forEach(nazione => {
+const option = document.createElement('option');
+option.value = nazione.iso_nazione;
+option.dataset.isoNazione = nazione.iso_nazione;
+option.textContent = nazione.nome_nazione || nazione.iso_nazione;
+select.appendChild(option);
+});
+
+localizzaNomiNazioni();
+})
+.catch(error => {
+caricamentoNazioniPromise = null;
+console.error(error);
+});
+
+return caricamentoNazioniPromise;
 }
 
 function onCondizioneChange(val) {
@@ -1659,7 +1674,7 @@ document.addEventListener('DOMContentLoaded', function() {
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
-localizzaNomiNazioni();
+caricaNazioniLocalita();
 onTipoLocalitaChange(document.getElementById('tipo-localita').value);
 
 document.getElementById('risultati-area').addEventListener('change', function(event) {
