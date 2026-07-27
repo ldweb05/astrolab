@@ -262,6 +262,47 @@ switch ($action) {
         break;
 
     // ════════════════════════════════════════════════════════════
+    // MODIFICA SESSIONE RS
+    // ════════════════════════════════════════════════════════════
+    case 'modifica_rs':
+        $id   = intval($data['id'] ?? 0);
+        $note = trim((string)($data['note'] ?? ''));
+
+        if (mb_strlen($note) > 500) {
+            echo json_encode([
+                'ok' => false,
+                'errore' => 'Le Note non possono superare 500 caratteri.'
+            ]);
+            break;
+        }
+
+        $stmt = $pdo->prepare(
+            "SELECT soggetto_id
+             FROM sessioni_rs
+             WHERE id = ? AND utente_id = ?"
+        );
+        $stmt->execute([$id, $userId]);
+        $soggettoId = $stmt->fetchColumn();
+
+        if (!$soggettoId || !$auth->verificaSoggetto((int)$soggettoId)) {
+            echo json_encode([
+                'ok' => false,
+                'errore' => 'Sessione non trovata o non autorizzata.'
+            ]);
+            break;
+        }
+
+        $stmt = $pdo->prepare(
+            "UPDATE sessioni_rs
+             SET note = ?
+             WHERE id = ? AND utente_id = ?"
+        );
+        $stmt->execute([$note, $id, $userId]);
+
+        echo json_encode(['ok' => true]);
+        break;
+
+    // ════════════════════════════════════════════════════════════
     // ELIMINA SESSIONE RS
     // ════════════════════════════════════════════════════════════
     case 'elimina_rs':
