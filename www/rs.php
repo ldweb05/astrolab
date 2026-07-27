@@ -198,6 +198,49 @@ if ($soggetto) {
         <h3>📂 Sessioni RS salvate per questo soggetto</h3>
         <div id="lista-sessioni-rs"></div>
     </div>
+
+    <div id="modifica-note-rs" class="annual-report-modal is-hidden">
+        <div class="annual-report-window" style="width:min(620px,calc(100vw - 48px));min-height:280px;resize:both;overflow:auto;">
+            <div class="annual-report-header">
+                <div class="val-stringa" id="modifica-note-rs-titolo">✏️ Modifica Note Sessione RSM</div>
+                <button type="button"
+                        onclick="chiudiModificaNoteRS()"
+                        title="Chiudi"
+                        aria-label="Chiudi"
+                        class="annual-report-icon annual-report-close">×</button>
+            </div>
+            <div class="annual-report-content">
+                <input type="hidden" id="modifica-note-rs-id">
+
+                <label for="modifica-note-rs-testo">
+                    Note per ricordare le caratteristiche della sessione salvata
+                </label>
+
+                <textarea id="modifica-note-rs-testo"
+                          maxlength="500"
+                          rows="7"
+                          style="width:100%;box-sizing:border-box;margin-top:10px;padding:12px;font:inherit;resize:vertical;overflow-y:auto;"
+                          oninput="aggiornaContatoreNoteRS()"></textarea>
+
+                <div style="margin-top:8px;text-align:right;">
+                    Caratteri disponibili:
+                    <strong id="modifica-note-rs-contatore">500</strong>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+                    <button type="button"
+                            id="modifica-note-rs-annulla"
+                            onclick="chiudiModificaNoteRS()">Annulla</button>
+                    <button type="button"
+                            id="modifica-note-rs-salva"
+                            class="btn-primary"
+                            onclick="salvaModificaNoteRS()">
+                        💾 Salva Note
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
  
     <div id="rs-loading" class="is-hidden"><p>⟳ Calcolo in corso...</p></div>
  
@@ -1309,11 +1352,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════════════════════════════════════
  
 let ultimaRSCalcolata = null;
+let sessioniRSSalvate = new Map();
  
 function caricaSessioniRS() {
     fetch('api/sessioni_api.php?action=lista_rs&soggetto_id=' + DS.id)
         .then(r => r.json())
         .then(rows => {
+            sessioniRSSalvate = new Map(
+                Array.isArray(rows) ? rows.map(s => [Number(s.id), s]) : []
+            );
             const card = document.getElementById('card-sessioni-rs');
             const div  = document.getElementById('lista-sessioni-rs');
             if (!Array.isArray(rows) || rows.length === 0) {
@@ -1345,11 +1392,22 @@ function caricaSessioniRS() {
                     <td>${s.condizione}</td>
                     <td class="stelle">${stelle}</td>
                     <td><span class="val-badge">${s.val || '—'}</span></td>
-                    <td class="session-note-cell">${s.note || ''}</td>
+                    <td class="session-note-cell">
+                        <div style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                            ${s.note || ''}
+                        </div>
+                        ${s.note
+                            ? `<button type="button"
+                                       class="btn-icon"
+                                       style="margin-top:6px;font-size:12px;"
+                                       onclick="leggiNoteSessioneRS(${s.id})">Leggi tutto</button>`
+                            : ''}
+                    </td>
                     <td class="session-date-cell">${dataSalv}</td>
                     <td><div class="azioni">
                         <a href="${url}" class="btn-icon" title="Richiama questa sessione">↺</a>
-                        <button class="btn-icon" title="Elimina" onclick="eliminaSessioneRS(${s.id})">🗑️</button>
+                        <button class="btn-icon" title="Modifica" onclick="modificaSessioneRS(${s.id})">✏️</button>
+                        <button class="btn-icon" title="Cancella" onclick="eliminaSessioneRS(${s.id})">🗑️</button>
                     </div></td>
                 </tr>`;
             });
@@ -1410,6 +1468,94 @@ function salvaSessioneRS() {
     });
 }
  
+
+function leggiNoteSessioneRS(id) {
+    const sessione = sessioniRSSalvate.get(Number(id));
+    if (!sessione) {
+        alert('Sessione non trovata.');
+        return;
+    }
+
+    const campo = document.getElementById('modifica-note-rs-testo');
+
+    document.getElementById('modifica-note-rs-id').value = '';
+    document.getElementById('modifica-note-rs-titolo').textContent = '📖 Note Sessione RSM';
+    document.getElementById('modifica-note-rs-annulla').textContent = 'Chiudi';
+    document.getElementById('modifica-note-rs-salva').style.display = 'none';
+
+    campo.value = sessione.note || '';
+    campo.readOnly = true;
+
+    aggiornaContatoreNoteRS();
+    document.getElementById('modifica-note-rs').classList.remove('is-hidden');
+}
+
+function modificaSessioneRS(id) {
+    const sessione = sessioniRSSalvate.get(Number(id));
+    if (!sessione) {
+        alert('Sessione non trovata.');
+        return;
+    }
+
+    const campo = document.getElementById('modifica-note-rs-testo');
+
+    document.getElementById('modifica-note-rs-id').value = Number(id);
+    document.getElementById('modifica-note-rs-titolo').textContent = '✏️ Modifica Note Sessione RSM';
+    document.getElementById('modifica-note-rs-annulla').textContent = 'Annulla';
+    document.getElementById('modifica-note-rs-salva').style.display = '';
+    campo.readOnly = false;
+    campo.value = sessione.note || '';
+    aggiornaContatoreNoteRS();
+    document.getElementById('modifica-note-rs').classList.remove('is-hidden');
+    document.getElementById('modifica-note-rs-testo').focus();
+}
+
+function aggiornaContatoreNoteRS() {
+    const campo = document.getElementById('modifica-note-rs-testo');
+    const contatore = document.getElementById('modifica-note-rs-contatore');
+    contatore.textContent = Math.max(0, 500 - campo.value.length);
+}
+
+function chiudiModificaNoteRS() {
+    document.getElementById('modifica-note-rs').classList.add('is-hidden');
+    document.getElementById('modifica-note-rs-id').value = '';
+    const campo = document.getElementById('modifica-note-rs-testo');
+    campo.value = '';
+    campo.readOnly = false;
+    document.getElementById('modifica-note-rs-titolo').textContent = '✏️ Modifica Note Sessione RSM';
+    document.getElementById('modifica-note-rs-annulla').textContent = 'Annulla';
+    document.getElementById('modifica-note-rs-salva').style.display = '';
+    document.getElementById('modifica-note-rs-contatore').textContent = '500';
+}
+
+function salvaModificaNoteRS() {
+    const id = Number(document.getElementById('modifica-note-rs-id').value);
+    const note = document.getElementById('modifica-note-rs-testo').value;
+
+    fetch('api/sessioni_api.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            action: 'modifica_rs',
+            id: id,
+            note: note
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            chiudiModificaNoteRS();
+            caricaSessioniRS();
+        } else {
+            alert(data.errore || 'Errore durante la modifica delle Note.');
+        }
+    })
+    .catch(e => {
+        alert('Errore rete: ' + e.message);
+    });
+}
+
+
 function eliminaSessioneRS(id) {
     if (!confirm('Eliminare questa sessione salvata?')) return;
     fetch('api/sessioni_api.php', {

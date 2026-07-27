@@ -2273,3 +2273,28 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - `git diff --check`: OK.
 - Commit Git:
   - da eseguire.
+
+### 2026-07-27 — Sessioni RSM: modifica e lettura delle note
+
+- Componenti:
+  - `www/rs.php`;
+  - `www/api/sessioni_api.php`.
+- Obiettivo:
+  - consentire la modifica delle sessioni RSM salvate limitatamente al campo Note;
+  - preservare integralmente tutti gli altri dati della sessione.
+- Risultato:
+  - aggiunta l'azione **Modifica** tra **Richiama** e **Cancella**;
+  - la finestra di modifica permette di aggiornare esclusivamente il campo `note`;
+  - l'API `modifica_rs` aggiorna solamente `note`, senza modificare anno, luogo, condizione, coordinate o altri dati salvati;
+  - limite massimo delle note impostato a 500 caratteri;
+  - aggiunto il contatore dei caratteri residui;
+  - la tabella mostra un'anteprima delle note limitata a due righe;
+  - aggiunta l'azione **Leggi tutto**, che riutilizza la finestra in modalità sola lettura;
+  - finestra ridimensionabile e area testo dotata di scorrimento verticale.
+- Verifiche eseguite:
+  - lint PHP di `www/rs.php`: OK;
+  - lint PHP di `www/api/sessioni_api.php`: OK;
+  - verifica funzionale dell'interfaccia: OK;
+  - modifica delle note senza alterazione degli altri campi salvati: OK.
+- Commit Git:
+  - da eseguire.
