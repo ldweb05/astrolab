@@ -453,6 +453,69 @@ analizzatiFinoA: 0,
 ricercaCompletata: true,
 };
 let eventoCorrente = null;
+
+const RICERCA_STORAGE_KEY = 'astrolabRicercaStato';
+
+function salvaStatoRicerca() {
+    if (!stato.tutti.length) return;
+
+    const payload = {
+        stato: {
+            tutti: stato.tutti,
+            modalita: stato.modalita,
+            filtroNaz: stato.filtroNaz,
+            filtroStelle: stato.filtroStelle,
+            pagina: stato.pagina,
+            perPagina: stato.perPagina,
+            confronto: stato.confronto,
+            offsetRicerca: stato.offsetRicerca,
+            analizzatiFinoA: stato.analizzatiFinoA,
+            ricercaCompletata: stato.ricercaCompletata
+        },
+        controlli: {
+            soggetto: document.getElementById('sel-soggetto').value,
+            anno: document.getElementById('anno-rs').value,
+            condizione: document.getElementById('condizione').value
+        },
+        scrollY: window.scrollY
+    };
+
+    try {
+        sessionStorage.setItem(RICERCA_STORAGE_KEY, JSON.stringify(payload));
+    } catch (errore) {
+        console.warn('Impossibile salvare lo stato della ricerca:', errore);
+    }
+}
+
+function ripristinaStatoRicerca() {
+    const json = sessionStorage.getItem(RICERCA_STORAGE_KEY);
+    if (!json) return;
+
+    try {
+        const payload = JSON.parse(json);
+        sessionStorage.removeItem(RICERCA_STORAGE_KEY);
+        if (!payload?.stato?.tutti?.length) return;
+
+        Object.assign(stato, payload.stato);
+
+        if (payload.controlli) {
+            document.getElementById('sel-soggetto').value = payload.controlli.soggetto || '';
+            document.getElementById('anno-rs').value = payload.controlli.anno || '';
+            document.getElementById('condizione').value = payload.controlli.condizione || '';
+            onCondizioneChange(document.getElementById('condizione').value);
+        }
+
+        renderTabella();
+
+        requestAnimationFrame(() => {
+            window.scrollTo(0, Number(payload.scrollY) || 0);
+        });
+    } catch (errore) {
+        console.warn('Stato della ricerca non valido:', errore);
+        sessionStorage.removeItem(RICERCA_STORAGE_KEY);
+    }
+}
+
 // ════════════════════════════════════════════════════════════════════════
 //  TOGGLE PANNELLI
 // ════════════════════════════════════════════════════════════════════════
@@ -1676,6 +1739,7 @@ aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
 caricaNazioniLocalita();
 onTipoLocalitaChange(document.getElementById('tipo-localita').value);
+ripristinaStatoRicerca();
 
 document.getElementById('risultati-area').addEventListener('change', function(event) {
     const checkbox = event.target.closest('.confronto-checkbox');
@@ -1701,6 +1765,12 @@ document.getElementById('risultati-area').addEventListener('change', function(ev
 });
 
 document.getElementById('risultati-area').addEventListener('click', function(event) {
+    const linkRs = event.target.closest('a.btn-usa');
+    if (linkRs) {
+        salvaStatoRicerca();
+        return;
+    }
+
     const button = event.target.closest('#btn-confronta-selezioni');
     if (!button) return;
 
