@@ -22,13 +22,13 @@ La presente roadmap non sostituisce l’HANDOVER principale e contiene soltanto 
 
 ## Stato attuale
 
-**Fase:** analisi funzionale aggiornata e modello iniziale dei piani definito.
+**Fase:** Fase 1 completata: modello dati, migrazione PostgreSQL e validazione completati.
 
-**Codice applicativo modificato:** nessuno.
+**Codice applicativo modificato:** completata la migrazione del database (`sql/002_registrazione_utenti.sql`).
 
-**Documentazione modificata:** revisione della roadmap per sostituire il precedente modello “utente TEST” con un sistema di registrazione gratuita, piani e permessi.
+**Documentazione modificata:** roadmap aggiornata con il completamento della Fase 1 e l'avvio previsto della Fase 2.
 
-**Prossimo passo:** formalizzazione del modello dati e preparazione della migrazione PostgreSQL.
+**Prossimo passo:** avviare la Fase 2 implementando il modello utente, i piani e gli helper centralizzati dei permessi.
 
 ---
 
@@ -888,22 +888,35 @@ Esempio per la ricerca a griglia:
 - creato ADR-016 con stato `Proposta` e registrato nell’indice ADR;
 - nessuna modifica applicativa eseguita.
 
+### 2026-07-29 — Completamento Fase 1 database
+
+- individuato `sql/schema_baseline.sql` come schema di riferimento;
+- preparata e corretta la migrazione `sql/002_registrazione_utenti.sql`;
+- aggiunte le tabelle `piani` e `piano_limiti`;
+- estesa la tabella `utenti` con stato account, piano, verifica email e campi amministrativi;
+- convertito il ruolo legacy `astrologo` in `user`;
+- assegnato il piano `supporter` agli utenti esistenti;
+- validata la migrazione su database temporaneo dedicato;
+- applicata la migrazione al database operativo;
+- verificati dati, vincoli, indici e chiavi esterne;
+- completata la verifica funzionale di login e accesso all’applicazione;
+- pubblicato il commit `b00c2bd` sul branch `feature/registrazione-utenti`.
+
 ---
 
 ## Prossimo passo
 
-Approvare ADR-016 e avviare la verifica infrastrutturale:
+Avviare la Fase 2 — Modello utente, piani e permessi:
 
-1. individuare il file ufficiale che definisce lo schema PostgreSQL;
-2. individuare il meccanismo usato dal progetto per le migrazioni;
-3. verificare il sistema di invio email disponibile;
-4. definire lo schema SQL definitivo;
-5. preparare la prima migrazione senza modificare ancora gli endpoint funzionali.
+1. aggiornare `www/includes/Auth.php` per leggere ruolo, stato account e piano;
+2. introdurre helper centralizzati per piano, limiti e permessi;
+3. preservare il comportamento degli amministratori e degli utenti esistenti;
+4. aggiungere test specifici prima di modificare gli endpoint funzionali.
 
 ---
 
 ## Commit
 
-Nessun commit applicativo ancora eseguito.
+Ultimo commit della feature:
 
-Il prossimo commit previsto registra ADR-016 e il relativo aggiornamento documentale di roadmap e handover.
+- `b00c2bd` — fix: correggi ordine vincolo ruolo nella migrazione utenti.

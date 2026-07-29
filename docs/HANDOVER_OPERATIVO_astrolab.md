@@ -2345,23 +2345,25 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - `docs/HANDOVER_OPERATIVO_astrolab.md`.
 
 - Obiettivo:
-  - formalizzare il modello centralizzato di registrazione, piani, limiti e permessi utente prima di modificare il codice applicativo.
+  - completare la Fase 1 del nuovo sistema utenti introducendo il modello dati e validando la migrazione PostgreSQL.
 
 - Risultato:
-  - creato `ADR-016 — Modello centralizzato di registrazione, piani e permessi utente`;
-  - registrato ADR-016 nell’indice con stato `Proposta`;
-  - definiti ruolo, stato account, piano, override e precedenza dei controlli;
-  - formalizzati i limiti iniziali dei piani `free` e `supporter`;
-  - confermato che il server è la fonte definitiva dell’autorizzazione;
-  - nessuna modifica applicativa o database eseguita.
+  - completata la migrazione `sql/002_registrazione_utenti.sql`;
+  - create le tabelle `piani` e `piano_limiti`;
+  - estesa la tabella `utenti` con ruolo aggiornato, stato account, piano e campi di verifica email;
+  - migrati gli utenti esistenti al ruolo `user` e al piano `supporter`;
+  - verificati vincoli, indici, chiavi esterne e login applicativo;
+  - roadmap aggiornata con il completamento della Fase 1.
 
 - Verifiche eseguite:
-  - controllo presenza ADR-016 nell’indice: OK;
-  - revisione diff documentale: OK.
+  - migrazione validata su database temporaneo: OK;
+  - migrazione applicata al database operativo: OK;
+  - verifica funzionale dell'applicazione: OK;
+  - `git diff --check`: OK.
 
 - Commit Git:
-  - da eseguire.
+  - `b00c2bd` — fix: correggi ordine vincolo ruolo nella migrazione utenti.
 
 - Passo successivo:
-  - approvare ADR-016;
-  - individuare schema PostgreSQL, sistema di migrazione e servizio email ufficiali.
+  - avviare la Fase 2 aggiornando `www/includes/Auth.php`;
+  - introdurre helper centralizzati per piani, limiti e permessi.
