@@ -18,9 +18,11 @@ class Auth {
 
     public function login(string $username, string $password): array {
         $stmt = $this->pdo->prepare(
-            "SELECT id, username, email, password_hash, ruolo, attivo,
-                    account_status, piano
-             FROM utenti WHERE username = ? LIMIT 1"
+            "SELECT u.id, u.username, u.email, u.password_hash, u.ruolo, u.attivo,
+                    u.account_status, p.code AS piano
+             FROM utenti u
+             LEFT JOIN piani p ON p.id = u.plan_id
+             WHERE u.username = ? LIMIT 1"
         );
         $stmt->execute([trim($username)]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -33,13 +35,29 @@ class Auth {
             return ['ok' => false, 'errore' => 'Credenziali non valide.'];
         }
 
+        if ($user['account_status'] === 'pending_email') {
+            return [
+                'ok' => false,
+                'errore' => 'Devi verificare il tuo indirizzo email prima di accedere.',
+            ];
+        }
+
+        if ($user['account_status'] !== 'active') {
+            return [
+                'ok' => false,
+                'errore' => 'Account non disponibile.',
+            ];
+        }
+
         // Aggiorna ultimo_accesso
         $this->pdo->prepare(
             "UPDATE utenti SET ultimo_accesso = NOW() WHERE id = ?"
         )->execute([$user['id']]);
 
         // Rigenera session ID per prevenire session fixation
-        session_regenerate_id(true);
+        if (!headers_sent()) {
+            session_regenerate_id(true);
+        }
 
         $_SESSION['utente'] = [
             'id'             => (int)$user['id'],
@@ -255,12 +273,318 @@ class Auth {
                 return ['ok' => false, 'errore' => 'Piano gratuito non disponibile.'];
             }
 
-            return ['ok' => true, 'id' => (int)$id];
+            $verificationToken = $this->creaTokenSicurezza(
+                (int)$id,
+                'email_verification'
+            );
+
+            return [
+                'ok' => true,
+                'id' => (int)$id,
+                'verification_token' => $verificationToken,
+            ];
         } catch (PDOException $e) {
             if ($e->getCode() === '23505') {
                 return ['ok' => false, 'errore' => 'Username o email già registrati.'];
             }
             return ['ok' => false, 'errore' => 'Registrazione non disponibile.'];
+        }
+    }
+
+
+    // ── TOKEN SICUREZZA ───────────────────────────────────────────
+
+    private function creaTokenSicurezza(
+        int $userId,
+        string $purpose,
+        int $validitaOre = 24,
+        ?string $ip = null
+    ): string {
+        $token = bin2hex(random_bytes(32));
+        $hash = hash('sha256', $token);
+
+        $this->pdo->prepare(
+            "DELETE FROM token_sicurezza
+             WHERE user_id = ?
+               AND purpose = ?"
+        )->execute([$userId, $purpose]);
+
+        $this->pdo->prepare(
+            "INSERT INTO token_sicurezza
+                (user_id, purpose, token_hash, expires_at, requested_ip)
+             VALUES
+                (?, ?, ?, NOW() + (? || ' hours')::interval, ?)"
+        )->execute([
+            $userId,
+            $purpose,
+            $hash,
+            $validitaOre,
+            $ip
+        ]);
+
+        return $token;
+    }
+
+    private function hashToken(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
+    public function richiediNuovoTokenVerifica(string $email): array
+    {
+        $email = mb_strtolower(trim($email));
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id, account_status
+             FROM utenti
+             WHERE email = ?
+             LIMIT 1"
+        );
+        $stmt->execute([$email]);
+        $utente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$utente) {
+            return [
+                'ok' => false,
+                'errore' => 'Richiesta non disponibile.',
+            ];
+        }
+
+        if ($utente['account_status'] === 'active') {
+            return [
+                'ok' => false,
+                'errore' => 'Account già verificato.',
+            ];
+        }
+
+        $token = $this->creaTokenSicurezza(
+            (int)$utente['id'],
+            'email_verification'
+        );
+
+        return [
+            'ok' => true,
+            'verification_token' => $token,
+        ];
+    }
+
+    public function richiediResetPassword(string $email): array
+    {
+        $email = mb_strtolower(trim($email));
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id
+             FROM utenti
+             WHERE email = ?
+             LIMIT 1"
+        );
+        $stmt->execute([$email]);
+        $utente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$utente) {
+            return [
+                'ok' => false,
+                'errore' => 'Richiesta non disponibile.',
+            ];
+        }
+
+        $token = $this->creaTokenSicurezza(
+            (int)$utente['id'],
+            'password_reset'
+        );
+
+        return [
+            'ok' => true,
+            'reset_token' => $token,
+        ];
+    }
+
+    public function confermaResetPassword(
+        string $token,
+        string $nuovaPassword
+    ): array {
+        if (strlen($nuovaPassword) < 8) {
+            return [
+                'ok' => false,
+                'errore' => 'Password troppo corta (min 8 caratteri).',
+            ];
+        }
+
+        if (preg_match('/^[a-f0-9]{64}$/', $token) !== 1) {
+            return [
+                'ok' => false,
+                'errore' => 'Token reset non valido.',
+            ];
+        }
+
+        $ownsTransaction = !$this->pdo->inTransaction();
+
+        try {
+            if ($ownsTransaction) {
+                $this->pdo->beginTransaction();
+            } else {
+                $this->pdo->exec('SAVEPOINT conferma_reset_password');
+            }
+
+            $stmt = $this->pdo->prepare(
+                "SELECT id, user_id
+                 FROM token_sicurezza
+                 WHERE token_hash = ?
+                   AND purpose = 'password_reset'
+                   AND used_at IS NULL
+                   AND expires_at > NOW()
+                 FOR UPDATE"
+            );
+            $stmt->execute([$this->hashToken($token)]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row) {
+                if ($ownsTransaction) {
+                    $this->pdo->rollBack();
+                } else {
+                    $this->pdo->exec('ROLLBACK TO SAVEPOINT conferma_reset_password');
+                    $this->pdo->exec('RELEASE SAVEPOINT conferma_reset_password');
+                }
+
+                return [
+                    'ok' => false,
+                    'errore' => 'Token reset non valido, scaduto o già utilizzato.',
+                ];
+            }
+
+            $hash = password_hash(
+                $nuovaPassword,
+                PASSWORD_BCRYPT,
+                ['cost' => 12]
+            );
+
+            $this->pdo->prepare(
+                "UPDATE utenti
+                 SET password_hash = ?
+                 WHERE id = ?"
+            )->execute([
+                $hash,
+                (int)$row['user_id'],
+            ]);
+
+            $this->pdo->prepare(
+                "UPDATE token_sicurezza
+                 SET used_at = NOW()
+                 WHERE id = ?"
+            )->execute([
+                (int)$row['id'],
+            ]);
+
+            if ($ownsTransaction) {
+                $this->pdo->commit();
+            } else {
+                $this->pdo->exec('RELEASE SAVEPOINT conferma_reset_password');
+            }
+
+            return [
+                'ok' => true,
+                'user_id' => (int)$row['user_id'],
+            ];
+
+        } catch (Throwable $e) {
+            if ($ownsTransaction && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            } elseif (!$ownsTransaction && $this->pdo->inTransaction()) {
+                try {
+                    $this->pdo->exec('ROLLBACK TO SAVEPOINT conferma_reset_password');
+                    $this->pdo->exec('RELEASE SAVEPOINT conferma_reset_password');
+                } catch (Throwable $ignored) {
+                }
+            }
+
+            return [
+                'ok' => false,
+                'errore' => 'Reset password temporaneamente non disponibile.',
+            ];
+        }
+    }
+
+    public function verificaEmailToken(string $token): array
+    {
+        $token = trim($token);
+
+        if (preg_match('/^[a-f0-9]{64}$/', $token) !== 1) {
+            return ['ok' => false, 'errore' => 'Token di verifica non valido.'];
+        }
+
+        $ownsTransaction = !$this->pdo->inTransaction();
+
+        try {
+            if ($ownsTransaction) {
+                $this->pdo->beginTransaction();
+            } else {
+                $this->pdo->exec('SAVEPOINT verifica_email_token');
+            }
+
+            $stmt = $this->pdo->prepare(
+                "SELECT id, user_id
+                 FROM token_sicurezza
+                 WHERE token_hash = ?
+                   AND purpose = 'email_verification'
+                   AND used_at IS NULL
+                   AND expires_at > NOW()
+                 FOR UPDATE"
+            );
+            $stmt->execute([$this->hashToken($token)]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row) {
+                if ($ownsTransaction) {
+                    $this->pdo->rollBack();
+                } else {
+                    $this->pdo->exec('ROLLBACK TO SAVEPOINT verifica_email_token');
+                    $this->pdo->exec('RELEASE SAVEPOINT verifica_email_token');
+                }
+
+                return [
+                    'ok' => false,
+                    'errore' => 'Token non valido, scaduto o già utilizzato.',
+                ];
+            }
+
+            $this->pdo->prepare(
+                "UPDATE utenti
+                 SET account_status = 'active',
+                     email_verified_at = COALESCE(email_verified_at, NOW())
+                 WHERE id = ?"
+            )->execute([(int)$row['user_id']]);
+
+            $this->pdo->prepare(
+                "UPDATE token_sicurezza
+                 SET used_at = NOW()
+                 WHERE id = ?"
+            )->execute([(int)$row['id']]);
+
+            if ($ownsTransaction) {
+                $this->pdo->commit();
+            } else {
+                $this->pdo->exec('RELEASE SAVEPOINT verifica_email_token');
+            }
+
+            return [
+                'ok' => true,
+                'user_id' => (int)$row['user_id'],
+            ];
+        } catch (Throwable $e) {
+            if ($ownsTransaction && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            } elseif (!$ownsTransaction && $this->pdo->inTransaction()) {
+                try {
+                    $this->pdo->exec('ROLLBACK TO SAVEPOINT verifica_email_token');
+                    $this->pdo->exec('RELEASE SAVEPOINT verifica_email_token');
+                } catch (Throwable $ignored) {
+                }
+            }
+
+            return [
+                'ok' => false,
+                'errore' => 'Verifica email temporaneamente non disponibile.',
+            ];
         }
     }
 

@@ -725,15 +725,23 @@ Documenti da aggiornare al completamento:
 - aggiungere protezione da registrazioni ripetute;
 - aggiungere test del flusso.
 
-### Fase 4 — Verifica email e recupero password
+### Fase 4 — Verifica email e recupero password ✅ completata
 
-- creare token sicuri e a scadenza;
-- memorizzare token in forma sicura;
-- attivare l’account dopo verifica;
-- implementare nuova richiesta del link;
-- implementare richiesta e conferma del reset password;
-- invalidare i token dopo l’uso;
-- aggiungere test dedicati.
+Implementato:
+
+- token sicurezza crittograficamente casuali;
+- memorizzazione sicura tramite hash SHA-256;
+- scadenza automatica dei token;
+- verifica email con attivazione account;
+- nuova richiesta del link di verifica;
+- richiesta e conferma reset password;
+- invalidazione dei token dopo l’utilizzo;
+- test automatici del flusso completo.
+
+Restano attività infrastrutturali future:
+
+- integrazione del servizio SMTP/mail reale;
+- gestione template email e notifiche.
 
 ### Fase 5 — Amministrazione utenti
 
@@ -936,18 +944,20 @@ Esempio per la ricerca a griglia:
 
 ## Prossimo passo
 
-Avviare la Fase 4 — Verifica email e recupero password:
+Fase 4 completata:
 
-1. definire e creare le strutture dati per i token di verifica email e reset password;
-2. generare token crittograficamente sicuri con scadenza;
-3. memorizzare i token in forma sicura;
-4. implementare l'invio del link di verifica email;
-5. attivare l'account dopo una verifica valida;
-6. implementare la richiesta di un nuovo link di verifica;
-7. implementare richiesta e conferma del reset password;
-8. invalidare i token dopo l'uso;
-9. aggiungere protezioni contro abuso ed enumerazione degli account;
-10. aggiungere test dedicati e regressione.
+1. strutture dati token create;
+2. token sicuri con scadenza implementati;
+3. memorizzazione hashata implementata;
+4. verifica email implementata;
+5. attivazione account implementata;
+6. nuovo link di verifica implementato;
+7. reset password implementato;
+8. token monouso implementati;
+9. protezioni base implementate;
+10. test dedicati e regressione completati.
+
+Prossimo passo: integrazione servizio email reale e template notifiche.
 
 ---
 
