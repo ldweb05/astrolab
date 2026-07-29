@@ -18,7 +18,8 @@ class Auth {
 
     public function login(string $username, string $password): array {
         $stmt = $this->pdo->prepare(
-            "SELECT id, username, email, password_hash, ruolo, attivo
+            "SELECT id, username, email, password_hash, ruolo, attivo,
+                    account_status, piano
              FROM utenti WHERE username = ? LIMIT 1"
         );
         $stmt->execute([trim($username)]);
@@ -40,6 +41,16 @@ class Auth {
         // Rigenera session ID per prevenire session fixation
         session_regenerate_id(true);
 
+        $_SESSION['utente'] = [
+            'id'             => (int)$user['id'],
+            'username'       => $user['username'],
+            'email'          => $user['email'],
+            'ruolo'          => $user['ruolo'],
+            'account_status' => $user['account_status'],
+            'piano'          => $user['piano'],
+        ];
+
+        // Chiavi legacy mantenute per retrocompatibilità.
         $_SESSION['utente_id']       = $user['id'];
         $_SESSION['utente_username'] = $user['username'];
         $_SESSION['utente_ruolo']    = $user['ruolo'];
@@ -83,8 +94,20 @@ class Auth {
         }
     }
 
+    public function hasRole(string $ruolo): bool {
+        return $this->getCurrentRuolo() === $ruolo;
+    }
+
     public function isAdmin(): bool {
-        return ($_SESSION['utente_ruolo'] ?? '') === 'admin';
+        return $this->hasRole('admin');
+    }
+
+    public function hasAccountStatus(string $status): bool {
+        return $this->getCurrentAccountStatus() === $status;
+    }
+
+    public function hasPiano(string $piano): bool {
+        return $this->getCurrentPiano() === $piano;
     }
 
     /**
@@ -100,16 +123,30 @@ class Auth {
 
     // ── GETTERS ───────────────────────────────────────────────────
 
+    public function getCurrentUser(): ?array {
+        $user = $_SESSION['utente'] ?? null;
+        return is_array($user) ? $user : null;
+    }
+
     public function getCurrentUserId(): ?int {
-        return $_SESSION['utente_id'] ?? null;
+        $id = $this->getCurrentUser()['id'] ?? $_SESSION['utente_id'] ?? null;
+        return $id !== null ? (int)$id : null;
     }
 
     public function getCurrentUsername(): string {
-        return $_SESSION['utente_username'] ?? '';
+        return (string)($this->getCurrentUser()['username'] ?? $_SESSION['utente_username'] ?? '');
     }
 
     public function getCurrentRuolo(): string {
-        return $_SESSION['utente_ruolo'] ?? '';
+        return (string)($this->getCurrentUser()['ruolo'] ?? $_SESSION['utente_ruolo'] ?? '');
+    }
+
+    public function getCurrentAccountStatus(): string {
+        return (string)($this->getCurrentUser()['account_status'] ?? '');
+    }
+
+    public function getCurrentPiano(): string {
+        return (string)($this->getCurrentUser()['piano'] ?? '');
     }
 
     // ── SOGGETTO ATTIVO ───────────────────────────────────────────
