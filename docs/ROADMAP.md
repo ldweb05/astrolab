@@ -219,6 +219,26 @@ Prossime attività:
 - solo manutenzione correttiva senza modifiche architetturali.
 
 
+# Manutenzione Ricerca — Astri nelle Case (2026-07-29)
+
+✅ Correzione funzionale completata
+
+- consentite più regole `NON VOGLIO` per lo stesso pianeta quando
+  riguardano case differenti;
+- mantenuto il vincolo di unicità per le regole `LO VOGLIO`;
+- mantenuto il blocco delle regole duplicate sulla stessa casa;
+- mantenuto il blocco delle combinazioni incompatibili `LO VOGLIO` /
+  `NON VOGLIO` per lo stesso pianeta;
+- modifica limitata al frontend
+  `www/js/ricerca_astri.js`, senza variazioni al backend, alle API o al
+  motore astrologico.
+
+Verifiche completate:
+
+- `node --check www/js/ricerca_astri.js`;
+- `git diff --check`.
+
+
 # Prossimo passo operativo
 
 Il Comparator Engine costituisce ora la baseline stabile del progetto.
