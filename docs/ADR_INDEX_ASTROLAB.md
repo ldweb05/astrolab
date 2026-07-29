@@ -32,6 +32,10 @@ Indice delle decisioni architetturali permanenti.
   ADR-015           Deduplicazione     Accettata         Ricerca RS v2
                     spaziale SQL
                     della Ricerca RS
+
+  ADR-016           Registrazione,     Proposta           Gestione utenti
+                    piani e permessi
+                    utente
   ------------------------------------------------------------------------
 
 ## Regola
@@ -291,3 +295,112 @@ La deduplicazione PHP rimane temporaneamente come riferimento durante la
 fase di equivalenza.
 
 Verrà rimossa soltanto dopo la completa validazione della pipeline SQL.
+
+---
+
+# ADR-016 --- Modello centralizzato di registrazione, piani e permessi utente
+
+**Stato:** Proposta
+
+**Versione:** Gestione utenti
+
+## Contesto
+
+ASTROLAB deve introdurre un flusso pubblico di registrazione e una gestione
+centralizzata degli account senza distribuire nei singoli endpoint condizioni
+hardcoded relative a ruolo, stato, piano, limiti e permessi.
+
+Il precedente modello basato sul normale utilizzo di account TEST viene
+abbandonato. Ogni nuovo account dovrà distinguere chiaramente:
+
+- ruolo applicativo;
+- stato dell'account;
+- piano assegnato;
+- limiti quantitativi;
+- permessi funzionali;
+- eventuali override amministrativi;
+- quote periodiche e relativo utilizzo.
+
+Il modello dati definitivo non è ancora approvato. Tabelle, campi, relazioni e
+strategie di persistenza dovranno essere definiti dopo la verifica dello schema
+PostgreSQL esistente e del meccanismo ufficiale di migrazione del progetto.
+
+## Decisione
+
+ASTROLAB adotterà un unico livello applicativo centralizzato per determinare i
+permessi effettivi di ogni utente.
+
+Il modello manterrà separati i seguenti concetti:
+
+- il ruolo determina i privilegi amministrativi;
+- lo stato account determina se l'account può autenticarsi e usare il servizio;
+- il piano determina limiti e funzionalità commerciali;
+- gli override consentono eccezioni amministrative esplicite;
+- le protezioni tecniche e di sicurezza restano indipendenti dal piano.
+
+I nuovi account saranno creati con:
+
+- ruolo `user`;
+- stato `pending_email`;
+- piano `free`.
+
+Dopo la verifica dell'indirizzo email lo stato potrà diventare `active`.
+
+Il server sarà la fonte definitiva dell'autorizzazione. Il frontend potrà
+nascondere o disabilitare funzioni non disponibili, ma ogni controllo dovrà
+essere applicato anche lato server.
+
+I limiti non dovranno essere duplicati o hardcoded nei singoli endpoint.
+
+La precedenza prevista sarà:
+
+1. protezioni tecniche e di sicurezza;
+2. stato dell'account;
+3. privilegi amministrativi;
+4. override utente valido;
+5. configurazione del piano;
+6. comportamento predefinito sicuro.
+
+Gli amministratori non saranno soggetti ai limiti commerciali, salvo decisione
+esplicita, ma resteranno soggetti alle protezioni tecniche e di sicurezza.
+
+In caso di downgrade, i dati già creati resteranno consultabili, modificabili o
+eliminabili secondo i normali permessi. Sarà impedita soltanto la creazione di
+nuovi dati oltre il limite effettivo.
+
+L'espressione “illimitato con uso corretto” indica l'assenza di un limite
+commerciale ordinario, non l'assenza di rate limit, protezioni anti-abuso o
+vincoli infrastrutturali.
+
+## Limiti funzionali iniziali
+
+Il piano `free` prevede inizialmente:
+
+- massimo 2 soggetti personali;
+- massimo 10 ricerche salvate;
+- massimo 2 risultati nel Comparator;
+- ricerca a griglia disabilitata;
+- espansione dinamica dell'orbe disabilitata;
+- visualizzazione dell'Annual Report abilitata;
+- quota condivisa di 3 stampe o esportazioni PDF al mese.
+
+Il piano `supporter` abilita le funzionalità avanzate e rimuove i limiti
+commerciali ordinari secondo una politica di uso corretto.
+
+Questi valori sono iniziali e potranno essere modificati tramite configurazione
+senza distribuire nuove condizioni nei singoli endpoint.
+
+## Conseguenze
+
+Prima dell'implementazione applicativa sarà necessario:
+
+- individuare lo schema PostgreSQL ufficiale;
+- individuare il meccanismo di migrazione o aggiornamento del database;
+- verificare il sistema di invio email;
+- formalizzare lo schema dati definitivo;
+- garantire compatibilità con gli utenti esistenti;
+- definire helper o servizi centralizzati per limiti e permessi;
+- aggiungere test server-side per ogni funzionalità soggetta a restrizione.
+
+La presente decisione definisce il contratto architetturale, ma non approva
+ancora nomi, numero o struttura definitiva delle tabelle.

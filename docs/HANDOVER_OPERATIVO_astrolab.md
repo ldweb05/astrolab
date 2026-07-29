@@ -2336,3 +2336,32 @@ della nazione e il limite 50/100/150/Tutte. La modalità
 
 - Passo successivo:
   - proseguire con lo sviluppo funzionale mantenendo una roadmap dedicata per ogni nuova funzionalità e aggiornando cronologicamente questo HANDOVER.
+
+### 29-07-2026 — ADR-016 registrazione, piani e permessi utenti
+
+- Componenti:
+  - `docs/ADR_INDEX_ASTROLAB.md`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - formalizzare il modello centralizzato di registrazione, piani, limiti e permessi utente prima di modificare il codice applicativo.
+
+- Risultato:
+  - creato `ADR-016 — Modello centralizzato di registrazione, piani e permessi utente`;
+  - registrato ADR-016 nell’indice con stato `Proposta`;
+  - definiti ruolo, stato account, piano, override e precedenza dei controlli;
+  - formalizzati i limiti iniziali dei piani `free` e `supporter`;
+  - confermato che il server è la fonte definitiva dell’autorizzazione;
+  - nessuna modifica applicativa o database eseguita.
+
+- Verifiche eseguite:
+  - controllo presenza ADR-016 nell’indice: OK;
+  - revisione diff documentale: OK.
+
+- Commit Git:
+  - da eseguire.
+
+- Passo successivo:
+  - approvare ADR-016;
+  - individuare schema PostgreSQL, sistema di migrazione e servizio email ufficiali.
