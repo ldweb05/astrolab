@@ -2298,3 +2298,41 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - modifica delle note senza alterazione degli altri campi salvati: OK.
 - Commit Git:
   - da eseguire.
+
+### 29-07-2026 — Documentazione e manutenzione repository
+
+- Componenti:
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/campagna-promozionale-e-sicurezza.md`;
+  - `STRUTTURA_astrolab.md`;
+  - repository Git.
+
+- Obiettivo:
+  - separare la roadmap della funzionalità di registrazione utenti dalla documentazione generale;
+  - aggiungere un documento personale per l'organizzazione della campagna promozionale;
+  - salvare uno snapshot aggiornato della struttura del progetto;
+  - eliminare file di backup obsoleti e sincronizzare il repository con GitHub.
+
+- Risultato:
+  - creata la roadmap dedicata alla registrazione utenti;
+  - rimossa la documentazione obsoleta sulla struttura applicativa;
+  - eliminati i backup non più necessari di `docker-compose`;
+  - aggiunto il documento `docs/campagna-promozionale-e-sicurezza.md`;
+  - aggiunto il documento `STRUTTURA_astrolab.md`;
+  - repository sincronizzato con `origin/main` e working tree pulito.
+
+- Verifiche eseguite:
+  - `git status`: OK;
+  - `git log --oneline`: OK;
+  - `git pull --rebase origin main`: OK;
+  - `git push origin main`: OK.
+
+- Commit Git:
+  - `5817b84` — docs: aggiunge roadmap registrazione utenti e aggiorna php.ini;
+  - `eb95d24` — docs: rimuove documentazione obsoleta sulla struttura applicativa;
+  - `cc56bca` — chore: rimuove backup obsoleti di docker-compose;
+  - `3a7e0ff` — docs: aggiunge piano campagna promozionale e sicurezza;
+  - `93e2819` — docs: aggiunge snapshot della struttura del progetto.
+
+- Passo successivo:
+  - proseguire con lo sviluppo funzionale mantenendo una roadmap dedicata per ogni nuova funzionalità e aggiornando cronologicamente questo HANDOVER.
