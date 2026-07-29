@@ -2367,3 +2367,34 @@ della nazione e il limite 50/100/150/Tutte. La modalità
 - Passo successivo:
   - avviare la Fase 2 aggiornando `www/includes/Auth.php`;
   - introdurre helper centralizzati per piani, limiti e permessi.
+
+
+## 2026-07-29 — Completamento Fase 3 registrazione pubblica
+
+- Componente modificato:
+  - `www/includes/Auth.php`;
+  - `www/registrazione.php`;
+  - `www/tests/run.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+- Obiettivo:
+  - implementare la registrazione pubblica degli utenti con validazioni e protezioni server-side.
+- Risultato:
+  - implementato `Auth::registraUtentePubblico()`;
+  - creata la pagina pubblica `www/registrazione.php`;
+  - validate username, email, password e conferma password;
+  - assegnati esclusivamente dal server ruolo `user`, piano `free` e stato `pending_email`;
+  - impedita l'escalation di ruolo, piano o permessi dal client;
+  - introdotte protezione CSRF e limitazione delle registrazioni ripetute;
+  - gestiti i duplicati di username ed email;
+  - evitato `session_start()` durante l'esecuzione CLI dei test.
+- Test eseguiti:
+  - controllo sintassi PHP su `www/includes/Auth.php`: OK;
+  - controllo sintassi PHP su `www/tests/run.php`: OK;
+  - test dedicati della registrazione pubblica: OK;
+  - regressione completa con `www/tests/run.php`: OK;
+  - nessun warning residuo.
+- Commit Git:
+  - da eseguire dopo la verifica finale della documentazione e del diff.
+- Passo successivo:
+  - avviare la Fase 4 — verifica email e recupero password.

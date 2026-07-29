@@ -9,7 +9,7 @@ class Auth {
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
-        if (session_status() === PHP_SESSION_NONE) {
+        if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
@@ -213,6 +213,55 @@ class Auth {
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ?: null;
+    }
+
+    // ── REGISTRAZIONE PUBBLICA ───────────────────────────────────
+
+    public function registraUtentePubblico(
+        string $username,
+        string $email,
+        string $password
+    ): array {
+        $username = trim($username);
+        $email = mb_strtolower(trim($email));
+
+        if (preg_match('/^[a-zA-Z0-9._-]{3,60}$/', $username) !== 1) {
+            return ['ok' => false, 'errore' => 'Username non valido: usa 3-60 caratteri, lettere, numeri, punto, trattino o underscore.'];
+        }
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || mb_strlen($email) > 200) {
+            return ['ok' => false, 'errore' => 'Indirizzo email non valido.'];
+        }
+        if (strlen($password) < 8) {
+            return ['ok' => false, 'errore' => 'Password troppo corta (min 8 caratteri).'];
+        }
+
+        try {
+            $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+            $stmt = $this->pdo->prepare(
+                "INSERT INTO utenti (
+                    username, email, password_hash, ruolo, attivo,
+                    account_status, plan_id
+                 )
+                 SELECT ?, ?, ?, 'user', TRUE, 'pending_email', id
+                 FROM piani
+                 WHERE code = 'free' AND is_active = TRUE
+                 LIMIT 1
+                 RETURNING id"
+            );
+            $stmt->execute([$username, $email, $hash]);
+            $id = $stmt->fetchColumn();
+
+            if ($id === false) {
+                return ['ok' => false, 'errore' => 'Piano gratuito non disponibile.'];
+            }
+
+            return ['ok' => true, 'id' => (int)$id];
+        } catch (PDOException $e) {
+            if ($e->getCode() === '23505') {
+                return ['ok' => false, 'errore' => 'Username o email già registrati.'];
+            }
+            return ['ok' => false, 'errore' => 'Registrazione non disponibile.'];
+        }
     }
 
     // ── GESTIONE UTENTI (admin) ───────────────────────────────────

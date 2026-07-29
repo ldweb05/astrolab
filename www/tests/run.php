@@ -300,4 +300,61 @@ foreach ($searchTests as $searchTest) {
     }
 }
 
+
+echo "\nValidazione registrazione pubblica\n";
+echo "----------------------\n";
+
+require_once __DIR__ . '/../includes/Auth.php';
+
+$auth = new Auth($pdo);
+$testSuffix = bin2hex(random_bytes(6));
+$testUsername = 'reg_' . $testSuffix;
+$testEmail = 'reg_' . $testSuffix . '@example.test';
+
+try {
+    $pdo->beginTransaction();
+
+    $invalid = $auth->registraUtentePubblico('x', 'email-non-valida', 'breve');
+    if ($invalid['ok'] !== false) {
+        throw new RuntimeException('Validazione input non applicata');
+    }
+
+    $created = $auth->registraUtentePubblico($testUsername, $testEmail, 'Password123!');
+    if ($created['ok'] !== true || empty($created['id'])) {
+        throw new RuntimeException('Creazione utente fallita');
+    }
+
+    $stmt = $pdo->prepare(
+        "SELECT u.ruolo, u.account_status, p.code AS plan_code
+         FROM utenti u
+         JOIN piani p ON p.id = u.plan_id
+         WHERE u.id = ?"
+    );
+    $stmt->execute([(int)$created['id']]);
+    $utente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (
+        !is_array($utente)
+        || $utente['ruolo'] !== 'user'
+        || $utente['account_status'] !== 'pending_email'
+        || $utente['plan_code'] !== 'free'
+    ) {
+        throw new RuntimeException('Privilegi o stato iniziale non corretti');
+    }
+
+    $duplicate = $auth->registraUtentePubblico($testUsername, $testEmail, 'Password123!');
+    if ($duplicate['ok'] !== false) {
+        throw new RuntimeException('Duplicato accettato');
+    }
+
+    $pdo->rollBack();
+    echo "✓ Registrazione pubblica: validazione, ruolo user, stato pending_email, piano free e duplicati OK\n";
+} catch (Throwable $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    echo "✗ Registrazione pubblica fallita: " . $e->getMessage() . "\n";
+    exit(1);
+}
+
 echo "\nTest completati.\n";

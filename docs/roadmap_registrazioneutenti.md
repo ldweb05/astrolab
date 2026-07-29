@@ -22,13 +22,13 @@ La presente roadmap non sostituisce l’HANDOVER principale e contiene soltanto 
 
 ## Stato attuale
 
-**Fase:** Fase 2 completata: modello utente, lettura centralizzata di ruolo, stato account e piano, helper per limiti e permessi e compatibilità con gli utenti esistenti completati.
+**Fase:** Fase 3 completata: registrazione pubblica implementata, validazioni server-side, protezione CSRF, rate limiting, test dedicati e regressione completata.
 
-**Codice applicativo modificato:** aggiornato `www/includes/Auth.php` per centralizzare il modello utente e gli helper relativi a piani, limiti e permessi.
+**Codice applicativo modificato:** aggiornati `www/includes/Auth.php` e `www/tests/run.php`; creata `www/registrazione.php` per il flusso pubblico di registrazione.
 
-**Documentazione modificata:** roadmap della feature allineata con il completamento della Fase 2 e l'avvio previsto della Fase 3.
+**Documentazione modificata:** roadmap della feature e handover operativo allineati con il completamento della Fase 3.
 
-**Prossimo passo:** avviare la Fase 3 implementando la registrazione pubblica degli utenti.
+**Prossimo passo:** avviare la Fase 4 implementando verifica email e recupero password.
 
 ---
 
@@ -917,20 +917,37 @@ Esempio per la ricerca a griglia:
 - verificato il diff delle modifiche;
 - pubblicato il commit `7a9e275` sul branch `feature/registrazione-utenti`.
 
+
+### 2026-07-29 — Completamento Fase 3 registrazione pubblica
+
+- implementata `www/registrazione.php`;
+- aggiunto `Auth::registraUtentePubblico()`;
+- validazione server-side di username, email e password;
+- assegnazione forzata di ruolo `user`, piano `free` e stato `pending_email`;
+- impedita l'escalation dei privilegi dal client;
+- introdotta protezione CSRF e rate limiting della registrazione;
+- aggiunti test dedicati della registrazione pubblica;
+- eliminato l'avviso `session_start()` nei test CLI;
+- regressione completa superata;
+- fase 3 completata.
+
+
 ---
 
 ## Prossimo passo
 
-Avviare la Fase 3 — Registrazione pubblica:
+Avviare la Fase 4 — Verifica email e recupero password:
 
-1. creare la pagina o l'endpoint pubblico di registrazione;
-2. validare username, indirizzo email e password;
-3. assegnare automaticamente il ruolo `user`;
-4. assegnare automaticamente il piano `free`;
-5. creare l'account con stato `pending_email`;
-6. impedire modifiche di ruolo, piano o permessi provenienti dal client;
-7. aggiungere protezione dalle registrazioni ripetute;
-8. aggiungere test specifici del flusso di registrazione.
+1. definire e creare le strutture dati per i token di verifica email e reset password;
+2. generare token crittograficamente sicuri con scadenza;
+3. memorizzare i token in forma sicura;
+4. implementare l'invio del link di verifica email;
+5. attivare l'account dopo una verifica valida;
+6. implementare la richiesta di un nuovo link di verifica;
+7. implementare richiesta e conferma del reset password;
+8. invalidare i token dopo l'uso;
+9. aggiungere protezioni contro abuso ed enumerazione degli account;
+10. aggiungere test dedicati e regressione.
 
 ---
 
@@ -938,4 +955,4 @@ Avviare la Fase 3 — Registrazione pubblica:
 
 Ultimo commit della feature:
 
-- `7a9e275` — feat(auth): centralizza modello utente e helper permessi.
+- in attesa del commit della Fase 3.
