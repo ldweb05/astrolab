@@ -552,5 +552,9 @@ La Ricerca RSM v3 è completata secondo il modello a due modalità.
 Gli aeroporti e le località restano entrambi supportati, ma vengono ricercati
 separatamente e identificati esplicitamente tramite `origine_punto`.
 
+La pagina di ricerca mantiene inoltre lo stato dell'ultima ricerca (risultati,
+pagina corrente e principali filtri) quando si apre una RS e si ritorna con il
+pulsante Indietro del browser, evitando di dover ripetere la ricerca.
+
 La selezione obbligatoria della nazione e il limite 50/100/150/Tutte per
 `solo_localita` restano pianificati nella FASE 5A.
