@@ -2396,5 +2396,11 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - nessun warning residuo.
 - Commit Git:
   - da eseguire dopo la verifica finale della documentazione e del diff.
-- Passo successivo:
-  - avviare la Fase 4 — verifica email e recupero password.
+- Fase successiva completata:
+  - verifica email;
+  - nuovo token verifica;
+  - reset password;
+  - token monouso;
+  - regressione completa superata.
+- Prossimo passo:
+  - integrazione servizio email reale e gestione template notifiche.
