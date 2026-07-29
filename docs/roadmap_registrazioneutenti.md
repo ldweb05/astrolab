@@ -885,18 +885,14 @@ Esempio per la ricerca a griglia:
 - definito il limite di 2 soggetti e 10 ricerche salvate per il piano gratuito;
 - definita una quota condivisa di 3 stampe o esportazioni PDF al mese;
 - introdotta la necessità di permessi centralizzati e override amministrativi;
-- proposta la formalizzazione mediante ADR-016;
+- creato ADR-016 con stato `Proposta` e registrato nell’indice ADR;
 - nessuna modifica applicativa eseguita.
 
 ---
 
 ## Prossimo passo
 
-Creare e approvare:
-
-`ADR-016 — Modello centralizzato di registrazione, piani e permessi utente`
-
-Successivamente:
+Approvare ADR-016 e avviare la verifica infrastrutturale:
 
 1. individuare il file ufficiale che definisce lo schema PostgreSQL;
 2. individuare il meccanismo usato dal progetto per le migrazioni;
@@ -910,4 +906,4 @@ Successivamente:
 
 Nessun commit applicativo ancora eseguito.
 
-Il prossimo commit previsto riguarda l’aggiornamento documentale della roadmap e, dopo approvazione, la creazione di ADR-016.
+Il prossimo commit previsto registra ADR-016 e il relativo aggiornamento documentale di roadmap e handover.
