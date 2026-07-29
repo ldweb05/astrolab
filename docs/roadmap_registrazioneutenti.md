@@ -22,13 +22,13 @@ La presente roadmap non sostituisce l’HANDOVER principale e contiene soltanto 
 
 ## Stato attuale
 
-**Fase:** Fase 1 completata: modello dati, migrazione PostgreSQL e validazione completati.
+**Fase:** Fase 2 completata: modello utente, lettura centralizzata di ruolo, stato account e piano, helper per limiti e permessi e compatibilità con gli utenti esistenti completati.
 
-**Codice applicativo modificato:** completata la migrazione del database (`sql/002_registrazione_utenti.sql`).
+**Codice applicativo modificato:** aggiornato `www/includes/Auth.php` per centralizzare il modello utente e gli helper relativi a piani, limiti e permessi.
 
-**Documentazione modificata:** roadmap aggiornata con il completamento della Fase 1 e l'avvio previsto della Fase 2.
+**Documentazione modificata:** roadmap della feature allineata con il completamento della Fase 2 e l'avvio previsto della Fase 3.
 
-**Prossimo passo:** avviare la Fase 2 implementando il modello utente, i piani e gli helper centralizzati dei permessi.
+**Prossimo passo:** avviare la Fase 3 implementando la registrazione pubblica degli utenti.
 
 ---
 
@@ -904,14 +904,33 @@ Esempio per la ricerca a griglia:
 
 ---
 
+### 2026-07-29 — Completamento Fase 2 modello utente, piani e permessi
+
+- aggiornato `www/includes/Auth.php`;
+- centralizzata la lettura del modello utente;
+- aggiunta la gestione coerente di ruolo, stato account e piano;
+- introdotti helper centralizzati per piani, limiti e permessi;
+- implementata la lettura dei limiti configurati nel database;
+- preservata la compatibilità con amministratori e utenti esistenti;
+- mantenuta la retrocompatibilità con il comportamento applicativo precedente;
+- verificata la sintassi PHP utilizzando il container Docker `astrolab-web`;
+- verificato il diff delle modifiche;
+- pubblicato il commit `7a9e275` sul branch `feature/registrazione-utenti`.
+
+---
+
 ## Prossimo passo
 
-Avviare la Fase 2 — Modello utente, piani e permessi:
+Avviare la Fase 3 — Registrazione pubblica:
 
-1. aggiornare `www/includes/Auth.php` per leggere ruolo, stato account e piano;
-2. introdurre helper centralizzati per piano, limiti e permessi;
-3. preservare il comportamento degli amministratori e degli utenti esistenti;
-4. aggiungere test specifici prima di modificare gli endpoint funzionali.
+1. creare la pagina o l'endpoint pubblico di registrazione;
+2. validare username, indirizzo email e password;
+3. assegnare automaticamente il ruolo `user`;
+4. assegnare automaticamente il piano `free`;
+5. creare l'account con stato `pending_email`;
+6. impedire modifiche di ruolo, piano o permessi provenienti dal client;
+7. aggiungere protezione dalle registrazioni ripetute;
+8. aggiungere test specifici del flusso di registrazione.
 
 ---
 
@@ -919,4 +938,4 @@ Avviare la Fase 2 — Modello utente, piani e permessi:
 
 Ultimo commit della feature:
 
-- `b00c2bd` — fix: correggi ordine vincolo ruolo nella migrazione utenti.
+- `7a9e275` — feat(auth): centralizza modello utente e helper permessi.
