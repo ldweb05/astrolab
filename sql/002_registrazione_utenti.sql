@@ -23,11 +23,14 @@ CREATE TABLE piano_limiti (
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT piano_limiti_plan_feature_key UNIQUE (plan_id, feature_code)
 );
-UPDATE utenti SET ruolo = 'user' WHERE ruolo = 'astrologo';
+ALTER TABLE utenti
+    DROP CONSTRAINT utenti_ruolo_check;
 
+UPDATE utenti
+SET ruolo = 'user'
+WHERE ruolo = 'astrologo';
 
 ALTER TABLE utenti
-    DROP CONSTRAINT utenti_ruolo_check,
     ADD COLUMN account_status VARCHAR(30) NOT NULL DEFAULT 'active',
     ADD COLUMN email_verified_at TIMESTAMPTZ,
     ADD COLUMN plan_id BIGINT,
