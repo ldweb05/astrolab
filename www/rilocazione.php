@@ -1488,10 +1488,15 @@ function selezionaLuogoRiloc(lat, lon, nome) {
 'use strict';
 
 // ── Stato interno ──────────────────────────────────────────────────────────
+const RILOC_COMPARATOR_LIMIT = <?= json_encode($auth->getComparatorLimit()) ?>;
+const RILOC_COMPARATOR_LIMIT_MESSAGE = RILOC_COMPARATOR_LIMIT < 3
+    ? 'Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 rilocazioni è necessario il piano Supporter.'
+    : `Puoi confrontare al massimo ${RILOC_COMPARATOR_LIMIT} rilocazioni.`;
+
 let _eventoAngolari = null;  // EventSource attivo
 let _tuttiRisultati = [];    // Cache dei risultati totali ricevuti
 let _paginaCorrente = 1;     // Stato della pagina corrente
-let _rilocConfronto = [];    // Max 3 rilocazioni selezionate
+let _rilocConfronto = [];    // Rilocazioni selezionate secondo il piano
 
 function _chiaveRilocConfronto(r) {
     return [
@@ -1622,6 +1627,7 @@ function _renderTabellaPaginata() {
                     style="display:${_rilocConfronto.length > 0 ? 'inline-flex' : 'none'}">
                     Confronta (<span id="riloc-confronto-count">${_rilocConfronto.length}</span>)
                 </button>
+                <span>${_rilocConfronto.length}/${RILOC_COMPARATOR_LIMIT} selezionate</span>
                 <span>Mostrati ${inizio + 1}-${fine} di ${totaleRecord}</span>
             </span>
         </div>
@@ -1670,9 +1676,9 @@ function _renderTabellaPaginata() {
             const chiave = _chiaveRilocConfronto(risultato);
 
             if (checkbox.checked) {
-                if (_rilocConfronto.length >= 3) {
+                if (_rilocConfronto.length >= RILOC_COMPARATOR_LIMIT) {
                     checkbox.checked = false;
-                    alert('Puoi confrontare al massimo 3 rilocazioni.');
+                    alert(RILOC_COMPARATOR_LIMIT_MESSAGE);
                     return;
                 }
 

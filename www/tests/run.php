@@ -547,6 +547,18 @@ if ($subjectsLimitExitCode !== 0) {
     exit(1);
 }
 
+echo "\nTest limite Comparator...\n";
+
+$comparatorLimitCommand = escapeshellarg(PHP_BINARY)
+    . ' '
+    . escapeshellarg(__DIR__ . '/test_comparator_limit.php');
+
+passthru($comparatorLimitCommand, $comparatorLimitExitCode);
+
+if ($comparatorLimitExitCode !== 0) {
+    exit(1);
+}
+
 echo "\nTest limite ricerche salvate...\n";
 
 $savedSearchesLimitCommand = escapeshellarg(PHP_BINARY)

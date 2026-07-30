@@ -4,6 +4,11 @@ Documento di avanzamento del progetto Astro-DSS.
 
 Deve essere aggiornato al completamento di ogni milestone significativa.
 
+> **Nota**
+> La roadmap relativa alla registrazione utenti, autenticazione, gestione dei piani (`free`/`supporter`), permessi, quote, Comparator, Annual Report e relative fasi di implementazione è mantenuta separatamente nel documento `docs/roadmap_registrazioneutenti.md`, che costituisce il riferimento ufficiale per tale macro-funzionalità.
+>
+> `docs/ROADMAP.md` continua invece a descrivere l'evoluzione generale di Astro-DSS e delle funzionalità principali del progetto.
+
 ---
 
 # Visione

@@ -128,6 +128,19 @@ class Auth {
         return $this->getCurrentPiano() === $piano;
     }
 
+    /**
+     * Restituisce il numero massimo di risultati confrontabili.
+     *
+     * Il piano gratuito può confrontare fino a 2 risultati.
+     * Supporter e amministratori possono confrontarne fino a 3.
+     */
+    public function getComparatorLimit(): int {
+        if ($this->isAdmin() || $this->hasPiano('supporter')) {
+            return 3;
+        }
+
+        return 2;
+    }
 
     /**
      * Verifica se il piano corrente può utilizzare una funzionalità.
