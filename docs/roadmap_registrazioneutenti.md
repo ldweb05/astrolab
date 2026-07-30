@@ -40,7 +40,7 @@ Introdurre in ASTROLAB un sistema completo di registrazione e gestione degli ute
 - verifica dell’indirizzo email;
 - account personale;
 - piano gratuito iniziale;
-- piano sostenitore;
+- piano Supporter;
 - limiti quantitativi configurabili;
 - permessi funzionali centralizzati;
 - gestione amministrativa degli account;
@@ -144,8 +144,8 @@ Il piano gratuito deve consentire all’utente di comprendere realmente il valor
 | Aggiornamento RSM spostando il cursore | abilitato | È parte essenziale dell’esperienza di ricerca e non deve essere bloccato. |
 | Collegamento Rome2Rio | abilitato | È una funzione di servizio con basso valore come barriera commerciale. |
 | Ricerca aeroporti | abilitata | Mantiene disponibile la modalità storica e più semplice. |
-| Ricerca località per nazione | abilitata | Evita che il piano gratuito sembri una demo artificiale e consente l’uso reale della ricerca geografica. |
-| Ricerca a griglia | disabilitata | È una funzione avanzata e potenzialmente più onerosa; rappresenta un buon elemento distintivo del piano sostenitore. |
+| Ricerca località per nazione | disabilitata | Il piano gratuito può visualizzare l’elenco delle nazioni, ma la ricerca delle località è riservata agli utenti del piano Supporter. |
+| Ricerca a griglia | disabilitata | È una funzione avanzata e potenzialmente più onerosa; rappresenta un buon elemento distintivo del piano Supporter. |
 | Espansione dinamica dell’orbe | disabilitata | È una funzione avanzata che amplia automaticamente la ricerca e può aumentare il carico computazionale. |
 | Annual Report visualizzabile | abilitato | Il report annuale è una funzione centrale e deve poter essere provata integralmente. |
 | Stampa Annual Report | massimo 3 al mese | Consente un utilizzo concreto evitando esportazioni intensive o professionali nel piano gratuito. |
@@ -414,12 +414,16 @@ Il sistema deve:
 Il piano gratuito deve poter utilizzare:
 
 - ricerca aeroporti;
-- ricerca località per nazione;
+- visualizzazione dell’elenco delle nazioni, senza poterle utilizzare per avviare una ricerca delle località;
 - OpenStreetMap;
 - spostamento del cursore con aggiornamento della RSM;
 - collegamento Rome2Rio.
 
-La ricerca a griglia e l’espansione dinamica dell’orbe devono essere abilitate soltanto quando consentite dal piano o da un override.
+La ricerca delle località, la ricerca a griglia e l’espansione dinamica dell’orbe devono essere abilitate soltanto quando consentite dal piano o da un override.
+
+Quando un utente del piano gratuito tenta di selezionare o utilizzare una funzione non inclusa, l’interfaccia deve mostrare un alert con il messaggio «Questa funzione è riservata agli utenti del piano Supporter.»
+
+Il controllo lato server deve comunque impedire l’utilizzo delle funzioni non autorizzate anche tramite chiamate API dirette.
 
 ### Comparator
 
@@ -776,7 +780,10 @@ Restano attività infrastrutturali future:
 ### Fase 8 — Restrizioni ricerca lato server
 
 - bloccare la ricerca a griglia quando non autorizzata;
-- mantenere aeroporti e località disponibili nel piano gratuito;
+- mantenere disponibile esclusivamente la ricerca aeroportuale nel piano gratuito;
+- consentire al piano gratuito la visualizzazione delle nazioni senza permetterne l’utilizzo per la ricerca delle località;
+- bloccare lato server la ricerca delle località quando non autorizzata;
+- mostrare un alert «Questa funzione è riservata agli utenti del piano Supporter.» quando un utente gratuito tenta di utilizzare una funzione non inclusa;
 - bloccare o normalizzare l’espansione dinamica dell’orbe;
 - restituire errori coerenti;
 - verificare chiamate API dirette;
@@ -785,7 +792,7 @@ Restano attività infrastrutturali future:
 ### Fase 9 — Comparator
 
 - applicare massimo 2 risultati al piano gratuito;
-- applicare massimo 3 risultati al piano sostenitore;
+- applicare massimo 3 risultati al piano Supporter;
 - mantenere il server come fonte definitiva;
 - mostrare il limite residuo nell’interfaccia quando utile;
 - aggiungere test RS e Rilocazioni.
@@ -797,7 +804,7 @@ Restano attività infrastrutturali future:
 - registrare gli utilizzi in modo transazionale;
 - evitare doppi conteggi;
 - mostrare la quota residua;
-- applicare uso corretto al piano sostenitore;
+- applicare uso corretto al piano Supporter;
 - aggiungere test dedicati.
 
 ### Fase 11 — Restrizioni interfaccia
@@ -854,11 +861,11 @@ I messaggi relativi ai limiti devono spiegare chiaramente cosa è successo e cos
 
 Esempio per le ricerche salvate:
 
-> Hai raggiunto il limite di 10 ricerche salvate previsto dal piano gratuito. Le ricerche esistenti restano disponibili e possono essere modificate o eliminate. Il piano sostenitore consente di ampliare l’archivio e utilizzare le funzionalità avanzate.
+> Hai raggiunto il limite di 10 ricerche salvate previsto dal piano gratuito. Le ricerche esistenti restano disponibili e possono essere modificate o eliminate. Il piano Supporter consente di ampliare l’archivio e utilizzare le funzionalità avanzate.
 
 Esempio per il Comparator:
 
-> Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 RSM è necessario il piano sostenitore.
+> Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 RSM è necessario il piano Supporter.
 
 Esempio per stampa o PDF:
 
@@ -888,8 +895,8 @@ Esempio per la ricerca a griglia:
 - definito il flusso registrazione, verifica email e attivazione;
 - definiti i piani iniziali `free` e `supporter`;
 - scelti i limiti iniziali del piano gratuito;
-- mantenute accessibili OpenStreetMap, ricerca aeroporti, ricerca località, Rome2Rio e visualizzazione Annual Report;
-- riservate al piano sostenitore ricerca a griglia, espansione dinamica dell’orbe e confronto completo fino a 3 risultati;
+- mantenute accessibili OpenStreetMap, ricerca aeroporti, visualizzazione delle nazioni, Rome2Rio e visualizzazione Annual Report; la ricerca delle località è riservata agli utenti del piano Supporter;
+- riservate al piano Supporter ricerca a griglia, espansione dinamica dell’orbe e confronto completo fino a 3 risultati;
 - definito il limite di 2 soggetti e 10 ricerche salvate per il piano gratuito;
 - definita una quota condivisa di 3 stampe o esportazioni PDF al mese;
 - introdotta la necessità di permessi centralizzati e override amministrativi;

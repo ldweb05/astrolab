@@ -437,6 +437,14 @@ const ASTRO_NOMI = {
 };
 const CONDIZIONE_CUSPIDI = '— Longitudine Cuspidi —';
 const CONDIZIONE_ASTRI   = '— Astri nelle Case —';
+
+const USER_FEATURES = {
+    locality_search: <?= json_encode($auth->hasFeature('locality_search')) ?>,
+    grid_search: <?= json_encode($auth->hasFeature('grid_search')) ?>,
+    dynamic_orb: <?= json_encode($auth->hasFeature('dynamic_orb')) ?>
+};
+
+const SUPPORTER_MESSAGE = 'Questa funzione è riservata agli utenti del piano Supporter.';
 // ── Stato ────────────────────────────────────────────────────────────────
 let stato = {
 tutti:        [],
@@ -526,6 +534,14 @@ const vis   = panel.classList.toggle('visibile');
 btn.classList.toggle('aperto', vis);
 }
 function onTipoLocalitaChange(val) {
+const select = document.getElementById('tipo-localita');
+
+if (val === 'localita' && !USER_FEATURES.locality_search) {
+alert(SUPPORTER_MESSAGE);
+select.value = 'aeroporti';
+val = 'aeroporti';
+}
+
 const ricercaLocalita = val === 'localita';
 document.getElementById('wrap-nazione-localita').style.display = ricercaLocalita ? '' : 'none';
 document.getElementById('wrap-numero-localita').style.display = ricercaLocalita ? '' : 'none';
@@ -1011,6 +1027,9 @@ function avviaRicercaGrigliaCuspidi(s, espansioneOrbe) {
         mostra_escluse:  getMostraEscluse(),
     });
     aggiungiParamsGeografici(params);
+    if (espansioneOrbe) {
+        params.set('espansione_orbe', '1');
+    }
     stato.ultimiParams = params;
 
     eventoCorrente = new EventSource('api/ricerca_griglia_api.php?' + params.toString());
@@ -1157,6 +1176,9 @@ escludi_militari:document.getElementById('escludi-militari').value,
 mostra_escluse: getMostraEscluse(),
 });
 aggiungiParamsGeografici(params);
+if (espansioneOrbe) {
+params.set('espansione_orbe', '1');
+}
 // Salva params per eventuale espansione
 stato.ultimiParams = params;
 eventoCorrente = new EventSource('api/cuspidi_search_api.php?' + params.toString());
@@ -1345,9 +1367,23 @@ collegaHandlerProgressEDone(ev, params, [...stato.tutti]);
 // ── Pulsante espandi orbe (fallback manuale) ──────────────────────────────
 function mostraBottoneEspandi() {
 const area = document.getElementById('risultati-area');
+const precedente = document.getElementById('btn-espandi-orbe-wrap');
+if (precedente) precedente.remove();
+
 const wrap = document.createElement('div');
 wrap.id = 'btn-espandi-orbe-wrap';
 wrap.className = 'espandi-wrap';
+
+if (!USER_FEATURES.dynamic_orb) {
+wrap.innerHTML = `
+<div style="color:#888;font-size:12px;margin-bottom:8px">
+Nessun risultato trovato con la tolleranza attuale.
+</div>
+<div class="msg-error-box">${SUPPORTER_MESSAGE}</div>`;
+area.prepend(wrap);
+return;
+}
+
 wrap.innerHTML = `
 <div style="color:#888;font-size:12px;margin-bottom:8px">
 Nessun risultato trovato con la tolleranza attuale.
@@ -1806,8 +1842,20 @@ applicaOrbePreset(this.value);
 
 // Mostra/nasconde bbox lat quando si attiva la griglia
 document.getElementById('filt-grid-search').addEventListener('change', function() {
+    if (this.value !== 'no' && !USER_FEATURES.grid_search) {
+        alert(SUPPORTER_MESSAGE);
+        this.value = 'no';
+    }
+
     document.getElementById('wrap-griglia-bbox').style.display =
         this.value === 'no' ? 'none' : 'flex';
+});
+
+document.getElementById('filt-espandi-orbe').addEventListener('change', function() {
+    if (this.value === 'si' && !USER_FEATURES.dynamic_orb) {
+        alert(SUPPORTER_MESSAGE);
+        this.value = 'no';
+    }
 });
 });
 // ── Pannello veti inline ──────────────────────────────────────────────────

@@ -13,9 +13,11 @@ function searchTestHttpContext(): array
             u.id AS utente_id,
             u.username,
             u.ruolo,
+            p.name AS piano,
             s.id AS soggetto_id,
             s.nome AS soggetto_nome
         FROM utenti u
+        LEFT JOIN piani p ON p.id = u.plan_id
         INNER JOIN soggetti s ON s.utente_id = u.id
         WHERE COALESCE(u.attivo, true) = true
         ORDER BY u.id, s.id
@@ -39,6 +41,13 @@ function searchTestHttpContext(): array
             'Impossibile creare la sessione del test ricerca'
         );
     }
+
+    $_SESSION['utente'] = [
+        'id'             => (int)$subject['utente_id'],
+        'username'       => (string)$subject['username'],
+        'ruolo'          => (string)$subject['ruolo'],
+        'piano'          => strtolower((string)$subject['piano']),
+    ];
 
     $_SESSION['utente_id'] = (int)$subject['utente_id'];
     $_SESSION['utente_username'] = (string)$subject['username'];

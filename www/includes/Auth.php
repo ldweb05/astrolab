@@ -128,6 +128,27 @@ class Auth {
         return $this->getCurrentPiano() === $piano;
     }
 
+
+    /**
+     * Verifica se il piano corrente può utilizzare una funzionalità.
+     */
+    public function hasFeature(string $feature): bool {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $piano = $this->getCurrentPiano();
+
+        return match ($feature) {
+            'airport_search' => true,
+            'country_list' => true,
+            'locality_search' => $piano === 'supporter',
+            'grid_search' => $piano === 'supporter',
+            'dynamic_orb' => $piano === 'supporter',
+            default => false,
+        };
+    }
+
     /**
      * Richiede ruolo admin. Se non admin, reindirizza a index.php e termina.
      */

@@ -14,6 +14,15 @@ if (!$auth->isLoggedIn()) {
     exit;
 }
 
+if (!$auth->hasFeature('grid_search')) {
+    header('Content-Type: text/event-stream');
+    echo "event: error\n";
+    echo "data: " . json_encode([
+        'message' => 'Questa funzione è riservata agli utenti del piano Supporter.',
+    ], JSON_UNESCAPED_UNICODE) . "\n\n";
+    exit;
+}
+
 require_once __DIR__ . '/../includes/RicercaRSFilters.php';
 require_once __DIR__ . '/../includes/CuspidiUtils.php';
 
