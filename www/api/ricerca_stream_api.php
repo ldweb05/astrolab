@@ -127,6 +127,14 @@ function sse(string $event, array $data): void {
     flush();
 }
 
+
+if (isset($_GET['espansione_orbe']) && $_GET['espansione_orbe'] === '1' && !$auth->hasFeature('dynamic_orb')) {
+    sse('error', [
+        'message' => 'Questa funzione è riservata agli utenti del piano Supporter.',
+    ]);
+    exit;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 //  PARAMETRI GET
 // ═══════════════════════════════════════════════════════════════════════════
@@ -164,6 +172,13 @@ $tipoLocalita = trim($_GET['tipo_localita'] ?? '');
 $tipiLocalitaValidi = ['aeroporti', 'localita'];
 if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true)) {
     $tipoLocalita = '';
+}
+
+if ($tipoLocalita === 'localita' && !$auth->hasFeature('locality_search')) {
+    sse('error', [
+        'message' => 'Questa funzione è riservata agli utenti del piano Supporter.',
+    ]);
+    exit;
 }
 
 // Ricerca progressiva delle località.

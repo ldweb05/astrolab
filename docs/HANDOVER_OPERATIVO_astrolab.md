@@ -2470,3 +2470,64 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - da eseguire con la chiusura formale della Fase 6.
 - Prossimo passo:
   - avviare la Fase 7 — Limite ricerche salvate.
+
+
+## 2026-07-30 — Implementazione Fase 8 restrizioni ricerca lato server
+
+- Componenti modificati:
+  - `www/includes/Auth.php`;
+  - `www/api/ricerca_stream_api.php`;
+  - `www/api/cuspidi_search_api.php`;
+  - `www/api/ricerca_griglia_api.php`;
+  - `www/ricerca.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - applicare lato server le restrizioni delle funzionalità di ricerca previste dal piano utente;
+  - mantenere disponibili nel piano `free` gli aeroporti e la visualizzazione delle nazioni;
+  - riservare al piano `supporter` le funzioni avanzate.
+
+- Risultato:
+  - introdotto il controllo centralizzato delle feature tramite `Auth::hasFeature()`;
+  - bloccata lato server la ricerca delle località per utenti non Supporter;
+  - bloccata lato server la ricerca a griglia per utenti non Supporter;
+  - bloccata lato server l'espansione dinamica dell'orbe per utenti non Supporter;
+  - mantenuta disponibile la ricerca aeroporti nel piano gratuito;
+  - mantenuta visibile la lista nazioni senza consentire la ricerca località nel piano gratuito;
+  - aggiunto messaggio standard:
+    - `Questa funzione è riservata agli utenti del piano Supporter.`;
+  - sincronizzata la UI con i permessi disponibili dell'utente.
+
+- Verifiche eseguite:
+  - lint PHP di `www/includes/Auth.php`: OK;
+  - lint PHP di `www/api/ricerca_stream_api.php`: OK;
+  - lint PHP di `www/api/cuspidi_search_api.php`: OK;
+  - lint PHP di `www/api/ricerca_griglia_api.php`: OK;
+  - lint PHP di `www/ricerca.php`: OK;
+  - verifica presenza controlli `locality_search`, `grid_search`, `dynamic_orb`: OK.
+
+- Stato:
+  - Fase 8 completata.
+
+- Verifiche finali:
+  - test dedicato griglia Amore 2026: OK;
+  - regressione completa con `www/tests/run.php`: OK;
+  - ricerca API standard: OK;
+  - ricerca griglia: OK;
+  - registrazione utenti: OK;
+  - limiti piano free: OK.
+
+- Correzione aggiuntiva:
+  - aggiornato `www/tests/search_auth.php`;
+  - la sessione dei test ora usa il piano reale dal database;
+  - normalizzazione del piano in minuscolo per allineamento con `Auth::hasFeature()`.
+
+- Commit Git:
+  - da eseguire dopo verifica finale:
+    - `git diff --check`;
+    - `git status`.
+
+- Prossimo passo:
+  - chiusura formale Fase 8;
+  - commit delle modifiche.

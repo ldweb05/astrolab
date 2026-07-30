@@ -64,6 +64,14 @@ function sse(string $event, array $data): void {
     flush();
 }
 
+
+if (isset($_GET['espansione_orbe']) && $_GET['espansione_orbe'] === '1' && !$auth->hasFeature('dynamic_orb')) {
+    sse('error', [
+        'message' => 'Questa funzione è riservata agli utenti del piano Supporter.',
+    ]);
+    exit;
+}
+
 // ── Segni zodiacali ───────────────────────────────────────────────────────
 const SEGNI = [
     1=>'Ariete',   2=>'Toro',      3=>'Gemelli',   4=>'Cancro',
