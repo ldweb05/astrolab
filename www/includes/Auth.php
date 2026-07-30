@@ -594,7 +594,7 @@ class Auth {
         string $username,
         string $email,
         string $password,
-        string $ruolo          = 'astrologo',
+        string $ruolo          = 'user',
         string $nomeCompleto   = '',
         string $telefono       = '',
         string $note           = ''
@@ -602,25 +602,37 @@ class Auth {
         if (strlen($password) < 8) {
             return ['ok' => false, 'errore' => 'Password troppo corta (min 8 caratteri).'];
         }
-        if (!in_array($ruolo, ['admin', 'astrologo'])) {
+        if (!in_array($ruolo, ['admin', 'user'], true)) {
             return ['ok' => false, 'errore' => 'Ruolo non valido.'];
         }
         try {
             $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
             $stmt = $this->pdo->prepare(
-                "INSERT INTO utenti (username, email, password_hash, ruolo,
-                                     nome_completo, telefono, note)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)"
+                "INSERT INTO utenti (
+                    username, email, password_hash, ruolo, attivo,
+                    account_status, email_verified_at, plan_id,
+                    nome_completo, telefono, note
+                 )
+                 SELECT ?, ?, ?, ?, TRUE,
+                        'active', NOW(), id,
+                        ?, ?, ?
+                 FROM piani
+                 WHERE code = 'supporter' AND is_active = TRUE
+                 LIMIT 1"
             );
             $stmt->execute([
                 trim($username),
-                trim($email),
+                mb_strtolower(trim($email)),
                 $hash,
                 $ruolo,
                 trim($nomeCompleto) ?: null,
                 trim($telefono)     ?: null,
                 trim($note)         ?: null,
             ]);
+
+            if ($stmt->rowCount() !== 1) {
+                return ['ok' => false, 'errore' => 'Piano Supporter non disponibile.'];
+            }
             return ['ok' => true, 'id' => (int)$this->pdo->lastInsertId()];
         } catch (PDOException $e) {
             if (str_contains($e->getMessage(), 'unique')) {
@@ -687,20 +699,28 @@ class Auth {
 
     public function getListaUtenti(): array {
         return $this->pdo->query(
-            "SELECT id, username, email, ruolo, attivo,
-                    nome_completo, telefono, note,
-                    created_at, ultimo_accesso,
-                    (SELECT COUNT(*) FROM soggetti WHERE utente_id = utenti.id) AS n_soggetti
-             FROM utenti ORDER BY ruolo DESC, username"
+            "SELECT u.id, u.username, u.email, u.ruolo, u.attivo,
+                    u.account_status, u.email_verified_at,
+                    u.plan_id, p.code AS piano,
+                    u.nome_completo, u.telefono, u.note,
+                    u.created_at, u.ultimo_accesso,
+                    (SELECT COUNT(*) FROM soggetti WHERE utente_id = u.id) AS n_soggetti
+             FROM utenti u
+             LEFT JOIN piani p ON p.id = u.plan_id
+             ORDER BY u.ruolo DESC, u.username"
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getUtente(int $id): ?array {
         $stmt = $this->pdo->prepare(
-            "SELECT id, username, email, ruolo, attivo,
-                    nome_completo, telefono, note,
-                    created_at, ultimo_accesso
-             FROM utenti WHERE id = ?"
+            "SELECT u.id, u.username, u.email, u.ruolo, u.attivo,
+                    u.account_status, u.email_verified_at,
+                    u.plan_id, p.code AS piano,
+                    u.nome_completo, u.telefono, u.note,
+                    u.created_at, u.ultimo_accesso
+             FROM utenti u
+             LEFT JOIN piani p ON p.id = u.plan_id
+             WHERE u.id = ?"
         );
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -710,10 +730,27 @@ class Auth {
     public function toggleAttivo(int $utenteId): bool {
         // Non disattivare se stai tentando di disattivare te stesso
         if ($utenteId === $this->getCurrentUserId()) return false;
-        $this->pdo->prepare(
-            "UPDATE utenti SET attivo = NOT attivo WHERE id = ?"
-        )->execute([$utenteId]);
-        return true;
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE utenti
+             SET attivo = NOT attivo,
+                 account_status = CASE
+                     WHEN attivo THEN 'suspended'
+                     ELSE 'active'
+                 END,
+                 suspended_at = CASE
+                     WHEN attivo THEN NOW()
+                     ELSE NULL
+                 END,
+                 suspension_reason = CASE
+                     WHEN attivo THEN 'Disattivato da amministratore'
+                     ELSE NULL
+                 END
+             WHERE id = ?"
+        );
+        $stmt->execute([$utenteId]);
+
+        return $stmt->rowCount() === 1;
     }
 
     public function eliminaUtente(int $utenteId, int $trasferisciA = 1): bool {
@@ -729,7 +766,7 @@ class Auth {
     }
 
     public function aggiornaRuolo(int $utenteId, string $ruolo): bool {
-        if (!in_array($ruolo, ['admin', 'astrologo'])) return false;
+        if (!in_array($ruolo, ['admin', 'user'], true)) return false;
         $this->pdo->prepare(
             "UPDATE utenti SET ruolo = ? WHERE id = ?"
         )->execute([$ruolo, $utenteId]);
