@@ -146,11 +146,33 @@ const raw = sessionStorage.getItem('astroDssConfrontoRs');
 if (!raw) {
     out.innerHTML = '<p><strong>Nessun dato di confronto disponibile.</strong></p>';
 } else {
+    (async () => {
     try {
         const payload = JSON.parse(raw);
         const risultati = Array.isArray(payload.risultati)
             ? payload.risultati
             : [];
+        const autorizzazione = await fetch('api/comparator_api.php', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo: 'rs',
+                totale: risultati.length
+            })
+        });
+
+        const esitoAutorizzazione = await autorizzazione.json();
+
+        if (!autorizzazione.ok || !esitoAutorizzazione.ok) {
+            throw new Error(
+                esitoAutorizzazione.errore
+                    || 'Confronto non autorizzato.'
+            );
+        }
+
         const soggetto = payload.soggetto;
         const nomeSoggetto = soggetto?.nome
             || <?= json_encode($soggettoNome ?: 'Non disponibile') ?>;
@@ -324,8 +346,9 @@ if (!raw) {
             caricaRuotaRs(risultato, indice);
         });
     } catch (errore) {
-        out.innerHTML = '<p><strong>Dati di confronto non validi.</strong></p>';
+        out.innerHTML = `<p><strong>${errore.message || 'Dati di confronto non validi.'}</strong></p>`;
     }
+    })();
 }
 </script>
 

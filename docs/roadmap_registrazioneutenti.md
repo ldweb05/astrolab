@@ -992,33 +992,25 @@ Esempio per la ricerca a griglia:
 
 ## Prossimo passo
 
-Fase 7 — Limite ricerche salvate: completata.
+Fasi 7, 8 e 9 — completate.
+
+Ultima fase completata: Fase 9 — Comparator.
 
 Attività completate:
 
-1. configurato `saved_searches_max = 10` per il piano `free`;
-2. configurato `saved_searches_max = NULL` per il piano `supporter`;
-3. conteggiate le ricerche salvate dell'utente prima del salvataggio;
-4. bloccato l'undicesimo salvataggio oltre il limite del piano;
-5. esclusi gli amministratori dal limite commerciale;
-6. restituito un errore JSON comprensibile;
-7. aggiunto `www/tests/test_saved_searches_limit.php`;
-8. verificato tramite HTTP il blocco dell'undicesima ricerca salvata;
-9. integrato il test dedicato in `www/tests/run.php`;
-10. verificata la sintassi PHP;
-11. regressione completa superata.
+1. introdotto il limite Comparator centralizzato tramite `Auth::getComparatorLimit()`;
+2. applicato il limite lato server in `comparator_api.php`;
+3. allineati `compare_rs.php` e `compare_ril.php` con validazione server-side;
+4. aggiornata l'interfaccia mostrando il numero massimo selezionabile in base al piano;
+5. mantenuto il server come fonte definitiva dell'autorizzazione;
+6. aggiunti test dedicati per RS e Rilocazioni;
+7. verificata la sintassi PHP;
+8. regressione completa superata.
 
-Prossima fase applicativa: **Fase 8 — Restrizioni ricerca lato server**.
+Prossima fase applicativa: **Fase 10 — Annual Report, stampa e PDF**.
 
 ---
 
 ## Commit
 
-Commit di chiusura della Fase 6:
-
-- `5618cfc` — `feat(auth): enforce subject limits by plan`
-
-Stato corrente:
-
-- Fase 7 completata, verificata e pronta per la chiusura;
-- prossima attività: Fase 8 — Restrizioni ricerca lato server.
+Il commit di chiusura delle Fasi 7, 8 e 9 verrà registrato dopo la verifica finale e la creazione del commit Git.

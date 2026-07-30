@@ -445,6 +445,10 @@ const USER_FEATURES = {
 };
 
 const SUPPORTER_MESSAGE = 'Questa funzione è riservata agli utenti del piano Supporter.';
+const COMPARATOR_LIMIT = <?= json_encode($auth->getComparatorLimit()) ?>;
+const COMPARATOR_LIMIT_MESSAGE = COMPARATOR_LIMIT < 3
+    ? 'Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 RSM è necessario il piano Supporter.'
+    : `Puoi confrontare al massimo ${COMPARATOR_LIMIT} RSM.`;
 // ── Stato ────────────────────────────────────────────────────────────────
 let stato = {
 tutti:        [],
@@ -1561,6 +1565,9 @@ const confrontoToolbar = stato.confronto.length >= 2
 <button type="button" id="btn-confronta-selezioni">
 Confronta le ${stato.confronto.length} selezioni
 </button>
+<span style="font-size:12px;color:#666">
+${stato.confronto.length}/${COMPARATOR_LIMIT} selezionate
+</span>
 </div>`
 : '';
 const totPagine = Math.max(1, Math.ceil(totale / stato.perPagina));
@@ -1786,9 +1793,9 @@ document.getElementById('risultati-area').addEventListener('change', function(ev
     if (checkbox.checked) {
         if (stato.confronto.includes(key)) return;
 
-        if (stato.confronto.length >= 3) {
+        if (stato.confronto.length >= COMPARATOR_LIMIT) {
             checkbox.checked = false;
-            alert('Puoi confrontare al massimo 3 RS o rilocazioni.');
+            alert(COMPARATOR_LIMIT_MESSAGE);
             return;
         }
 
