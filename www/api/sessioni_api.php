@@ -43,6 +43,7 @@ if (!$auth->isLoggedIn()) {
 header('Content-Type: application/json; charset=UTF-8');
 
 $userId = $auth->getCurrentUserId();
+$isAdmin = $auth->isAdmin();
 $action = $_GET['action'] ?? (json_decode(file_get_contents('php://input'), true)['action'] ?? '');
 $data   = json_decode(file_get_contents('php://input'), true) ?? [];
 
@@ -162,6 +163,45 @@ switch ($action) {
         if ($anno <= 0 || $luogo === '') {
             echo json_encode(['ok' => false, 'errore' => 'Anno e luogo sono obbligatori.']);
             break;
+        }
+
+        if (!$isAdmin) {
+            $limitStmt = $pdo->prepare(
+                "SELECT pl.limit_value
+                 FROM utenti u
+                 JOIN piano_limiti pl ON pl.plan_id = u.plan_id
+                 WHERE u.id = ?
+                   AND pl.feature_code = 'saved_searches_max'
+                   AND pl.enabled = TRUE
+                 LIMIT 1"
+            );
+            $limitStmt->execute([$userId]);
+            $savedSearchesMax = $limitStmt->fetchColumn();
+            $savedSearchesMax = $savedSearchesMax !== false && $savedSearchesMax !== null
+                ? (int)$savedSearchesMax
+                : null;
+
+            $countStmt = $pdo->prepare(
+                "SELECT COUNT(*)
+                 FROM sessioni_rs
+                 WHERE utente_id = ?"
+            );
+            $countStmt->execute([$userId]);
+            $savedSearchesCount = (int)$countStmt->fetchColumn();
+
+            if (
+                $savedSearchesMax !== null
+                && $savedSearchesCount >= $savedSearchesMax
+            ) {
+                http_response_code(400);
+                echo json_encode([
+                    'ok' => false,
+                    'errore' => 'Hai raggiunto il numero massimo di ricerche salvate consentite dal tuo piano.',
+                    'limit' => $savedSearchesMax,
+                    'count' => $savedSearchesCount,
+                ]);
+                break;
+            }
         }
 
         $gmtTimestamp = parseGmtTimestamp($data['rs_gmt'] ?? null);
