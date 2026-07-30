@@ -2404,3 +2404,35 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - regressione completa superata.
 - Prossimo passo:
   - integrazione servizio email reale e gestione template notifiche.
+
+## 2026-07-30 — Completamento Fase 5 amministrazione utenti
+
+- Componenti modificati:
+  - `www/includes/Auth.php`;
+  - `www/admin_utenti.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+- Obiettivo:
+  - allineare l'amministrazione utenti al modello definitivo basato su ruolo, stato account, piano e verifica email.
+- Risultato:
+  - sostituito il ruolo legacy `astrologo` con `user`;
+  - validati lato server i soli ruoli `admin` e `user`;
+  - estese lista e dettaglio utenti con `account_status`, `email_verified_at`, `plan_id` e piano;
+  - sincronizzati sospensione e riattivazione con `attivo`, `account_status`, `suspended_at` e `suspension_reason`;
+  - allineata l'interfaccia amministrativa al nuovo modello utenti;
+  - verificata la creazione degli utenti amministrativi con stato `active`, email verificata e piano `supporter`.
+- Verifiche eseguite:
+  - lint PHP di `www/includes/Auth.php`: OK;
+  - lint PHP di `www/admin_utenti.php`: OK;
+  - test funzionale sospensione e riattivazione: OK;
+  - test lettura lista utenti e piani: OK;
+  - regressione completa con `www/tests/run.php`: OK;
+  - `git diff --check`: OK.
+- Commit Git:
+  - da eseguire con la chiusura della Fase 5 e l'avvio della Fase 6.
+- Prossimo passo:
+  - avviare la Fase 6 — Limite soggetti;
+  - contare i soggetti dell'utente prima dell'inserimento;
+  - applicare il limite effettivo del piano;
+  - escludere gli amministratori dal limite commerciale;
+  - aggiungere test dedicati e regressione.

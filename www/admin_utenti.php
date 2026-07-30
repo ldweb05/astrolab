@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             trim($_POST['username']      ?? ''),
             trim($_POST['email']         ?? ''),
             $_POST['password']           ?? '',
-            $_POST['ruolo']              ?? 'astrologo',
+            $_POST['ruolo']              ?? 'user',
             trim($_POST['nome_completo'] ?? ''),
             trim($_POST['telefono']      ?? ''),
             trim($_POST['note']          ?? '')
@@ -93,7 +93,7 @@ $isAdmin      = true;
 
 // Calcola conteggi totali per la riga sommario
 $totAdmin     = count(array_filter($utenti, fn($u) => $u['ruolo'] === 'admin'));
-$totAstrologi = count(array_filter($utenti, fn($u) => $u['ruolo'] === 'astrologo'));
+$totUser = count(array_filter($utenti, fn($u) => $u['ruolo'] === 'user'));
 $totAttivi    = count(array_filter($utenti, fn($u) => $u['attivo']));
 $totSoggetti  = array_sum(array_column($utenti, 'n_soggetti'));
 
@@ -136,8 +136,8 @@ $paginaAttiva = 'admin';
             <span class="stat-lbl">Admin</span>
         </div>
         <div class="stat-item">
-            <span class="stat-num" style="color:#5A7AB0"><?= $totAstrologi ?></span>
-            <span class="stat-lbl">Astrologi</span>
+            <span class="stat-num" style="color:#5A7AB0"><?= $totUser ?></span>
+            <span class="stat-lbl">Utenti</span>
         </div>
         <div class="stat-sep"></div>
         <div class="stat-item">
@@ -195,7 +195,7 @@ $paginaAttiva = 'admin';
                     <?php if ($u['ruolo'] === 'admin'): ?>
                         <span class="badge-admin">⚙️ Admin</span>
                     <?php else: ?>
-                        <span class="badge-astro">☉ Astrologo</span>
+                        <span class="badge-astro">👤 Utente</span>
                     <?php endif; ?>
                 </td>
 
@@ -297,7 +297,7 @@ $paginaAttiva = 'admin';
 
     <p style="font-size:11px;color:#aaa;text-align:right;margin-top:8px">
         💡 I <strong>soggetti di studio</strong> sono le persone di cui si calcola il tema natale e la rivoluzione solare.
-        Ogni astrologo gestisce i propri soggetti in modo indipendente.
+        Ogni utente gestisce i propri soggetti in modo indipendente.
     </p>
 </main>
 
@@ -308,7 +308,7 @@ $paginaAttiva = 'admin';
 <!-- ── Nuovo utente ────────────────────────────────────────────── -->
 <div class="modal-bg" id="modal-nuovo">
     <div class="modal-box" style="max-width:520px">
-        <h3>➕ Nuovo Utente (Astrologo)</h3>
+        <h3>➕ Nuovo Utente</h3>
         <form method="POST">
             <input type="hidden" name="azione" value="crea">
 
@@ -331,7 +331,7 @@ $paginaAttiva = 'admin';
                 <div class="form-group" style="grid-column:1/-1">
                     <label>Ruolo</label>
                     <select name="ruolo">
-                        <option value="astrologo">☉ Astrologo</option>
+                        <option value="user">👤 Utente</option>
                         <option value="admin">⚙️ Admin</option>
                     </select>
                 </div>
@@ -448,7 +448,7 @@ $paginaAttiva = 'admin';
             <div class="form-group">
                 <label>Nuovo ruolo</label>
                 <select name="ruolo" id="ruolo-select">
-                    <option value="astrologo">☉ Astrologo</option>
+                    <option value="user">👤 Utente</option>
                     <option value="admin">⚙️ Admin</option>
                 </select>
             </div>

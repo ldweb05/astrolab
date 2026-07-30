@@ -939,25 +939,31 @@ Esempio per la ricerca a griglia:
 - regressione completa superata;
 - fase 3 completata.
 
+### 2026-07-30 — Completamento Fase 5 amministrazione utenti
+
+- aggiornata l'amministrazione utenti al nuovo modello `user`;
+- visualizzati ruolo, stato account, piano e verifica email;
+- introdotta la sospensione e riattivazione coerente con `account_status`;
+- validata server-side la gestione dei ruoli amministrativi;
+- allineata l'interfaccia amministrativa al modello utenti definitivo;
+- regressione completa superata;
+- fase 5 completata.
 
 ---
 
 ## Prossimo passo
 
-Fase 4 completata:
+Fase 5 completata.
 
-1. strutture dati token create;
-2. token sicuri con scadenza implementati;
-3. memorizzazione hashata implementata;
-4. verifica email implementata;
-5. attivazione account implementata;
-6. nuovo link di verifica implementato;
-7. reset password implementato;
-8. token monouso implementati;
-9. protezioni base implementate;
-10. test dedicati e regressione completati.
+Prossima fase attiva: **Fase 6 — Limite soggetti**.
 
-Prossimo passo: integrazione servizio email reale e template notifiche.
+Attività previste:
+
+1. conteggio soggetti per utente;
+2. applicazione dei limiti in base al piano;
+3. esenzione per gli amministratori;
+4. messaggi JSON coerenti;
+5. test dedicati e regressione.
 
 ---
 
@@ -965,4 +971,4 @@ Prossimo passo: integrazione servizio email reale e template notifiche.
 
 Ultimo commit della feature:
 
-- in attesa del commit della Fase 3.
+- in attesa del commit conclusivo della Fase 5 e dell'avvio della Fase 6.
