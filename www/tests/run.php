@@ -535,4 +535,16 @@ try {
     exit(1);
 }
 
+echo "\nTest limite soggetti...\n";
+
+$subjectsLimitCommand = escapeshellarg(PHP_BINARY)
+    . ' '
+    . escapeshellarg(__DIR__ . '/test_subjects_limit.php');
+
+passthru($subjectsLimitCommand, $subjectsLimitExitCode);
+
+if ($subjectsLimitExitCode !== 0) {
+    exit(1);
+}
+
 echo "\nTest completati.\n";

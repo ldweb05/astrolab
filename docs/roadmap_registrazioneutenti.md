@@ -939,6 +939,22 @@ Esempio per la ricerca a griglia:
 - regressione completa superata;
 - fase 3 completata.
 
+### 2026-07-30 — Implementazione Fase 6 limite soggetti
+
+- creata la migrazione `sql/004_popola_piano_limiti.sql`;
+- configurato il limite `subjects_max` a 2 per il piano `free`;
+- configurato il piano `supporter` senza limite numerico;
+- aggiornato `www/api/soggetti_api.php`;
+- introdotto il conteggio dei soggetti prima dell'inserimento;
+- bloccato l'inserimento oltre soglia con errore JSON;
+- esclusi gli amministratori dal limite commerciale;
+- controllo sintassi PHP superato;
+- regressione completa con `www/tests/run.php` superata;
+- aggiunto il test funzionale dedicato `www/tests/test_subjects_limit.php`;
+- integrato il test nella regressione completa `www/tests/run.php`;
+- verificato il blocco del terzo soggetto per il piano `free`;
+- fase 6 completata.
+
 ### 2026-07-30 — Completamento Fase 5 amministrazione utenti
 
 - aggiornata l'amministrazione utenti al nuovo modello `user`;
@@ -953,17 +969,23 @@ Esempio per la ricerca a griglia:
 
 ## Prossimo passo
 
-Fase 5 completata.
+Fase 6 — Limite soggetti: completata.
 
-Prossima fase attiva: **Fase 6 — Limite soggetti**.
+Attività completate:
 
-Attività previste:
+1. configurato `subjects_max = 2` per il piano `free`;
+2. configurato `subjects_max = NULL` per il piano `supporter`;
+3. conteggiati i soggetti dell'utente prima dell'inserimento;
+4. bloccato l'inserimento oltre il limite del piano;
+5. esclusi gli amministratori dal limite commerciale;
+6. restituito un errore JSON comprensibile;
+7. aggiunto `www/tests/test_subjects_limit.php`;
+8. verificato tramite HTTP il blocco del terzo soggetto;
+9. integrato il test dedicato in `www/tests/run.php`;
+10. verificata la sintassi PHP;
+11. regressione completa superata.
 
-1. conteggio soggetti per utente;
-2. applicazione dei limiti in base al piano;
-3. esenzione per gli amministratori;
-4. messaggi JSON coerenti;
-5. test dedicati e regressione.
+Prossima fase applicativa: **Fase 7 — Limite ricerche salvate**.
 
 ---
 

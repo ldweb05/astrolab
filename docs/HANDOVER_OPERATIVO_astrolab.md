@@ -2436,3 +2436,37 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - applicare il limite effettivo del piano;
   - escludere gli amministratori dal limite commerciale;
   - aggiungere test dedicati e regressione.
+
+## 2026-07-30 — Implementazione Fase 6 limite soggetti
+
+- Componenti modificati:
+  - `sql/004_popola_piano_limiti.sql`;
+  - `www/api/soggetti_api.php`;
+  - `www/tests/test_subjects_limit.php`;
+  - `www/tests/run.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+- Obiettivo:
+  - applicare lato server il numero massimo di soggetti previsto dal piano dell'utente.
+- Risultato:
+  - configurato `subjects_max = 2` per il piano `free`;
+  - configurato `subjects_max = NULL` per il piano `supporter`;
+  - conteggiati i soggetti dell'utente prima dell'inserimento;
+  - bloccato l'inserimento oltre soglia con errore JSON comprensibile;
+  - preservate consultazione, modifica ed eliminazione dei soggetti esistenti;
+  - esclusi gli amministratori dal limite commerciale.
+- Verifiche eseguite:
+  - lint PHP di `www/api/soggetti_api.php`: OK;
+  - lint PHP di `www/tests/test_subjects_limit.php`: OK;
+  - test funzionale HTTP del limite soggetti: OK;
+  - verificato che il terzo soggetto del piano `free` riceva HTTP 400;
+  - verificato che il numero dei soggetti resti pari a 2;
+  - test dedicato integrato in `www/tests/run.php`;
+  - regressione completa con `www/tests/run.php`: OK;
+  - verifica del diff applicativo: OK.
+- Stato:
+  - Fase 6 completata.
+- Commit Git:
+  - da eseguire con la chiusura formale della Fase 6.
+- Prossimo passo:
+  - avviare la Fase 7 — Limite ricerche salvate.
