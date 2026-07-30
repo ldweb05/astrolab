@@ -547,4 +547,16 @@ if ($subjectsLimitExitCode !== 0) {
     exit(1);
 }
 
+echo "\nTest limite ricerche salvate...\n";
+
+$savedSearchesLimitCommand = escapeshellarg(PHP_BINARY)
+    . ' '
+    . escapeshellarg(__DIR__ . '/test_saved_searches_limit.php');
+
+passthru($savedSearchesLimitCommand, $savedSearchesLimitExitCode);
+
+if ($savedSearchesLimitExitCode !== 0) {
+    exit(1);
+}
+
 echo "\nTest completati.\n";

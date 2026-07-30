@@ -955,6 +955,22 @@ Esempio per la ricerca a griglia:
 - verificato il blocco del terzo soggetto per il piano `free`;
 - fase 6 completata.
 
+### 2026-07-30 — Implementazione Fase 7 limite ricerche salvate
+
+- creata la migrazione `sql/005_popola_limite_ricerche_salvate.sql`;
+- configurato il limite `saved_searches_max` a 10 per il piano `free`;
+- configurato il piano `supporter` senza limite numerico;
+- aggiornato `www/api/sessioni_api.php`;
+- introdotto il conteggio delle ricerche salvate prima del salvataggio;
+- bloccato l'undicesimo salvataggio con errore JSON;
+- esclusi gli amministratori dal limite commerciale;
+- controllo sintassi PHP superato;
+- aggiunto il test funzionale dedicato `www/tests/test_saved_searches_limit.php`;
+- integrato il test nella regressione completa `www/tests/run.php`;
+- verificato tramite HTTP il blocco dell'undicesima ricerca salvata;
+- regressione completa superata;
+- fase 7 completata.
+
 ### 2026-07-30 — Completamento Fase 5 amministrazione utenti
 
 - aggiornata l'amministrazione utenti al nuovo modello `user`;
@@ -969,28 +985,33 @@ Esempio per la ricerca a griglia:
 
 ## Prossimo passo
 
-Fase 6 — Limite soggetti: completata.
+Fase 7 — Limite ricerche salvate: completata.
 
 Attività completate:
 
-1. configurato `subjects_max = 2` per il piano `free`;
-2. configurato `subjects_max = NULL` per il piano `supporter`;
-3. conteggiati i soggetti dell'utente prima dell'inserimento;
-4. bloccato l'inserimento oltre il limite del piano;
+1. configurato `saved_searches_max = 10` per il piano `free`;
+2. configurato `saved_searches_max = NULL` per il piano `supporter`;
+3. conteggiate le ricerche salvate dell'utente prima del salvataggio;
+4. bloccato l'undicesimo salvataggio oltre il limite del piano;
 5. esclusi gli amministratori dal limite commerciale;
 6. restituito un errore JSON comprensibile;
-7. aggiunto `www/tests/test_subjects_limit.php`;
-8. verificato tramite HTTP il blocco del terzo soggetto;
+7. aggiunto `www/tests/test_saved_searches_limit.php`;
+8. verificato tramite HTTP il blocco dell'undicesima ricerca salvata;
 9. integrato il test dedicato in `www/tests/run.php`;
 10. verificata la sintassi PHP;
 11. regressione completa superata.
 
-Prossima fase applicativa: **Fase 7 — Limite ricerche salvate**.
+Prossima fase applicativa: **Fase 8 — Restrizioni ricerca lato server**.
 
 ---
 
 ## Commit
 
-Ultimo commit della feature:
+Commit di chiusura della Fase 6:
 
-- in attesa del commit conclusivo della Fase 5 e dell'avvio della Fase 6.
+- `5618cfc` — `feat(auth): enforce subject limits by plan`
+
+Stato corrente:
+
+- Fase 7 completata, verificata e pronta per la chiusura;
+- prossima attività: Fase 8 — Restrizioni ricerca lato server.
