@@ -20,12 +20,68 @@ $auth = new Auth($pdo);
 $errore = '';
 $next   = $_GET['next'] ?? 'index.php';
 
+function loginClientIp(): string
+{
+    return substr((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 0, 64);
+}
+
+function loginRateLimit(string $ip): bool
+{
+    $windowSeconds = 900;
+    $maxAttempts = 10;
+    $path = sys_get_temp_dir() . '/astrolab-login-' . hash('sha256', $ip) . '.json';
+    $handle = fopen($path, 'c+');
+
+    if ($handle === false) {
+        return false;
+    }
+
+    try {
+        if (!flock($handle, LOCK_EX)) {
+            return false;
+        }
+
+        $raw = stream_get_contents($handle);
+        $data = is_string($raw) && $raw !== ''
+            ? json_decode($raw, true)
+            : [];
+
+        $now = time();
+        $attempts = [];
+
+        if (is_array($data)) {
+            foreach ($data as $timestamp) {
+                if (is_int($timestamp) && $timestamp > $now - $windowSeconds) {
+                    $attempts[] = $timestamp;
+                }
+            }
+        }
+
+        if (count($attempts) >= $maxAttempts) {
+            return false;
+        }
+
+        $attempts[] = $now;
+        rewind($handle);
+        ftruncate($handle, 0);
+        fwrite($handle, json_encode($attempts, JSON_THROW_ON_ERROR));
+        fflush($handle);
+
+        return true;
+    } finally {
+        flock($handle, LOCK_UN);
+        fclose($handle);
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if ($username === '' || $password === '') {
         $errore = 'Inserisci username e password.';
+    } elseif (!loginRateLimit(loginClientIp())) {
+        $errore = 'Troppi tentativi di accesso. Riprova più tardi.';
     } else {
         $result = $auth->login($username, $password);
         if ($result['ok']) {

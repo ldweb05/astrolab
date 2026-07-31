@@ -23,66 +23,67 @@ $auth->richiediAdmin();   // reindirizza se non admin
 $messaggio = '';
 $tipoMsg   = '';
 
+if (empty($_SESSION['admin_utenti_csrf'])) {
+    $_SESSION['admin_utenti_csrf'] = bin2hex(random_bytes(32));
+}
+
 // ── Azioni POST ────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $azione = $_POST['azione'] ?? '';
+    $csrf = (string)($_POST['csrf_token'] ?? '');
 
-    if ($azione === 'crea') {
-        $result = $auth->creaUtente(
-            trim($_POST['username']      ?? ''),
-            trim($_POST['email']         ?? ''),
-            $_POST['password']           ?? '',
-            $_POST['ruolo']              ?? 'user',
-            trim($_POST['nome_completo'] ?? ''),
-            trim($_POST['telefono']      ?? ''),
-            trim($_POST['note']          ?? '')
-        );
-        $messaggio = $result['ok'] ? 'Utente creato con successo.' : $result['errore'];
-        $tipoMsg   = $result['ok'] ? 'success' : 'error';
-    }
+    if (!hash_equals((string)$_SESSION['admin_utenti_csrf'], $csrf)) {
+        $messaggio = 'Sessione non valida. Ricarica la pagina e riprova.';
+        $tipoMsg = 'error';
+    } else {
+        $azione = $_POST['azione'] ?? '';
 
-    elseif ($azione === 'modifica_anagrafica') {
-        $id     = intval($_POST['id'] ?? 0);
-        $result = $auth->aggiornaUtente(
-            $id,
-            trim($_POST['email']         ?? ''),
-            trim($_POST['nome_completo'] ?? ''),
-            trim($_POST['telefono']      ?? ''),
-            trim($_POST['note']          ?? '')
-        );
-        $messaggio = $result['ok'] ? 'Dati aggiornati con successo.' : $result['errore'];
-        $tipoMsg   = $result['ok'] ? 'success' : 'error';
-    }
-
-    elseif ($azione === 'reset_password') {
-        $id     = intval($_POST['id'] ?? 0);
-        $nuova  = $_POST['nuova_password'] ?? '';
-        $result = $auth->cambiaPassword($id, $nuova);
-        $messaggio = $result['ok'] ? 'Password aggiornata.' : $result['errore'];
-        $tipoMsg   = $result['ok'] ? 'success' : 'error';
-    }
-
-    elseif ($azione === 'toggle_attivo') {
-        $id  = intval($_POST['id'] ?? 0);
-        $ok  = $auth->toggleAttivo($id);
-        $messaggio = $ok ? 'Stato aggiornato.' : 'Impossibile modificare il proprio account.';
-        $tipoMsg   = $ok ? 'success' : 'error';
-    }
-
-    elseif ($azione === 'cambia_ruolo') {
-        $id    = intval($_POST['id'] ?? 0);
-        $ruolo = $_POST['ruolo'] ?? '';
-        $ok    = $auth->aggiornaRuolo($id, $ruolo);
-        $messaggio = $ok ? 'Ruolo aggiornato.' : 'Errore aggiornamento ruolo.';
-        $tipoMsg   = $ok ? 'success' : 'error';
-    }
-
-    elseif ($azione === 'elimina') {
-        $id = intval($_POST['id'] ?? 0);
-        $trasferisciA = intval($_POST['trasferisci_a'] ?? 1);
-        $ok = $auth->eliminaUtente($id, $trasferisciA);
-        $messaggio = $ok ? 'Utente eliminato e soggetti trasferiti.' : 'Impossibile eliminare il proprio account.';
-        $tipoMsg   = $ok ? 'success' : 'error';
+        if ($azione === 'crea') {
+            $result = $auth->creaUtente(
+                trim($_POST['username']      ?? ''),
+                trim($_POST['email']         ?? ''),
+                $_POST['password']           ?? '',
+                $_POST['ruolo']              ?? 'user',
+                trim($_POST['nome_completo'] ?? ''),
+                trim($_POST['telefono']      ?? ''),
+                trim($_POST['note']          ?? '')
+            );
+            $messaggio = $result['ok'] ? 'Utente creato con successo.' : $result['errore'];
+            $tipoMsg   = $result['ok'] ? 'success' : 'error';
+        } elseif ($azione === 'modifica_anagrafica') {
+            $id = intval($_POST['id'] ?? 0);
+            $result = $auth->aggiornaUtente(
+                $id,
+                trim($_POST['email']         ?? ''),
+                trim($_POST['nome_completo'] ?? ''),
+                trim($_POST['telefono']      ?? ''),
+                trim($_POST['note']          ?? '')
+            );
+            $messaggio = $result['ok'] ? 'Dati aggiornati con successo.' : $result['errore'];
+            $tipoMsg   = $result['ok'] ? 'success' : 'error';
+        } elseif ($azione === 'reset_password') {
+            $id = intval($_POST['id'] ?? 0);
+            $nuova = $_POST['nuova_password'] ?? '';
+            $result = $auth->cambiaPassword($id, $nuova);
+            $messaggio = $result['ok'] ? 'Password aggiornata.' : $result['errore'];
+            $tipoMsg   = $result['ok'] ? 'success' : 'error';
+        } elseif ($azione === 'toggle_attivo') {
+            $id = intval($_POST['id'] ?? 0);
+            $ok = $auth->toggleAttivo($id);
+            $messaggio = $ok ? 'Stato aggiornato.' : 'Impossibile modificare il proprio account.';
+            $tipoMsg   = $ok ? 'success' : 'error';
+        } elseif ($azione === 'cambia_ruolo') {
+            $id = intval($_POST['id'] ?? 0);
+            $ruolo = $_POST['ruolo'] ?? '';
+            $ok = $auth->aggiornaRuolo($id, $ruolo);
+            $messaggio = $ok ? 'Ruolo aggiornato.' : 'Errore aggiornamento ruolo.';
+            $tipoMsg   = $ok ? 'success' : 'error';
+        } elseif ($azione === 'elimina') {
+            $id = intval($_POST['id'] ?? 0);
+            $trasferisciA = intval($_POST['trasferisci_a'] ?? 1);
+            $ok = $auth->eliminaUtente($id, $trasferisciA);
+            $messaggio = $ok ? 'Utente eliminato e soggetti trasferiti.' : 'Impossibile eliminare il proprio account.';
+            $tipoMsg   = $ok ? 'success' : 'error';
+        }
     }
 }
 
@@ -235,6 +236,7 @@ $paginaAttiva = 'admin';
                         <?php if (!$isCurrentUser): ?>
                         <!-- Toggle attivo/disattivo -->
                         <form method="POST" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
                             <input type="hidden" name="azione" value="toggle_attivo">
                             <input type="hidden" name="id" value="<?= $u['id'] ?>">
                             <button type="submit" class="btn-icon"
@@ -274,6 +276,7 @@ $paginaAttiva = 'admin';
                         <?php if ($nSoggetti === 0): ?>
                         <form method="POST" style="display:inline"
                               onsubmit="return confirm('Eliminare definitivamente <?= htmlspecialchars($u['username'], ENT_QUOTES) ?>?')">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
                             <input type="hidden" name="azione" value="elimina">
                             <input type="hidden" name="id" value="<?= $u['id'] ?>">
                             <input type="hidden" name="trasferisci_a" value="1">
@@ -310,6 +313,7 @@ $paginaAttiva = 'admin';
     <div class="modal-box" style="max-width:520px">
         <h3>➕ Nuovo Utente</h3>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="azione" value="crea">
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
@@ -376,6 +380,7 @@ $paginaAttiva = 'admin';
     <div class="modal-box" style="max-width:520px">
         <h3 id="anagrafica-titolo">✏️ Modifica Dati Anagrafici</h3>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="azione" value="modifica_anagrafica">
             <input type="hidden" name="id" id="anagrafica-id">
 
@@ -421,6 +426,7 @@ $paginaAttiva = 'admin';
             L'utente dovrà poi cambiarla dalla pagina "Cambia Password".
         </p>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="azione" value="reset_password">
             <input type="hidden" name="id" id="reset-pwd-id">
             <div class="form-group">
@@ -443,6 +449,7 @@ $paginaAttiva = 'admin';
     <div class="modal-box">
         <h3 id="ruolo-titolo">⚙️ Cambia Ruolo</h3>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="azione" value="cambia_ruolo">
             <input type="hidden" name="id" id="ruolo-id">
             <div class="form-group">
@@ -466,6 +473,7 @@ $paginaAttiva = 'admin';
         <h3 id="elimina-titolo">🗑️ Elimina Utente</h3>
         <p id="elimina-info" style="font-size:13px;color:#666;margin-bottom:16px"></p>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="azione" value="elimina">
             <input type="hidden" name="id" id="elimina-id">
             <div class="form-group">
