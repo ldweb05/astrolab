@@ -19,12 +19,20 @@ $soggettoNome = $auth->getSoggettoNome();
 $messaggio = '';
 $tipoMsg   = '';
 
+if (empty($_SESSION['cambia_password_csrf'])) {
+    $_SESSION['cambia_password_csrf'] = bin2hex(random_bytes(32));
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $csrf = (string)($_POST['csrf_token'] ?? '');
     $vecchia  = $_POST['password_attuale']  ?? '';
     $nuova    = $_POST['nuova_password']    ?? '';
     $conferma = $_POST['conferma_password'] ?? '';
 
-    if ($nuova !== $conferma) {
+    if (!hash_equals((string)$_SESSION['cambia_password_csrf'], $csrf)) {
+        $messaggio = 'Sessione non valida. Ricarica la pagina e riprova.';
+        $tipoMsg = 'error';
+    } elseif ($nuova !== $conferma) {
         $messaggio = 'La nuova password e la conferma non coincidono.';
         $tipoMsg   = 'error';
     } elseif (strlen($nuova) < 8) {
@@ -67,6 +75,7 @@ $paginaAttiva = ''; // nessuna voce nav attiva
 
         <?php if ($tipoMsg !== 'success'): ?>
         <form method="POST" action="cambia_password.php" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['cambia_password_csrf'], ENT_QUOTES, 'UTF-8') ?>">
 
             <div class="form-group">
                 <label>Password Attuale *</label>

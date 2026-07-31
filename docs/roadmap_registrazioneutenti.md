@@ -815,16 +815,27 @@ Restano attività infrastrutturali future:
 - indicare limiti e quota residua;
 - mantenere il server come fonte definitiva dell’autorizzazione.
 
-### Fase 12 — Sicurezza e sessioni
+### Fase 12 — Sicurezza e sessioni ✅ completata
 
-- verificare hashing password;
-- verificare protezione CSRF;
-- verificare cookie di sessione;
-- introdurre rate limiting dove necessario;
-- verificare logout e revoca sessione;
-- verificare enumerazione account;
-- verificare logging degli eventi rilevanti;
-- aggiungere test di sicurezza applicabili.
+Implementato e verificato:
+
+- confermato l'utilizzo di `password_hash()` con bcrypt e `password_verify()`;
+- confermata la rigenerazione dell'identificativo di sessione dopo il login;
+- verificata la configurazione sicura dei cookie di sessione;
+- verificata la distruzione della sessione e del cookie durante il logout;
+- aggiunta la protezione CSRF alle operazioni amministrative;
+- aggiunta la protezione CSRF al cambio password;
+- confermata la protezione CSRF della registrazione pubblica;
+- introdotto rate limiting sul login;
+- confermato il rate limiting della registrazione;
+- verificati i messaggi del login contro l'enumerazione delle credenziali;
+- verificati token di verifica email e reset password monouso;
+- lint PHP, regressione completa e `git diff --check` superati.
+
+Attività future non bloccanti:
+
+- logging strutturato degli eventi di sicurezza;
+- ulteriori test HTTP dedicati a CSRF e rate limiting.
 
 ### Fase 13 — Regressione e documentazione
 
@@ -995,9 +1006,9 @@ Esempio per la ricerca a griglia:
 Fasi 7, 8, 9 e 10 — completate.
 
 
-**Ultima fase completata: Fase 11 — Restrizioni interfaccia.**
+**Ultima fase completata: Fase 12 — Sicurezza e sessioni.**
 
-Prossima fase applicativa: **Fase 12 — Sicurezza e sessioni**
+Prossima fase applicativa: **Fase 13 — Regressione e documentazione**
 
 ---
 

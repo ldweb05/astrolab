@@ -2600,3 +2600,42 @@ della nazione e il limite 50/100/150/Tutte. La modalità
 
 - Prossimo passo:
   - avviare la Fase 12 — Sicurezza e sessioni.
+
+## 2026-07-31 — Completamento Fase 12 Sicurezza e sessioni
+
+- Componenti modificati:
+  - `www/admin_utenti.php`;
+  - `www/cambia_password.php`;
+  - `www/login.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - consolidare la sicurezza delle operazioni sensibili e delle sessioni.
+
+- Risultato:
+  - introdotta la protezione CSRF nelle principali operazioni amministrative;
+  - aggiunta la protezione CSRF al cambio password;
+  - confermata la protezione CSRF della registrazione;
+  - introdotto rate limiting del login;
+  - mantenuto il rate limiting della registrazione;
+  - verificato l'utilizzo dell'hashing password;
+  - verificati cookie di sessione, rigenerazione ID e logout;
+  - verificati i messaggi del login contro l'enumerazione delle credenziali;
+  - verificati i token monouso di verifica email e reset password;
+  - verificata la regressione completa;
+  - rinviati a futuro hardening il logging strutturato e ulteriori test HTTP dedicati.
+
+- Verifiche eseguite:
+  - lint PHP dei file modificati: OK;
+  - regressione completa `tests/run.php`: OK;
+  - `git diff --check`: OK.
+
+- Stato:
+  - Fase 12 completata.
+
+- Commit Git:
+  - da eseguire dopo verifica finale di `git diff` e `git status`.
+
+- Prossimo passo:
+  - avviare la Fase 13 — Regressione e documentazione.
