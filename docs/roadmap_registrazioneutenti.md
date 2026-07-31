@@ -807,7 +807,7 @@ Restano attività infrastrutturali future:
 - applicare uso corretto al piano Supporter;
 - aggiungere test dedicati.
 
-### Fase 11 — Restrizioni interfaccia
+### Fase 11 — Restrizioni interfaccia ✅ completata
 
 - nascondere o disabilitare i controlli non disponibili;
 - impedire l’avvio di operazioni non consentite;
@@ -995,9 +995,9 @@ Esempio per la ricerca a griglia:
 Fasi 7, 8, 9 e 10 — completate.
 
 
-**Ultima fase completata: Fase 10 — Annual Report, stampa e PDF.**
+**Ultima fase completata: Fase 11 — Restrizioni interfaccia.**
 
-Prossima fase applicativa: **Fase 11 — Restrizioni interfaccia**
+Prossima fase applicativa: **Fase 12 — Sicurezza e sessioni**
 
 ---
 
