@@ -2570,3 +2570,33 @@ della nazione e il limite 50/100/150/Tutte. La modalità
 
 - Prossimo passo:
   - avviare la Fase 11 — Restrizioni interfaccia.
+
+## 2026-07-31 — Completamento Fase 11 Restrizioni interfaccia
+
+- Componenti modificati:
+  - `www/ricerca.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - disabilitare preventivamente nell'interfaccia i controlli non disponibili per il piano utente;
+  - mantenere il server come fonte definitiva dell'autorizzazione.
+
+- Risultato:
+  - aggiunta l'inizializzazione centralizzata delle restrizioni UI;
+  - disabilitate le opzioni Supporter per ricerca località, ricerca a griglia ed espansione automatica dell'orbe;
+  - mantenuti i controlli server-side e i messaggi già presenti.
+
+- Verifiche eseguite:
+  - lint PHP di `www/ricerca.php`: OK;
+  - regressione completa `tests/run.php`: OK;
+  - `git diff --check`: OK.
+
+- Stato:
+  - Fase 11 completata.
+
+- Commit Git:
+  - da eseguire dopo verifica finale di `git diff` e `git status`.
+
+- Prossimo passo:
+  - avviare la Fase 12 — Sicurezza e sessioni.

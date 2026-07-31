@@ -551,6 +551,30 @@ document.getElementById('wrap-nazione-localita').style.display = ricercaLocalita
 document.getElementById('wrap-numero-localita').style.display = ricercaLocalita ? '' : 'none';
 }
 
+function applicaRestrizioniInterfaccia() {
+const localitaOption = document.querySelector('#tipo-localita option[value="localita"]');
+if (localitaOption && !USER_FEATURES.locality_search) {
+localitaOption.disabled = true;
+localitaOption.textContent = 'Località (Supporter)';
+}
+
+const gridSelect = document.getElementById('filt-grid-search');
+if (gridSelect && !USER_FEATURES.grid_search) {
+Array.from(gridSelect.options).forEach(option => {
+if (option.value !== 'no') {
+option.disabled = true;
+option.textContent += ' (Supporter)';
+}
+});
+}
+
+const dynamicOrbOption = document.querySelector('#filt-espandi-orbe option[value="si"]');
+if (dynamicOrbOption && !USER_FEATURES.dynamic_orb) {
+dynamicOrbOption.disabled = true;
+dynamicOrbOption.textContent = 'Abilitato (Supporter)';
+}
+}
+
 function localizzaNomiNazioni() {
 if (typeof Intl === 'undefined' || typeof Intl.DisplayNames !== 'function') {
 return;
@@ -1777,6 +1801,7 @@ function setFiltroStelle(v) { stato.filtroStelle = parseInt(v)||0; stato.pagina 
 
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
+applicaRestrizioniInterfaccia();
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
