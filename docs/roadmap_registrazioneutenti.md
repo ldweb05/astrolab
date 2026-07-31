@@ -992,25 +992,15 @@ Esempio per la ricerca a griglia:
 
 ## Prossimo passo
 
-Fasi 7, 8 e 9 — completate.
+Fasi 7, 8, 9 e 10 — completate.
 
-Ultima fase completata: Fase 9 — Comparator.
 
-Attività completate:
+**Ultima fase completata: Fase 10 — Annual Report, stampa e PDF.**
 
-1. introdotto il limite Comparator centralizzato tramite `Auth::getComparatorLimit()`;
-2. applicato il limite lato server in `comparator_api.php`;
-3. allineati `compare_rs.php` e `compare_ril.php` con validazione server-side;
-4. aggiornata l'interfaccia mostrando il numero massimo selezionabile in base al piano;
-5. mantenuto il server come fonte definitiva dell'autorizzazione;
-6. aggiunti test dedicati per RS e Rilocazioni;
-7. verificata la sintassi PHP;
-8. regressione completa superata.
-
-Prossima fase applicativa: **Fase 10 — Annual Report, stampa e PDF**.
+Prossima fase applicativa: **Fase 11 — Restrizioni interfaccia**
 
 ---
 
 ## Commit
 
-Il commit di chiusura delle Fasi 7, 8 e 9 verrà registrato dopo la verifica finale e la creazione del commit Git.
+Il commit di chiusura delle Fasi 7, 8, 9 e 10 verrà registrato dopo la verifica finale e la creazione del commit Git.

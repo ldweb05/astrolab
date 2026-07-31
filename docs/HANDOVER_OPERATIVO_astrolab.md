@@ -2531,3 +2531,42 @@ della nazione e il limite 50/100/150/Tutte. La modalità
 - Prossimo passo:
   - chiusura formale Fase 8;
   - commit delle modifiche.
+
+## 2026-07-31 — Completamento Fase 10 Annual Report, stampa e PDF
+
+- Componenti modificati:
+  - `sql/006_quota_esportazioni_report.sql`;
+  - `www/includes/AnnualReportExportQuota.php`;
+  - `www/tests/test_annual_report_export_quota.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - applicare al piano `free` una quota condivisa mensile di 3 stampe o esportazioni dell’Annual Report;
+  - mantenere disponibile la visualizzazione del report;
+  - evitare conteggi duplicati della stessa esportazione.
+
+- Risultato:
+  - introdotta la persistenza degli utilizzi mensili delle esportazioni;
+  - implementata la gestione centralizzata della quota tramite `AnnualReportExportQuota`;
+  - registrati gli utilizzi in modo transazionale;
+  - verificata l’idempotenza prima del controllo di esaurimento della quota;
+  - evitato il doppio conteggio della stessa operazione;
+  - mantenuto senza limite commerciale il piano `supporter`;
+  - resa disponibile la quota residua per il piano gratuito.
+
+- Verifiche eseguite:
+  - controllo sintassi PHP: OK;
+  - test `ANNUAL REPORT EXPORT QUOTA`: OK;
+  - test `ANNUAL REPORT BROWSER PRINT`: OK;
+  - test `ANNUAL REPORT DETERMINISM`: OK;
+  - `git diff --check`: OK.
+
+- Stato:
+  - Fase 10 completata.
+
+- Commit Git:
+  - da eseguire dopo la verifica finale del diff e dello stato del repository.
+
+- Prossimo passo:
+  - avviare la Fase 11 — Restrizioni interfaccia.
