@@ -421,6 +421,12 @@ L'attività futura del progetto è orientata principalmente a:
 La baseline corrente costituisce il riferimento ufficiale per ogni
 sviluppo successivo.
 
+Dal momento del deployment su VPS, il diario operativo del progetto
+proseguirà in `docs/HANDOVER_OPERATIVO_VPS_v2.md`.
+
+`docs/HANDOVER_OPERATIVO_astrolab.md` rimarrà lo storico ufficiale della
+fase di sviluppo e consolidamento della baseline.
+
 ---
 
 # Regola finale
