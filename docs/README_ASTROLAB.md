@@ -20,6 +20,18 @@ Questi documenti costituiscono la documentazione ufficiale del progetto.
 
 ## Stato del progetto
 
+La macro-funzionalità di registrazione utenti, verifica email, recupero password,
+gestione dei piani `free` e `supporter`, limiti funzionali, quote, restrizioni
+lato server e interfaccia, Comparator, Annual Report e sicurezza delle sessioni
+è completata.
+
+La documentazione operativa di riferimento è:
+
+- `docs/roadmap_registrazioneutenti.md`;
+- `docs/HANDOVER_OPERATIVO_astrolab.md`;
+- `docs/ADR_INDEX_ASTROLAB.md` — ADR-016 accettata.
+
+
 -   Rule Engine: **120/120**
 -   Rule registrate: **120**
 -   Knowledge Coverage: **100%**
