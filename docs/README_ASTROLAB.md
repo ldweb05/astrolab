@@ -134,6 +134,12 @@ La roadmap ufficiale è descritta in `docs/ROADMAP.md`.
 
 ## Punto di ripresa
 
+Dal momento del deployment su VPS, il diario operativo del progetto
+proseguirà in `docs/HANDOVER_OPERATIVO_VPS_v2.md`.
+
+`docs/HANDOVER_OPERATIVO_astrolab.md` resterà lo storico ufficiale della
+fase di sviluppo e consolidamento della baseline.
+
 Per la Ricerca RSM v3 risultano completate:
 
 -   FASE 1 — analisi del modello geografico;
