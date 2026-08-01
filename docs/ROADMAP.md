@@ -483,7 +483,7 @@ Aggiornamenti realizzati:
 
 ------------------------------------------------------------
 
-### FASE 5A — PIANIFICATA
+### FASE 5A — COMPLETATA
 Ricerca nazionale delle località
 
 Motivazione
@@ -568,4 +568,4 @@ pagina corrente e principali filtri) quando si apre una RS e si ritorna con il
 pulsante Indietro del browser, evitando di dover ripetere la ricerca.
 
 La selezione obbligatoria della nazione e il limite 50/100/150/Tutte per
-`solo_localita` restano pianificati nella FASE 5A.
+`localita` sono stati implementati e completati nella FASE 5A.
