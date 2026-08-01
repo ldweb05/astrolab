@@ -22,13 +22,13 @@ La presente roadmap non sostituisce l’HANDOVER principale e contiene soltanto 
 
 ## Stato attuale
 
-**Fase:** Fase 3 completata: registrazione pubblica implementata, validazioni server-side, protezione CSRF, rate limiting, test dedicati e regressione completata.
+**Fase:** Fase 13 completata: registrazione, verifica email, gestione utenti, piani, limiti, sicurezza, Comparator, Annual Report, regressione e documentazione completati.
 
-**Codice applicativo modificato:** aggiornati `www/includes/Auth.php` e `www/tests/run.php`; creata `www/registrazione.php` per il flusso pubblico di registrazione.
+**Codice applicativo modificato:** macro-funzionalità completata; i dettagli implementativi sono documentati nello storico delle singole fasi.
 
-**Documentazione modificata:** roadmap della feature e handover operativo allineati con il completamento della Fase 3.
+**Documentazione modificata:** roadmap della feature, ADR e handover operativo allineati con il completamento della Fase 13.
 
-**Prossimo passo:** avviare la Fase 4 implementando verifica email e recupero password.
+**Prossimo passo:** manutenzione correttiva ed evoluzioni infrastrutturali non bloccanti (SMTP reale, logging e deployment VPS).
 
 ---
 

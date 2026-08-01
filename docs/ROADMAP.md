@@ -1,6 +1,6 @@
-# Astro-DSS Roadmap
+# Cronologia dello sviluppo Astro-DSS (progetto successivamente confluito in ASTROLAB)
 
-Documento di avanzamento del progetto Astro-DSS.
+Documento storico dello sviluppo del progetto Astro-DSS precedente alla fusione in ASTROLAB.
 
 Deve essere aggiornato al completamento di ogni milestone significativa.
 
