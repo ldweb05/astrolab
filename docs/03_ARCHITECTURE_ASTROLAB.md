@@ -1464,7 +1464,7 @@ La modifica è considerata strutturale e costituisce la base per gli sviluppi fu
 # Ricerca RS — riduzione spaziale SQL
 
 **Decisione collegata:** ADR-015
-**Stato:** architettura obiettivo approvata; implementazione pianificata.
+**Stato:** architettura implementata e adottata nella baseline corrente; la deduplicazione geografica è eseguita nel Repository SQL mediante funzioni finestra PostgreSQL (`ROW_NUMBER()` / `PARTITION BY`).
 
 ## Contesto
 
