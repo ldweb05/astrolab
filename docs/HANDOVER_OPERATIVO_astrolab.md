@@ -2207,14 +2207,17 @@ la selezione tra sole località aeroportuali oppure sole località geografiche.
 - FASE 5: completata;
 - FASE 6: completata;
 - FASE 7: completata;
-- FASE 5A: pianificata.
+- FASE 5A: completata.
 
-Il modello attuale supporta esclusivamente `solo_aeroporti` e
-`solo_localita`, distinguendo i risultati tramite `origine_punto`.
+Il modello attuale supporta le modalità `aeroporti` e `localita`,
+distinguendo i risultati tramite `origine_punto`.
 
-La FASE 5A introdurrà, per `solo_localita`, la selezione obbligatoria
+La FASE 5A ha introdotto, per `localita`, la selezione obbligatoria
 della nazione e il limite 50/100/150/Tutte. La modalità
-`solo_aeroporti` manterrà la ricerca mondiale e il comportamento legacy.
+`aeroporti` mantiene la ricerca mondiale e il comportamento legacy.
+
+Implementazione principale: commit `50fd768`.
+Integrazione nel ramo di sviluppo: commit `21d5bb0`.
 
 
 ### 2026-07-26 — Ricerca RSM v3: rifinitura UX avanzamento
