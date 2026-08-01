@@ -35,6 +35,12 @@ criteri di priorità.
 
 Data di avvio operativo: 2026-07-17
 
+Aggiornamento:
+- la macro-funzionalità di registrazione utenti, autenticazione, piani `free`/`supporter`, limiti, permessi, Comparator, Annual Report e sicurezza delle sessioni è completata;
+- il riferimento ufficiale resta `docs/roadmap_registrazioneutenti.md`;
+- la decisione architetturale associata è ADR-016 (stato: `Accettata`).
+
+
 Progetto:
 
 Astro-DSS

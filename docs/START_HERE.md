@@ -105,6 +105,14 @@ Sono consolidati:
 Il Rule Engine contiene 120 Rule ed è considerato
 parte della baseline permanente.
 
+La macro-funzionalità di registrazione utenti, verifica email, recupero
+password, piani `free` e `supporter`, limiti, quote, restrizioni funzionali e
+sicurezza delle sessioni è completata.
+
+Il riferimento operativo dedicato è
+`docs/roadmap_registrazioneutenti.md`; la decisione architetturale corrispondente
+è ADR-016, con stato `Accettata`.
+
 Non deve essere modificato salvo:
 
 - bug documentati;

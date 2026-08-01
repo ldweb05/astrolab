@@ -837,16 +837,17 @@ Attività future non bloccanti:
 - logging strutturato degli eventi di sicurezza;
 - ulteriori test HTTP dedicati a CSRF e rate limiting.
 
-### Fase 13 — Regressione e documentazione
+### Fase 13 — Regressione e documentazione ✅ completata
 
-- eseguire lint PHP sui file modificati;
-- eseguire `git diff --check`;
-- eseguire i test specifici;
-- eseguire la regressione disponibile;
-- aggiornare questa roadmap;
-- registrare la sintesi nell’HANDOVER principale;
-- aggiornare ADR, README, START_HERE e ROADMAP;
-- eseguire commit Git.
+Implementato e verificato:
+
+- eseguito il lint PHP nel container `astrolab-web` sui file modificati nella Fase 12;
+- eseguito `git diff --check` con esito positivo;
+- eseguiti i test specifici inclusi nella suite di regressione;
+- eseguita la regressione completa `tests/run.php` con esito positivo;
+- avviato l’allineamento della documentazione ufficiale;
+- verificato lo stato del repository e il commit conclusivo della Fase 12;
+- nessuna modifica applicativa o refactoring introdotti.
 
 ---
 
@@ -1006,12 +1007,15 @@ Esempio per la ricerca a griglia:
 Fasi 7, 8, 9 e 10 — completate.
 
 
-**Ultima fase completata: Fase 12 — Sicurezza e sessioni.**
+**Ultima fase completata: Fase 13 — Regressione e documentazione.**
 
-Prossima fase applicativa: **Fase 13 — Regressione e documentazione**
+La macro-funzionalità di registrazione, piani, permessi, limiti e sicurezza è completata.
+
+Prossimo passo: manutenzione correttiva e attività future non bloccanti già documentate.
 
 ---
 
 ## Commit
 
-Il commit di chiusura delle Fasi 7, 8, 9 e 10 verrà registrato dopo la verifica finale e la creazione del commit Git.
+- Fase 12: commit `85311db` — `Completata Fase 12: sicurezza e sessioni`.
+- Fase 13: commit documentale da eseguire esclusivamente dopo la verifica finale e la conferma dell’utente.

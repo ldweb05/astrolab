@@ -2639,3 +2639,48 @@ della nazione e il limite 50/100/150/Tutte. La modalità
 
 - Prossimo passo:
   - avviare la Fase 13 — Regressione e documentazione.
+
+## 2026-08-01 — Completamento Fase 13 Regressione e documentazione
+
+- Componenti verificati:
+  - `www/admin_utenti.php`;
+  - `www/cambia_password.php`;
+  - `www/login.php`;
+  - suite `www/tests/run.php`.
+
+- Documentazione aggiornata:
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`;
+  - ulteriori documenti ufficiali da allineare nella stessa iterazione.
+
+- Obiettivo:
+  - completare la regressione finale della macro-funzionalità registrazione, piani, permessi, limiti e sicurezza;
+  - consolidare la documentazione ufficiale senza modifiche applicative.
+
+- Risultato:
+  - lint PHP eseguito nel container `astrolab-web` sui file modificati nella Fase 12;
+  - test specifici eseguiti tramite la suite di regressione;
+  - regressione completa `tests/run.php` superata;
+  - `git diff --check` superato;
+  - repository inizialmente pulito;
+  - confermato il commit `85311db` per la Fase 12;
+  - nessun refactoring e nessuna modifica fuori obiettivo.
+
+- Verifiche eseguite:
+  - `php -l admin_utenti.php`: OK;
+  - `php -l cambia_password.php`: OK;
+  - `php -l login.php`: OK;
+  - `php tests/run.php`: OK;
+  - `git diff --check`: OK.
+
+- Stato:
+  - Fase 13 completata;
+  - macro-funzionalità registrazione utenti completata.
+
+- Commit Git:
+  - da eseguire esclusivamente dopo verifica finale di documentazione, `git diff --check`, `git diff`, `git status` e conferma dell’utente.
+
+- Prossimo passo:
+  - completare l’allineamento di ADR, README, START_HERE e ROADMAP;
+  - eseguire le verifiche finali;
+  - richiedere conferma prima del commit.
