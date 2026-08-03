@@ -22,13 +22,13 @@ La presente roadmap non sostituisce l’HANDOVER principale e contiene soltanto 
 
 ## Stato attuale
 
-**Fase:** Fase 13 completata: registrazione, verifica email, gestione utenti, piani, limiti, sicurezza, Comparator, Annual Report, regressione e documentazione completati.
+**Fase:** macro-funzionalità non completata. Le Fasi 1–4 e 6–13 risultano implementate nei limiti documentati, mentre la Fase 5 — amministrazione utenti, gestione del piano Supporter e limiti personalizzati — deve essere completata.
 
-**Codice applicativo modificato:** macro-funzionalità completata; i dettagli implementativi sono documentati nello storico delle singole fasi.
+**Codice applicativo modificato:** registrazione, verifica email, piani base e limiti funzionali sono presenti; manca la gestione amministrativa completa del ciclo di vita Supporter e dei limiti personalizzati per singolo utente.
 
-**Documentazione modificata:** roadmap della feature, ADR e handover operativo allineati con il completamento della Fase 13.
+**Documentazione modificata:** roadmap riaperta per riallineare lo stato dichiarato all'implementazione effettiva.
 
-**Prossimo passo:** manutenzione correttiva ed evoluzioni infrastrutturali non bloccanti (SMTP reale, logging e deployment VPS).
+**Prossimo passo:** completare la Fase 5 con modifica amministrativa del piano, gestione delle donazioni, validità annuale Supporter, scadenza e rinnovo, limiti soggetti personalizzati e relativi test.
 
 ---
 
@@ -747,15 +747,161 @@ Restano attività infrastrutturali future:
 - integrazione del servizio SMTP/mail reale;
 - gestione template email e notifiche.
 
-### Fase 5 — Amministrazione utenti
+### Fase 5 — Amministrazione utenti ⚠️ non completata
 
-- mostrare ruolo, stato, piano e verifica email;
-- consentire sospensione e riattivazione;
-- consentire modifica del piano;
-- consentire override temporanei o permanenti;
-- mostrare limiti effettivi e utilizzi correnti;
-- validare tutti i valori lato server;
-- verificare creazione e modifica utenti.
+#### Decisioni definitive
+
+La gestione amministrativa deve distinguere chiaramente:
+
+1. configurazione globale dei piani;
+2. piano corrente del singolo utente;
+3. eventuali eccezioni personali;
+4. accessi speciali gratuiti e permanenti.
+
+La configurazione globale deve consentire all'admin di definire:
+
+- importo minimo della donazione necessario per attivare o rinnovare il piano `supporter`;
+- durata standard del piano `supporter`, inizialmente prevista in un anno;
+- limite soggetti predefinito del piano `free`;
+- limite soggetti predefinito del piano `supporter`;
+- altri limiti commerciali già gestiti tramite `piano_limiti`;
+- attivazione o disattivazione dei singoli piani;
+- disponibilità dei piani per nuove assegnazioni;
+- eventuali nuovi piani futuri, senza distribuire controlli hardcoded negli endpoint.
+
+La disattivazione di un piano deve impedire nuove assegnazioni, ma non deve cancellare utenti, soggetti, ricerche o altri dati già esistenti. L'admin deve poter migrare gli utenti interessati verso un altro piano tramite un'operazione esplicita e controllata.
+
+L'importo della donazione e il limite soggetti sono dati indipendenti.
+
+L'importo versato non deve determinare automaticamente il numero di soggetti assegnato. L'admin decide separatamente:
+
+- se la donazione soddisfa il minimo richiesto;
+- il piano da assegnare;
+- la data di inizio;
+- la data di scadenza;
+- l'eventuale limite soggetti personalizzato.
+
+Il limite effettivo dell'utente deve essere determinato con la seguente precedenza:
+
+1. accesso speciale permanente, quando configurato;
+2. limite personalizzato del singolo utente;
+3. limite configurato per il piano corrente.
+
+Nessun limite commerciale deve essere hardcoded negli endpoint applicativi. I valori devono essere letti dalla configurazione del piano o dalle eccezioni amministrative del singolo utente.
+
+Le politiche commerciali di ASTROLAB devono essere completamente configurabili dall'interfaccia amministrativa. L'amministratore deve poter modificare importi minimi, durata dei piani, limiti standard, limiti personalizzati e disponibilità dei piani senza richiedere modifiche al codice o interventi manuali diretti sul database.
+
+L'interfaccia amministrativa deve separare chiaramente:
+
+1. configurazione globale dei piani e delle politiche commerciali;
+2. gestione del singolo utente;
+3. accessi speciali permanenti;
+4. consultazione dello storico delle operazioni amministrative rilevanti.
+
+Le modifiche globali non devono alterare retroattivamente o eliminare dati già creati. Quando un nuovo limite effettivo è inferiore all'utilizzo corrente, l'utente conserva l'accesso in lettura, modifica ed eliminazione dei dati esistenti, ma non può creare nuovi elementi fino al rientro nel limite.
+
+L'admin deve inoltre poter concedere ad alcuni utenti speciali un accesso:
+
+- completo;
+- gratuito;
+- permanente;
+- senza donazione obbligatoria;
+- senza scadenza annuale;
+- indipendente dal normale ciclo del piano `supporter`.
+
+Questo accesso speciale non deve trasformare l'utente in `admin` e non deve essere rappresentato tramite il ruolo. L'utente mantiene ruolo `user`, ma dispone delle funzionalità complete e dei limiti stabiliti dall'admin.
+
+L'accesso speciale permanente deve poter essere:
+
+- attivato manualmente;
+- revocato manualmente;
+- accompagnato da una motivazione o nota amministrativa;
+- escluso dal ritorno automatico al piano `free`;
+- distinto dai beta tester e dagli account tecnici;
+- verificato sempre lato server.
+
+Già implementato:
+
+- visualizzazione di ruolo, stato account, piano e verifica email;
+- sospensione e riattivazione coerente con `account_status`;
+- modifica del ruolo amministrativo;
+- validazione server-side dei ruoli;
+- creazione amministrativa degli utenti.
+
+Da completare per la chiusura definitiva:
+
+- consentire all'admin di modificare il piano tra `free` e `supporter`;
+- mantenere ruolo, stato account e piano come concetti separati;
+- registrare l'importo della donazione che abilita il piano Supporter;
+- consentire all'admin di definire la somma minima necessaria per ottenere o rinnovare il piano Supporter;
+- registrare data di inizio e data di scadenza del periodo Supporter;
+- prevedere validità annuale del piano Supporter;
+- consentire rinnovo anticipato o successivo alla scadenza;
+- riportare automaticamente l'utente al piano `free` alla scadenza, salvo rinnovo;
+- mantenere consultabili i dati già creati dopo il ritorno al piano `free`;
+- impedire nuove creazioni quando l'utente supera i nuovi limiti effettivi;
+- consentire all'admin di impostare un limite soggetti personalizzato per ogni utente;
+- consentire limiti personalizzati indipendenti dal piano standard;
+- consentire all'admin di configurare i limiti predefiniti dei piani `free` e `supporter`;
+- consentire all'admin di attivare o disattivare i piani;
+- impedire l'assegnazione di un piano disattivato;
+- preservare utenti e dati già esistenti quando un piano viene disattivato;
+- consentire la migrazione amministrativa degli utenti da un piano disattivato a un piano attivo;
+- predisporre il modello per eventuali nuovi piani futuri senza introdurre condizioni hardcoded negli endpoint;
+- impedire valori numerici hardcoded nella logica applicativa dei limiti;
+- mantenere indipendenti importo della donazione e limite soggetti;
+- consentire l'attivazione di un accesso speciale completo, gratuito e permanente;
+- consentire la revoca dell'accesso speciale permanente;
+- impedire che l'accesso speciale modifichi automaticamente il ruolo dell'utente;
+- escludere gli utenti con accesso speciale permanente dalla scadenza automatica Supporter;
+- supportare configurazioni amministrative differenti;
+- il limite soggetti deve poter essere deciso liberamente dall'amministratore indipendentemente dall'importo della donazione;
+- supportare, a titolo esemplificativo:
+  - utenti `free` con limiti differenti;
+  - utenti `supporter` con limiti differenti;
+  - utenti con limite personalizzato indipendente dal piano;
+- definire chiaramente la precedenza tra limite del piano e limite personalizzato dell'utente;
+- permettere la rimozione dell'override per ripristinare il limite standard del piano;
+- mostrare nell'amministrazione:
+  - piano corrente;
+  - importo dell'ultima donazione;
+  - inizio e scadenza Supporter;
+  - limite soggetti standard;
+  - limite soggetti personalizzato;
+  - limite soggetti effettivo;
+  - numero di soggetti attualmente creati;
+- consentire all'admin di riportare manualmente un utente a `free`;
+- consentire all'admin di rinnovare o modificare la scadenza Supporter;
+- validare lato server importi, date, piano e limiti numerici;
+- impedire l'attivazione ordinaria del piano `supporter` quando la donazione registrata è inferiore al minimo configurato;
+- consentire l'accesso speciale permanente senza donazione soltanto tramite azione amministrativa esplicita;
+- impedire valori negativi, date incoerenti, scadenze anteriori all'attivazione e piani non attivi;
+- definire un comportamento deterministico alla scadenza del Supporter, con ritorno a `free` salvo rinnovo o accesso speciale permanente;
+- aggiornare i permessi effettivi senza richiedere un nuovo login, oppure invalidare in modo controllato la sessione quando necessario;
+- registrare le modifiche amministrative rilevanti con amministratore, utente interessato, data, operazione e valori precedenti e successivi;
+- aggiungere test dedicati per:
+  - passaggio `free` → `supporter`;
+  - passaggio `supporter` → `free`;
+  - scadenza annuale;
+  - rinnovo;
+  - limite soggetti personalizzato;
+  - rimozione dell'override;
+  - preservazione dei soggetti già esistenti;
+  - separazione tra ruolo amministrativo e piano applicativo;
+  - modifica dei limiti predefiniti dei piani;
+  - indipendenza tra importo donato e limite soggetti;
+  - attivazione dell'accesso speciale permanente;
+  - revoca dell'accesso speciale permanente;
+  - assenza di scadenza per gli utenti speciali;
+  - mantenimento del ruolo `user` per gli utenti speciali;
+  - attivazione e disattivazione dei piani;
+  - blocco delle nuove assegnazioni verso piani disattivati;
+  - preservazione dei dati degli utenti appartenenti a un piano disattivato;
+  - migrazione amministrativa tra piani;
+  - rifiuto del Supporter ordinario sotto la soglia minima configurata;
+  - aggiornamento dei permessi dopo una modifica amministrativa;
+  - registrazione dello storico delle operazioni amministrative;
+  - assenza di valori commerciali hardcoded negli endpoint.
 
 ### Fase 6 — Limite soggetti
 
@@ -990,15 +1136,15 @@ Esempio per la ricerca a griglia:
 - regressione completa superata;
 - fase 7 completata.
 
-### 2026-07-30 — Completamento Fase 5 amministrazione utenti
+### 2026-07-30 — Avanzamento parziale Fase 5 amministrazione utenti
 
 - aggiornata l'amministrazione utenti al nuovo modello `user`;
 - visualizzati ruolo, stato account, piano e verifica email;
 - introdotta la sospensione e riattivazione coerente con `account_status`;
 - validata server-side la gestione dei ruoli amministrativi;
-- allineata l'interfaccia amministrativa al modello utenti definitivo;
-- regressione completa superata;
-- fase 5 completata.
+- allineata parzialmente l'interfaccia amministrativa al nuovo modello utenti;
+- regressione completa superata per le funzioni implementate;
+- la fase non è completata: mancano modifica del piano, ciclo di vita annuale Supporter, gestione donazioni, scadenze, rinnovi e limiti personalizzati per singolo utente.
 
 ---
 
@@ -1009,9 +1155,9 @@ Fasi 7, 8, 9 e 10 — completate.
 
 **Ultima fase completata: Fase 13 — Regressione e documentazione.**
 
-La macro-funzionalità di registrazione, piani, permessi, limiti e sicurezza è completata.
+La macro-funzionalità di registrazione, piani, permessi, limiti e sicurezza non è ancora completata.
 
-Prossimo passo: manutenzione correttiva e attività future non bloccanti già documentate.
+Prossimo passo: completare la Fase 5 con gestione amministrativa del piano Supporter, validità annuale, donazioni, scadenze, rinnovi e limiti soggetti personalizzati per singolo utente.
 
 ---
 
