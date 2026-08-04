@@ -14,10 +14,11 @@ Chiunque riprenda questo percorso deve leggere, nell'ordine:
 1. `START_HERE_ux.md`
 2. `README_ux.md`
 3. `00_METODOLOGIA_ux.md`
-4. il protocollo dell'area da analizzare
-5. `DECISION_LOG_ux.md`
-6. `BACKLOG_ux.md`
-7. `CHANGELOG_ux.md`
+4. `11_PRINCIPI_UX_ASTROLAB_ux.md` — Principi permanenti
+5. il protocollo dell'area da analizzare
+6. `DECISION_LOG_ux.md`
+7. `BACKLOG_ux.md`
+8. `CHANGELOG_ux.md`
 
 Non rifare attività già documentate e verificate.
 
