@@ -43,6 +43,14 @@ Le osservazioni UX seguono obbligatoriamente questo percorso:
 
 Nessuna osservazione autorizza direttamente modifiche al codice.
 
+## Principi permanenti
+
+Prima di qualsiasi analisi leggere anche:
+
+6. [11_PRINCIPI_UX_ASTROLAB_ux.md](11_PRINCIPI_UX_ASTROLAB_ux.md)
+
+---
+
 ## Punto di ingresso obbligatorio
 
 Prima di qualsiasi attività leggere:
@@ -65,6 +73,10 @@ Prima di qualsiasi attività leggere:
 8. [Confronti](08_CONFRONTI_ux.md)
 9. [Stampa, esportazione e report](09_STAMPA_REPORT_ux.md)
 10. [Navigazione globale](10_NAVIGAZIONE_GLOBALE_ux.md)
+
+## Documenti fondamentali
+
+- [Principi UX permanenti](11_PRINCIPI_UX_ASTROLAB_ux.md)
 
 ## Documenti di governo
 
