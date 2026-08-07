@@ -44,7 +44,7 @@ const ZodiacWheel = {
         const rosso = '#CC0000'; // Diretto
         const blu   = '#0000CC'; // Retrogrado
         const verde = '#00AA00'; // Esattamente in cuspide
-        const soglia = 0.01;     // Tolleranza tecnica per cuspide esatta
+        const soglia = 0.5;      // Mezzo grado: convenzione astrologica per congiunzione a cuspide
 
         // Verifica congiunzione stretta con qualsiasi cuspide (1-12, ASC, MC)
         if (houses) {
@@ -435,7 +435,7 @@ const ZodiacWheel = {
                 fill:     colore,
                 anchor:   'middle',
                 baseline: 'central',
-                bold:     false,
+                bold:     colore === '#00AA00',
                 cls:      'simbolo-pianeta'
             }));
 

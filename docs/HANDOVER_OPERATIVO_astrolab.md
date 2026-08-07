@@ -2733,3 +2733,38 @@ Integrazione nel ramo di sviluppo: commit `21d5bb0`.
   - testare la visualizzazione nella pagina `rilocazione.php` per verificare che i colori siano applicati correttamente;
   - confermare che la codifica verde (cuspide) si attivi solo per congiunzioni estremamente strette (< 0.01°);
   - procedere con il commit dopo verifica funzionale.
+
+## 2026-08-07 bis — Rifinitura codifica colore: tolleranza cuspide e grassetto
+
+- Componente modificato:
+  - `www/js/zodiac_wheel.js`
+
+- Obiettivo:
+  - allineare la soglia di rilevamento della congiunzione pianeta-cuspide
+    alla convenzione astrologica (orbite inferiori a 2° sono già congiunzioni);
+  - rendere immediatamente distinguibili i pianeti in cuspide aggiungendo
+    il grassetto al glifo quando il colore semantico è verde.
+
+- Risultato:
+  - soglia di congiunzione a cuspide portata da 0.01° a 0.5° (30 primi);
+  - glifo del pianeta reso in grassetto quando `colore === '#00AA00'`;
+  - mantenuta invariata la codifica rosso (diretto) / blu (retrogrado);
+  - nessuna modifica al backend, al motore astrologico o al Rule Engine;
+  - riutilizzata la logica esistente in `_coloreSemantico()` e `_disegnaPianetiModificato()`.
+
+- Verifiche eseguite:
+  - `node --check www/js/zodiac_wheel.js`: OK;
+  - `git diff --check`: OK;
+  - sintassi PHP non toccata (nessun file backend modificato).
+
+- Stato:
+  - rifinitura applicata e verificata;
+  - pronta per test manuale nell'interfaccia web.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - testare la visualizzazione in `rilocazione.php` e `rs.php`;
+  - verificare che Giove a 24°10'33" Sagittario con cuspide X casa a 24°10'00"
+    Sagittario venga ora correttamente renderizzato in verde e in grassetto.
