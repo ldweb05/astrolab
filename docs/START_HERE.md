@@ -250,6 +250,7 @@ Alla data di questo documento risultano completati:
 - deduplicazione SQL;
 - regressione automatica;
 - documentazione tecnica.
+- codifica colore semantica dei pianeti sulla ruota;
 
 Il ciclo principale di sviluppo funzionale può essere considerato
 completato.
