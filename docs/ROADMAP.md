@@ -569,3 +569,14 @@ pulsante Indietro del browser, evitando di dover ripetere la ricerca.
 
 La selezione obbligatoria della nazione e il limite 50/100/150/Tutte per
 `localita` sono stati implementati e completati nella FASE 5A.
+
+## 2026-08-07 — Codifica colore semantica dei pianeti sulla ruota
+
+✅ Completata
+
+- rosso = pianeta in moto diretto;
+- blu = pianeta retrogrado;
+- verde = pianeta esattamente in cuspide (tolleranza tecnica 0.01°);
+- componente modificato: `www/js/zodiac_wheel.js`;
+- riusato `ZodiacWheel.disegna()` senza duplicazioni;
+- nessuna modifica al motore astrologico, alle API o al Rule Engine.

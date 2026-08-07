@@ -40,6 +40,28 @@ const ZodiacWheel = {
     _gradiVisibili: false,
     _cuspidiVisibili: true,
 
+    _coloreSemantico: function(p, houses) {
+        const rosso = '#CC0000'; // Diretto
+        const blu   = '#0000CC'; // Retrogrado
+        const verde = '#00AA00'; // Esattamente in cuspide
+        const soglia = 0.01;     // Tolleranza tecnica per cuspide esatta
+
+        // Verifica congiunzione stretta con qualsiasi cuspide (1-12, ASC, MC)
+        if (houses) {
+            for (const k in houses) {
+                const cuspide = houses[k];
+                if (cuspide && typeof cuspide.longitudine === 'number') {
+                    let diff = Math.abs(p.longitudine - cuspide.longitudine) % 360;
+                    if (diff > 180) diff = 360 - diff;
+                    if (diff <= soglia) return verde;
+                }
+            }
+        }
+
+        if (p.retrogrado) return blu;
+        return rosso;
+    },
+
     disegna: function(svgId, tema, opzioni) {
         opzioni = opzioni || {};
         const svg = document.getElementById(svgId);
@@ -150,7 +172,7 @@ const ZodiacWheel = {
             const yP  = cy + rLinea * Math.sin(rad);
             const dot = this._createElement('circle');
             dot.setAttribute('cx', xP); dot.setAttribute('cy', yP); dot.setAttribute('r', 2.5);
-            dot.setAttribute('fill', this.PIANETI_COLORI[p.id] || '#555');
+            dot.setAttribute('fill', this._coloreSemantico(p, tema.case));
             dot.setAttribute('opacity', '0.9');
             svg.appendChild(dot);
         });
@@ -358,7 +380,7 @@ const ZodiacWheel = {
         const mcLon = (tema.case && tema.case.MC ? tema.case.MC.longitudine : 0);
 
         Object.values(tema.pianeti).forEach(p => {
-            const colore = this.PIANETI_COLORI[p.id] || '#555555';
+            const colore = this._coloreSemantico(p, tema.case);
             const radVero = this._lon2rad(p.longitudine, mcLon);
             const infoDisp = mappaDisplay[p.id];
             const radDisplay = infoDisp ? infoDisp.rad : radVero;
@@ -392,7 +414,7 @@ const ZodiacWheel = {
         const size  = cx * 2;
 
         Object.values(tema.pianeti).forEach(p => {
-            const colore     = this.PIANETI_COLORI[p.id] || '#555555';
+            const colore     = this._coloreSemantico(p, tema.case);
             const glifo      = this.PIANETI_GLIFI[p.id]  || '?';
             const radVero    = this._lon2rad(p.longitudine, mcLon);
             const infoDisp   = mappaDisplay[p.id];
