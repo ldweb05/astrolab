@@ -43,18 +43,28 @@ const ZodiacWheel = {
     _coloreSemantico: function(p, houses) {
         const rosso = '#CC0000'; // Diretto
         const blu   = '#0000CC'; // Retrogrado
-        const verde = '#00AA00'; // Esattamente in cuspide
-        const soglia = 0.5;      // Mezzo grado: convenzione astrologica per congiunzione a cuspide
+        const verde = '#00AA00'; // In cuspide
 
-        // Verifica congiunzione stretta con qualsiasi cuspide (1-12, ASC, MC)
+        // Orbite differenziate per pianeta e casa
+        const SOGLIA_BASE = 2.5;       // Tutti i pianeti, tutte le case
+        const SOGLIA_ANGOLI = 10.0;    // Saturno e Marte su I/ASC e X/MC
+        const PIANETI_ANGOLI = [4, 6]; // Marte (4), Saturno (6)
+        const CASE_ANGOLI = ['1', 'ASC', '10', 'MC']; // I=ASC, X=MC
+
         if (houses) {
             for (const k in houses) {
                 const cuspide = houses[k];
-                if (cuspide && typeof cuspide.longitudine === 'number') {
-                    let diff = Math.abs(p.longitudine - cuspide.longitudine) % 360;
-                    if (diff > 180) diff = 360 - diff;
-                    if (diff <= soglia) return verde;
-                }
+                if (!cuspide || typeof cuspide.longitudine !== 'number') continue;
+
+                let diff = Math.abs(p.longitudine - cuspide.longitudine) % 360;
+                if (diff > 180) diff = 360 - diff;
+
+                // Determina la soglia applicabile
+                const isPianetaAngoli = PIANETI_ANGOLI.includes(p.id);
+                const isCasaAngolo = CASE_ANGOLI.includes(String(k));
+                const soglia = (isPianetaAngoli && isCasaAngolo) ? SOGLIA_ANGOLI : SOGLIA_BASE;
+
+                if (diff <= soglia) return verde;
             }
         }
 

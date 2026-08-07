@@ -2768,3 +2768,44 @@ Integrazione nel ramo di sviluppo: commit `21d5bb0`.
   - testare la visualizzazione in `rilocazione.php` e `rs.php`;
   - verificare che Giove a 24°10'33" Sagittario con cuspide X casa a 24°10'00"
     Sagittario venga ora correttamente renderizzato in verde e in grassetto.
+
+## 2026-08-07 ter — Orbite differenziate per codifica colore cuspide
+
+- Componente modificato:
+  - `www/js/zodiac_wheel.js`
+
+- Obiettivo:
+  - implementare orbite differenziate per la rilevazione della congiunzione
+    pianeta-cuspide nella codifica colore semantica della ruota zodiacale;
+  - applicare le soglie reali comunicate dall'utente:
+    - tutti i pianeti: orbita massima di 2.5° su qualsiasi cuspide;
+    - Marte (id=4) e Saturno (id=6): orbita di 10° solo su casa I/ASC e X/MC;
+    - Marte e Saturno su tutte le altre case: stessa orbita degli altri pianeti (2.5°).
+
+- Risultato:
+  - sostituita la soglia fissa di 0.5° con logica dinamica basata su pianeta e casa;
+  - definiti i parametri configurabili in `_coloreSemantico()`:
+    - `SOGLIA_BASE = 2.5` (tutti i pianeti, tutte le case);
+    - `SOGLIA_ANGOLI = 10.0` (Marte e Saturno su I/ASC e X/MC);
+    - `PIANETI_ANGOLI = [4, 6]` (Marte e Saturno);
+    - `CASE_ANGOLI = ['1', 'ASC', '10', 'MC']` (casa I=ASC, casa X=MC);
+  - mantenuta invariata la codifica rosso (diretto) / blu (retrogrado) / verde (cuspide);
+  - mantenuto il grassetto per i pianeti in cuspide (verde);
+  - nessuna modifica al backend, al motore astrologico o al Rule Engine.
+
+- Verifiche eseguite:
+  - `node --check www/js/zodiac_wheel.js`: OK;
+  - `git diff --check`: OK;
+  - sintassi PHP non toccata (nessun file backend modificato).
+
+- Stato:
+  - orbite differenziate applicate e verificate;
+  - pronta per test manuale nell'interfaccia web.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - testare la visualizzazione in `rilocazione.php` e `rs.php`;
+  - verificare che Marte e Saturno siano verdi entro 10° da ASC/MC;
+  - verificare che tutti gli altri pianeti siano verdi entro 2.5° da qualsiasi cuspide.
