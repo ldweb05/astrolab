@@ -2809,3 +2809,37 @@ Integrazione nel ramo di sviluppo: commit `21d5bb0`.
   - testare la visualizzazione in `rilocazione.php` e `rs.php`;
   - verificare che Marte e Saturno siano verdi entro 10° da ASC/MC;
   - verificare che tutti gli altri pianeti siano verdi entro 2.5° da qualsiasi cuspide.
+
+2026-08-07 — Creazione roadmap comparazione Astrolab / MyAstral.org
+Componenti modificati:
+`docs/roadmap_comparazione_myastral.md`;
+`docs/ROADMAP.md`;
+`docs/START_HERE.md`;
+`docs/HANDOVER_OPERATIVO_astrolab.md`.
+Obiettivo:
+creare la roadmap ad-hoc dedicata alla comparazione funzionale tra
+Astrolab e MyAstral.org, collegandola alla roadmap principale e
+allineando tutta la documentazione di progetto.
+Risultato:
+creata `docs/roadmap_comparazione_myastral.md` con:
+scopo e principi guida;
+prerequisiti (account MyAstral.org);
+inventario completo dei 5 livelli di filtro Astrolab;
+4 macro-attività pianificate (M1 RSM, M2 RL, M3 Tema Natale, M4 Sinastria esclusa);
+relazione con la documentazione UX esistente;
+vincoli tecnici;
+condizioni di successo;
+registro decisioni iniziale;
+aggiornata `docs/ROADMAP.md` con riferimento alla nuova roadmap;
+aggiornata `docs/START_HERE.md` con riferimento alla nuova roadmap;
+aggiornato questo HANDOVER con la presente voce.
+Test eseguiti:
+nessun file PHP modificato;
+verifica contenuto documenti: OK;
+`git diff --check`: da eseguire.
+Commit Git:
+da eseguire dopo verifica finale.
+Prossimo passo:
+acquistare account MyAstral.org;
+definire soggetti e anni RS di test;
+avviare M1 — Comparazione ricerche RSM.

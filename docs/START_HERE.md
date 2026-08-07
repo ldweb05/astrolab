@@ -113,6 +113,13 @@ Il riferimento operativo dedicato è
 `docs/roadmap_registrazioneutenti.md`; la decisione architetturale corrispondente
 è ADR-016, con stato `Accettata`.
 
+La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org
+è mantenuta separatamente nel documento `docs/roadmap_comparazione_myastral.md`,
+che costituisce il riferimento ufficiale per le attività di allineamento con
+il software di Ciro Discepolo. Le attività sono subordinate all'acquisto di
+un account MyAstral.org e richiedono evidenze verificabili prima di qualsiasi
+modifica applicativa.
+
 Non deve essere modificato salvo:
 
 - bug documentati;
