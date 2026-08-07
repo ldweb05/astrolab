@@ -75,6 +75,7 @@ Sono completati:
 -   riepilogo soggetti;
 -   tabelle dei match astrologici;
 -   integrazione ruote astrologiche;
+-   codifica colore semantica dei pianeti sulla ruota;
 -   preservazione delle regole personalizzate;
 -   consolidamento Comparator RS;
 -   compatibilità completa con il Rule Engine congelato;
