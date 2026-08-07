@@ -7,6 +7,8 @@ Deve essere aggiornato al completamento di ogni milestone significativa.
 > **Nota**
 > La roadmap relativa alla registrazione utenti, autenticazione, gestione dei piani (`free`/`supporter`), permessi, quote, Comparator, Annual Report e relative fasi di implementazione è mantenuta separatamente nel documento `docs/roadmap_registrazioneutenti.md`, che costituisce il riferimento ufficiale per tale macro-funzionalità.
 >
+> La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org è mantenuta separatamente nel documento `docs/roadmap_comparazione_myastral.md`, che costituisce il riferimento ufficiale per le attività di allineamento con il software di Ciro Discepolo.
+>
 > `docs/ROADMAP.md` continua invece a descrivere l'evoluzione generale di Astro-DSS e delle funzionalità principali del progetto.
 
 ---

@@ -59,3 +59,9 @@ Lo storico dello sviluppo precedente resterà invariato nel documento
 **Data di apertura:** 2026-08-01
 
 **Stato:** In attesa del primo deployment su VPS.
+
+2026-XX-XX — Avvio della fase di produzione di ASTROLAB
+
+Apertura del diario operativo della fase VPS.
+Baseline applicativa dichiarata stabile.
+Tutte le attività successive riguarderanno esclusivamente infrastruttura, esercizio e manutenzione evolutiva.
