@@ -2687,3 +2687,49 @@ Integrazione nel ramo di sviluppo: commit `21d5bb0`.
   - completare l’allineamento di ADR, README, START_HERE e ROADMAP;
   - eseguire le verifiche finali;
   - richiedere conferma prima del commit.
+
+## 2026-08-07 — Codifica colore semantica dei pianeti nella ruota zodiacale
+
+- Componente modificato:
+  - `www/js/zodiac_wheel.js`
+
+- Obiettivo:
+  - implementare la codifica colore diretta sulla mappa/ruota:
+    - rosso (`#CC0000`) = pianeta in moto diretto;
+    - blu (`#0000CC`) = pianeta retrogrado;
+    - verde (`#00AA00`) = pianeta esattamente in cuspide;
+  - sovrascrivere i colori identitari dei pianeti in base al loro stato dinamico;
+  - mantenere invariata la logica astrologica ereditata da Astro-Val;
+  - non modificare il motore astronomico, il Rule Engine o il backend.
+
+- Risultato:
+  - aggiunto il metodo helper `_coloreSemantico(p, houses)` in `ZodiacWheel`;
+  - implementata la verifica di congiunzione stretta con le cuspidi (tolleranza 0.01°);
+  - sostituiti i colori statici `PIANETI_COLORI` con la codifica semantica in tre metodi di rendering:
+    - `_disegnaAspetti` (pallino sugli aspetti);
+    - `_disegnaLineePianetiModificato` (linea guida);
+    - `_disegnaPianetiModificato` (glifo principale e testo gradi);
+  - preservata la compatibilità con tutte le pagine che utilizzano `ZodiacWheel.disegna()`:
+    - `rilocazione.php`;
+    - `rs.php`;
+    - `compare_rs.php`;
+    - `compare_ril.php`;
+  - nessuna modifica al backend, alle API o al motore astrologico.
+
+- Verifiche eseguite:
+  - `node --check www/js/zodiac_wheel.js`: OK;
+  - `git diff --check`: OK;
+  - regressione backend `tests/run.php`: OK (sezione "Validazione casi JSON" superata);
+  - nota: il fatal error `passthru()` nella sezione "Validazione rivoluzioni lunari" è ambientale e preesistente, non collegato alla modifica JavaScript.
+
+- Stato:
+  - codifica colore semantica implementata e verificata;
+  - ready per test manuale nell'interfaccia web.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - testare la visualizzazione nella pagina `rilocazione.php` per verificare che i colori siano applicati correttamente;
+  - confermare che la codifica verde (cuspide) si attivi solo per congiunzioni estremamente strette (< 0.01°);
+  - procedere con il commit dopo verifica funzionale.
