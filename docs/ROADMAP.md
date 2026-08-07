@@ -178,6 +178,27 @@ narrativa, spiegazioni e visualizzazione completa del confronto.
 
 ---
 
+# HTTPS tramite Caddy
+
+⏳ Pianificata
+
+Obiettivo:
+
+abilitare la pubblicazione di ASTROLAB tramite Caddy come reverse proxy con
+terminazione HTTPS, utilizzando il dominio configurato e mantenendo invariata
+l'architettura Docker dell'applicazione.
+
+Attività previste:
+
+- introduzione del container Caddy;
+- configurazione del reverse proxy verso il container `astrolab-web`;
+- gestione automatica dei certificati TLS;
+- aggiornamento della configurazione Docker;
+- aggiornamento della documentazione operativa;
+- verifica del funzionamento tramite HTTPS.
+
+---
+
 # Direttiva operativa permanente
 
 L'architettura ereditata e il Rule Engine sono considerati componenti
