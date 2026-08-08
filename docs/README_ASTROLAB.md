@@ -3,9 +3,8 @@
 Piattaforma professionale per l'astrologia previsionale e il Decision
 Support System.
 
-ASTROLAB rappresenta l'unificazione dei progetti **Astro-Val** (baseline
-architetturale) e **Astro-DSS** (evoluzione del Comparator e del
-Decision Support System) in un'unica piattaforma.
+ASTROLAB è la piattaforma unica e definitiva per l'astrologia
+previsionale e il Decision Support System.
 
 ## Per iniziare
 
