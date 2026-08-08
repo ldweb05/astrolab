@@ -54,8 +54,9 @@ Verde.
 ASTROLAB è una piattaforma professionale dedicata
 all'astrologia previsionale.
 
-Integra in un unico progetto le funzionalità nate durante
-l'evoluzione di Astro-Val e Astro-DSS.
+ASTROLAB è il progetto unico e definitivo del sistema.
+La documentazione operativa, tecnica e progettuale deve fare riferimento
+ad ASTROLAB come unico progetto.
 
 L'applicazione comprende:
 
@@ -70,9 +71,6 @@ L'applicazione comprende:
 - Theme Engine;
 - Rule Engine;
 - Search API geografica.
-
-I precedenti riferimenti ad Astro-Val e Astro-DSS rimangono
-utili esclusivamente come documentazione storica.
 
 L'applicazione operativa è ASTROLAB.
 
