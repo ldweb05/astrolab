@@ -119,6 +119,14 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
     border-top: 1px solid rgba(255,255,255,0.06);
 }
 
+
+/* ── Trigger Aiuto (stesso colore della stellina utente) ─────────── */
+.help-trigger {
+    color: #D4C9A8 !important;
+}
+.help-trigger:hover {
+    color: white !important;
+}
 /* ── Help Modal ──────────────────────────────────────────────────── */
 .help-modal-overlay {
     display: none;
@@ -229,8 +237,8 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
                <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>Ricerca Località</a>
 
             <!-- Aiuto -->
-            <a href="#" onclick="window.openHelpModal && window.openHelpModal(); return false;"
-               title="Manuale d'uso e aiuto contestuale">❓ Aiuto</a>
+            <a href="#" class="help-trigger" onclick="window.openHelpModal && window.openHelpModal(); return false;"
+               title="Manuale d'uso e aiuto contestuale">? Aiuto</a>
 
 
             <?php if ($isAdmin): ?>
