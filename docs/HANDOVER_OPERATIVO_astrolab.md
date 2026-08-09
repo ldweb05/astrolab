@@ -2953,3 +2953,11 @@ avviare M1 — Comparazione ricerche RSM.
 - Causa test search (diagnosticata, fix RIMANDATO su richiesta): `search_auth.php` forza `session_name('PHPSESSID')` e un ID custom, ma il php.ini indurito usa `session.name = ASTROSESSID` e `session.use_strict_mode = 1`. L'ID custom viene rifiutato (file sessione non creato) e Apache attende il cookie ASTROSESSID, non PHPSESSID.
 - Fix da fare in futuro: leggere `ini_get('session.name')` invece di hardcodare PHPSESSID, inviare il cookie con quel nome e disattivare `use_strict_mode` solo nel processo di seeding CLI.
 - Stato: nessun file applicativo modificato in questa indagine; suite eseguibile con override tranne search.
+
+## 2026-08-09 quinquies — Sezione 1 Manuale Aiuto: Introduzione e Account
+
+- Creato `www/js/help_content_s1.json`: contenuti testuali per login, registrazione, cambio password e default.
+- Modificato `www/js/help_modal.js`: caricamento dinamico dei contenuti in base alla pagina corrente (rilevamento URL).
+- Contenuti redatti sulla base dell'analisi di `login.php`, `registrazione.php`, `cambia_password.php`.
+- Roadmap aggiornata: Fase 3 parzialmente completata (Sezione 1 fatta, Sezione 2 da fare).
+- Nessun cambiamento al backend o al motore astrologico.
