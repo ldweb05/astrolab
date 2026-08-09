@@ -2961,3 +2961,12 @@ avviare M1 — Comparazione ricerche RSM.
 - Contenuti redatti sulla base dell'analisi di `login.php`, `registrazione.php`, `cambia_password.php`.
 - Roadmap aggiornata: Fase 3 parzialmente completata (Sezione 1 fatta, Sezione 2 da fare).
 - Nessun cambiamento al backend o al motore astrologico.
+
+## 2026-08-09 sexies — Riprogettazione UX Menu Aiuto (dropdown + modale per sezione)
+
+- Modificato `header_nav.php`: trigger `? Aiuto` trasformato in dropdown con 8 voci della roadmap.
+- Riscritto `help_modal.js`: nuova funzione `openHelpSection(n)` che carica `help_content_sN.json` e apre il modale con il contenuto della sezione scelta.
+- Sezioni non ancora redatte mostrano placeholder "in fase di redazione".
+- Chiusura dropdown: click fuori, ESC, o apertura modale.
+- Roadmap aggiornata: Fase 2 completata con nuova UX.
+- Nessun cambiamento al backend o al motore astrologico.
