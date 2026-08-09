@@ -2876,3 +2876,33 @@ avviare M1 — Comparazione ricerche RSM.
 - Prossimo passo:
   - analizzare le interfacce correnti per mappare i link del menu Aiuto alle pagine specifiche;
   - avviare la stesura dei contenuti testuali per le prime sezioni.
+
+## 2026-08-09 bis — Analisi e mappatura Menu Aiuto sulle pagine esistenti
+
+- Componente modificato:
+  - `docs/roadmap_aiuto.md` (aggiornato).
+
+- Obiettivo:
+  - mappare le sezioni del manuale d'uso rispetto alle pagine PHP reali dell'applicazione;
+  - definire la strategia di implementazione dell'interfaccia per il menu Aiuto.
+
+- Risultato:
+  - completata la mappatura tra le 8 sezioni del manuale e i file PHP principali (`index.php`, `tema.php`, `rs.php`, `rl.php`, `rilocazione.php`, `ricerca.php`, `stampa.php`, `compare_rs.php`, `compare_ril.php`);
+  - scelta la strategia **Modale/Popup contestuale JS** per non interrompere il workflow dell'astrologo;
+  - nessuna modifica applicativa o al Rule Engine.
+
+- Verifiche eseguite:
+  - `git diff --check`: nessun problema rilevato;
+  - `git status`: file tracciato correttamente.
+
+- Stato:
+  - fase di analisi e progettazione completata;
+  - pronto per lo sviluppo dell'infrastruttura JS/PHP del modale Aiuto.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - creare il file JS per il modale contestuale (`www/js/help_modal.js`);
+  - creare il file CSS per lo styling (`www/css/help_modal.css`);
+  - integrare il trigger nel menu di navigazione (`header_nav.php`).

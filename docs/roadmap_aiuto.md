@@ -52,3 +52,27 @@ Fornire agli utenti un manuale d'uso strutturato, accessibile direttamente dall'
 - [ ] Fase 4: Redazione dei contenuti testuali per le sezioni 3, 4 e 5
 - [ ] Fase 5: Redazione dei contenuti testuali per le sezioni 6, 7 e 8
 - [ ] Fase 6: Integrazione finale, test UX e collegamento alla documentazione principale
+
+## Mappatura Voci Manuale -> Pagine Applicazione
+
+Sulla base dell'analisi di `www/includes/header_nav.php` e dei file PHP presenti, ecco la mappatura proposta per i link contestuali del manuale:
+
+| Sezione Manuale | Pagina Applicazione Principale |
+|---|---|
+| 1. Introduzione e Account | `login.php`, `registrazione.php`, `cambia_password.php` |
+| 2. Gestione Soggetti | `index.php` (Lista Soggetti) |
+| 3. Calcoli e Analisi: Tema Natale | `tema.php` |
+| 3. Calcoli e Analisi: Rivoluzione Solare | `rs.php` |
+| 3. Calcoli e Analisi: Rivoluzione Lunare | `rl.php` |
+| 3. Calcoli e Analisi: Rilocazioni | `rilocazione.php` |
+| 4. Ricerca Geografica Avanzata | `ricerca.php` |
+| 5. Report, Narrazione e Stampa | `stampa.php`, API PDF |
+| 6. Comparatore | `compare_rs.php`, `compare_ril.php` |
+
+## Strategia di Implementazione Interfaccia (Prossimo Passo)
+
+Per integrare il menu "Aiuto" nell'interfaccia, le opzioni valutate sono:
+1. **Modale/Popup JS**: Un'icona "?" o la voce "Aiuto" nel menu apre un modale che carica dinamicamente i contenuti testuali (mantenendo l'utente sulla pagina corrente e fornendo aiuto contestuale).
+2. **Pagina Dedicata**: Una pagina statica `help.php` o `manuale.php` raggiungibile dal menu.
+
+**Scelta consigliata**: Modale/Popup contestuale, per non interrompere il workflow dell'astrologo. I contenuti testuali potranno essere gestiti come stringhe PHP o piccoli file JSON caricati via API.
