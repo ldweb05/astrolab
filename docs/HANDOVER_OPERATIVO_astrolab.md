@@ -2942,3 +2942,14 @@ avviare M1 — Comparazione ricerche RSM.
 - Prossimo passo:
   - testare manualmente l'apertura/chiusura del modale nel browser;
   - avviare la stesura dei contenuti testuali per le sezioni del manuale.
+
+## 2026-08-09 quater — Indagine errore passthru() e test search (fix rimandato)
+
+- Problema: `tests/run.php` usa `passthru()` per lanciare i sotto-test; la funzione è disabilitata dal 2 agosto in `php-config/php.ini` (indurimento sicurezza). Da qui il fatal error prima inesistente.
+- Soluzione operativa (sicura, senza toccare il php.ini montato):
+  `docker compose exec -T astrolab-web php -d disable_functions= tests/run.php`
+  L'override vale solo per il processo CLI effimero; il server web resta indurito.
+- Esito con override: backend, casi JSON, RL e rilocazione PASSANO; restano fallimenti nei test `search/`.
+- Causa test search (diagnosticata, fix RIMANDATO su richiesta): `search_auth.php` forza `session_name('PHPSESSID')` e un ID custom, ma il php.ini indurito usa `session.name = ASTROSESSID` e `session.use_strict_mode = 1`. L'ID custom viene rifiutato (file sessione non creato) e Apache attende il cookie ASTROSESSID, non PHPSESSID.
+- Fix da fare in futuro: leggere `ini_get('session.name')` invece di hardcodare PHPSESSID, inviare il cookie con quel nome e disattivare `use_strict_mode` solo nel processo di seeding CLI.
+- Stato: nessun file applicativo modificato in questa indagine; suite eseguibile con override tranne search.
