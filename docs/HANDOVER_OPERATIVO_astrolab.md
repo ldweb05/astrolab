@@ -2970,3 +2970,15 @@ avviare M1 — Comparazione ricerche RSM.
 - Chiusura dropdown: click fuori, ESC, o apertura modale.
 - Roadmap aggiornata: Fase 2 completata con nuova UX.
 - Nessun cambiamento al backend o al motore astrologico.
+
+## 2026-08-09 septies — Cambio strategia Menu Aiuto: dropdown + pagine PHP dedicate
+
+- Abbandonato approccio modale JS (problemi CSS con dropdown).
+- Adottato dropdown navbar (classi nav-dropdown come Rivoluzioni) con 8 voci.
+- Ogni voce linka a pagina PHP dedicata (target=_blank): help_account.php, help_soggetti.php, help_calcoli.php, help_ricerca.php, help_report.php, help_comparatore.php, help_interfaccia.php, help_faq.php.
+- help_account.php: contenuti completi Sezione 1 (login, registrazione, cambio password, piani, sicurezza).
+- Sezioni 2-8: pagine placeholder "in fase di redazione".
+- Tasto destro disabilitato su tutte le pagine help (JS contextmenu + body oncontextmenu).
+- header_nav.php: dropdown aggiornato con link corretti.
+- Roadmap aggiornata con nuova strategia.
+- Nessun cambiamento al backend o al motore astrologico.
