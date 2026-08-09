@@ -293,6 +293,13 @@ ereditata da Astro-Val.
 
 ---
 
+## Sezione Aiuto e Manuale d'Uso
+
+La progettazione e lo sviluppo del menu "Aiuto" e del manuale d'uso integrato nell'applicazione sono tracciati nella roadmap dedicata:
+- `docs/roadmap_aiuto.md`
+
+---
+
 ## Ricerca RS v2 — Riduzione spaziale SQL
 
 **Decisione:** ADR-015

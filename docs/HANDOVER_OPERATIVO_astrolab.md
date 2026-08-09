@@ -2843,3 +2843,36 @@ Prossimo passo:
 acquistare account MyAstral.org;
 definire soggetti e anni RS di test;
 avviare M1 — Comparazione ricerche RSM.
+
+## 2026-08-09 — Creazione roadmap Menu Aiuto e Manuale d'Uso
+
+- Componenti modificati:
+  - `docs/roadmap_aiuto.md` (creato);
+  - `docs/ROADMAP.md` (aggiornato).
+
+- Obiettivo:
+  - progettare l'organizzazione del menu "Aiuto" e del manuale d'uso dell'applicazione;
+  - definire le voci e le sezioni del manuale;
+  - creare una roadmap dedicata (`docs/roadmap_aiuto.md`) senza appesantire la roadmap principale.
+
+- Risultato:
+  - creata la struttura logica del manuale in 8 sezioni principali (Introduzione e Account, Gestione Soggetti, Calcoli e Analisi, Ricerca Geografica, Report, Comparatore, Interfaccia, FAQ);
+  - creato `docs/roadmap_aiuto.md` con fasi di sviluppo future;
+  - aggiornato `docs/ROADMAP.md` inserendo un breve rimando alla roadmap dedicata;
+  - nessuna modifica applicativa, architetturale o al Rule Engine.
+
+- Verifiche eseguite:
+  - `git status`: file tracciati correttamente;
+  - `git diff docs/ROADMAP.md`: diff minimale e corretto;
+  - `git diff --check`: nessun problema rilevato.
+
+- Stato:
+  - struttura del menu Aiuto definita e documentata;
+  - pronta per future iterazioni di sviluppo UX e stesura dei contenuti.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - analizzare le interfacce correnti per mappare i link del menu Aiuto alle pagine specifiche;
+  - avviare la stesura dei contenuti testuali per le prime sezioni.
