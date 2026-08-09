@@ -2906,3 +2906,39 @@ avviare M1 — Comparazione ricerche RSM.
   - creare il file JS per il modale contestuale (`www/js/help_modal.js`);
   - creare il file CSS per lo styling (`www/css/help_modal.css`);
   - integrare il trigger nel menu di navigazione (`header_nav.php`).
+
+## 2026-08-09 ter — Implementazione modale Aiuto nell'interfaccia
+
+- Componenti modificati:
+  - `www/includes/header_nav.php` (CSS inline, trigger menu, markup modale, script tag);
+  - `www/css/help_modal.css` (creato);
+  - `www/js/help_modal.js` (creato).
+
+- Obiettivo:
+  - integrare il trigger "Aiuto" nel menu di navigazione principale;
+  - implementare il modale contestuale con struttura HTML/CSS/JS;
+  - rendere il modale disponibile in tutte le pagine protette.
+
+- Risultato:
+  - aggiunto blocco CSS del modale nel `<style>` di `header_nav.php`;
+  - inserito trigger `❓ Aiuto` dopo "Ricerca Località" nel menu principale;
+  - aggiunto markup HTML del modale con overlay, header, corpo e pulsante di chiusura;
+  - creato `www/js/help_modal.js` con logica open/close (ESC, click esterno, pulsante X);
+  - nessuna modifica al backend, al motore astrologico o al Rule Engine.
+
+- Verifiche eseguite:
+  - `php -l www/includes/header_nav.php`: OK (nessun errore di sintassi);
+  - `git diff --check`: nessun problema rilevato;
+  - regressione: errore preesistente `passthru()` in `tests/run.php:278` non correlato alle modifiche attuali.
+
+- Stato:
+  - modale Aiuto integrato e visibile in tutte le pagine protette;
+  - contenuto attualmente placeholder (in attesa dei testi del manuale);
+  - pronto per test manuale nell'interfaccia web.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - testare manualmente l'apertura/chiusura del modale nel browser;
+  - avviare la stesura dei contenuti testuali per le sezioni del manuale.

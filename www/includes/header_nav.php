@@ -118,6 +118,68 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 .nav-dropdown-menu a + a {
     border-top: 1px solid rgba(255,255,255,0.06);
 }
+
+/* ── Help Modal ──────────────────────────────────────────────────── */
+.help-modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+}
+.help-modal-box {
+    background: #1E2E5A;
+    margin: 8vh auto;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    color: #A8B8D8;
+    font-size: 14px;
+    line-height: 1.6;
+}
+.help-modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px 8px 0 0;
+}
+.help-modal-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+}
+.help-modal-close {
+    color: #A8B8D8;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 5px;
+}
+.help-modal-close:hover { color: white; }
+.help-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+.help-modal-body h3 {
+    color: white;
+    margin-top: 0;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 8px;
+}
+
 </style>
 
 <header>
@@ -166,6 +228,11 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
             <a href="<?= _navUrl('ricerca.php', $_navSoggettoId) ?>"
                <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>Ricerca Località</a>
 
+            <!-- Aiuto -->
+            <a href="#" onclick="window.openHelpModal && window.openHelpModal(); return false;"
+               title="Manuale d'uso e aiuto contestuale">❓ Aiuto</a>
+
+
             <?php if ($isAdmin): ?>
             <a href="admin_utenti.php"
                <?= ($paginaAttiva??'') === 'admin' ? 'class="active"' : '' ?>>⚙️ Utenti</a>
@@ -212,5 +279,20 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 
         
     </div>
+
+<!-- ── Help Modal (condiviso in tutte le pagine) ────────────────── -->
+<div id="help-modal-overlay" class="help-modal-overlay">
+    <div class="help-modal-box">
+        <div class="help-modal-header">
+            <h2 class="help-modal-title">❓ Manuale d'uso</h2>
+            <span id="help-modal-close" class="help-modal-close">&times;</span>
+        </div>
+        <div class="help-modal-body" id="help-modal-body">
+            <p><em>Contenuto di aiuto contestuale. La versione completa del manuale è in fase di redazione in <code>docs/roadmap_aiuto.md</code>.</em></p>
+            <p>Sezione corrente: <strong id="help-modal-section">Generico</strong></p>
+        </div>
+    </div>
+</div>
 </header>
+<script src="js/help_modal.js" defer></script>
 <script src="js/header_nav.js" defer></script>
