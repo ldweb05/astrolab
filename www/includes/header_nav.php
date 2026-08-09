@@ -127,6 +127,43 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 .help-trigger:hover {
     color: white !important;
 }
+
+/* ── Help Dropdown Menu ─────────────────────────────────────────── */
+.help-dropdown {
+    position: relative;
+    display: inline-block;
+}
+.help-dropdown-content {
+    display: none;
+    position: absolute;
+    background: #1E2E5A;
+    min-width: 280px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    z-index: 10001;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    padding: 8px 0;
+}
+.help-dropdown:hover .help-dropdown-content,
+.help-dropdown.active .help-dropdown-content {
+    display: block;
+}
+.help-dropdown-item {
+    color: #A8B8D8;
+    padding: 10px 20px;
+    text-decoration: none;
+    display: block;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.help-dropdown-item:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
 /* ── Help Modal ──────────────────────────────────────────────────── */
 .help-modal-overlay {
     display: none;
@@ -236,9 +273,21 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
             <a href="<?= _navUrl('ricerca.php', $_navSoggettoId) ?>"
                <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>Ricerca Località</a>
 
-            <!-- Aiuto -->
-            <a href="#" class="help-trigger" onclick="window.openHelpModal && window.openHelpModal(); return false;"
-               title="Manuale d'uso e aiuto contestuale">? Aiuto</a>
+            <!-- Aiuto Dropdown -->
+            <div class="help-dropdown">
+                <a href="#" class="help-trigger" onclick="this.parentElement.classList.toggle('active'); return false;"
+                   title="Manuale d'uso">? Aiuto</a>
+                <div class="help-dropdown-content">
+                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(1)">1. Introduzione e Account</a>
+                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(2)">2. Gestione Soggetti</a>
+                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(3)">3. Calcoli e Analisi</a>
+                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(4)">4. Ricerca Geografica</a>
+                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(5)">5. Report e Stampa</a>
+                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(6)">6. Comparatore e DSS</a>
+                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(7)">7. Interfaccia e Visualizzazione</a>
+                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(8)">8. FAQ e Limiti</a>
+                </div>
+            </div>
 
 
             <?php if ($isAdmin): ?>
