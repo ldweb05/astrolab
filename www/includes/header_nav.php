@@ -274,18 +274,34 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
                <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>Ricerca Località</a>
 
             <!-- Aiuto Dropdown -->
-            <div class="help-dropdown">
-                <a href="#" class="help-trigger" onclick="this.parentElement.classList.toggle('active'); return false;"
-                   title="Manuale d'uso">? Aiuto</a>
-                <div class="help-dropdown-content">
-                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(1)">1. Introduzione e Account</a>
-                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(2)">2. Gestione Soggetti</a>
-                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(3)">3. Calcoli e Analisi</a>
-                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(4)">4. Ricerca Geografica</a>
-                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(5)">5. Report e Stampa</a>
-                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(6)">6. Comparatore e DSS</a>
-                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(7)">7. Interfaccia e Visualizzazione</a>
-                    <a class="help-dropdown-item" onclick="window.openHelpSection && window.openHelpSection(8)">8. FAQ e Limiti</a>
+            <div class="nav-dropdown">
+                <button type="button" class="nav-dropdown-trigger help-trigger" aria-expanded="false">
+                    ? Aiuto
+                </button>
+                <div class="nav-dropdown-menu">
+                    <a href="help_account.php" target="_blank">1. Introduzione e Account</a>
+                    <a href="help_soggetti.php" target="_blank">2. Gestione Soggetti</a>
+                    <a href="help_calcoli.php" target="_blank">3. Calcoli e Analisi</a>
+                    <a href="help_ricerca.php" target="_blank">4. Ricerca Geografica</a>
+                    <a href="help_report.php" target="_blank">5. Report e Stampa</a>
+                    <a href="help_comparatore.php" target="_blank">6. Comparatore e DSS</a>
+                    <a href="help_interfaccia.php" target="_blank">7. Interfaccia e Visualizzazione</a>
+                    <a href="help_faq.php" target="_blank">8. FAQ e Limiti</a>
+                </div>
+            </div>
+            <div class="nav-dropdown">
+                <button type="button" class="nav-dropdown-trigger help-trigger" aria-expanded="false">
+                    ? Aiuto
+                </button>
+                <div class="nav-dropdown-menu">
+                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(1); return false;">1. Introduzione e Account</a>
+                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(2); return false;">2. Gestione Soggetti</a>
+                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(3); return false;">3. Calcoli e Analisi</a>
+                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(4); return false;">4. Ricerca Geografica</a>
+                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(5); return false;">5. Report e Stampa</a>
+                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(6); return false;">6. Comparatore e DSS</a>
+                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(7); return false;">7. Interfaccia e Visualizzazione</a>
+                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(8); return false;">8. FAQ e Limiti</a>
                 </div>
             </div>
 
@@ -294,7 +310,7 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
             <a href="admin_utenti.php"
                <?= ($paginaAttiva??'') === 'admin' ? 'class="active"' : '' ?>>⚙️ Utenti</a>
             <?php endif; ?>
-        
+
 
             <hr class="nav-separator">
 
@@ -334,7 +350,7 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 
 </nav>
 
-        
+
     </div>
 
 <!-- ── Help Modal (condiviso in tutte le pagine) ────────────────── -->
