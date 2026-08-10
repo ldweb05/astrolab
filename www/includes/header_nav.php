@@ -118,113 +118,6 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 .nav-dropdown-menu a + a {
     border-top: 1px solid rgba(255,255,255,0.06);
 }
-
-
-/* ── Trigger Aiuto (stesso colore della stellina utente) ─────────── */
-.help-trigger {
-    color: #D4C9A8 !important;
-}
-.help-trigger:hover {
-    color: white !important;
-}
-
-/* ── Help Dropdown Menu ─────────────────────────────────────────── */
-.help-dropdown {
-    position: relative;
-    display: inline-block;
-}
-.help-dropdown-content {
-    display: none;
-    position: absolute;
-    background: #1E2E5A;
-    min-width: 280px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 6px;
-    z-index: 10001;
-    top: 100%;
-    left: 0;
-    margin-top: 8px;
-    padding: 8px 0;
-}
-.help-dropdown:hover .help-dropdown-content,
-.help-dropdown.active .help-dropdown-content {
-    display: block;
-}
-.help-dropdown-item {
-    color: #A8B8D8;
-    padding: 10px 20px;
-    text-decoration: none;
-    display: block;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.help-dropdown-item:hover {
-    background: rgba(255,255,255,0.1);
-    color: white;
-}
-/* ── Help Modal ──────────────────────────────────────────────────── */
-.help-modal-overlay {
-    display: none;
-    position: fixed;
-    z-index: 10000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(2px);
-}
-.help-modal-box {
-    background: #1E2E5A;
-    margin: 8vh auto;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    color: #A8B8D8;
-    font-size: 14px;
-    line-height: 1.6;
-}
-.help-modal-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255,255,255,0.05);
-    border-radius: 8px 8px 0 0;
-}
-.help-modal-title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: white;
-}
-.help-modal-close {
-    color: #A8B8D8;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0 5px;
-}
-.help-modal-close:hover { color: white; }
-.help-modal-body {
-    padding: 20px;
-    overflow-y: auto;
-}
-.help-modal-body h3 {
-    color: white;
-    margin-top: 0;
-    font-size: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 8px;
-}
-
 </style>
 
 <header>
@@ -269,42 +162,10 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
             </div>
             <!-- ── Fine dropdown ────────────────────────────────────── -->
 
+
             <!-- Ricerca Località -->
             <a href="<?= _navUrl('ricerca.php', $_navSoggettoId) ?>"
                <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>Ricerca Località</a>
-
-            <!-- Aiuto Dropdown -->
-            <div class="nav-dropdown">
-                <button type="button" class="nav-dropdown-trigger help-trigger" aria-expanded="false">
-                    ? Aiuto
-                </button>
-                <div class="nav-dropdown-menu">
-                    <a href="help_account.php" target="_blank">1. Introduzione e Account</a>
-                    <a href="help_soggetti.php" target="_blank">2. Gestione Soggetti</a>
-                    <a href="help_calcoli.php" target="_blank">3. Calcoli e Analisi</a>
-                    <a href="help_ricerca.php" target="_blank">4. Ricerca Geografica</a>
-                    <a href="help_report.php" target="_blank">5. Report e Stampa</a>
-                    <a href="help_comparatore.php" target="_blank">6. Comparatore e DSS</a>
-                    <a href="help_interfaccia.php" target="_blank">7. Interfaccia e Visualizzazione</a>
-                    <a href="help_faq.php" target="_blank">8. FAQ e Limiti</a>
-                </div>
-            </div>
-            <div class="nav-dropdown">
-                <button type="button" class="nav-dropdown-trigger help-trigger" aria-expanded="false">
-                    ? Aiuto
-                </button>
-                <div class="nav-dropdown-menu">
-                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(1); return false;">1. Introduzione e Account</a>
-                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(2); return false;">2. Gestione Soggetti</a>
-                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(3); return false;">3. Calcoli e Analisi</a>
-                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(4); return false;">4. Ricerca Geografica</a>
-                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(5); return false;">5. Report e Stampa</a>
-                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(6); return false;">6. Comparatore e DSS</a>
-                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(7); return false;">7. Interfaccia e Visualizzazione</a>
-                    <a href="#" onclick="window.openHelpSection && window.openHelpSection(8); return false;">8. FAQ e Limiti</a>
-                </div>
-            </div>
-
 
             <?php if ($isAdmin): ?>
             <a href="admin_utenti.php"
@@ -352,20 +213,5 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 
 
     </div>
-
-<!-- ── Help Modal (condiviso in tutte le pagine) ────────────────── -->
-<div id="help-modal-overlay" class="help-modal-overlay">
-    <div class="help-modal-box">
-        <div class="help-modal-header">
-            <h2 class="help-modal-title">❓ Manuale d'uso</h2>
-            <span id="help-modal-close" class="help-modal-close">&times;</span>
-        </div>
-        <div class="help-modal-body" id="help-modal-body">
-            <p><em>Contenuto di aiuto contestuale. La versione completa del manuale è in fase di redazione in <code>docs/roadmap_aiuto.md</code>.</em></p>
-            <p>Sezione corrente: <strong id="help-modal-section">Generico</strong></p>
-        </div>
-    </div>
-</div>
 </header>
-<script src="js/help_modal.js" defer></script>
 <script src="js/header_nav.js" defer></script>
