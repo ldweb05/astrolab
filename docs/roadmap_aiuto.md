@@ -47,7 +47,7 @@ Fornire agli utenti un manuale d'uso strutturato, accessibile direttamente dall'
 ## Fasi di Sviluppo
 
 - [x] Fase 1: Definizione della struttura e dei titoli dei capitoli
-- [x] Fase 2: Infrastruttura menu Aiuto (dropdown 8 voci + modale contenuti per sezione)
+- [x] Fase 2: Infrastruttura menu Aiuto (dropdown 8 voci verso pagine dedicate `help_*.php`; rimossa in data 10-08-2026 l'implementazione parallela a modale, mai adottata e causa di duplicazione nel trigger navbar)
 - [~] Fase 3: Redazione contenuti testuali (Sezione 1 completata in help_account.php, Sezioni 2-8 placeholder)
 - [ ] Fase 4: Redazione dei contenuti testuali per le sezioni 3, 4 e 5
 - [ ] Fase 5: Redazione dei contenuti testuali per le sezioni 6, 7 e 8
@@ -69,10 +69,10 @@ Sulla base dell'analisi di `www/includes/header_nav.php` e dei file PHP presenti
 | 5. Report, Narrazione e Stampa | `stampa.php`, API PDF |
 | 6. Comparatore | `compare_rs.php`, `compare_ril.php` |
 
-## Strategia di Implementazione Interfaccia (Prossimo Passo)
+## Strategia di Implementazione Interfaccia (Decisione Finale)
 
-Per integrare il menu "Aiuto" nell'interfaccia, le opzioni valutate sono:
-1. **Modale/Popup JS**: Un'icona "?" o la voce "Aiuto" nel menu apre un modale che carica dinamicamente i contenuti testuali (mantenendo l'utente sulla pagina corrente e fornendo aiuto contestuale).
-2. **Pagina Dedicata**: Una pagina statica `help.php` o `manuale.php` raggiungibile dal menu.
+Per integrare il menu "Aiuto" nell'interfaccia erano state valutate due opzioni:
+1. **Modale/Popup JS**: un'icona o la voce "Aiuto" apre un modale che carica dinamicamente i contenuti testuali.
+2. **Pagine Dedicate**: 8 pagine PHP separate (`help_*.php`), una per sezione del manuale, raggiungibili dal dropdown "Help" in navbar.
 
-**Scelta consigliata**: Modale/Popup contestuale, per non interrompere il workflow dell'astrologo. I contenuti testuali potranno essere gestiti come stringhe PHP o piccoli file JSON caricati via API.
+**Scelta adottata (10-08-2026)**: Pagine Dedicate (opzione 2). Entrambe le opzioni erano state implementate in parallelo nel branch, causando due blocchi duplicati e conflittuali nel dropdown ("? Aiuto" visibile in navbar nonostante la rimozione dai sorgenti — causa reale: OPcache con `validate_timestamps=Off` che serviva bytecode stale, non un problema di codice). Rimossa l'implementazione a modale (CSS, HTML, `help_modal.js`, `help_content_s1.json`); mantenute e collegate le 8 pagine `help_*.php` già esistenti. Il trigger in navbar si chiama "Help" (non "Aiuto"), stile uniformato al dropdown "Rivoluzioni" con colore testo coerente con quello del soggetto attivo (#D4C9A8).

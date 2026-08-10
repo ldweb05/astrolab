@@ -118,6 +118,16 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
 .nav-dropdown-menu a + a {
     border-top: 1px solid rgba(255,255,255,0.06);
 }
+/* ── Trigger Help ──────────────────────────────────────────────── */
+.help-trigger {
+    color: #D4C9A8 !important;
+    background: none;
+    border: none;
+}
+.help-trigger:hover,
+.help-trigger.active {
+    color: white !important;
+}
 </style>
 
 <header>
@@ -166,6 +176,24 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
             <!-- Ricerca Località -->
             <a href="<?= _navUrl('ricerca.php', $_navSoggettoId) ?>"
                <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>Ricerca Località</a>
+
+            <!-- ── Dropdown: Help ─────────────────────────────────────── -->
+            <div class="nav-dropdown">
+                <button type="button" class="nav-dropdown-trigger help-trigger" aria-expanded="false">
+                    Help
+                </button>
+                <div class="nav-dropdown-menu">
+                    <a href="help_account.php" target="_blank">1. Introduzione e Account</a>
+                    <a href="help_soggetti.php" target="_blank">2. Gestione Soggetti</a>
+                    <a href="help_calcoli.php" target="_blank">3. Calcoli e Analisi</a>
+                    <a href="help_ricerca.php" target="_blank">4. Ricerca Geografica</a>
+                    <a href="help_report.php" target="_blank">5. Report e Stampa</a>
+                    <a href="help_comparatore.php" target="_blank">6. Comparatore e DSS</a>
+                    <a href="help_interfaccia.php" target="_blank">7. Interfaccia e Visualizzazione</a>
+                    <a href="help_faq.php" target="_blank">8. FAQ e Limiti</a>
+                </div>
+            </div>
+            <!-- ── Fine dropdown ────────────────────────────────────── -->
 
             <?php if ($isAdmin): ?>
             <a href="admin_utenti.php"
