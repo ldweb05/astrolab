@@ -2982,3 +2982,24 @@ avviare M1 — Comparazione ricerche RSM.
 - header_nav.php: dropdown aggiornato con link corretti.
 - Roadmap aggiornata con nuova strategia.
 - Nessun cambiamento al backend o al motore astrologico.
+
+## 2026-08-10 — Fix dropdown "? Aiuto" duplicato e ricostruzione pulita come "Help"
+
+- Problema segnalato: trigger "? Aiuto" ancora visibile in navbar nonostante rimozione da tutti i sorgenti (verificato: nessuna occorrenza in nessun file .php/.css/.js), persistente su più browser e dopo svuotamento cache.
+- Diagnosi: `header_nav.php` conteneva DUE blocchi dropdown "Aiuto" duplicati e mai ripuliti dopo il cambio strategia (voce "septies" sopra) — uno con link a pagine `help_*.php`, uno con `onclick` verso il modale mai adottato. La causa della persistenza visiva era però `opcache.validate_timestamps=Off` + `opcache.revalidate_freq=0` nel container `astrolab-web`: il bytecode compilato non veniva mai rivalidato contro il file sorgente, quindi ogni modifica ai .php restava invisibile finché il container non veniva riavviato.
+- Fix (commit `d4622e6`, pushato su `origin/fase9-comparator-quota`):
+  - rimossi entrambi i blocchi duplicati del dropdown, il CSS dedicato (`.help-trigger`, `.help-dropdown*`, `.help-modal*`), il modale HTML condiviso e l'include di `www/js/help_modal.js`;
+  - eliminati anche `www/css/help_modal.css` e `www/js/help_content_s1.json` (orfani, nessun riferimento residuo);
+  - riavviato `astrolab-web` per invalidare OPcache e confermare la scomparsa della voce.
+- Ricostruzione pulita del dropdown Help (in corso di commit):
+  - un solo blocco dropdown, classi `nav-dropdown` condivise con "Rivoluzioni" per uniformità grafica;
+  - trigger rinominato da "Aiuto" a **"Help"**, colore testo `#D4C9A8` (coerente con `.soggetto-attivo`), `background: none; border: none;` per evitare lo stile di default del `<button>` del browser quando non attivo/hover;
+  - 8 voci verso le pagine `help_*.php` esistenti (help_account.php con contenuto reale, le altre 7 placeholder), invariate.
+- Roadmap aggiornata: `docs/roadmap_aiuto.md`, Fase 2 e sezione "Strategia di Implementazione Interfaccia" allineate allo stato reale (pagine dedicate confermate come scelta definitiva, modale definitivamente rimosso).
+- Verifiche eseguite:
+  - `docker compose exec -T astrolab-web php -l www/includes/header_nav.php`: OK ad ogni step;
+  - `git diff --check`: OK (corrette anche 2 righe di trailing whitespace preesistenti);
+  - verifica manuale nel browser dopo riavvio container: voce "Aiuto" sparita, dropdown "Help" funzionante e graficamente uniforme a "Rivoluzioni".
+- Nessun cambiamento al backend o al motore astrologico.
+
+- Nota operativa permanente: la configurazione OPcache attuale (`validate_timestamps=Off`) è corretta per produzione ma in ambiente di sviluppo richiede il riavvio di `astrolab-web` dopo ogni modifica a file `.php` per vedere l'effetto — da tenere a mente per i prossimi cicli di sviluppo/debug su questo container.
