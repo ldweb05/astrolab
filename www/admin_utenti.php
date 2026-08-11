@@ -123,6 +123,18 @@ $totUser = count(array_filter($utenti, fn($u) => $u['ruolo'] === 'user'));
 $totAttivi    = count(array_filter($utenti, fn($u) => $u['attivo']));
 $totSoggetti  = array_sum(array_column($utenti, 'n_soggetti'));
 
+// Soggetti di studio raggruppati per astrologo, per la riga espandibile
+$soggettiPerAstrologo = [];
+$soggettiStmt = $pdo->query(
+    "SELECT id, utente_id, codice, nome, data_nascita, ora_nascita,
+            luogo_nascita, nazione_nascita, residenza_luogo, residenza_nazione
+     FROM soggetti
+     ORDER BY utente_id, nome"
+);
+foreach ($soggettiStmt->fetchAll(PDO::FETCH_ASSOC) as $s) {
+    $soggettiPerAstrologo[$s['utente_id']][] = $s;
+}
+
 $paginaAttiva = 'admin';
 ?>
 <!DOCTYPE html>
@@ -199,7 +211,18 @@ $paginaAttiva = 'admin';
 
                 <!-- Username -->
                 <td>
+                    <?php $nSoggettiRiga = count($soggettiPerAstrologo[$u['id']] ?? []); ?>
+                    <?php if ($nSoggettiRiga > 0): ?>
+                    <span class="soggetti-toggle" style="cursor:pointer;user-select:none"
+                          onclick="toggleSoggettiAstrologo(<?= $u['id'] ?>)">
+                        <span id="arrow-<?= $u['id'] ?>" style="display:inline-block;width:12px;color:#888">▸</span>
+                        <b><?= htmlspecialchars($u['username']) ?></b>
+                        <span style="font-size:11px;color:#888">(<?= $nSoggettiRiga ?>)</span>
+                    </span>
+                    <?php else: ?>
+                    <span style="display:inline-block;width:12px"></span>
                     <b><?= htmlspecialchars($u['username']) ?></b>
+                    <?php endif; ?>
                     <?php if ($isCurrentUser): ?>
                     <span style="font-size:10px;color:#888;margin-left:4px">(tu)</span>
                     <?php endif; ?>
@@ -344,6 +367,40 @@ $paginaAttiva = 'admin';
                         <?php endif; ?>
 
                     </div>
+                </td>
+            </tr>
+            <tr id="soggetti-row-<?= $u['id'] ?>" style="display:none">
+                <td colspan="7" style="background:#FAF7F1;padding:12px 20px">
+                    <?php $soggettiRiga = $soggettiPerAstrologo[$u['id']] ?? []; ?>
+                    <?php if (empty($soggettiRiga)): ?>
+                    <p style="font-size:12px;color:#888;margin:0">Nessun soggetto di studio inserito.</p>
+                    <?php else: ?>
+                    <table class="tabella-soggetti" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Codice</th><th>Nome</th><th>Data Nascita</th>
+                                <th>Ora</th><th>Luogo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($soggettiRiga as $s): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($s['codice'] ?? '—') ?></td>
+                            <td><b><?= htmlspecialchars($s['nome']) ?></b></td>
+                            <td><?= $s['data_nascita'] ? date('d/m/Y', strtotime($s['data_nascita'])) : '—' ?></td>
+                            <td><?= htmlspecialchars($s['ora_nascita'] ?? '—') ?></td>
+                            <td>
+                                <?= htmlspecialchars($s['luogo_nascita'] ?? '') ?>
+                                <?= $s['nazione_nascita'] ? ' ' . htmlspecialchars($s['nazione_nascita']) : '' ?>
+                                <?php if ($s['residenza_luogo']): ?>
+                                <div style="color:#888;font-size:11px">🏠 <?= htmlspecialchars($s['residenza_luogo']) ?><?= $s['residenza_nazione'] ? ', ' . htmlspecialchars($s['residenza_nazione']) : '' ?></div>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php endif; ?>
                 </td>
             </tr>
             <?php endforeach; ?>
@@ -634,6 +691,14 @@ function apriModaleResetPwd(id, nome) {
     document.getElementById('nuova-pwd-input').value = '';
     document.getElementById('strength-reset').style.width = '0';
     document.getElementById('modal-reset-pwd').classList.add('vis');
+}
+function toggleSoggettiAstrologo(id) {
+    const riga = document.getElementById('soggetti-row-' + id);
+    const arrow = document.getElementById('arrow-' + id);
+    if (!riga) return;
+    const aperta = riga.style.display !== 'none';
+    riga.style.display = aperta ? 'none' : 'table-row';
+    if (arrow) arrow.textContent = aperta ? '▸' : '▾';
 }
 function apriModalePiano(id, username, piano, donazione, inizio, scadenza, override, accessoSpeciale, note) {
     document.getElementById('piano-titolo').textContent = '💎 Gestione Piano — ' + username;

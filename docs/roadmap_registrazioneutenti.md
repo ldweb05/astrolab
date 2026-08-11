@@ -1186,6 +1186,17 @@ Esempio per la ricerca a griglia:
 - Fase 5 ora funzionalmente completa per i punti richiesti: piano, donazione, validità annuale Supporter, limite soggetti personalizzato per utente, accesso speciale permanente concesso dall'admin;
 - non implementato in questo passo (rimandato, fuori scope immediato): riporto automatico a free alla scadenza (oggi la scadenza è visibile e calcolata ai fini del limite soggetti in getLimiteSoggettiEffettivo, ma il campo piano resta quello assegnato finché l'admin non lo cambia manualmente), storico delle modifiche amministrative, attivazione/disattivazione piani dall'interfaccia.
 
+### 2026-08-11 quinquies — Bugfix username case-sensitive + vista soggetti in amministrazione
+
+- Bug reale riscontrato dall'utente: registrazione con username pippo salvato come Pippo (capitalizzazione automatica tastiera), login con pippo minuscolo rifiutato per confronto case-sensitive in Auth::login(). L'utente era comunque presente in database e visibile in amministrazione (falso allarme dovuto probabilmente a cache browser), ma il bug di login era reale.
+- Deciso: lo username non deve essere case-sensitive. Creata la migrazione sql/008_username_case_insensitive.sql (indice univoco su LOWER(TRIM(username)), verificato prima che non esistessero duplicati), applicata al database operativo.
+- Aggiornato Auth::login() per confrontare LOWER(TRIM(username)) invece di un confronto esatto. Verificato end-to-end: login con pippo minuscolo ora riuscito.
+- Introdotta la terminologia di prodotto: gli utenti (ruolo = user) sono "Astrologi"; le persone che l'astrologo gestisce sono "Soggetti di studio".
+- Aggiunta in admin_utenti.php (solo lato amministrazione, nessuna modifica a index.php - la vista dell'astrologo resta identica) una riga espandibile sotto ogni astrologo: click sul nome (con freccia e contatore soggetti tra parentesi) apre una mini-tabella con i soggetti di studio di quell'astrologo (Codice, Nome, Data Nascita, Ora, Luogo), con gli stessi campi gia' usati nella tabella soggetti standard.
+- Verificato con test funzionale diretto (query e raggruppamento PHP replicati in script temporaneo) sul caso reale roxy - 4 soggetti (Cristina De Brand, Lorenzo Diana, Manuel Raso, Rossella Fumai) correttamente raggruppati e ordinati.
+- Confermato che www/index.php non risulta tra i file modificati: la vista personale dell'astrologo resta inalterata.
+- Controllo sintassi PHP e git diff --check superati su tutti i file.
+
 ---
 
 ## Prossimo passo
