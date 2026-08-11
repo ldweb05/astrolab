@@ -3003,3 +3003,11 @@ avviare M1 — Comparazione ricerche RSM.
 - Nessun cambiamento al backend o al motore astrologico.
 
 - Nota operativa permanente: la configurazione OPcache attuale (`validate_timestamps=Off`) è corretta per produzione ma in ambiente di sviluppo richiede il riavvio di `astrolab-web` dopo ogni modifica a file `.php` per vedere l'effetto — da tenere a mente per i prossimi cicli di sviluppo/debug su questo container.
+
+## 2026-08-11 — Rimozione airports.csv dal tracking git
+
+- Verificato che `airports.csv` (13 MB, al root del repo dal commit iniziale `af1716a`, ereditato dal progetto precedente `astro-dev`) non è referenziato da nessun file `.php`/`.py`/`.sh` del progetto: l'atlante geografico attuale (ricerca RSM per aeroporti e località) è alimentato dalla pipeline GeoNames (`import/convert_geonames.py`, `import/import_geonames.sh`) e legge dalla tabella Postgres `aeroporti` (84.616 righe, già popolata e persistita nel volume Docker), non dal CSV.
+- Il file resta comunque disponibile in chiaro nella storia git (commit `af1716a` e precedenti) in caso di necessità di riferimento futuro.
+- Azione: `git mv` → `git rm --cached`, file spostato fisicamente in `import/data/airports.csv` (cartella già esclusa da `.gitignore`, coerente con gli altri dataset non versionati tipo GeoNames), rimosso dal tracking.
+- Aggiornato `STRUTTURA_astrolab.md` (riga spostata da root a `import/data/`).
+- Nessun cambiamento a codice applicativo, schema DB o motore astrologico. Nessun rischio di perdita dati: il file resta recuperabile dalla storia git in qualunque momento.
