@@ -796,6 +796,8 @@ class Auth {
             "SELECT u.id, u.username, u.email, u.ruolo, u.attivo,
                     u.account_status, u.email_verified_at,
                     u.plan_id, p.code AS piano,
+                    u.donazione_importo, u.supporter_inizio, u.supporter_scadenza,
+                    u.subjects_limit_override, u.accesso_speciale_permanente, u.note_piano,
                     u.nome_completo, u.telefono, u.note,
                     u.created_at, u.ultimo_accesso,
                     (SELECT COUNT(*) FROM soggetti WHERE utente_id = u.id) AS n_soggetti
@@ -874,6 +876,75 @@ class Auth {
             "DELETE FROM utenti WHERE id = ?"
         )->execute([$utenteId]);
         return true;
+    }
+
+    /**
+     * Aggiorna la configurazione del piano di un utente (solo admin).
+     * Valida sempre lato server: piano attivo, valori non negativi,
+     * coerenza tra data inizio e scadenza Supporter.
+     */
+    public function aggiornaPianoUtente(
+        int $utenteId,
+        string $pianoCode,
+        ?float $donazioneImporto,
+        ?string $supporterInizio,
+        ?string $supporterScadenza,
+        ?int $subjectsLimitOverride,
+        bool $accessoSpecialePermanente,
+        string $notePiano = ''
+    ): array {
+        if (!in_array($pianoCode, ['free', 'supporter'], true)) {
+            return ['ok' => false, 'errore' => 'Piano non valido.'];
+        }
+        if ($donazioneImporto !== null && $donazioneImporto < 0) {
+            return ['ok' => false, 'errore' => 'L\'importo della donazione non può essere negativo.'];
+        }
+        if ($subjectsLimitOverride !== null && $subjectsLimitOverride < 0) {
+            return ['ok' => false, 'errore' => 'Il limite soggetti personalizzato non può essere negativo.'];
+        }
+        if ($supporterInizio !== null && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $supporterInizio)) {
+            return ['ok' => false, 'errore' => 'Data inizio Supporter non valida.'];
+        }
+        if ($supporterScadenza !== null && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $supporterScadenza)) {
+            return ['ok' => false, 'errore' => 'Data scadenza Supporter non valida.'];
+        }
+        if ($supporterInizio !== null && $supporterScadenza !== null && $supporterScadenza < $supporterInizio) {
+            return ['ok' => false, 'errore' => 'La scadenza non può precedere la data di inizio.'];
+        }
+
+        $planStmt = $this->pdo->prepare(
+            "SELECT id FROM piani WHERE code = ? AND is_active = TRUE LIMIT 1"
+        );
+        $planStmt->execute([$pianoCode]);
+        $planId = $planStmt->fetchColumn();
+
+        if ($planId === false) {
+            return ['ok' => false, 'errore' => 'Il piano selezionato non è attivo o non esiste.'];
+        }
+
+        $this->pdo->prepare(
+            "UPDATE utenti
+             SET plan_id = ?,
+                 donazione_importo = ?,
+                 supporter_inizio = ?,
+                 supporter_scadenza = ?,
+                 subjects_limit_override = ?,
+                 accesso_speciale_permanente = ?,
+                 note_piano = ?,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?"
+        )->execute([
+            $planId,
+            $donazioneImporto,
+            $supporterInizio,
+            $supporterScadenza,
+            $subjectsLimitOverride,
+            $accessoSpecialePermanente ? 't' : 'f',
+            trim($notePiano) ?: null,
+            $utenteId,
+        ]);
+
+        return ['ok' => true];
     }
 
     public function aggiornaRuolo(int $utenteId, string $ruolo): bool {

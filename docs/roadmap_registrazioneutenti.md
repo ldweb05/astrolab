@@ -1176,6 +1176,16 @@ Esempio per la ricerca a griglia:
 - controllo sintassi PHP e `git diff --check` superati;
 - prossimo passo: estendere l'interfaccia amministrativa (`admin_utenti.php`) per assegnare/modificare piano, donazione, scadenza Supporter, override soggetti e accesso speciale permanente.
 
+### 2026-08-11 quater — Fase 5, passo 3: interfaccia admin gestione piano
+
+- aggiunto `Auth::aggiornaPianoUtente()` con validazione server-side completa: piano tra i codici attivi in `piani`, importi e limiti non negativi, coerenza tra data inizio e scadenza Supporter;
+- estesa `Auth::getListaUtenti()` con i nuovi campi (donazione, date Supporter, override, accesso speciale, note) per precompilare l'interfaccia;
+- aggiunto in `admin_utenti.php` il modale "Gestione Piano" (tre blocchi: Piano, Ciclo Supporter, Personalizzazioni), l'azione POST `aggiorna_piano` e il pulsante 💎 in tabella;
+- verificati con test funzionale diretto: rifiuto piano non valido, rifiuto scadenza precedente all'inizio, assegnazione Supporter con donazione/date/note salvata correttamente, passaggio a free con accesso speciale permanente attivato correttamente;
+- controllo sintassi PHP e `git diff --check` superati;
+- Fase 5 ora funzionalmente completa per i punti richiesti: piano, donazione, validità annuale Supporter, limite soggetti personalizzato per utente, accesso speciale permanente concesso dall'admin;
+- non implementato in questo passo (rimandato, fuori scope immediato): riporto automatico a free alla scadenza (oggi la scadenza è visibile e calcolata ai fini del limite soggetti in getLimiteSoggettiEffettivo, ma il campo piano resta quello assegnato finché l'admin non lo cambia manualmente), storico delle modifiche amministrative, attivazione/disattivazione piani dall'interfaccia.
+
 ---
 
 ## Prossimo passo
