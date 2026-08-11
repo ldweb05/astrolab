@@ -77,6 +77,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ok = $auth->aggiornaRuolo($id, $ruolo);
             $messaggio = $ok ? 'Ruolo aggiornato.' : 'Errore aggiornamento ruolo.';
             $tipoMsg   = $ok ? 'success' : 'error';
+        } elseif ($azione === 'aggiorna_piano') {
+            $id = intval($_POST['id'] ?? 0);
+            $pianoCode = $_POST['piano_code'] ?? '';
+            $donazione = ($_POST['donazione_importo'] ?? '') !== ''
+                ? (float)$_POST['donazione_importo'] : null;
+            $supporterInizio = ($_POST['supporter_inizio'] ?? '') !== ''
+                ? $_POST['supporter_inizio'] : null;
+            $supporterScadenza = ($_POST['supporter_scadenza'] ?? '') !== ''
+                ? $_POST['supporter_scadenza'] : null;
+            $override = ($_POST['subjects_limit_override'] ?? '') !== ''
+                ? intval($_POST['subjects_limit_override']) : null;
+            $accessoSpeciale = !empty($_POST['accesso_speciale_permanente']);
+            $notePiano = trim($_POST['note_piano'] ?? '');
+
+            $result = $auth->aggiornaPianoUtente(
+                $id, $pianoCode, $donazione, $supporterInizio, $supporterScadenza,
+                $override, $accessoSpeciale, $notePiano
+            );
+            $messaggio = $result['ok'] ? 'Piano aggiornato con successo.' : $result['errore'];
+            $tipoMsg   = $result['ok'] ? 'success' : 'error';
         } elseif ($azione === 'verifica_manuale') {
             $id = intval($_POST['id'] ?? 0);
             $ok = $auth->verificaManualmente($id);
@@ -282,6 +302,22 @@ $paginaAttiva = 'admin';
                             🔑
                         </button>
 
+                        <!-- Gestione piano (piano, donazione, scadenza, override, accesso speciale) -->
+                        <button class="btn-icon" title="Gestisci piano"
+                            onclick="apriModalePiano(
+                                <?= $u['id'] ?>,
+                                '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>',
+                                '<?= htmlspecialchars($u['piano'] ?? 'free', ENT_QUOTES) ?>',
+                                '<?= htmlspecialchars((string)($u['donazione_importo'] ?? ''), ENT_QUOTES) ?>',
+                                '<?= htmlspecialchars((string)($u['supporter_inizio'] ?? ''), ENT_QUOTES) ?>',
+                                '<?= htmlspecialchars((string)($u['supporter_scadenza'] ?? ''), ENT_QUOTES) ?>',
+                                '<?= htmlspecialchars((string)($u['subjects_limit_override'] ?? ''), ENT_QUOTES) ?>',
+                                <?= $u['accesso_speciale_permanente'] ? 'true' : 'false' ?>,
+                                '<?= htmlspecialchars($u['note_piano'] ?? '', ENT_QUOTES) ?>'
+                            )">
+                            💎
+                        </button>
+
                         <?php if (!$isCurrentUser): ?>
                         <!-- Cambia ruolo -->
                         <button class="btn-icon" title="Cambia ruolo"
@@ -484,6 +520,76 @@ $paginaAttiva = 'admin';
     </div>
 </div>
 
+<!-- ── Gestione piano (Free / Supporter) ────────────────────────── -->
+<div class="modal-bg" id="modal-piano">
+    <div class="modal-box" style="max-width:620px">
+        <h3 id="piano-titolo">💎 Gestione Piano</h3>
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="azione" value="aggiorna_piano">
+            <input type="hidden" name="id" id="piano-id">
+
+            <div class="form-group" style="margin-bottom:10px">
+                <label>Piano</label>
+                <select name="piano_code" id="piano-code">
+                    <option value="free">Free</option>
+                    <option value="supporter">Supporter</option>
+                </select>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #EDE8E0;margin:12px 0">
+            <div style="font-size:11px;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em">
+                Ciclo Supporter
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+                <div class="form-group">
+                    <label>Donazione (€)</label>
+                    <input type="number" step="0.01" min="0" name="donazione_importo" id="piano-donazione">
+                </div>
+                <div class="form-group">
+                    <label>Inizio</label>
+                    <input type="date" name="supporter_inizio" id="piano-inizio">
+                </div>
+                <div class="form-group">
+                    <label>Scadenza</label>
+                    <input type="date" name="supporter_scadenza" id="piano-scadenza">
+                </div>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #EDE8E0;margin:12px 0">
+            <div style="font-size:11px;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em">
+                Personalizzazioni
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                <div class="form-group">
+                    <label>Limite soggetti personalizzato</label>
+                    <input type="number" min="0" name="subjects_limit_override" id="piano-override"
+                           placeholder="Vuoto = limite standard del piano">
+                </div>
+                <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:8px">
+                    <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:13px;color:#444">
+                        <input type="checkbox" name="accesso_speciale_permanente" id="piano-accesso-speciale" value="1">
+                        Accesso completo, gratuito e permanente
+                    </label>
+                </div>
+                <div class="form-group" style="grid-column:1/-1">
+                    <label>Note amministrative</label>
+                    <textarea name="note_piano" id="piano-note" rows="2"
+                              style="width:100%;border:1px solid #D0C8BC;border-radius:4px;
+                                     padding:6px 10px;font-size:13px;font-family:inherit;
+                                     resize:vertical"
+                              placeholder="Es: donazione ricevuta il ..., motivo accesso speciale..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="chiudiModali()">Annulla</button>
+                <button type="submit" class="btn-primary">💾 Salva Piano</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ── Elimina con trasferimento ────────────────────────────────── -->
 <div class="modal-bg" id="modal-elimina">
     <div class="modal-box">
@@ -528,6 +634,18 @@ function apriModaleResetPwd(id, nome) {
     document.getElementById('nuova-pwd-input').value = '';
     document.getElementById('strength-reset').style.width = '0';
     document.getElementById('modal-reset-pwd').classList.add('vis');
+}
+function apriModalePiano(id, username, piano, donazione, inizio, scadenza, override, accessoSpeciale, note) {
+    document.getElementById('piano-titolo').textContent = '💎 Gestione Piano — ' + username;
+    document.getElementById('piano-id').value = id;
+    document.getElementById('piano-code').value = piano || 'free';
+    document.getElementById('piano-donazione').value = donazione || '';
+    document.getElementById('piano-inizio').value = inizio || '';
+    document.getElementById('piano-scadenza').value = scadenza || '';
+    document.getElementById('piano-override').value = override || '';
+    document.getElementById('piano-accesso-speciale').checked = !!accessoSpeciale;
+    document.getElementById('piano-note').value = note || '';
+    document.getElementById('modal-piano').classList.add('vis');
 }
 function apriModaleCambiaRuolo(id, nome, ruoloAttuale) {
     document.getElementById('ruolo-titolo').textContent = '⚙️ Cambia Ruolo — ' + nome;

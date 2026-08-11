@@ -3048,3 +3048,15 @@ avviare M1 — Comparazione ricerche RSM.
 - Verifica funzionale diretta (script PHP temporaneo, poi rimosso) sui tre scenari: piano free standard → limite 2; override a 5 → limite 5; accesso speciale permanente → illimitato (null). Confermato nessun impatto sugli utenti reali esistenti (tutti piano supporter, nessuna scadenza, nessun override).
 - `php -l` e `git diff --check` superati su entrambi i file modificati.
 - Prossimo passo: estendere `admin_utenti.php` per assegnare/modificare piano, donazione, scadenza Supporter, override soggetti e accesso speciale permanente.
+
+## 2026-08-11 quinquies — Fase 5, passo 3: interfaccia admin gestione piano
+
+- Aggiunto `Auth::aggiornaPianoUtente()` in `www/includes/Auth.php`: validazione server-side completa (piano tra i codici attivi in `piani`, importi/limiti non negativi, coerenza tra data inizio e scadenza Supporter) prima di scrivere piano, donazione, date, override soggetti, accesso speciale permanente e note sull'utente.
+- Estesa `Auth::getListaUtenti()` con i nuovi campi per precompilare l'interfaccia.
+- Discussa con l'utente la scelta dell'interfaccia (modale vs altre soluzioni): confermato il modale, coerente con lo stile già usato in tutta la pagina per le altre azioni, organizzato in tre blocchi (Piano, Ciclo Supporter, Personalizzazioni) per restare leggibile nonostante i molti campi.
+- Aggiunto in `admin_utenti.php`: modale "Gestione Piano" (max-width 620px), azione POST `aggiorna_piano`, pulsante 💎 in tabella, funzione JS `apriModalePiano()` per precompilare i campi.
+- Verifica funzionale diretta (script PHP temporaneo su utente di test, poi rimosso): rifiuto piano non valido, rifiuto scadenza precedente all'inizio, assegnazione Supporter con donazione/date/note salvata correttamente in database, passaggio a free con accesso speciale permanente attivato correttamente.
+- `php -l` e `git diff --check` superati su entrambi i file modificati.
+- Fase 5 ora copre funzionalmente i punti richiesti dall'utente: piano assegnabile dall'admin, importo donazione registrato, validità annuale Supporter (inizio/scadenza), limite soggetti personalizzabile per singolo utente (in vista delle fasce di donazione che l'utente gestirà), accesso completo/gratuito/permanente concedibile a discrezione dell'admin senza intaccare il ruolo.
+- Rimandato a un passo successivo, se necessario: riporto automatico del campo piano a free alla scadenza (oggi la scadenza è già considerata ai fini del limite soggetti effettivo tramite `getLimiteSoggettiEffettivo()`, ma il valore di `plan_id` resta quello assegnato finché l'admin non lo cambia manualmente), storico delle modifiche amministrative (chi ha cambiato cosa e quando), attivazione/disattivazione dei piani dall'interfaccia.
+- Prossimo passo: da concordare con l'utente in una prossima sessione — se completare i punti rimandati della Fase 5 o passare ad altro.
