@@ -1158,6 +1158,15 @@ Esempio per la ricerca a griglia:
 - controllo sintassi PHP superato su tutti i file modificati;
 - nessun test automatico dedicato esistente per il flusso di registrazione (`tests/run.php` fallisce per una funzione `passthru()` disabilitata, problema preesistente non legato a questa modifica).
 
+### 2026-08-11 bis — Fase 5, passo 1: modello dati amministrazione piano Supporter
+
+- creata la migrazione `sql/007_piano_supporter_amministrazione.sql`, applicata al database operativo;
+- aggiunti su `utenti`: `subjects_limit_override` (limite soggetti personalizzato per singolo utente), `donazione_importo`, `supporter_inizio`, `supporter_scadenza`, `accesso_speciale_permanente` (accesso completo, gratuito, permanente, senza intaccare il ruolo), `note_piano`;
+- aggiunti su `piani`: `donazione_minima` e `durata_giorni`, configurabili per piano (valorizzati inizialmente per `supporter`: 0 € minimo, 365 giorni);
+- vincoli CHECK applicati su valori non negativi e coerenza tra date inizio/scadenza;
+- verificato lo schema post-migrazione e la disponibilità dell'applicazione (login e index invariati);
+- prossimo passo: helper centralizzati in `Auth.php` per il limite effettivo (precedenza accesso speciale permanente → override utente → piano) e per lo stato Supporter (attivo/scaduto).
+
 ---
 
 ## Prossimo passo
