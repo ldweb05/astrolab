@@ -49,7 +49,7 @@ Fornire agli utenti un manuale d'uso strutturato, accessibile direttamente dall'
 - [x] Fase 1: Definizione della struttura e dei titoli dei capitoli
 - [x] Fase 2: Infrastruttura menu Aiuto (dropdown 8 voci verso pagine dedicate `help_*.php`; rimossa in data 10-08-2026 l'implementazione parallela a modale, mai adottata e causa di duplicazione nel trigger navbar)
 - [~] Fase 3: Redazione contenuti testuali (Sezioni 1-2 completate in help_account.php e help_soggetti.php, Sezioni 3-8 placeholder)
-- [~] Fase 4: Redazione dei contenuti testuali per le sezioni 3, 4 e 5 (Sezione 3 completata in help_calcoli.php: Tema Natale, Rivoluzione Solare, Rivoluzione Lunare, Rilocazioni; Sezione 4 completata in help_ricerca.php: RSM v3, Filtri avanzati, Ricerca a Griglia, con indicazione delle funzioni riservate al piano Supporter)
+- [x] Fase 4: Redazione dei contenuti testuali per le sezioni 3, 4 e 5 (Sezione 3 completata in help_calcoli.php: Tema Natale, Rivoluzione Solare, Rivoluzione Lunare, Rilocazioni; Sezione 4 completata in help_ricerca.php: RSM v3, Filtri avanzati, Ricerca a Griglia, con indicazione delle funzioni riservate al piano Supporter; Sezione 5 completata in help_report.php: Annual Report, Theme/Narrative Engine, Esportazione e Stampa PDF)
 - [ ] Fase 5: Redazione dei contenuti testuali per le sezioni 6, 7 e 8
 - [ ] Fase 6: Integrazione finale, test UX e collegamento alla documentazione principale
 
