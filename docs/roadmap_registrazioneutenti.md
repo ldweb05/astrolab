@@ -1197,6 +1197,14 @@ Esempio per la ricerca a griglia:
 - Confermato che www/index.php non risulta tra i file modificati: la vista personale dell'astrologo resta inalterata.
 - Controllo sintassi PHP e git diff --check superati su tutti i file.
 
+### 2026-08-11 sexies — Redirect post-login differenziato per ruolo
+
+- richiesta dell'utente dopo aver verificato la riga espandibile soggetti: l'admin deve atterrare direttamente su admin_utenti.php dopo il login, non su index.php;
+- modificato login.php: se non e' presente un parametro next esplicito (link diretto), l'admin viene reindirizzato a admin_utenti.php, gli astrologi normali restano su index.php come prima; lo stesso criterio si applica anche al redirect "gia' loggato" in cima alla pagina;
+- un eventuale link diretto (next=...) resta rispettato per entrambi i ruoli, la modifica riguarda solo il comportamento di default;
+- verificato end-to-end via curl: login astrologo normale -> Location: index.php (invariato); login admin -> Location: admin_utenti.php (nuovo comportamento);
+- controllo sintassi PHP e git diff --check superati.
+
 ---
 
 ## Prossimo passo
