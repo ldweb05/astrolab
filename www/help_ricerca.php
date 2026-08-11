@@ -70,7 +70,7 @@ $auth->richiediLogin();
     <div class="help-section">
         <h2>Risultati e confronto</h2>
         <p>Ogni risultato mostra stelline e punteggio (VAL). Puoi selezionare più località e premere "Confronta le selezioni" per metterle a confronto diretto.</p>
-        <div class="help-note">💎 Il piano Free consente di confrontare fino a 2 risultati contemporaneamente. Per confrontarne 3 o più serve il piano Supporter.</div>
+        <div class="help-note">💎 Il piano Free consente di confrontare fino a 2 risultati contemporaneamente. Con il piano Supporter puoi arrivare a confrontarne 3. Trovi tutti i dettagli sul Comparatore nella Sezione 6.</div>
     </div>
 </div>
 </body>
