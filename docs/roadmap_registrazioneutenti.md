@@ -22,11 +22,11 @@ La presente roadmap non sostituisce l’HANDOVER principale e contiene soltanto 
 
 ## Stato attuale
 
-**Fase:** macro-funzionalità non completata. Le Fasi 1–4 e 6–13 risultano implementate nei limiti documentati, mentre la Fase 5 — amministrazione utenti, gestione del piano Supporter e limiti personalizzati — deve essere completata.
+**Fase:** macro-funzionalità in corso. Le Fasi 1–4 e 6–13 risultano implementate nei limiti documentati. Sbloccata la registrazione pubblica: l'account viene attivato automaticamente in assenza di invio email reale (previsto ma non attivato fino al deployment su VPS), con azione amministrativa di verifica manuale per gli eventuali casi residui in pending_email. La Fase 5 — amministrazione utenti, gestione del piano Supporter e limiti personalizzati — deve essere completata.
 
-**Codice applicativo modificato:** registrazione, verifica email, piani base e limiti funzionali sono presenti; manca la gestione amministrativa completa del ciclo di vita Supporter e dei limiti personalizzati per singolo utente.
+**Codice applicativo modificato:** aggiornati `www/includes/Auth.php` (registraUtentePubblico attiva subito l'account; nuovo metodo verificaManualmente), `www/registrazione.php` (messaggio di successo aggiornato), `www/login.php` (aggiunto link a registrazione.php), `www/admin_utenti.php` (azione e pulsante di verifica manuale, badge stato "Da verificare").
 
-**Documentazione modificata:** roadmap riaperta per riallineare lo stato dichiarato all'implementazione effettiva.
+**Documentazione modificata:** roadmap aggiornata con lo sblocco della registrazione pubblica e la decisione di rimandare l'invio email reale al deployment su VPS.
 
 **Prossimo passo:** completare la Fase 5 con modifica amministrativa del piano, gestione delle donazioni, validità annuale Supporter, scadenza e rinnovo, limiti soggetti personalizzati e relativi test.
 
@@ -1145,6 +1145,18 @@ Esempio per la ricerca a griglia:
 - allineata parzialmente l'interfaccia amministrativa al nuovo modello utenti;
 - regressione completa superata per le funzioni implementate;
 - la fase non è completata: mancano modifica del piano, ciclo di vita annuale Supporter, gestione donazioni, scadenze, rinnovi e limiti personalizzati per singolo utente.
+
+### 2026-08-11 — Sblocco registrazione pubblica
+
+- deciso di rimandare l'attivazione reale dell'invio email (verifica account e reset password) al momento del deployment su VPS;
+- `Auth::registraUtentePubblico()` ora attiva subito l'account (`account_status = 'active'`) invece di lasciarlo in `pending_email`;
+- il meccanismo di token e verifica email via `verifica-email.php` resta nel codice, dormiente, pronto per l'attivazione futura;
+- aggiunto `Auth::verificaManualmente()` per attivare dall'amministrazione un eventuale utente residuo in `pending_email`;
+- aggiunta in `admin_utenti.php` l'azione e il pulsante di verifica manuale, con nuovo badge di stato "Da verificare";
+- aggiunto in `login.php` il link mancante alla pagina `registrazione.php` (pagina già esistente ma non raggiungibile dall'interfaccia);
+- verifica end-to-end eseguita manualmente: registrazione → account attivo in database → login riuscito;
+- controllo sintassi PHP superato su tutti i file modificati;
+- nessun test automatico dedicato esistente per il flusso di registrazione (`tests/run.php` fallisce per una funzione `passthru()` disabilitata, problema preesistente non legato a questa modifica).
 
 ---
 

@@ -77,6 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ok = $auth->aggiornaRuolo($id, $ruolo);
             $messaggio = $ok ? 'Ruolo aggiornato.' : 'Errore aggiornamento ruolo.';
             $tipoMsg   = $ok ? 'success' : 'error';
+        } elseif ($azione === 'verifica_manuale') {
+            $id = intval($_POST['id'] ?? 0);
+            $ok = $auth->verificaManualmente($id);
+            $messaggio = $ok ? 'Utente verificato e attivato.' : 'Utente già verificato o non trovato.';
+            $tipoMsg   = $ok ? 'success' : 'error';
         } elseif ($azione === 'elimina') {
             $id = intval($_POST['id'] ?? 0);
             $trasferisciA = intval($_POST['trasferisci_a'] ?? 1);
@@ -202,7 +207,9 @@ $paginaAttiva = 'admin';
 
                 <!-- Stato -->
                 <td>
-                    <?php if ($u['attivo']): ?>
+                    <?php if ($u['account_status'] === 'pending_email'): ?>
+                        <span class="badge-off" title="In attesa di verifica email">⏳ Da verificare</span>
+                    <?php elseif ($u['attivo']): ?>
                         <span class="badge-attivo">● Attivo</span>
                     <?php else: ?>
                         <span class="badge-off">○ Disattivo</span>
@@ -232,6 +239,16 @@ $paginaAttiva = 'admin';
                 <!-- Azioni -->
                 <td>
                     <div class="azioni">
+
+                        <?php if ($u['account_status'] === 'pending_email'): ?>
+                        <!-- Verifica manuale -->
+                        <form method="POST" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="azione" value="verifica_manuale">
+                            <input type="hidden" name="id" value="<?= $u['id'] ?>">
+                            <button type="submit" class="btn-icon" title="Verifica manualmente e attiva l'account">✅</button>
+                        </form>
+                        <?php endif; ?>
 
                         <?php if (!$isCurrentUser): ?>
                         <!-- Toggle attivo/disattivo -->

@@ -217,6 +217,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="btn-login">Accedi →</button>
         </form>
 
+        <div class="login-link" style="text-align:center;font-size:13px;margin-top:22px">
+            Non hai un account? <a href="registrazione.php">Registrati</a>
+        </div>
+
         <div class="version-note">Uso personale — Swiss Ephemeris AGPL</div>
     </div>
 </body>
