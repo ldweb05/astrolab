@@ -3027,3 +3027,15 @@ avviare M1 — Comparazione ricerche RSM.
 - `tests/run.php` (regressione completa) fallisce per un problema preesistente e non collegato a questa modifica: la funzione `passthru()` risulta disabilitata nel container `astrolab-web` (probabile `disable_functions` in `php.ini`), già notato in una sessione precedente (2026-08-09 quater) e mai risolto.
 - Nessun test automatico dedicato esisteva per il flusso di registrazione; non è stato creato in questo passaggio (fuori scope rispetto all'obiettivo puntuale di sblocco).
 - Prossimo passo: proseguire con la Fase 5 della roadmap dedicata (amministrazione del piano Supporter: donazioni, validità annuale, scadenza/rinnovo, limiti soggetti personalizzati, accesso speciale permanente).
+
+## 2026-08-11 ter — Fase 5, passo 1: modello dati amministrazione piano Supporter
+
+- Avviata la Fase 5 della roadmap [[docs/roadmap_registrazioneutenti.md]] partendo dal modello dati, come base necessaria sia per l'interfaccia admin sia per la logica dei limiti effettivi.
+- Decisione di prodotto confermata dall'utente: l'admin deve poter concedere un accesso completo, gratuito e permanente a chi ritiene opportuno (indipendente dal ciclo Supporter, senza toccare il ruolo); per tutti gli altri utenti valgono le regole già definite nella roadmap (piano, donazione, limiti).
+- Creata e applicata al database operativo la migrazione `sql/007_piano_supporter_amministrazione.sql`:
+  - su `utenti`: `subjects_limit_override`, `donazione_importo`, `supporter_inizio`, `supporter_scadenza`, `accesso_speciale_permanente` (default `FALSE`), `note_piano`;
+  - su `piani`: `donazione_minima`, `durata_giorni` (valorizzati per `supporter`: 0 € minimo, 365 giorni, poi modificabili dall'admin);
+  - vincoli CHECK su valori non negativi e coerenza date inizio/scadenza.
+- Verificato lo schema post-migrazione (`\d utenti`, `\d piani`) e la disponibilità dell'applicazione (login e index rispondono correttamente dopo l'alter table).
+- Il limite soggetti del piano Supporter resta configurabile in `piano_limiti` (già esistente da `sql/004_popola_piano_limiti.sql`); l'admin potrà modificarlo per adeguarlo alle fasce di donazione, oltre a impostare override per singolo utente.
+- Prossimo passo: helper centralizzati in `Auth.php` (limite soggetti effettivo con precedenza accesso speciale permanente → override utente → piano; stato Supporter attivo/scaduto), poi estensione dell'interfaccia admin.
