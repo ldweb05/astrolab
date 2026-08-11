@@ -294,7 +294,7 @@ class Auth {
                     username, email, password_hash, ruolo, attivo,
                     account_status, plan_id
                  )
-                 SELECT ?, ?, ?, 'user', TRUE, 'pending_email', id
+                 SELECT ?, ?, ?, 'user', TRUE, 'active', id
                  FROM piani
                  WHERE code = 'free' AND is_active = TRUE
                  LIMIT 1
@@ -781,6 +781,23 @@ class Auth {
                      ELSE NULL
                  END
              WHERE id = ?"
+        );
+        $stmt->execute([$utenteId]);
+
+        return $stmt->rowCount() === 1;
+    }
+
+    /**
+     * Verifica manualmente l'email di un utente in stato pending_email,
+     * portandolo direttamente ad account_status = 'active'.
+     * Usato dall'admin finché l'invio email reale non è attivo (VPS).
+     */
+    public function verificaManualmente(int $utenteId): bool {
+        $stmt = $this->pdo->prepare(
+            "UPDATE utenti
+             SET account_status = 'active',
+                 email_verified_at = NOW()
+             WHERE id = ? AND account_status = 'pending_email'"
         );
         $stmt->execute([$utenteId]);
 

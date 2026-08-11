@@ -208,7 +208,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         <?php if ($successo): ?>
             <div class="message message-success">
-                Registrazione completata. Controlla la tua email per attivare l’account.
+                Registrazione completata. Il tuo account è già attivo: puoi accedere subito.
             </div>
         <?php else: ?>
             <form method="POST" action="registrazione.php">

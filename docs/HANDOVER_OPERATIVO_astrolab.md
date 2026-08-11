@@ -3011,3 +3011,19 @@ avviare M1 — Comparazione ricerche RSM.
 - Azione: `git mv` → `git rm --cached`, file spostato fisicamente in `import/data/airports.csv` (cartella già esclusa da `.gitignore`, coerente con gli altri dataset non versionati tipo GeoNames), rimosso dal tracking.
 - Aggiornato `STRUTTURA_astrolab.md` (riga spostata da root a `import/data/`).
 - Nessun cambiamento a codice applicativo, schema DB o motore astrologico. Nessun rischio di perdita dati: il file resta recuperabile dalla storia git in qualunque momento.
+
+## 2026-08-11 bis — Sblocco registrazione pubblica utenti
+
+- Ripreso il lavoro sulla macro-feature "Registrazione, piani e gestione utenti" ([[docs/roadmap_registrazioneutenti.md]]), partendo dalla verifica dello stato reale via lettura diretta dei documenti e del codice su GitHub (branch `fase9-comparator-quota`).
+- Individuato un blocco critico: `Auth::registraUtentePubblico()` creava l'account con `account_status = 'pending_email'`, ma nessun invio email reale era mai stato implementato (`registrazione.php` generava il token di verifica e lo scartava). Risultato: qualunque utente si registrasse restava bloccato fuori dall'app, senza alcuna via di attivazione.
+- Decisione concordata: finché l'applicazione non sarà spostata online sul VPS, l'invio email (verifica account e "password dimenticata") resta previsto nel codice ma non attivato. La registrazione pubblica attiva quindi subito l'account (`account_status = 'active'`), e in aggiunta è stata introdotta un'azione amministrativa di verifica manuale per gli eventuali utenti residui in `pending_email`.
+- Modifiche applicative:
+  - `www/includes/Auth.php`: `registraUtentePubblico()` inserisce `account_status = 'active'` invece di `'pending_email'`; aggiunto il metodo `verificaManualmente(int $utenteId)`.
+  - `www/registrazione.php`: aggiornato il messaggio di successo (non più "controlla la tua email").
+  - `www/login.php`: aggiunto il link mancante alla pagina `registrazione.php` (pagina già esistente ma irraggiungibile dall'interfaccia).
+  - `www/admin_utenti.php`: nuova azione POST `verifica_manuale`, nuovo pulsante icona visibile solo per utenti `pending_email`, nuovo badge di stato "⏳ Da verificare" nella colonna Stato.
+- Il meccanismo di token/verifica email esistente (`creaTokenSicurezza`, `verificaEmailToken`, `verifica-email.php`, `richiediResetPassword`, `confermaResetPassword`) resta invariato nel codice, dormiente, pronto per l'attivazione quando l'invio email reale sarà collegato sul VPS.
+- Verifica: `php -l` superato su tutti i file modificati; `git diff --check` pulito; test end-to-end manuale via curl dentro il container (registrazione → utente creato con `account_status = active` in database → login riuscito), utente di test poi rimosso dal database.
+- `tests/run.php` (regressione completa) fallisce per un problema preesistente e non collegato a questa modifica: la funzione `passthru()` risulta disabilitata nel container `astrolab-web` (probabile `disable_functions` in `php.ini`), già notato in una sessione precedente (2026-08-09 quater) e mai risolto.
+- Nessun test automatico dedicato esisteva per il flusso di registrazione; non è stato creato in questo passaggio (fuori scope rispetto all'obiettivo puntuale di sblocco).
+- Prossimo passo: proseguire con la Fase 5 della roadmap dedicata (amministrazione del piano Supporter: donazioni, validità annuale, scadenza/rinnovo, limiti soggetti personalizzati, accesso speciale permanente).
