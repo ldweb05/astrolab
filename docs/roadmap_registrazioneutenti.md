@@ -1167,6 +1167,15 @@ Esempio per la ricerca a griglia:
 - verificato lo schema post-migrazione e la disponibilità dell'applicazione (login e index invariati);
 - prossimo passo: helper centralizzati in `Auth.php` per il limite effettivo (precedenza accesso speciale permanente → override utente → piano) e per lo stato Supporter (attivo/scaduto).
 
+### 2026-08-11 ter — Fase 5, passo 2: helper centralizzato limite soggetti
+
+- aggiunto `Auth::getLimiteSoggettiEffettivo()`: unico punto applicativo che calcola il limite soggetti di un utente, con precedenza accesso speciale permanente (illimitato) → override personalizzato → limite del piano (Supporter scaduto trattato come free);
+- refactorato `www/api/soggetti_api.php` (azione `inserisci`) per usare l'helper al posto della query inline su `piano_limiti`, eliminando la logica duplicata;
+- verificati con test funzionale diretto i tre scenari: piano free standard (2), override personalizzato (5), accesso speciale permanente (illimitato/null);
+- confermato nessun impatto sugli utenti reali esistenti (tutti piano supporter, nessuna scadenza, nessun override — comportamento invariato);
+- controllo sintassi PHP e `git diff --check` superati;
+- prossimo passo: estendere l'interfaccia amministrativa (`admin_utenti.php`) per assegnare/modificare piano, donazione, scadenza Supporter, override soggetti e accesso speciale permanente.
+
 ---
 
 ## Prossimo passo
