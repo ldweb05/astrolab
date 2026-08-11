@@ -73,20 +73,7 @@ switch ($action) {
 
     case 'inserisci':
         if (!$isAdmin) {
-            $limitStmt = $pdo->prepare("
-                SELECT pl.limit_value
-                FROM utenti u
-                JOIN piano_limiti pl ON pl.plan_id = u.plan_id
-                WHERE u.id = ?
-                  AND pl.feature_code = 'subjects_max'
-                  AND pl.enabled = TRUE
-                LIMIT 1
-            ");
-            $limitStmt->execute([$userId]);
-            $subjectsMax = $limitStmt->fetchColumn();
-            $subjectsMax = $subjectsMax !== false && $subjectsMax !== null
-                ? (int)$subjectsMax
-                : null;
+            $subjectsMax = $auth->getLimiteSoggettiEffettivo($userId);
 
             $countStmt = $pdo->prepare("
                 SELECT COUNT(*)

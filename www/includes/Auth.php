@@ -622,6 +622,66 @@ class Auth {
         }
     }
 
+    // ── LIMITI EFFETTIVI (piano, override, accesso speciale) ────────
+
+    /**
+     * Restituisce il numero massimo di soggetti che l'utente può creare.
+     * null = nessun limite (illimitato).
+     *
+     * Precedenza:
+     *   1. accesso speciale permanente (concesso dall'admin) -> illimitato
+     *   2. limite personalizzato per il singolo utente (override)
+     *   3. limite del piano effettivo (Supporter scaduto -> trattato come free)
+     */
+    public function getLimiteSoggettiEffettivo(?int $utenteId = null): ?int {
+        $utenteId = $utenteId ?? $this->getCurrentUserId();
+        if (!$utenteId) {
+            return 0;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT u.subjects_limit_override, u.accesso_speciale_permanente,
+                    u.supporter_scadenza, p.code AS piano
+             FROM utenti u
+             LEFT JOIN piani p ON p.id = u.plan_id
+             WHERE u.id = ?"
+        );
+        $stmt->execute([$utenteId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return 0;
+        }
+
+        if ($row['accesso_speciale_permanente']) {
+            return null;
+        }
+
+        if ($row['subjects_limit_override'] !== null) {
+            return (int)$row['subjects_limit_override'];
+        }
+
+        $pianoEffettivo = $row['piano'];
+        if ($pianoEffettivo === 'supporter'
+            && $row['supporter_scadenza'] !== null
+            && $row['supporter_scadenza'] < date('Y-m-d')
+        ) {
+            $pianoEffettivo = 'free';
+        }
+
+        $limitStmt = $this->pdo->prepare(
+            "SELECT pl.limit_value
+             FROM piani p
+             JOIN piano_limiti pl ON pl.plan_id = p.id
+             WHERE p.code = ? AND pl.feature_code = 'subjects_max' AND pl.enabled = TRUE
+             LIMIT 1"
+        );
+        $limitStmt->execute([$pianoEffettivo]);
+        $value = $limitStmt->fetchColumn();
+
+        return ($value !== false && $value !== null) ? (int)$value : null;
+    }
+
     // ── GESTIONE UTENTI (admin) ───────────────────────────────────
 
     public function creaUtente(

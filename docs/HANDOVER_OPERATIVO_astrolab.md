@@ -3039,3 +3039,12 @@ avviare M1 — Comparazione ricerche RSM.
 - Verificato lo schema post-migrazione (`\d utenti`, `\d piani`) e la disponibilità dell'applicazione (login e index rispondono correttamente dopo l'alter table).
 - Il limite soggetti del piano Supporter resta configurabile in `piano_limiti` (già esistente da `sql/004_popola_piano_limiti.sql`); l'admin potrà modificarlo per adeguarlo alle fasce di donazione, oltre a impostare override per singolo utente.
 - Prossimo passo: helper centralizzati in `Auth.php` (limite soggetti effettivo con precedenza accesso speciale permanente → override utente → piano; stato Supporter attivo/scaduto), poi estensione dell'interfaccia admin.
+
+## 2026-08-11 quater — Fase 5, passo 2: helper centralizzato limite soggetti
+
+- Aggiunto `Auth::getLimiteSoggettiEffettivo()` in `www/includes/Auth.php`, unico punto applicativo per il calcolo del limite soggetti, con precedenza: accesso speciale permanente (illimitato) → override personalizzato per singolo utente → limite del piano effettivo (un Supporter con `supporter_scadenza` superata viene trattato come free ai fini del limite).
+- Refactorato `www/api/soggetti_api.php` (azione `inserisci`): rimossa la query inline duplicata su `piano_limiti`, ora richiama l'helper centralizzato.
+- Confermato con l'utente che la registrazione `free` è già completamente self-service (nessuna approvazione admin richiesta), coerente con lo sblocco fatto nel passo precedente; il pulsante "verifica manuale" resta per i soli casi residui `pending_email`. Valutate protezioni anti-abuso aggiuntive (rate limit più stretto, blacklist domini email); deciso di non aggiungerle ora, restando con CSRF + rate limit 5/ora/IP già presenti, da rivalutare se necessario in futuro.
+- Verifica funzionale diretta (script PHP temporaneo, poi rimosso) sui tre scenari: piano free standard → limite 2; override a 5 → limite 5; accesso speciale permanente → illimitato (null). Confermato nessun impatto sugli utenti reali esistenti (tutti piano supporter, nessuna scadenza, nessun override).
+- `php -l` e `git diff --check` superati su entrambi i file modificati.
+- Prossimo passo: estendere `admin_utenti.php` per assegnare/modificare piano, donazione, scadenza Supporter, override soggetti e accesso speciale permanente.
