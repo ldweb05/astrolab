@@ -22,7 +22,7 @@ class Auth {
                     u.account_status, p.code AS piano
              FROM utenti u
              LEFT JOIN piani p ON p.id = u.plan_id
-             WHERE u.username = ? LIMIT 1"
+             WHERE LOWER(TRIM(u.username)) = LOWER(TRIM(?)) LIMIT 1"
         );
         $stmt->execute([trim($username)]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
