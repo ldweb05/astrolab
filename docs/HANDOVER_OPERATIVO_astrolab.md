@@ -3071,3 +3071,10 @@ avviare M1 — Comparazione ricerche RSM.
 - Verifica funzionale diretta (script PHP temporaneo, poi rimosso) sul caso reale roxy: 4 soggetti (Cristina De Brand, Lorenzo Diana, Manuel Raso, Rossella Fumai) correttamente raggruppati e ordinati alfabeticamente.
 - `php -l` e `git diff --check` superati su tutti i file; confermato tramite `git status` che index.php non compare tra i file modificati.
 - Prossimo passo: da concordare con l'utente.
+
+## 2026-08-11 septies — Redirect post-login differenziato per ruolo
+
+- Su richiesta dell'utente, dopo aver verificato la nuova riga espandibile soggetti nella pagina corretta (admin_utenti.php, non index.php dove stava guardando inizialmente): l'admin deve atterrare direttamente su admin_utenti.php dopo il login.
+- Modificato login.php in tre punti: redirect "gia' loggato" in cima alla pagina, valore di default di $next, e redirect post-login riuscito. In tutti e tre i casi, se non e' presente un parametro next esplicito, l'admin va su admin_utenti.php, gli astrologi normali restano su index.php come prima. Un eventuale link diretto (next=...) resta rispettato per entrambi i ruoli.
+- Verificato end-to-end via curl con utenti reali: login astrologo pippo -> Location: index.php (invariato); login admin -> Location: admin_utenti.php (nuovo comportamento).
+- php -l e git diff --check superati.

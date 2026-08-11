@@ -6,9 +6,12 @@ require_once __DIR__ . '/includes/bootstrap.php';
  */
 session_start();
 
-// Se già loggato, vai all'indice
+// Se già loggato, vai alla pagina di destinazione predefinita per il ruolo
 if (!empty($_SESSION['utente_id'])) {
-    header('Location: index.php');
+    $paginaDefault = ($_SESSION['utente_ruolo'] ?? '') === 'admin'
+        ? 'admin_utenti.php'
+        : 'index.php';
+    header('Location: ' . $paginaDefault);
     exit;
 }
 
@@ -18,7 +21,7 @@ $pdo = db_connect();
 $auth = new Auth($pdo);
 
 $errore = '';
-$next   = $_GET['next'] ?? 'index.php';
+$next   = $_GET['next'] ?? '';
 
 function loginClientIp(): string
 {
@@ -88,7 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Sicurezza: next deve essere una path relativa, non un URL esterno
             $next = preg_replace('#[^a-zA-Z0-9/_\-\.\?=&]#', '', $next);
             if (empty($next) || str_starts_with($next, '//') || str_contains($next, ':')) {
-                $next = 'index.php';
+                // Nessuna destinazione esplicita: pagina predefinita in base al ruolo
+                $next = ($result['ruolo'] ?? '') === 'admin'
+                    ? 'admin_utenti.php'
+                    : 'index.php';
             }
             header('Location: ' . $next);
             exit;
