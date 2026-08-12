@@ -64,6 +64,7 @@ L'applicazione comprende:
 - Rivoluzione Solare;
 - Rivoluzione Lunare;
 - Rilocazioni;
+- Transiti Planetari;
 - Annual Report;
 - Comparator;
 - Decision Support System;
