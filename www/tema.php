@@ -57,6 +57,8 @@ if ($soggetto) {
     <script src="js/svg_zoom.js"></script>
     <style>
         .tema-box.tema-box-full { max-width: 100%; min-width: 0; width: 100%; background: #F2EDE4; box-shadow: none; }
+        .tema-col { display: flex; flex-direction: column; gap: 16px; flex: 1; min-width: 460px; max-width: 540px; }
+        .tema-col .tema-box { min-width: 0; max-width: none; }
         .tema-box-full .tema-box-header { justify-content: center; gap: 14px; }
         .tema-box-full .tema-box-header h3 { flex: 0 0 auto; }
         .tema-box-full .btn-toggle-gradi { background: #2C3E6B; color: #fff; border-color: #2C3E6B; }
@@ -99,9 +101,18 @@ if ($soggetto) {
     </div>
 
     <div class="temi-wrapper">
-        <div class="tema-box">
-            <h3>Pianeta, Posizione e Casa</h3>
-            <div id="tab-natale"></div>
+        <div class="tema-col">
+            <div class="tema-box">
+                <h3>Pianeta, Posizione e Casa</h3>
+                <div id="tab-natale"></div>
+            </div>
+            <div class="tema-box">
+                <h3>Aspetti tra i Pianeti</h3>
+                <table class="tabella-aspetti">
+                    <thead><tr><th>Pianeta 1</th><th></th><th>Pianeta 2</th><th>Aspetto</th><th>Orb</th></tr></thead>
+                    <tbody id="aspetti-natale-body"><tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr></tbody>
+                </table>
+            </div>
         </div>
         <div class="tema-box">
             <h3>Case (Placido)</h3>
@@ -162,11 +173,64 @@ fetch('api/tema_api.php?tipo=natale' +
     });
     htmlC += '</table>';
     document.getElementById('tab-case').innerHTML = htmlC;
+
+    popolaTabellaAspettiNatale(calcolaAspettiNatali(tema));
 })
 .catch(err => {
     console.error("Errore:", err);
     document.getElementById('info-natale').textContent = "Errore: " + err.message;
 });
+
+// ── Aspetti tra i pianeti natali (riusa ZodiacWheel.ASPETTI / _trovaAspetto) ──
+function calcolaAspettiNatali(tema) {
+    const risultati = [];
+    if (!tema.pianeti) return risultati;
+    const punti = Object.values(tema.pianeti);
+    for (let i = 0; i < punti.length; i++) {
+        for (let j = i + 1; j < punti.length; j++) {
+            let diff = Math.abs(punti[i].longitudine - punti[j].longitudine) % 360;
+            if (diff > 180) diff = 360 - diff;
+            const asp = ZodiacWheel._trovaAspetto(diff);
+            if (!asp) continue;
+            risultati.push({
+                pianeta_a: punti[i].id,
+                pianeta_b: punti[j].id,
+                aspetto:   asp.nome,
+                scarto:    Math.abs(diff - asp.angolo)
+            });
+        }
+    }
+    return risultati;
+}
+
+function popolaTabellaAspettiNatale(aspetti) {
+    const tbody = document.getElementById('aspetti-natale-body');
+    if (!tbody) return;
+    if (!aspetti || aspetti.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr>';
+        return;
+    }
+    const simboliA = {0:'☉',1:'☽',2:'☿',3:'♀',4:'♂',5:'♃',6:'♄',7:'♅',8:'♆',9:'♇'};
+    const nomiA    = {0:'Sole',1:'Luna',2:'Mercurio',3:'Venere',4:'Marte',5:'Giove',
+                       6:'Saturno',7:'Urano',8:'Nettuno',9:'Plutone'};
+    const tipoMap  = {
+        'trigono':{sim:'△',cls:'aspetto-trigono'},
+        'quadratura':{sim:'□',cls:'aspetto-quadrato'},
+        'opposizione':{sim:'☍',cls:'aspetto-opposizione'},
+        'sestile':{sim:'⚹',cls:'aspetto-sestile'},
+        'congiunzione':{sim:'☌',cls:'aspetto-altro'}
+    };
+    tbody.innerHTML = aspetti.map(a => {
+        const ti = tipoMap[a.aspetto] || {sim:'•',cls:'aspetto-altro'};
+        return `<tr>
+            <td>${simboliA[a.pianeta_a]??''} ${nomiA[a.pianeta_a]??'?'}</td>
+            <td class="aspect-arrow">↔</td>
+            <td>${simboliA[a.pianeta_b]??''} ${nomiA[a.pianeta_b]??'?'}</td>
+            <td class="${ti.cls}">${ti.sim} ${a.aspetto}</td>
+            <td>${a.scarto?.toFixed(1)??'?'}°</td>
+        </tr>`;
+    }).join('');
+}
 <?php endif; ?>
 </script>
 </body>
