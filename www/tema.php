@@ -55,6 +55,14 @@ if ($soggetto) {
     <link href="https://fonts.googleapis.com/css2?family=Noto+Symbols+2&display=swap" rel="stylesheet">
     <script src="js/app.js"></script>
     <script src="js/svg_zoom.js"></script>
+    <style>
+        .tema-box.tema-box-full { max-width: 100%; min-width: 0; width: 100%; background: #F2EDE4; box-shadow: none; }
+        .tema-box-full .tema-box-header { justify-content: center; gap: 14px; }
+        .tema-box-full .tema-box-header h3 { flex: 0 0 auto; }
+        .tema-box-full .btn-toggle-gradi { background: #2C3E6B; color: #fff; border-color: #2C3E6B; }
+        .tema-box-full .btn-toggle-gradi:hover { background: #0093D0; border-color: #0093D0; }
+        .tema-box-full .btn-toggle-gradi.attivo { background: #0093D0; border-color: #0093D0; color: #fff; }
+    </style>
 </head>
 <body>
 <?php $paginaAttiva = 'tema'; include 'includes/header_nav.php'; ?>
@@ -78,17 +86,21 @@ if ($soggetto) {
         <button class="btn-stampa-diretta" onclick="stampaPagina('print-tema')">🖨️ Stampa Tema Natale</button>
     </div>
 
+    <div class="tema-box tema-box-full">
+        <div class="tema-box-header">
+            <button class="btn-toggle-gradi" id="btn-toggle-cuspidi"
+                    onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
+            <h3>Tema Natale</h3>
+            <button class="btn-toggle-gradi" id="btn-toggle-gradi"
+                    onclick="toggleGradiPianeti()">Mostra Gradi</button>
+        </div>
+        <svg id="wheel-natale" width="700" height="700" class="zodiac-wheel-responsive"></svg>
+        <p class="tema-info" id="info-natale">Caricamento...</p>
+    </div>
+
     <div class="temi-wrapper">
         <div class="tema-box">
-            <div class="tema-box-header">
-                <button class="btn-toggle-gradi" id="btn-toggle-cuspidi"
-                        onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
-                <h3>Tema Natale</h3>
-                <button class="btn-toggle-gradi" id="btn-toggle-gradi"
-                        onclick="toggleGradiPianeti()">Mostra Gradi</button>
-            </div>
-            <svg id="wheel-natale" width="500" height="500" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-natale">Caricamento...</p>
+            <h3>Pianeta, Posizione e Casa</h3>
             <div id="tab-natale"></div>
         </div>
         <div class="tema-box">
@@ -117,7 +129,7 @@ fetch('api/tema_api.php?tipo=natale' +
 .then(r => r.json())
 .then(tema => {
     console.log("Tema ricevuto, pianeti:", Object.keys(tema.pianeti).length);
-    ZodiacWheel.disegna('wheel-natale', tema, {size: 500});
+    ZodiacWheel.disegna('wheel-natale', tema, {size: 700});
     initSvgZoom('wheel-natale');
     document.getElementById('info-natale').textContent =
         'ASC: ' + (tema.case?.ASC?.posizione?.stringa ?? '?') +
