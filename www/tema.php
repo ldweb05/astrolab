@@ -90,7 +90,7 @@ if ($soggetto) {
 
     <div class="tema-box tema-box-full">
         <div class="tema-box-header">
-            <button class="btn-toggle-gradi" id="btn-toggle-cuspidi"
+            <button class="btn-toggle-cuspidi" id="btn-toggle-cuspidi"
                     onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
             <h3>Tema Natale</h3>
             <button class="btn-toggle-gradi" id="btn-toggle-gradi"
@@ -109,7 +109,7 @@ if ($soggetto) {
             <div class="tema-box">
                 <h3>Aspetti tra i Pianeti</h3>
                 <table class="tabella-aspetti">
-                    <thead><tr><th>Pianeta 1</th><th></th><th>Pianeta 2</th><th>Aspetto</th><th>Orb</th></tr></thead>
+                    <thead><tr><th>Pianeta 1</th><th></th><th>Aspetto</th><th>Pianeta 2</th><th>Orb</th></tr></thead>
                     <tbody id="aspetti-natale-body"><tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr></tbody>
                 </table>
             </div>
@@ -225,8 +225,8 @@ function popolaTabellaAspettiNatale(aspetti) {
         return `<tr>
             <td>${simboliA[a.pianeta_a]??''} ${nomiA[a.pianeta_a]??'?'}</td>
             <td class="aspect-arrow">↔</td>
-            <td>${simboliA[a.pianeta_b]??''} ${nomiA[a.pianeta_b]??'?'}</td>
             <td class="${ti.cls}">${ti.sim} ${a.aspetto}</td>
+            <td>${simboliA[a.pianeta_b]??''} ${nomiA[a.pianeta_b]??'?'}</td>
             <td>${a.scarto?.toFixed(1)??'?'}°</td>
         </tr>`;
     }).join('');

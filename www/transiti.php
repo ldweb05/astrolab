@@ -192,8 +192,8 @@ if ($soggetto) {
             <div class="aspetti-container">
                 <h4 class="rs-table-section-title">📐 Aspetti Transito → Natale</h4>
                 <table class="tabella-aspetti">
-                    <thead><tr><th>Transito</th><th></th><th>Natale</th><th>Aspetto</th><th>Orb</th></tr></thead>
-                    <tbody id="aspetti-rs-body"><tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr>
+                    <thead><tr><th>Natale</th><th>Aspetto</th><th>Transito</th><th>Orb</th></tr></thead>
+                    <tbody id="aspetti-rs-body"><tr><td colspan="4" class="table-empty-cell">Nessun aspetto rilevante</td></tr>
                 </tbody>
             </table>
             </div>
@@ -399,7 +399,7 @@ function popolaTabellaAspetti(aspetti) {
     const tbody = document.getElementById('aspetti-rs-body');
     if (!tbody) return;
     if (!aspetti || aspetti.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="table-empty-cell">Nessun aspetto rilevante</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="table-empty-cell">Nessun aspetto rilevante</td></tr>';
         return;
     }
     const simboli = {0:'☉',1:'☽',2:'☿',3:'♀',4:'♂',5:'♃',6:'♄',7:'♅',8:'♆',9:'♇'};
@@ -418,10 +418,9 @@ function popolaTabellaAspetti(aspetti) {
     tbody.innerHTML = aspetti.map(a => {
         const ti = tipoMap[a.aspetto || a.tipo] || {sim:'•',cls:'aspetto-altro'};
         return `<tr>
-            <td>${simboli[a.pianeta_a]??''} ${nomi[a.pianeta_a]??a.nome_a??'?'}</td>
-            <td class="aspect-arrow">→</td>
             <td>${simboli[a.pianeta_b]??''} ${nomi[a.pianeta_b]??a.nome_b??'?'}</td>
             <td class="${ti.cls}">${ti.sim} ${a.aspetto||a.tipo}</td>
+            <td>${simboli[a.pianeta_a]??''} ${nomi[a.pianeta_a]??a.nome_a??'?'}</td>
             <td>${a.scarto?.toFixed(1)??'?'}°</td>
         </tr>`;
     }).join('');
