@@ -38,7 +38,7 @@ function _navUrl(string $base, int $soggettoId, array $extra = []): string {
 }
 
 // Il trigger del dropdown è "attivo" se siamo in una delle tre pagine figlie
-$_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
+$_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transiti']);
 ?>
 <style>
 /* ── Dropdown nav "Rivoluzioni" ────────────────────────────────────────── */
@@ -153,7 +153,7 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
                 <button type="button"
                         class="nav-dropdown-trigger<?= $_riviActive ? ' active' : '' ?>"
                         aria-expanded="false">
-                    Rivoluzioni
+                    Ricerche
                 </button>
                 <div class="nav-dropdown-menu">
                     <a href="<?= _navUrl('rs.php', $_navSoggettoId) ?>"
@@ -167,6 +167,10 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione']);
                     <a href="<?= _navUrl('rilocazione.php', $_navSoggettoId) ?>"
                        <?= ($paginaAttiva??'') === 'rilocazione' ? 'class="active"' : '' ?>>
                         ☿ Rilocazione
+                    </a>
+                    <a href="<?= _navUrl('transiti.php', $_navSoggettoId) ?>"
+                       <?= ($paginaAttiva??'') === 'transiti' ? 'class="active"' : '' ?>>
+                        ☌ Transiti Planetari
                     </a>
                 </div>
             </div>
