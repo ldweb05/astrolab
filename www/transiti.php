@@ -484,6 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('luogo-rs-risultati')?.classList.remove('visible');
     });
 
+    // Data di default presa dal browser dell'utente (non dal server), ore/minuti restano 00:00
+    const oggi = new Date();
+    document.getElementById('transiti-giorno').value = oggi.getDate();
+    document.getElementById('transiti-mese').value    = oggi.getMonth() + 1;
+    document.getElementById('transiti-anno').value    = oggi.getFullYear();
+
     calcolaTransiti();
 });
 <?php endif; ?>
