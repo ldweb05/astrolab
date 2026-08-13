@@ -61,9 +61,6 @@ if ($soggetto) {
         .tema-col .tema-box { min-width: 0; max-width: none; }
         .tema-box-full .tema-box-header { justify-content: center; gap: 14px; }
         .tema-box-full .tema-box-header h3 { flex: 0 0 auto; }
-        .tema-box-full .btn-toggle-gradi { background: #2C3E6B; color: #fff; border-color: #2C3E6B; }
-        .tema-box-full .btn-toggle-gradi:hover { background: #0093D0; border-color: #0093D0; }
-        .tema-box-full .btn-toggle-gradi.attivo { background: #0093D0; border-color: #0093D0; color: #fff; }
     </style>
 </head>
 <body>
@@ -90,7 +87,7 @@ if ($soggetto) {
 
     <div class="tema-box tema-box-full">
         <div class="tema-box-header">
-            <button class="btn-toggle-cuspidi" id="btn-toggle-cuspidi"
+            <button class="btn-toggle-gradi" id="btn-toggle-cuspidi"
                     onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
             <h3>Tema Natale</h3>
             <button class="btn-toggle-gradi" id="btn-toggle-gradi"
