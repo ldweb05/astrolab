@@ -50,6 +50,9 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
 
 /* Trigger (stesso stile di nav a) */
 .nav-dropdown-trigger {
+    background: none;
+    border: none;
+    font-family: inherit;
     color: #A8B8D8;
     text-decoration: none;
     padding: 6px 14px;
@@ -64,9 +67,12 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
     gap: 5px;
     height: 100%;
 }
-.nav-dropdown-trigger:hover,
-.nav-dropdown-trigger.active {
+.nav-dropdown-trigger:hover {
     background: rgba(255,255,255,0.15);
+    color: white;
+}
+.nav-dropdown-trigger.active {
+    background: #12A0D7;
     color: white;
 }
 
