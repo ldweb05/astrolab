@@ -530,6 +530,7 @@ main {
 .rl-location-group {
     flex: 1;
     min-width: 200px;
+    position: relative;
 }
 
 .rl-coordinate-input {

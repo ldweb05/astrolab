@@ -1301,6 +1301,20 @@ function _mostraErroreSensib(msg) {
 }
  
 // ── Geocoding luogo RS ────────────────────────────────────────────────────
+// Estrae un nome sintetico affidabile dai campi strutturati di Nominatim
+// (address.city/town/village/... + state), indipendente dal formato con cui
+// il singolo paese scrive gli indirizzi (a differenza dello split per virgola
+// sul display_name, che porta il numero civico in USA e altri formati altrove).
+function _estraiNomeLuogoNominatim(r) {
+    const a = (r && r.address) || {};
+    const loc = a.city || a.town || a.village || a.municipality || a.hamlet || a.county;
+    const stato = a.state || a.region;
+    if (loc && stato && loc !== stato) return loc + ', ' + stato;
+    if (loc) return loc;
+    if (stato) return stato;
+    if (a.country) return a.country;
+    return (r.display_name || '').split(',')[0].trim();
+}
 function cercaLuogoRS() {
     const q = document.getElementById('luogo-rs-input').value.trim();
     if (q.length < 3) return;
@@ -1308,19 +1322,20 @@ function cercaLuogoRS() {
         .then(r => r.json())
         .then(ris => {
             const div = document.getElementById('luogo-rs-risultati');
-            div.innerHTML = ris.map(r =>
-                `<div class="dropdown-item" onclick="selezionaLuogoRS(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
+            div.innerHTML = ris.map(r => {
+                const nomeBreve = _estraiNomeLuogoNominatim(r).replace(/'/g,"\\'");
+                return `<div class="dropdown-item" onclick="selezionaLuogoRS(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}','${nomeBreve}')">
                     ${r.display_name}
-                </div>`
-            ).join('');
+                </div>`;
+            }).join('');
             div.classList.add('visible');
         });
 }
  
-function selezionaLuogoRS(lat, lon, nome) {
+function selezionaLuogoRS(lat, lon, nome, nomeBreve) {
     document.getElementById('rs-lat').value = parseFloat(lat).toFixed(4);
     document.getElementById('rs-lon').value = parseFloat(lon).toFixed(4);
-    document.getElementById('luogo-rs-input').value = nome.split(',')[0].trim();
+    document.getElementById('luogo-rs-input').value = nomeBreve || nome.split(',')[0].trim();
     document.getElementById('luogo-rs-risultati').classList.remove('visible');
     if (leafletMap && mapMarker) {
         mapMarker.setLatLng([parseFloat(lat), parseFloat(lon)]);
