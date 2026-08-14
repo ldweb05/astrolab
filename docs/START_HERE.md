@@ -198,6 +198,16 @@ Durante questa evoluzione il motore astrologico non è stato modificato.
 
 ---
 
+# Ricerca RL
+
+La Ricerca RL (Rivoluzioni Lunari, base mensile) estende alla Luna la stessa ricerca geografica per condizione già disponibile per le RSM.
+
+Riusa integralmente il motore di valutazione esistente (RuleEngine, Rule Map di esclusione radicale, FiltroEsclusione, deduplicazione geografica).
+
+È disponibile in una pagina dedicata (Ricerca Località RL), separata dalla ricerca RSM per non introdurre accoppiamento tra i due motori.
+
+---
+
 # Comparator
 
 Il Comparator Engine è operativo.

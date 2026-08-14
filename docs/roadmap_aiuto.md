@@ -24,6 +24,7 @@ Fornire agli utenti un manuale d'uso strutturato, accessibile direttamente dall'
 
 ### 4. Ricerca Geografica Avanzata
 - Ricerca RSM v3 (Aeroporti e Località mondiali)
+- Ricerca RL v1 (Rivoluzioni Lunari mensili per condizione, pagina dedicata `ricerca_rl.php`)
 - Ricerca "Astri nelle Case"
 
 ### 5. Report, Narrazione e Stampa
@@ -65,7 +66,7 @@ Sulla base dell'analisi di `www/includes/header_nav.php` e dei file PHP presenti
 | 3. Calcoli e Analisi: Rivoluzione Solare | `rs.php` |
 | 3. Calcoli e Analisi: Rivoluzione Lunare | `rl.php` |
 | 3. Calcoli e Analisi: Rilocazioni | `rilocazione.php` |
-| 4. Ricerca Geografica Avanzata | `ricerca.php` |
+| 4. Ricerca Geografica Avanzata | `ricerca.php` (RSM), `ricerca_rl.php` (RL) |
 | 5. Report, Narrazione e Stampa | `stampa.php`, API PDF |
 | 6. Comparatore | `compare_rs.php`, `compare_ril.php` |
 
