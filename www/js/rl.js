@@ -149,7 +149,8 @@ const RLModule = (function () {
              if (loadingEl) loadingEl.style.display = 'none';
              if (!data.ok) { _mostraErrore(data.errore || 'Errore calcolo RL.'); return; }
              _rlList  = data.rl_list || [];
-             _rlIndex = _trovaIndiceCorrente(_rlList);
+             const _rlIndexUrl = new URLSearchParams(window.location.search).get('rl_index');
+            _rlIndex = (_rlIndexUrl !== null && _rlList[parseInt(_rlIndexUrl)]) ? parseInt(_rlIndexUrl) : _trovaIndiceCorrente(_rlList);
              _popolaSelect(data);
              _costruisciTimeline(data);
              _setSelectDisabled(false);

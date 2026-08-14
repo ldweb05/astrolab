@@ -187,6 +187,10 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
             <a href="<?= _navUrl('ricerca.php', $_navSoggettoId) ?>"
                <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>Ricerca Località</a>
 
+            <!-- Ricerca Località RL -->
+            <a href="<?= _navUrl('ricerca_rl.php', $_navSoggettoId) ?>"
+               <?= ($paginaAttiva??'') === 'ricerca_rl' ? 'class="active"' : '' ?>>Ricerca Località RL</a>
+
             <!-- ── Dropdown: Help ─────────────────────────────────────── -->
             <div class="nav-dropdown">
                 <button type="button" class="nav-dropdown-trigger help-trigger" aria-expanded="false">
