@@ -3104,3 +3104,11 @@ avviare M1 — Comparazione ricerche RSM.
 - `php -l` superato su tutti i file PHP toccati; `git diff --check` pulito (uniche righe di trailing whitespace segnalate sono preesistenti nell'originale copiato, non introdotte oggi, non toccate per restare nello scope); test funzionali CLI e suite di regressione eseguiti con esito positivo; verifica manuale end-to-end in UI con l'utente, inclusi 2 bug reali trovati e corretti durante il test (campo soggetto non riconosciuto nel primo tentativo integrato, poi superato dalla pagina dedicata; preselezione mese mancante sul pulsante "Usa", risolta con l'override opzionale `rl_index`).
 - Nota per sessione futura (fuori scope): fix di `tests/search_auth.php` (mismatch `session.name` PHPSESSID vs ASTROSESSID indurito), non impatta l'applicazione reale.
 - roadmap_aiuto.md aggiornata (Sezione 4 e tabella di mappatura).
+
+## 2026-08-14 bis — Riorganizzazione navbar: Localita RS/RL spostate nel dropdown "Ricerche"
+
+- Su richiesta dell'utente: rinominate le voci "Ricerca Localita" -> "Localita RS" e "Ricerca Localita RL" -> "Localita RL", spostate dalla barra principale (link standalone) dentro il dropdown "Ricerche" in `header_nav.php`.
+- Ordine scelto (raggruppato per tipo di rivoluzione): Riv. Solare, Localita RS, Riv. Lunare, Localita RL, Rilocazione, Transiti Planetari.
+- Aggiornato `$_riviActive` per includere `ricerca` e `ricerca_rl`, cosi il trigger del dropdown si evidenzia correttamente anche su queste due pagine.
+- Nessuna modifica a `ricerca.php`, `ricerca_rl.php`, `ricerca_stream_rl_api.php` o al motore di ricerca: solo riposizionamento dei link e rinomina delle etichette in `header_nav.php`.
+- `php -l` superato; `git diff --check` pulito; verifica visuale in UI con l'utente.
