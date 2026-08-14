@@ -134,7 +134,7 @@ if ($soggetto) {
             <div class="luogo-wrap">
                 <input type="text" id="luogo-rl-input" placeholder="Cerca città..."
                        value="<?= htmlspecialchars($defaultLuogo) ?>" class="flex-1">
-                <button class="btn-search" onclick="cercaLuogoRL()">🔍 Cerca</button>
+                <button class="btn-search" onclick="RLModule.cercaLuogoRL()">🔍 Cerca</button>
             </div>
             <div id="luogo-rl-risultati" class="dropdown-risultati"></div>
         </div>
