@@ -38,7 +38,7 @@ function _navUrl(string $base, int $soggettoId, array $extra = []): string {
 }
 
 // Il trigger del dropdown è "attivo" se siamo in una delle tre pagine figlie
-$_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transiti']);
+$_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transiti', 'ricerca', 'ricerca_rl']);
 ?>
 <style>
 /* ── Dropdown nav "Rivoluzioni" ────────────────────────────────────────── */
@@ -166,9 +166,17 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
                        <?= ($paginaAttiva??'') === 'rs' ? 'class="active"' : '' ?>>
                         ↺ Riv. Solare
                     </a>
+                    <a href="<?= _navUrl('ricerca.php', $_navSoggettoId) ?>"
+                       <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>
+                        🔍 Località RS
+                    </a>
                     <a href="<?= _navUrl('rl.php', $_navSoggettoId) ?>"
                        <?= ($paginaAttiva??'') === 'rl' ? 'class="active"' : '' ?>>
                         ☽ Riv. Lunare
+                    </a>
+                    <a href="<?= _navUrl('ricerca_rl.php', $_navSoggettoId) ?>"
+                       <?= ($paginaAttiva??'') === 'ricerca_rl' ? 'class="active"' : '' ?>>
+                        🔍 Località RL
                     </a>
                     <a href="<?= _navUrl('rilocazione.php', $_navSoggettoId) ?>"
                        <?= ($paginaAttiva??'') === 'rilocazione' ? 'class="active"' : '' ?>>
@@ -182,14 +190,6 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
             </div>
             <!-- ── Fine dropdown ────────────────────────────────────── -->
 
-
-            <!-- Ricerca Località -->
-            <a href="<?= _navUrl('ricerca.php', $_navSoggettoId) ?>"
-               <?= ($paginaAttiva??'') === 'ricerca' ? 'class="active"' : '' ?>>Ricerca Località</a>
-
-            <!-- Ricerca Località RL -->
-            <a href="<?= _navUrl('ricerca_rl.php', $_navSoggettoId) ?>"
-               <?= ($paginaAttiva??'') === 'ricerca_rl' ? 'class="active"' : '' ?>>Ricerca Località RL</a>
 
             <!-- ── Dropdown: Help ─────────────────────────────────────── -->
             <div class="nav-dropdown">
