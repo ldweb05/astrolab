@@ -256,10 +256,14 @@ try {
     require_once '../includes/SweCalc.php';
     require_once '../includes/RuleEngine.php';
     require_once '../includes/FiltroEsclusione.php';
+    if (MYASTRAL_ALIGNMENT_MODE) {
+        require_once '../includes/RuleEngineExtended.php';
+    }
 
     $tStart = microtime(true);
     $swe    = new SweCalc();
     $engine = new RuleEngine();
+    $engineExt = MYASTRAL_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
     $pdo = db_connect();
 
@@ -696,6 +700,26 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 // ── E. Valutazione RuleEngine (34 regole Discepolo) ───────────
                 $totaleValutazioniRuleEngine++;
                 $val = $engine->valuta($temaNatale, $temaRS, $condizione, $astriInCasa);
+
+                // Punteggio "Discepolo parziale" opzionale (roadmap MyAstral).
+                // Calcolato SOLO se il flag e attivo; non influenza $val ne i veti.
+                $punteggioMyAstral = null;
+                if ($engineExt !== null) {
+                    $punteggioMyAstral = $engineExt->calcolaPunteggioParziale(
+                        $temaRS['pianeti'],
+                        $temaRS['case'],
+                        $condizione
+                    );
+                }
+
+                // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
+                // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
+                // stessa casa della condizione, la RS/RL va tolta dai risultati -
+                // confermato esplicitamente dal committente, non solo punteggio a 0.
+                if ($punteggioMyAstral !== null && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
+                    $processed++;
+                    continue;
+                }
 
                 // ── F. Filtro stelline minime ──────────────────────────────────
                 if ($stellineMin > 0 && $val['stelline'] < $stellineMin) {
