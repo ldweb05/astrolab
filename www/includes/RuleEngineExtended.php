@@ -32,6 +32,20 @@ require_once __DIR__ . '/RuleEngine.php';
  *
  * Estendere questa mappa SOLO dopo conferma esplicita di nuovi valori da
  * parte del committente — mai per interpolazione o supposizione.
+ *
+ * FONTE PRIMARIA E VINCOLANTE: docs/status/34_regole_rsm.md (le 34 regole
+ * ufficiali dell'Astrologia Attiva di Ciro Discepolo, digitalizzate dal
+ * committente). Qualunque regola aggiuntiva costruita sopra queste 34 (come
+ * il punteggio additivo di questo file) è un livello supplementare, mai un
+ * sostituto: in caso di conflitto le 34 regole prevalgono sempre.
+ *
+ * GAP NOTO — Regola 33 non ancora implementata qui: "Saturno ha sempre la
+ * meglio su Giove, su Venere, sul Sole" nella stessa zona/casa. Oggi questo
+ * motore può restituire un punteggio positivo anche quando Saturno è
+ * presente nella stessa casa o entro l'orbo di Regola 32, il che secondo
+ * Discepolo renderebbe l'anno "saturnino" a prescindere dai benefici
+ * presenti. Da correggere prima di considerare questo punteggio affidabile
+ * per un confronto quantitativo serio con MyAstral.
  */
 class RuleEngineExtended {
 

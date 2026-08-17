@@ -599,7 +599,12 @@ class RuleEngine {
             }
         }
 
-        // Regola 31: Latitudine estrema
+        // Veto latitudine estrema — REGOLA PROPRIETARIA ASTROLAB, NON una delle
+        // 34 regole ufficiali dell'Astrologia Attiva (vedi docs/status/34_regole_rsm.md,
+        // dove la vera Regola 31 riguarda lo stellium diviso tra I e XII casa).
+        // Etichetta "reg.31" nel messaggio di veto storicamente errata: mantenuta
+        // solo per compatibilità di log/UI esistenti, non rinominata qui per non
+        // toccare stringhe già in uso altrove senza una decisione dedicata.
         if (abs($temaRS['lat'] ?? 0) > 60) {
             $veti[] = "VETO (reg.31): Latitudine " . round($temaRS['lat'],1) . "° — oltre 60°";
         }
