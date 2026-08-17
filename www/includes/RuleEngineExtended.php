@@ -39,13 +39,24 @@ require_once __DIR__ . '/RuleEngine.php';
  * il punteggio additivo di questo file) è un livello supplementare, mai un
  * sostituto: in caso di conflitto le 34 regole prevalgono sempre.
  *
- * GAP NOTO — Regola 33 non ancora implementata qui: "Saturno ha sempre la
- * meglio su Giove, su Venere, sul Sole" nella stessa zona/casa. Oggi questo
- * motore può restituire un punteggio positivo anche quando Saturno è
- * presente nella stessa casa o entro l'orbo di Regola 32, il che secondo
- * Discepolo renderebbe l'anno "saturnino" a prescindere dai benefici
- * presenti. Da correggere prima di considerare questo punteggio affidabile
- * per un confronto quantitativo serio con MyAstral.
+ * REGOLA 33 (Saturno prevale) — CASO "STESSA CASA" IMPLEMENTATO COME
+ * ESCLUSIONE, non come semplice azzeramento del punteggio: se Saturno è
+ * nella stessa casa della condizione, la RSM/RL viene tolta dai risultati
+ * (vedi il flag 'saturno_prevale' qui sotto e il suo utilizzo in
+ * www/api/ricerca_stream_api.php). Confermato esplicitamente dal committente.
+ *
+ * NOTA — "reg.33" già presente in RuleEngine.php (riga ~589, "Marte o
+ * Saturno entro 2° dagli angoli") NON è questa regola: è un'etichetta
+ * storica errata, stesso problema già trovato per "reg.31" (veto
+ * latitudine). Non toccata qui: RuleEngine.php resta in FREEZE.
+ *
+ * GAP NOTO RESIDUO — Regola 33 descrive anche un confronto tra Saturno e un
+ * benefico in CASE ADIACENTI, entro lo stesso orbo dalla medesima cuspide
+ * (es. Giove a 5° dal MC in decima vs Saturno a 5° dallo stesso MC ma in
+ * nona: "alla fine prevarrà il secondo"). Questo confronto tra orbi su case
+ * diverse NON è ancora implementato: Discepolo non specifica una soglia
+ * numerica univoca per "stessa distanza" in questo testo, e non voglio
+ * indovinarla. Da chiarire con il committente prima di implementarlo.
  */
 class RuleEngineExtended {
 
@@ -72,6 +83,8 @@ class RuleEngineExtended {
 
     const ORBO_MAX_GRADI    = 2.5;  // orbo massimo dalla cuspide per il bonus
     const BONUS_ORBO_GIOVE  = 2;    // Giove entro l'orbo: 4 + 2 = 6
+
+    const ID_SATURNO = 6;  // Regola 33: Saturno nella stessa casa esclude il risultato
 
     /**
      * Calcola il punteggio parziale Sole/Venere/Giove nella casa tematica
@@ -139,11 +152,19 @@ class RuleEngineExtended {
             ];
         }
 
+        // Regola 33: Saturno nella stessa casa della condizione prevale sempre
+        // sui benefici presenti — la RSM/RL va ESCLUSA dai risultati (non solo
+        // azzerata di punteggio). L'esclusione vera e propria avviene nel
+        // chiamante (ricerca_stream_api.php), qui esponiamo solo il segnale.
+        $saturnoPrevale = isset($pianeti[self::ID_SATURNO])
+            && (int)$pianeti[self::ID_SATURNO]['casa'] === $casaCond;
+
         return [
-            'supportata' => true,
-            'punteggio'  => $punteggio,
-            'casa'       => $casaCond,
-            'dettaglio'  => $dettaglio,
+            'supportata'      => true,
+            'punteggio'       => $punteggio,
+            'saturno_prevale' => $saturnoPrevale,
+            'casa'            => $casaCond,
+            'dettaglio'       => $dettaglio,
             'motivo_non_supportata' => null,
         ];
     }
