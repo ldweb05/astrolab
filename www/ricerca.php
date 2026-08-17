@@ -379,8 +379,11 @@ Allargamento automatico orbe
 <div><span>Condizione: </span><b id="info-rs-cond">—</b></div>
 <div><span>Aeroporti calcolati: </span><b id="info-rs-calcolati">—</b></div>
 <div id="info-rs-esclusi-wrap" style="display:none">
-<span title="RS escluse perché presentano Sole/Marte in I/VI/XII RS, ASC RS in I/VI/XII natale, Saturno in X RS o uno stellium in qualsiasi casa RS">
-⚠️ Escluse dal filtro:
+<span>⚠️ Escluse dal filtro:
+<span class="tooltip-wrap">
+    <i class="tooltip-icon">i</i>
+    <span class="tooltip-box">RS escluse perché presentano Sole/Marte in I/VI/XII RS, ASC RS in I/VI/XII natale, Saturno in X RS o uno stellium in qualsiasi casa RS. Questo è un filtro aggiuntivo di Astrolab, non parte delle 34 regole ufficiali dell'Astrologia Attiva: alle latitudini estreme può escludere risultati che altri software di riferimento (es. MyAstral.org) mostrano comunque, perché lì gli stellium sono più frequenti per compressione delle case.</span>
+</span>
 </span> <b id="info-rs-esclusi">—</b>
 </div>
 <div><span>Tempo: </span><b id="info-rs-tempo">—</b></div>

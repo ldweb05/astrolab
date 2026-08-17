@@ -102,9 +102,12 @@ anticipazione del risultato.
 
 Dopo ogni modifica, in step separati (mai accorpati):
 1. `docker compose exec -T astrolab-web php -l <file>` per i file PHP — **mai** `php` in locale
-   sul Raspberry. Attenzione al path: il container monta `./www` su `/var/www/html`, quindi i
-   comandi vanno dati con path relativo a `www/` (es. `includes/header_nav.php`, non
-   `www/includes/header_nav.php`).
+   sul Raspberry. **REGOLA PATH (errore ricorrente, verificare sempre prima di dare il comando):**
+   il container monta `./www` su `/var/www/html`, quindi il path va dato **relativo alla root di
+   `www/`, senza il prefisso `www/`** — sia per file in sottocartelle sia per file nella radice.
+   Esempi corretti: `includes/header_nav.php` (non `www/includes/header_nav.php`), `ricerca.php`
+   (non `www/ricerca.php`). Vale allo stesso modo per qualunque comando dato dentro il container
+   (`php -l`, path passati a script PHP interni, ecc.), non solo per la verifica sintattica.
 2. Per i file JavaScript: `node --check <file>` (se `node` è disponibile sul Pi) è una verifica
    sintattica reale, molto più affidabile di un semplice conteggio di parentesi.
 3. `git status` per controllare che nessun file fuori obiettivo sia stato toccato.
