@@ -160,3 +160,11 @@ sempre per abitudine.
 - Se l'utente chiede un rollback, eseguirlo con `git checkout -- <file>` quando possibile (ripristino
   esatto dall'ultimo commit) invece di ricostruire manualmente lo stato precedente — è più
   affidabile e verificabile.
+
+## 9. OBIETTIVO
+
+- Leggere approfonditamente il documento docs/status/34_regole_rsm.md
+- Le 34 regole DEVONO ESSERE LA BIBBIA su cui deve girare tutta l'applicazione.
+- Possibilità, come già fatto, di aggiungere regole nostre personalizzate
+- Allineare tutta l'applicazione con le 34 regole e controllare con test mirati che vengano rispettate.
+- Le regole di base da essere INDEROGABILMENTE rispettate e se violate le RSM o le RL devono essere scartate, sono la regola N° 4, la 5° regola, la regola N° 31 e la N° 34
