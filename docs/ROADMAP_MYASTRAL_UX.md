@@ -90,7 +90,7 @@ e/o l'etichettatura in UI, non di nuova logica.
 
 ---
 
-## 4. FiltroEsclusione.php — filtro aggiuntivo non ufficiale
+## 4. FiltroEsclusione.php — filtro aggiuntivo non ufficiale — ✅ Completato (2026-08-17)
 
 `includes/FiltroEsclusione.php` applica 5 esclusioni supplementari (Sole/Marte RS in I-VI-XII,
 ASC RS in I-VI-XII natale, Saturno RS in X, stellium 3+ pianeti in una casa) che **non fanno parte
@@ -107,6 +107,12 @@ divergenza rispetto a MyAstral quando si fanno confronti diretti, e da menzionar
 nell'interfaccia (es. tooltip/nota) per trasparenza verso l'utente finale dell'app.
 
 **Impatto:** nessuno richiesto ora — solo documentazione/trasparenza.
+
+**Stato:** implementato. Nota di trasparenza aggiunta al tooltip esistente del contatore
+"Escluse dal filtro" in `www/ricerca.php` e `www/ricerca_rl.php` (icona `tooltip-icon` coerente
+con lo stile già usato nella pagina, nessuna modifica a `FiltroEsclusione.php` né a `style.css`
+condiviso). Commit `be4fe8f` (ricerca.php) e `7664fc1` (ricerca_rl.php) su
+`feature/allineamento-myastral`.
 
 ---
 
