@@ -255,10 +255,16 @@ try {
     require_once '../includes/SweCalc.php';
     require_once '../includes/RuleEngine.php';
     require_once '../includes/FiltroEsclusione.php';
+    if (MYASTRAL_ALIGNMENT_MODE) {
+        require_once '../includes/RuleEngineExtended.php';
+    }
 
     $tStart = microtime(true);
     $swe    = new SweCalc();
     $engine = new RuleEngine();
+    // Motore parallelo opzionale (roadmap MyAstral) — null se il flag è OFF,
+    // così il resto del file non deve controllare il flag a ogni iterazione.
+    $engineExt = MYASTRAL_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
     $pdo = db_connect();
 
@@ -689,6 +695,18 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $totaleValutazioniRuleEngine++;
                 $val = $engine->valuta($temaNatale, $temaRS, $condizione, $astriInCasa);
 
+                // ── E-bis. Punteggio "Discepolo parziale" opzionale (roadmap MyAstral) ──
+                // Calcolato SOLO se il flag è attivo; non influenza in alcun modo
+                // $val, i veti o il filtro stelline_min qui sotto.
+                $punteggioMyAstral = null;
+                if ($engineExt !== null) {
+                    $punteggioMyAstral = $engineExt->calcolaPunteggioParziale(
+                        $temaRS['pianeti'],
+                        $temaRS['case'],
+                        $condizione
+                    );
+                }
+
                 // ── F. Filtro stelline minime ──────────────────────────────────
                 if ($stellineMin > 0 && $val['stelline'] < $stellineMin) {
                     $processed++;
@@ -738,7 +756,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $scudoBeneficoAttivo,
                 $beneficoInI,
                 $denaroBeneficioTrovato,
-                $denaroAlertGiove
+                $denaroAlertGiove,
+                $punteggioMyAstral
             );
 
             aggiungiRisultatoTopK(
