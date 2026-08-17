@@ -707,6 +707,15 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     );
                 }
 
+                // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
+                // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
+                // stessa casa della condizione, la RSM/RL va tolta dai risultati -
+                // confermato esplicitamente dal committente, non solo punteggio a 0.
+                if ($punteggioMyAstral !== null && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
+                    $processed++;
+                    continue;
+                }
+
                 // ── F. Filtro stelline minime ──────────────────────────────────
                 if ($stellineMin > 0 && $val['stelline'] < $stellineMin) {
                     $processed++;
