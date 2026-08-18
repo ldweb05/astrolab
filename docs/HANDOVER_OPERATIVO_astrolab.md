@@ -3168,3 +3168,20 @@ avviare M1 — Comparazione ricerche RSM.
 - Con questa sessione si chiude la **Fase 4** della roadmap (`docs/ROADMAP_34_REGOLE.md`): nessuna modifica di codice necessaria, motore RSM/RL gia' conforme.
 - Nessun file di codice toccato in questa sessione (solo verifica/analisi, nessuna decisione UX necessaria).
 - Prossimo passo: Fase 5 della roadmap (regole sui transiti - Regole 11, 12, 14, 15, 23, 24, 27, 28, da verificare se rilevanti per la ricerca RSM/RL o solo per `transiti.php`, area separata del progetto).
+
+## 2026-08-18 quinquies — Fase 5 allineamento 34 regole (branch feature/allineamento-myastral) - CHIUSURA PROGETTO
+
+- Verificate le Regole 11, 12, 14, 15, 23, 24, 27, 28 (regole sui transiti nel tempo): confermato che `ricerca.php`/`ricerca_rl.php` non elaborano mai transiti in tempo reale (lavorano solo sul tema di Rivoluzione statico) - queste regole non sono quindi rilevanti per la ricerca RSM/RL, coerentemente con quanto gia' confermato in Fase 4 per la Regola 22.
+- Verificato `transiti.php`: include `RuleEngine.php` ma non lo usa mai (nessuna chiamata a `valuta()` o simili) - residuo del clone da `rs.php` mai ripulito. La pagina mostra solo posizioni planetarie e aspetti Transito-Natale grezzi, senza alcuna logica di interpretazione o punteggio. Nessun codice non conforme da correggere: non esiste ancora nessuna logica che applichi le Regole 11/12/14/15/23/24/27/28 - costruirla sarebbe una funzionalita' nuova (interpretazione automatica dei transiti), non una correzione di qualcosa di esistente. Su indicazione del committente, chiusa cosi' com'e': nessuna azione, nessuna nuova funzionalita' richiesta in questa sessione.
+- Con questa sessione si chiude la **Fase 5**, ultima fase della roadmap (`docs/ROADMAP_34_REGOLE.md`).
+- Nessun file di codice toccato in questa sessione (solo verifica/analisi, nessuna decisione UX necessaria).
+
+### Riepilogo conclusivo del progetto "allineamento 34 regole" (Fasi 1-5, branch feature/allineamento-myastral)
+
+- **Fase 1** (regole a scarto automatico 4, 5, 31, 34): tutte allineate. Trovato e corretto un gap reale nella Regola 4 (il Sole in I/VI/XII non era un veto assoluto). Regola 34 implementata da zero. Regola 31 (stellium diviso XII/I) implementata. 3 etichette storiche sbagliate corrette.
+- **Fase 2** (Regola 26, Regola 33): Regola 26 verificata gia' corretta. Regola 33 completata in entrambi i casi (stessa casa incondizionata, spostata dal sistema opzionale `MYASTRAL_ALIGNMENT_MODE` al motore FREEZE; case adiacenti IX/X nuova).
+- **Fase 3** (audit sistematico `FiltroEsclusione.php` + `RicercaRSFilters.php`): nessuna regola ufficiale mancante, solo etichette interne ambigue corrette.
+- **Fase 4** (Regole di metodo/peso 6, 22, 30): gia' rispettate per costruzione (nessun uso di aspetti/retrogradazione, ordine di priorita' gia' conforme). Scoperto e dichiarato fuori scope il sottosistema `www/includes/forecast/` (interpretazione narrativa, non incide sui calcoli).
+- **Fase 5** (Regole sui transiti 11, 12, 14, 15, 23, 24, 27, 28): non rilevanti per la ricerca RSM/RL (che non usa mai transiti); `transiti.php` e' puramente descrittivo, nessuna interpretazione da correggere.
+- **Decisioni registrate:** UX-0001 (preesistente) - UX-0006 (questo lavoro), tutte in `docs/ux-myastral/DECISION_LOG_ux.md`.
+- **Conclusione:** per tutto cio' che riguarda scarto/ammissione di una RSM o RL nella ricerca (le regole a scarto automatico 4, 5, 31, 33, 34), il motore le applica ora in modo incondizionato e verificabile, indipendentemente dalla condizione cercata. Restano volutamente fuori da questo allineamento, su indicazione esplicita del committente: `RuleEngineExtended.php`/`MYASTRAL_ALIGNMENT_MODE` (punteggio sperimentale separato, UX-0001) e `www/includes/forecast/` (interpretazione narrativa della "Relazione Annuale", non incide sui calcoli).
