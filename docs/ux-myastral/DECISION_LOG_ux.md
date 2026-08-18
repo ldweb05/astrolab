@@ -123,4 +123,40 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0004 - Veto assoluto Sole in I/VI/XII casa RS/RL (completamento Regola 4)
+
+- **Data:** 2026-08-18
+- **Area:** Rule Engine (`includes/RuleEngine.php`) - veti assoluti FASE 1 + matrice punteggio
+- **Stato:** APPROVATA
+- **Problema osservato:** la Regola 4 ("Se... l'Ascendente, uno stellium o il Sole si trovano
+  nelle Case I, VI o XII, il soggetto va incontro a un anno particolarmente difficile, esiziale,
+  nero a 360 gradi") prevede tre condizioni alternative di scarto automatico. Nel codice attuale
+  solo Ascendente e stellium sono veti assoluti; il Sole in I/VI/XII ha peso 0 in `MATRICE[0]` e
+  tipo `'AVV'` in `TIPI[0]`, che produce solo una nota informativa in UI, senza alcun impatto su
+  punteggio o scarto.
+- **Evidenze:** `docs/status/34_regole_rsm.md`, Regola 4; `MATRICE[0][1]=0, [6]=0, [12]=0`;
+  `TIPI[0][1]='AVV', [6]='AVV', [12]='AVV'` in `RuleEngine.php`.
+- **Confronto codice / regole ufficiali:** stesso schema gia' usato per Marte (Regola 5,
+  `TIPI[4]` = `VETO` per 1/6/12, enforced in `calcolaVeti()`); il Sole manca del tutto di questo
+  trattamento nonostante la Regola 4 lo tratti esplicitamente come equivalente ad Ascendente e
+  stellium.
+- **Decisione:** aggiunto in `calcolaVeti()`, stessa sezione FASE 1, un controllo: se il Sole
+  (id 0) e' assegnato alla casa 1, 6 o 12 RS/RL (con lo stesso pre-ingresso di 3 gradi gia' usato
+  per Ascendente/malefici, per coerenza con la Regola 1 e con Marte), scarto automatico. La voce
+  `TIPI[0]` per le case 1/6/12 resta `'AVV'` (mantenuta per compatibilita' delle note in UI), ma
+  il veto in `calcolaVeti()` ha sempre precedenza e scarta la RSM/RL prima che il punteggio venga
+  calcolato.
+- **Motivazione:** la Regola 4 e' esplicitamente indicata come inderogabile; senza questo veto il
+  Rule Engine puo' promuovere RSM/RL col Sole in I/VI/XII come pienamente valide, in
+  contraddizione diretta con la fonte primaria vincolante.
+- **Beneficio atteso:** ALTO
+- **Costo tecnico stimato:** BASSO (nuovo blocco isolato, stesso pattern gia' collaudato per
+  Marte/Regola 5 e Regola 34)
+- **Rischi:** riduce il numero di risultati per ricerche esistenti (RSM/RL col Sole in I/VI/XII,
+  oggi valide, verranno scartate) - comportamento atteso e voluto.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 4)
+- **Eventuale voce della roadmap tecnica:** `docs/ROADMAP_34_REGOLE.md` - Fase 1, punto 1
+
+---
+
 Nessuna ulteriore decisione registrata.
