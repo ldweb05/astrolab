@@ -162,6 +162,7 @@ if ($soggetto) {
             <button class="btn-primary" onclick="calcolaRS()">↺ Calcola RS</button>
             <button class="btn-mappa is-hidden" id="btn-apri-mappa" onclick="toggleMappa()">🌍 Mappa</button>
             <button class="btn-mappa is-hidden" id="btn-previsione-annuale" onclick="togglePrevisioneAnnuale()">📖 Relazione Annuale</button>
+            <button class="btn-mappa is-hidden" id="btn-correzione-tempo" onclick="toggleCorrezioneTempo()">⏱️ Correzione tempo ed ora</button>
         </div>
     </div>
  
@@ -242,6 +243,35 @@ if ($soggetto) {
         </div>
     </div>
  
+    <div id="correzione-tempo-modal" class="annual-report-modal is-hidden">
+        <div class="annual-report-window" style="width:min(480px,calc(100vw - 48px));min-height:180px;">
+            <div class="annual-report-header">
+                <div class="val-stringa">⏱️ Correzione tempo ed ora</div>
+                <button type="button"
+                        onclick="toggleCorrezioneTempo()"
+                        title="Chiudi"
+                        aria-label="Chiudi"
+                        class="annual-report-icon annual-report-close">×</button>
+            </div>
+            <div class="annual-report-content time-controls-modal-content">
+                <div class="time-controls time-controls-modal">
+                    <div class="time-btn-group">
+                        <button class="time-btn" onclick="modificaOraRS(1)">▲</button>
+                        <div class="time-label">ORA</div>
+                        <div class="time-display" id="ora-corrente-display">--:--</div>
+                        <button class="time-btn" onclick="modificaOraRS(-1)">▼</button>
+                    </div>
+                    <div class="time-btn-group">
+                        <button class="time-btn" onclick="modificaMinutiRS(1)">▲</button>
+                        <div class="time-label">MIN</div>
+                        <div class="time-display" id="min-corrente-display">--</div>
+                        <button class="time-btn" onclick="modificaMinutiRS(-1)">▼</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="rs-loading" class="is-hidden"><p>⟳ Calcolo in corso...</p></div>
  
     <div id="rs-filtro-esclusione" class="val-item val-veto rs-filter-exclusion is-hidden"></div>
@@ -372,21 +402,6 @@ if ($soggetto) {
             </div>
         </div>
  
-        <div class="time-controls time-controls-top">
-            <div class="time-btn-group">
-                <button class="time-btn" onclick="modificaOraRS(1)">▲</button>
-                <div class="time-label">ORA</div>
-                <div class="time-display" id="ora-corrente-display">--:--</div>
-                <button class="time-btn" onclick="modificaOraRS(-1)">▼</button>
-            </div>
-            <div class="time-btn-group">
-                <button class="time-btn" onclick="modificaMinutiRS(1)">▲</button>
-                <div class="time-label">MIN</div>
-                <div class="time-display" id="min-corrente-display">--</div>
-                <button class="time-btn" onclick="modificaMinutiRS(-1)">▼</button>
-            </div>
-        </div>
- 
         <div class="tema-box">
             <h3 id="rs-titolo">Rivoluzione Solare</h3>
             <div class="map-loading-overlay" id="rs-mappa-loading">⟳ Ricalcolo RS...</div>
@@ -494,6 +509,14 @@ function renderPrevisioneAnnuale(previsione) {
 function togglePrevisioneAnnuale() {
     const pannello = document.getElementById('previsione-annuale');
     if (!pannello || !ultimaPrevisioneAnnuale) return;
+
+    const nascosto = pannello.style.display === 'none' || !pannello.style.display;
+    pannello.style.display = nascosto ? 'block' : 'none';
+}
+
+function toggleCorrezioneTempo() {
+    const pannello = document.getElementById('correzione-tempo-modal');
+    if (!pannello) return;
 
     const nascosto = pannello.style.display === 'none' || !pannello.style.display;
     pannello.style.display = nascosto ? 'block' : 'none';
@@ -1025,6 +1048,7 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
  
             document.getElementById('temi-wrapper').style.display = 'flex';
             document.getElementById('btn-apri-mappa').style.display = 'inline-block';
+            document.getElementById('btn-correzione-tempo').style.display = 'inline-block';
             if (!soloGrafico) document.getElementById('temi-wrapper').scrollIntoView({behavior:'smooth'});
  
             if (!soloGrafico) {
