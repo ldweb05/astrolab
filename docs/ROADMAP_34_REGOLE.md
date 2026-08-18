@@ -99,12 +99,24 @@ incrocia transiti). Il sottosistema `www/includes/forecast/` (feature
 stato dichiarato fuori scope dal committente: interpreta narrativamente un
 risultato già calcolato, non incide su calcoli o regole di scarto/punteggio.
 
-## Fase 5 — Regole sui transiti
+## Fase 5 — Regole sui transiti — COMPLETATA (2026-08-18) — ULTIMA FASE, PROGETTO CHIUSO
 
 Regole 11, 12, 14, 15, 23, 24, 27, 28 riguardano i transiti nel tempo, non
 la ricerca della miglior località per RSM/RL. Verificare se sono rilevanti
 per `ricerca.php`/`ricerca_rl.php` o solo per `transiti.php` (area separata
 del progetto) prima di decidere se e come intervenire.
+
+Risultato: non rilevanti per la ricerca RSM/RL (che non elabora mai
+transiti in tempo reale). `transiti.php` include `RuleEngine.php` ma non lo
+usa mai (residuo del clone da `rs.php`) ed è puramente descrittivo, senza
+alcuna logica di interpretazione da correggere. Costruire un'interpretazione
+automatica dei transiti sarebbe una funzionalità nuova, non una correzione:
+su indicazione del committente, chiusa così com'è, nessuna azione.
+
+**Con questa fase si chiude il progetto di allineamento alle 34 regole.**
+Per tutto ciò che riguarda scarto/ammissione di una RSM o RL nella ricerca,
+il motore applica ora le regole a scarto automatico (4, 5, 31, 33, 34) in
+modo incondizionato, indipendentemente dalla condizione cercata.
 
 ## Metodo di lavoro
 
