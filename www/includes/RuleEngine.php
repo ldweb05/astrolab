@@ -342,6 +342,18 @@ class RuleEngine {
         $note      = $risPunteggio['note'];
         $valParts  = $risPunteggio['valParts'];
 
+        // UX-0007: latitudine estrema (>60°) — avviso informativo non
+        // bloccante (non e' una delle 34 regole ufficiali). La RSM/RL viene
+        // comunque valutata normalmente con tutte le regole, punteggio e
+        // stelline come qualunque altra localita'.
+        if (abs($temaRS['lat'] ?? 0) > 60) {
+            $note[] = [
+                'codice' => 'LAT',
+                'tipo'   => 'AVV',
+                'nota'   => 'Latitudine ' . round($temaRS['lat'], 1) . '° — oltre 60°: a queste latitudini il sistema di case Placido può risultare meno affidabile, valuta con cautela',
+            ];
+        }
+
         // ── FASE 3: FILTRO ASTRI IN CASA ─────────────────────────────────
         $penalitaAstri = $this->filtraAstri($astriInCasa, $pianeti);
 
@@ -675,14 +687,11 @@ class RuleEngine {
             }
         }
 
-        // Veto latitudine estrema — REGOLA PROPRIETARIA ASTROLAB, NON una delle
-        // 34 regole ufficiali dell'Astrologia Attiva (vedi docs/status/34_regole_rsm.md,
-        // dove la vera Regola 31 riguarda lo stellium diviso tra I e XII casa).
-        // Etichetta "reg.31" corretta in "astrolab-latitudine": solo la label
-        // testuale del messaggio di veto è cambiata, nessuna modifica di logica.
-        if (abs($temaRS['lat'] ?? 0) > 60) {
-            $veti[] = "VETO (astrolab-latitudine): Latitudine " . round($temaRS['lat'],1) . "° — oltre 60°";
-        }
+        // NOTA — UX-0007: il veto latitudine estrema (>60°) e' stato declassato
+        // da veto assoluto a nota informativa non bloccante (vedi FASE 2 dopo
+        // calcolaPunteggio()): non e' una delle 34 regole ufficiali, e scartava
+        // automaticamente configurazioni che potevano essere astrologicamente
+        // valide (confronto con myastral.org, sessione 2026-08-18).
 
         // ── FASE 1-BIS: CONTROLLO DECIMA (pre-ingresso e sicurezza-uscita) ──
         //
