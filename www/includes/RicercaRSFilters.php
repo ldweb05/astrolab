@@ -413,7 +413,7 @@ function verificaCondizioneSalute(
     ];
     
     // ================================================================
-    // REGOLA 1: TOLLERANZA PRE-INGRESSO AMPLIATA A 4° PER MALEFICI
+    // PASSO 1 (numerazione locale, non e' la Regola 1 ufficiale): TOLLERANZA PRE-INGRESSO AMPLIATA A 4° PER MALEFICI
     // ================================================================
     $malevoli = [4, 6, 7, 8, 9]; // MA, SA, UR, NE, PLU
     $caseVetoSalute = [1, 6, 12];
@@ -450,7 +450,7 @@ function verificaCondizioneSalute(
     }
     
     // ================================================================
-    // REGOLA 2: SCUDO BENEFICO IN I CASA (priorità massima)
+    // PASSO 2 (numerazione locale, non e' la Regola 2 ufficiale): SCUDO BENEFICO IN I CASA (priorità massima)
     // ================================================================
     $beneficiScudo = [3, 5]; // Venere, Giove
     $casaScudo = 1;
@@ -500,7 +500,7 @@ function verificaCondizioneSalute(
     }
     
     // ================================================================
-    // REGOLA 3: ESCLUSIONE SOLE IN XII
+    // PASSO 3 (numerazione locale, non e' la Regola 3 ufficiale): ESCLUSIONE SOLE IN XII
     // ================================================================
     $idSole = 0;
     $casaXII = 12;
@@ -524,7 +524,7 @@ function verificaCondizioneSalute(
     }
     
     // ================================================================
-    // REGOLA 4: RAFFORZAMENTO ASCENDENTE NATALE (tolleranza 3°)
+    // PASSO 4 (numerazione locale, non e' la Regola 4 ufficiale): RAFFORZAMENTO ASCENDENTE NATALE (tolleranza 3°)
     // ================================================================
     if (isset($caseRS['ASC'])) {
         $ascRS = $caseRS['ASC']['longitudine'];
@@ -548,7 +548,7 @@ function verificaCondizioneSalute(
     }
     
     // ================================================================
-    // REGOLA 5: PROTEZIONE UNIVERSALE (Giove o Venere in I/VI/XII)
+    // PASSO 5 (numerazione locale, non e' la Regola 5 ufficiale): PROTEZIONE UNIVERSALE (Giove o Venere in I/VI/XII)
     // ================================================================
     $caseProtezione = [1, 6, 12];
     $protezioneTrovata = false;
@@ -817,7 +817,7 @@ function verificaCondizioneDenaroLow(array $pianetiConCase, array $caseRS): arra
             $longitudine = (float)$pianetiConCase[$idMal]['longitudine'];
             $nomeMal = getNomePianeta($idMal);
 
-            // --- REGOLA 1: RIGIDITÀ SULL'ESCLUSIONE ASSOLUTA ---
+            // --- PASSO 1 (numerazione locale, non e' la Regola 1 ufficiale): RIGIDITÀ SULL'ESCLUSIONE ASSOLUTA ---
             // Il malevolo è nella casa target (assegnata da SweCalc)?
             if ($casaAssegnata === $casaTarget) {
                 return [
@@ -836,7 +836,7 @@ function verificaCondizioneDenaroLow(array $pianetiConCase, array $caseRS): arra
                 ];
             }
 
-            // --- REGOLA 2: TOLLERANZA IN USCITA SUI MALEFICI VICINI ---
+            // --- PASSO 2 (numerazione locale, non e' la Regola 2 ufficiale): TOLLERANZA IN USCITA SUI MALEFICI VICINI ---
             // Se il malevolo è nella casa precedente (I per II, VII per VIII)
             // ma a meno di 3° dalla cuspide della casa target, sconfina
             if ($casaAssegnata === $casaPrecedente) {
