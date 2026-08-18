@@ -592,6 +592,20 @@ class RuleEngine {
             }
         }
 
+        // Regola 31 - UX-0005: stellium diviso tra XII e I casa (es. Giove in
+        // XII + Venere/Mercurio in I) vale come stellium pieno in XII. Solo
+        // la coppia XII/I e' prevista dal testo di Discepolo - non generalizzata
+        // ad altre case adiacenti. Scatta solo se nessuna delle due case da
+        // sola raggiunge gia' 3 (caso gia' coperto dal veto sopra).
+        $inCasa12 = $this->pianetaInCasa($pianeti, 12);
+        $inCasa1  = $this->pianetaInCasa($pianeti, 1);
+        if (count($inCasa12) < 3 && count($inCasa1) < 3
+            && count($inCasa12) >= 1 && count($inCasa1) >= 1
+            && (count($inCasa12) + count($inCasa1)) >= 3) {
+            $nomi = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', array_merge($inCasa12, $inCasa1)));
+            $veti[] = "VETO (Regola 31): Stellium diviso XII/I ({$nomi}) — vale come stellium pieno in XII";
+        }
+
         // Regola 34 — UX-0003: Marte e Saturno nella stessa casa RS/RL,
         // eccetto III e IX (case-parcheggio neutre, self::CASE_PARCHEGGIO).
         // Nessun pre-ingresso previsto: il testo di Discepolo non lo menziona
