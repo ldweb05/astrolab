@@ -159,4 +159,39 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0005 - Stellium diviso tra XII e I casa RS/RL (Regola 31)
+
+- **Data:** 2026-08-18
+- **Area:** Rule Engine (`includes/RuleEngine.php`) - veti assoluti FASE 1
+- **Stato:** APPROVATA
+- **Problema osservato:** la Regola 31 ("La pericolosita' di uno stellium in prima o dodicesima
+  di RS si deve intendere anche se lo stesso si divide... tra le Case; uno stellium tra
+  dodicesima e prima vale esattamente come uno stellium in dodicesima, anche se, per esempio,
+  abbiamo Giove in dodicesima Casa e Venere e Mercurio in prima") non e' implementata: il veto
+  stellium attuale conta solo 3+ pianeti dentro la stessa casa, non la somma tra XII e I quando
+  lo stellium e' diviso tra le due.
+- **Evidenze:** `docs/status/34_regole_rsm.md`, Regola 31; confermato in
+  `docs/ROADMAP_34_REGOLE.md`, Fase 1 punto 3.
+- **Confronto codice / regole ufficiali:** il testo cita esplicitamente e solo la coppia XII/I
+  (adiacenti attraverso la cuspide dell'Ascendente); non generalizza ad altre coppie di case
+  adiacenti (es. VI/VII) - non estesa quindi oltre XII/I, per non aggiungere un'interpretazione
+  non scritta nella fonte.
+- **Decisione:** dopo il ciclo esistente su `[1, 6, 8, 12]` (che resta invariato e continua a
+  coprire lo stellium "puro" dentro una sola casa), aggiunto un controllo separato: se la XII
+  casa ha almeno 1 pianeta, la I casa ha almeno 1 pianeta, e la somma dei due gruppi e' >= 3 (e
+  nessuna delle due case da sola aveva gia' raggiunto 3, caso gia' coperto dal veto esistente),
+  scatta un veto "Stellium diviso XII/I - Regola 31", con l'elenco dei pianeti coinvolti.
+- **Motivazione:** la Regola 31 e' indicata come inderogabile; senza questo veto una RSM/RL con,
+  ad esempio, Giove in XII e Venere+Mercurio in I passerebbe il veto stellium anche se Discepolo
+  la classifica esplicitamente come pericolosa quanto uno stellium pieno in XII.
+- **Beneficio atteso:** ALTO
+- **Costo tecnico stimato:** BASSO (blocco isolato, riusa `pianetaInCasa()` e `VAL_NOMI`
+  esistenti)
+- **Rischi:** riduce il numero di risultati per ricerche esistenti con questa configurazione
+  specifica - comportamento atteso e voluto.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 31)
+- **Eventuale voce della roadmap tecnica:** `docs/ROADMAP_34_REGOLE.md` - Fase 1, punto 3
+
+---
+
 Nessuna ulteriore decisione registrata.
