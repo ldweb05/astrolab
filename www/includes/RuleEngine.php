@@ -518,7 +518,7 @@ class RuleEngine {
 
         // ── FASE 1: VETI ASSOLUTI ─────────────────────────────────────────
 
-        // ── Regola 1: ASC RS in I, VI o XII casa natale ──────────────────
+        // ── Veto ASC RS in I, VI o XII casa natale (Regola 4 + Regola 6a) ─
         // v4.1: applicato anche il pre-ingresso di 3° sulle cuspidi natali
         // I, VI e XII. Se l'ASC RS è entro 3° PRIMA della cuspide di una
         // di queste case natali, è trattato come se vi fosse già entrato.
@@ -593,7 +593,7 @@ class RuleEngine {
                 if (!isset($case[$ang])) continue;
                 $diff = abs($this->diffAngolo($lonP, $case[$ang]['longitudine']));
                 if ($diff <= 2.0) {
-                    $veti[] = "VETO (reg.33): " . self::VAL_NOMI[$mal] . " a " . round($diff,1) . "° dalla cuspide casa {$ang}";
+                    $veti[] = "VETO (astrolab-angoli): " . self::VAL_NOMI[$mal] . " a " . round($diff,1) . "° dalla cuspide casa {$ang} — regola proprietaria, non una delle 34 regole ufficiali";
                 }
             }
         }
@@ -601,11 +601,10 @@ class RuleEngine {
         // Veto latitudine estrema — REGOLA PROPRIETARIA ASTROLAB, NON una delle
         // 34 regole ufficiali dell'Astrologia Attiva (vedi docs/status/34_regole_rsm.md,
         // dove la vera Regola 31 riguarda lo stellium diviso tra I e XII casa).
-        // Etichetta "reg.31" nel messaggio di veto storicamente errata: mantenuta
-        // solo per compatibilità di log/UI esistenti, non rinominata qui per non
-        // toccare stringhe già in uso altrove senza una decisione dedicata.
+        // Etichetta "reg.31" corretta in "astrolab-latitudine": solo la label
+        // testuale del messaggio di veto è cambiata, nessuna modifica di logica.
         if (abs($temaRS['lat'] ?? 0) > 60) {
-            $veti[] = "VETO (reg.31): Latitudine " . round($temaRS['lat'],1) . "° — oltre 60°";
+            $veti[] = "VETO (astrolab-latitudine): Latitudine " . round($temaRS['lat'],1) . "° — oltre 60°";
         }
 
         // ── FASE 1-BIS: CONTROLLO DECIMA (pre-ingresso e sicurezza-uscita) ──
