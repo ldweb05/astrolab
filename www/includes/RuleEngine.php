@@ -548,12 +548,13 @@ class RuleEngine {
         // VI o XII, è trattato come "già entrato" in quella casa).
         // Il controllo stellium usa le case assegnate da SweCalc (invariato).
 
-        // Pre-ingresso malevoli in I/VI/XII RS (Fail-safe 1 v4.1)
-        // MA=4, SA=6, UR=7, NE=8, PLU=9
+        // Pre-ingresso Sole + malevoli in I/VI/XII RS (Fail-safe 1 v4.1;
+        // Sole aggiunto con UX-0004 per completare la Regola 4)
+        // SO=0, MA=4, SA=6, UR=7, NE=8, PLU=9
         foreach ([1, 6, 12] as $casaVeto) {
             if (!isset($case[$casaVeto])) continue;
             $cuspideVeto = $case[$casaVeto]['longitudine'];
-            foreach (self::MALEVOLI as $idMal) {
+            foreach (array_merge([0], self::MALEVOLI) as $idMal) {
                 if (!isset($pianeti[$idMal])) continue;
                 $lonMal = $pianeti[$idMal]['longitudine'];
                 // Il pianeta è già assegnato a questa casa da SweCalc?
@@ -574,6 +575,12 @@ class RuleEngine {
             // Marte in I, VI, XII (casa assegnata da SweCalc)
             if ($casaVeto !== 8 && in_array(4, $inCasa)) {
                 $veti[] = "VETO: Marte in {$casaVeto}a casa RS";
+            }
+
+            // Sole in I, VI, XII (casa assegnata da SweCalc) - UX-0004,
+            // completa la Regola 4 (Ascendente, stellium O Sole in I/VI/XII).
+            if ($casaVeto !== 8 && in_array(0, $inCasa)) {
+                $veti[] = "VETO (Regola 4): Sole in {$casaVeto}a casa RS";
             }
 
             // Stellium (3+) - REGOLA 4/16/26/31: nessuna eccezione per benefici
