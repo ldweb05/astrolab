@@ -1096,7 +1096,7 @@ main {
     margin-left: 16px;
     align-self: center;
 }
-.time-btn-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.time-btn-group { display: flex; flex-direction: row; align-items: center; gap: 6px; }
 .time-btn {
     background: #2C3E6B;
     color: white;
@@ -1132,6 +1132,37 @@ main {
     text-align: center;
     margin-top: 4px;
 }
+
+/* Variante orizzontale usata dentro il modal "Correzione tempo ed ora" */
+.time-controls-modal-content {
+    display: flex;
+    justify-content: center;
+}
+.time-controls-modal {
+    flex-direction: row;
+    gap: 32px;
+    margin-left: 0;
+}
+
+/* Stili per il modal Correzione tempo ed ora - versione compatta */
+.time-controls-modal .time-btn {
+    font-size: 14px;
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+}
+.time-controls-modal .time-label {
+    font-size: 10px;
+}
+.time-controls-modal .time-display {
+    font-size: 14px;
+    padding: 2px 6px;
+    min-width: 40px;
+}
+.time-controls-modal .time-btn-group {
+    gap: 4px;
+}
+
 
 /* ── Finestra fluttuante mappa ───────────────────────────────── */
 .map-float-win {
