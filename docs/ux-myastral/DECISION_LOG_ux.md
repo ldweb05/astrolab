@@ -248,4 +248,34 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0007 - Veto latitudine >60 gradi declassato ad avviso informativo (non bloccante)
+
+- **Data:** 2026-08-18
+- **Area:** Rule Engine (`includes/RuleEngine.php`) - veto proprietario "astrolab-latitudine"
+- **Stato:** APPROVATA
+- **Problema osservato:** il veto proprietario "astrolab-latitudine" (introdotto storicamente, non
+  parte delle 34 regole ufficiali - gia' rietichettato in Fase 1 di questo lavoro) scarta
+  automaticamente ogni RSM/RL con latitudine oltre 60 gradi, indipendentemente dal resto della
+  configurazione astrale. Un confronto diretto con myastral.org (che non applica questo limite)
+  ha mostrato una localita' (Baker Lake, 64.28 gradi N) scartata da astrolab senza alcuna
+  violazione delle 34 regole ufficiali, solo per questo veto proprietario.
+- **Decisione:** rimosso il controllo dalla sezione veti assoluti di `calcolaVeti()`. Aggiunto
+  invece, dopo il calcolo del punteggio (FASE 2 di `valuta()`), un controllo indipendente sulla
+  latitudine della localita': se oltre 60 gradi, aggiunta una voce all'array `note` (stesso
+  canale gia' usato per gli avvisi non bloccanti tipo Sole/Giove in case avverse) con testo
+  esplicito di cautela. La RSM/RL viene quindi valutata normalmente con tutte le regole (veti,
+  punteggio, stelline) come qualunque altra localita', con in piu' questa nota visibile.
+- **Motivazione:** il limite di 60 gradi non e' nel testo di Discepolo; scartarlo automaticamente
+  nascondeva configurazioni che potrebbero essere astrologicamente valide. Un avviso informativo
+  permette all'utente di decidere consapevolmente, mantenendo comunque la cautela tecnica (a
+  latitudini estreme il sistema di case Placido puo' degenerare) come nota, non come esclusione.
+- **Beneficio atteso:** ALTO - piu' risultati utili senza perdere l'avviso di cautela tecnica.
+- **Costo tecnico stimato:** BASSO - riuso del canale `note` gia' esistente, rimozione di un
+  blocco isolato.
+- **Rischi:** nessuno noto; la nota e' puramente informativa, non cambia stelline o punteggio.
+- **Documento collegato:** confronto con myastral.org, sessione 2026-08-18 (Baker Lake, RSM 2025
+  Sinner)
+
+---
+
 Nessuna ulteriore decisione registrata.
