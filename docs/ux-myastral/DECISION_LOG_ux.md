@@ -54,4 +54,36 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0002 - Rimozione dell'eccezione benefici nel veto stellium (RuleEngine.php, FREEZE)
+
+- **Data:** 2026-08-17
+- **Area:** Rule Engine (`includes/RuleEngine.php`) - veto stellium in I/VI/VIII/XII casa
+- **Stato:** APPROVATA
+- **Problema osservato:** il veto stellium in RuleEngine.php (righe ~578-585) perdona la
+  configurazione se Sole o Giove sono presenti nello stellium ($hasBenefici). Le 34 regole
+  ufficiali (docs/status/34_regole_rsm.md) non prevedono questa eccezione: la Regola 31 mostra
+  esplicitamente un esempio - Giove in XII casa e Venere+Mercurio in I casa - come stellium
+  ancora pericoloso, nonostante la presenza di un benefico (Giove).
+- **Evidenze:** stesso caso gia trovato in FiltroEsclusione.php (corretto in commit 0088232,
+  ma li il problema era lo scope delle case, non l'eccezione benefici, che li era gia assente
+  correttamente); confronto diretto con Regola 4, 16, 26, 31.
+- **Confronto codice / regole ufficiali:** RuleEngine.php scope case [1,6,8,12] e' GIA corretto
+  (coincide esattamente con le case citate da Regole 4/16/26/31); l'unico difetto e'
+  l'eccezione benefici, assente nel testo di Discepolo.
+- **Decisione:** si autorizza la rimozione dell'eccezione $hasBenefici dal veto stellium in
+  RuleEngine.php - unica modifica, nessun'altra parte del Rule Engine toccata. Lo scope delle
+  case [1,6,8,12] resta invariato perche' gia corretto.
+- **Motivazione:** allineare il Rule Engine alla fonte primaria vincolante (le 34 regole),
+  eliminando una divergenza che oggi fa passare come "sicure" RSM/RL che Discepolo
+  classificherebbe esplicitamente come pericolose.
+- **Beneficio atteso:** ALTO
+- **Costo tecnico stimato:** BASSO (rimozione di 2 righe di codice, nessuna nuova logica)
+- **Rischi:** puo cambiare il numero di risultati per ricerche esistenti (alcune RSM/RL con
+  stellium benefico in I/VI/VIII/XII che oggi passano il veto, dopo la modifica non lo
+  passeranno piu) - comportamento atteso e voluto, non un effetto collaterale indesiderato.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regole 4, 16, 26, 31)
+- **Eventuale voce della roadmap tecnica:** nessuna, correzione diretta del Rule Engine.
+
+---
+
 Nessuna ulteriore decisione registrata.
