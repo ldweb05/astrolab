@@ -67,13 +67,21 @@ implementate:
   "case adiacenti, stesso orbo" implementato limitatamente alla coppia
   IX/X esplicitamente citata dal testo, tolleranza 3° (orbo Regola 23)
 
-## Fase 3 — Confronto sistematico delle 120 regole esistenti contro le 34
+## Fase 3 — Confronto sistematico delle 120 regole esistenti contro le 34 — COMPLETATA (2026-08-18)
 
 Per ogni veto/regola in `RuleEngine.php`, `FiltroEsclusione.php`,
 `RicercaRSFilters.php`: è prevista dalle 34 regole ufficiali? È un'aggiunta
 proprietaria del progetto (come il veto latitudine)? È mal etichettata
 (come i 3 casi già trovati)? Ogni discrepanza va registrata nel decision log
 prima di essere corretta, con lo stesso formato già usato per UX-0001/0002.
+
+Risultato: `RuleEngine.php` già interamente auditato nelle Fasi 1/2 (tutte le
+discrepanze trovate risolte). `FiltroEsclusione.php` verificato, nessuna
+discrepanza (già correttamente proprietario e documentato). `RicercaRSFilters.php`
+verificato: tutta logica proprietaria per le condizioni di ricerca, nessuna
+regola ufficiale mancante da aggiungere; unica correzione, 7 etichette interne
+"REGOLA N" (numerazione locale) rinominate in "PASSO N" per non essere confuse
+con le regole ufficiali — solo commenti, nessuna modifica di logica.
 
 ## Fase 4 — Regole di metodo/peso
 
