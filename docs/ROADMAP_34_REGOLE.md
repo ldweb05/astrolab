@@ -83,12 +83,21 @@ regola ufficiale mancante da aggiungere; unica correzione, 7 etichette interne
 "REGOLA N" (numerazione locale) rinominate in "PASSO N" per non essere confuse
 con le regole ufficiali — solo commenti, nessuna modifica di logica.
 
-## Fase 4 — Regole di metodo/peso
+## Fase 4 — Regole di metodo/peso — COMPLETATA (2026-08-18)
 
 Regole 6, 22, 30 (e altre simili) non sono veti ma indicano cosa guardare e
 quanto pesarlo (es. l'Ascendente conta più di Giove al MC; gli aspetti
 angolari contano pochissimo). Valutare se e come integrarla nella logica di
 `RuleEngineExtended.php` (il punteggio parziale).
+
+Risultato: già rispettate senza modifiche. Il motore RSM/RL non calcola mai
+aspetti né retrogradazione (Regole 30/6), e l'ordine di priorità di
+`calcolaVeti()` già rispecchia esattamente quello della Regola 6 (ASC →
+stellium → Sole → malefici). La Regola 22 non si applica (il motore non
+incrocia transiti). Il sottosistema `www/includes/forecast/` (feature
+"Relazione Annuale", ~5000 righe) usa aspetti/retrogradazione/dignità ma è
+stato dichiarato fuori scope dal committente: interpreta narrativamente un
+risultato già calcolato, non incide su calcoli o regole di scarto/punteggio.
 
 ## Fase 5 — Regole sui transiti
 
