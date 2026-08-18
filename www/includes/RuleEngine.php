@@ -585,6 +585,18 @@ class RuleEngine {
             }
         }
 
+        // Regola 34 — UX-0003: Marte e Saturno nella stessa casa RS/RL,
+        // eccetto III e IX (case-parcheggio neutre, self::CASE_PARCHEGGIO).
+        // Nessun pre-ingresso previsto: il testo di Discepolo non lo menziona
+        // per questa regola, a differenza delle Regole 4/5.
+        if (isset($pianeti[4], $pianeti[6])) {
+            $casaMarte   = $pianeti[4]['casa'];
+            $casaSaturno = $pianeti[6]['casa'];
+            if ($casaMarte === $casaSaturno && !in_array($casaMarte, self::CASE_PARCHEGGIO)) {
+                $veti[] = "VETO (Regola 34): Marte e Saturno entrambi in {$casaMarte}a casa — non ammesso tranne in III o IX";
+            }
+        }
+
         // Regola 33: Marte o Saturno entro 2° dagli angoli
         foreach ([4, 6] as $mal) {
             if (!isset($pianeti[$mal])) continue;
