@@ -56,12 +56,16 @@ implementate:
    III e IX → implementata da zero con decisione UX-0003, riuso di
    `CASE_PARCHEGGIO` esistente
 
-## Fase 2 — Altre regole-veto identificate nel testo completo
+## Fase 2 — Altre regole-veto identificate nel testo completo — COMPLETATA (2026-08-18)
 
-- Regola 26 — stellium in VIII casa (già coperta dallo scope corretto in
-  Fase precedente, verificare comunque il caso specifico)
-- Regola 33 — caso "Saturno in casa adiacente, stesso orbo" (il caso
-  "stessa casa" è già fatto, manca questo)
+- Regola 26 — stellium in VIII casa → verificata, già corretta senza
+  modifiche (il codice vieta solo lo stellium in VIII, non i singoli
+  pianeti, esattamente come il testo)
+- Regola 33 — completata in entrambi i casi: "stessa casa" spostato da
+  `RuleEngineExtended.php` (opzionale, ristretto alla casa tematica) a
+  veto assoluto incondizionato in `RuleEngine.php` (decisione UX-0006);
+  "case adiacenti, stesso orbo" implementato limitatamente alla coppia
+  IX/X esplicitamente citata dal testo, tolleranza 3° (orbo Regola 23)
 
 ## Fase 3 — Confronto sistematico delle 120 regole esistenti contro le 34
 
