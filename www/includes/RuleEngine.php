@@ -576,13 +576,12 @@ class RuleEngine {
                 $veti[] = "VETO: Marte in {$casaVeto}a casa RS";
             }
 
-            // Stellium (3+) senza protezione Sole/Giove
+            // Stellium (3+) - REGOLA 4/16/26/31: nessuna eccezione per benefici
+            // presenti nello stellium (allineato a docs/status/34_regole_rsm.md,
+            // decisione UX-0002 in docs/ux-myastral/DECISION_LOG_ux.md).
             if (count($inCasa) >= 3) {
-                $hasBenefici = in_array(0, $inCasa) || in_array(5, $inCasa);
-                if (!$hasBenefici) {
-                    $nomi = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', $inCasa));
-                    $veti[] = "VETO: Stellium ({$nomi}) in {$casaVeto}a casa senza Sole/Giove";
-                }
+                $nomi = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', $inCasa));
+                $veti[] = "VETO: Stellium ({$nomi}) in {$casaVeto}a casa";
             }
         }
 
