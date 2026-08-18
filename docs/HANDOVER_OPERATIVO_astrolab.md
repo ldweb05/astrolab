@@ -3157,3 +3157,14 @@ avviare M1 — Comparazione ricerche RSM.
 - Verifica: `php -l` superato nel container, `git diff --check` pulito, verifica funzionale in UI confermata dall'utente, suite di regressione `tests/run.php` eseguita dopo il commit (i 3 casi RSM reali restano invariati, nessuna regressione).
 - File toccati: solo `www/includes/RicercaRSFilters.php`. Nessun altro file toccato in questa sessione (nessuna nuova decisione UX necessaria, trattandosi di sole correzioni di commenti).
 - Prossimo passo: Fase 4 della roadmap (regole di metodo/peso - Regole 6, 22, 30 e simili, non veti ma criteri di importanza/peso da valutare se e come integrare in `RuleEngineExtended.php`) o Fase 5 (regole sui transiti - Regole 11, 12, 14, 15, 23, 24, 27, 28, da verificare se rilevanti per la ricerca RSM/RL o solo per `transiti.php`).
+
+## 2026-08-18 quater — Fase 4 allineamento 34 regole (branch feature/allineamento-myastral)
+
+- Verificate le Regole 6, 22 e 30 (regole di metodo/peso, non veti) sul motore RSM/RL (`RuleEngine.php` + `RuleEngineExtended.php`, lo scope indicato dalla roadmap): confermate gia' rispettate, nessuna modifica necessaria.
+  - Regola 30 ("importanza minima agli aspetti") e Regola 6 ("il pianeta retrogrado... valore bassissimo"): ne' aspetti (trigoni/quadrati/sestili) ne' retrogradazione sono mai calcolati nella valutazione RSM/RL - importanza zero, non solo minima.
+  - Regola 6, ordine di priorita' (ASC vs case natali, stellium, Sole, malefici soprattutto Marte, poi il resto): gia' esattamente l'ordine seguito in `calcolaVeti()` FASE 1, confermato durante l'audit delle Fasi 1-3.
+  - Regola 22 (conciliare transiti e RS in contrasto): non applicabile al motore di ricerca RSM/RL, che valuta solo il tema di Rivoluzione senza incrociare transiti in tempo reale (i transiti sono una feature separata, `transiti.php`).
+- Scoperto durante l'analisi un sottosistema separato e molto piu' ampio, `www/includes/forecast/` (~5000 righe, ~55 file: `AspectEngine.php`, `RetrogradeEngine.php`, `DignityEngine.php`, `PlanetStrengthEngine.php` ecc.), per la feature "Relazione Annuale" - mai menzionato nella roadmap delle 34 regole. Su indicazione esplicita del committente, questo sottosistema e' fuori scope per l'allineamento alle 34 regole: sono testi che interpretano narrativamente il risultato di una RSM gia' calcolata, non incidono su calcoli o regole di scarto/punteggio. Trattato come sistema separato, analogamente a `RuleEngineExtended.php`/`MYASTRAL_ALIGNMENT_MODE`.
+- Con questa sessione si chiude la **Fase 4** della roadmap (`docs/ROADMAP_34_REGOLE.md`): nessuna modifica di codice necessaria, motore RSM/RL gia' conforme.
+- Nessun file di codice toccato in questa sessione (solo verifica/analisi, nessuna decisione UX necessaria).
+- Prossimo passo: Fase 5 della roadmap (regole sui transiti - Regole 11, 12, 14, 15, 23, 24, 27, 28, da verificare se rilevanti per la ricerca RSM/RL o solo per `transiti.php`, area separata del progetto).
