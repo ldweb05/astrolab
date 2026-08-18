@@ -34,22 +34,27 @@ servizio esterno timezonedb.com in `www/js/app.js`
 — non toccare in questo lavoro, ma tenerne conto se i test producono numeri
 incoerenti tra loro: verificare prima se l'ora GMT usata è la stessa.
 
-## Fase 1 — Le 4 regole a scarto automatico (priorità massima)
+## Fase 1 — Le 4 regole a scarto automatico (priorità massima) — COMPLETATA (2026-08-18)
 
 Queste 4 regole, se violate, impongono lo scarto automatico della RSM/RL —
-non ammettono eccezioni né punteggi parziali:
+non ammettono eccezioni né punteggi parziali. Tutte e 4 verificate e/o
+implementate:
 
-1. **Regola 4** — Ascendente, stellium o Sole in I, VI o XII casa → verificare
-   che Sole e stellium siano controllati correttamente nelle case PROPRIE
-   della RS/RL (non natali); l'Ascendente-vs-case-natali è già implementato
-   ma mal etichettato, da correggere la label
-2. **Regola 5** — Marte in I, VI o XII casa della RS/RL → già implementata,
-   verificare dettagli (orbo, pre-ingresso, copertura RL oltre a RSM)
+1. **Regola 4** — Ascendente, stellium o Sole in I, VI o XII casa →
+   Ascendente-vs-case-natali corretto (etichetta era "Regola 1", ora "Regola
+   4 + Regola 6a"); stellium già corretto nelle case proprie RS/RL; Sole
+   NON era un veto assoluto (peso 0, solo nota "AVV") — corretto con
+   decisione UX-0004, ora veto assoluto con pre-ingresso 3°
+2. **Regola 5** — Marte in I, VI o XII casa della RS/RL → verificata,
+   già corretta (veto assoluto con pre-ingresso 3°, copertura RSM e RL
+   tramite motore condiviso)
 3. **Regola 31** — la sfumatura "stellium diviso tra case" (es. Giove in XII
-   + Venere/Mercurio in I conta come stellium pieno in XII) NON è
-   implementata: oggi il codice conta solo stellium dentro una singola casa
+   + Venere/Mercurio in I conta come stellium pieno in XII) → implementata
+   con decisione UX-0005, limitata alla coppia XII/I esplicitamente citata
+   dal testo (non generalizzata ad altre case adiacenti)
 4. **Regola 34** — Marte e Saturno nella stessa casa della RS/RL, eccetto
-   III e IX → completamente assente dal codice, va scritta da zero
+   III e IX → implementata da zero con decisione UX-0003, riuso di
+   `CASE_PARCHEGGIO` esistente
 
 ## Fase 2 — Altre regole-veto identificate nel testo completo
 
