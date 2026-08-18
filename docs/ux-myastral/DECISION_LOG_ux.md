@@ -86,4 +86,41 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0003 - Implementazione Regola 34 (Marte+Saturno stessa casa RS/RL, eccetto III/IX)
+
+- **Data:** 2026-08-18
+- **Area:** Rule Engine (`includes/RuleEngine.php`) - veti assoluti FASE 1
+- **Stato:** APPROVATA
+- **Problema osservato:** la Regola 34 ("Non e' possibile posizionare Marte e Saturno nella
+  stessa casa di RS, qualunque essa sia, tranne che in Terza e in Nona casa. In caso contrario
+  si potranno subire danni molto gravi da cio'") e' completamente assente dal codice - nessun
+  veto attuale controlla la compresenza di Marte e Saturno nella stessa casa.
+- **Evidenze:** `docs/status/34_regole_rsm.md`, Regola 34; confermato in
+  `docs/ROADMAP_34_REGOLE.md` Fase 1, punto 4 ("completamente assente dal codice, va scritta
+  da zero").
+- **Confronto codice / regole ufficiali:** il codice esistente ha gia' il concetto di
+  case-parcheggio neutre (`CASE_PARCHEGGIO = [3, 9]`, gia' usato altrove nel Rule Engine) che
+  coincide esattamente con l'eccezione III/IX della Regola 34 - riuso diretto della costante
+  esistente, nessuna nuova costante da introdurre.
+- **Decisione:** aggiunto in `calcolaVeti()`, nella sezione FASE 1 (veti assoluti), un nuovo
+  controllo: se Marte (id 4) e Saturno (id 6) sono assegnati alla stessa casa RS/RL (campo
+  `casa` gia' calcolato da SweCalc, stesso pattern di `pianetaInCasa()`), e quella casa NON e'
+  in `CASE_PARCHEGGIO` (III o IX), viene generato un veto assoluto -> scarto automatico. Nessun
+  pre-ingresso di 3 gradi previsto (il testo della Regola 34 non lo menziona, a differenza delle
+  Regole 4/5).
+- **Motivazione:** la Regola 34 e' esplicitamente indicata come inderogabile dal committente;
+  senza questo veto il Rule Engine puo' promuovere/mostrare RSM e RL che Discepolo classificherebbe
+  come pericolose senza eccezioni.
+- **Beneficio atteso:** ALTO
+- **Costo tecnico stimato:** BASSO (nuovo blocco isolato di poche righe, riuso di costanti e
+  pattern esistenti, nessuna modifica a logica preesistente)
+- **Rischi:** puo' ridurre il numero di risultati per ricerche esistenti (RSM/RL con Marte+Saturno
+  nella stessa casa, oggi passano, dopo la modifica verranno scartate) - comportamento atteso e
+  voluto, non un effetto collaterale indesiderato.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 34), `docs/ROADMAP_34_REGOLE.md`
+  (Fase 1)
+- **Eventuale voce della roadmap tecnica:** `docs/ROADMAP_34_REGOLE.md` - Fase 1, punto 4
+
+---
+
 Nessuna ulteriore decisione registrata.
