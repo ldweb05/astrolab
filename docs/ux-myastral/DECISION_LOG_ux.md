@@ -194,4 +194,58 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0006 - Regola 33 completa (stessa casa, incondizionata + case adiacenti X/IX)
+
+- **Data:** 2026-08-18
+- **Area:** Rule Engine (`includes/RuleEngine.php`) - veti assoluti FASE 1
+- **Stato:** APPROVATA
+- **Problema osservato:** la Regola 33 ("Saturno ha sempre la meglio su Giove, su Venere, sul
+  Sole... per lo stesso motivo... un Giove congiunto al Medio Cielo, a cinque gradi da esso, in
+  decima Casa, e un Saturno alla stessa distanza, in nona: alla fine prevalera' il secondo...
+  lo stesso discorso vale se mettiamo Saturno e Giove in settima, in seconda") ha due casi: (a)
+  Saturno e un benefico (Sole/Venere/Giove) nella STESSA casa, in QUALUNQUE casa; (b) Saturno e
+  un benefico in case ADIACENTI, alla stessa distanza dalla cuspide condivisa (esempio: IX/X,
+  Medio Cielo). Il caso (a) esiste nel codice solo come `saturno_prevale` in
+  `RuleEngineExtended.php`, ma ristretto alla sola casa tematica della condizione cercata (non
+  qualunque casa) ed e' attivo solo dietro il flag opzionale `MYASTRAL_ALIGNMENT_MODE` (finora
+  usato come esperimento, ora da rendere definitivo). Il caso (b) non e' implementato affatto
+  (gap noto, documentato in `RuleEngineExtended.php` righe 53-59).
+- **Evidenze:** `docs/status/34_regole_rsm.md`, Regola 33; `RuleEngineExtended.php`
+  (`calcolaPunteggioParziale()`, flag `saturno_prevale`); `docs/ROADMAP_34_REGOLE.md` Fase 2.
+- **Confronto codice / regole ufficiali:** `RuleEngineExtended.php` e' un sistema separato,
+  esplicitamente documentato come "non parte delle 34 regole in se': un metro di paragone" con
+  MyAstral.org (decisione UX-0001), che include anche un bonus d'orbo per Giove NON previsto
+  dalla Regola 33. Riattivare quel sistema per intero (flag a true) accenderebbe anche il bonus
+  proprietario, mescolando i due sistemi. Si sceglie quindi di implementare la Regola 33 (in
+  entrambi i casi) direttamente e incondizionatamente in `RuleEngine.php` (motore FREEZE),
+  coerente con l'approccio gia' usato per le Regole 4/5/31/34. `RuleEngineExtended.php` e il
+  flag `MYASTRAL_ALIGNMENT_MODE` restano invariati come sistema opzionale separato (UX-0001 non
+  revocata).
+- **Decisione:** in `calcolaVeti()`:
+  (a) STESSA CASA, qualunque casa: se Saturno (id 6) e almeno uno tra Sole/Venere/Giove
+  (id 0/3/5) sono nella stessa casa RS/RL, veto assoluto "Saturno prevale su <benefico/i>".
+  (b) CASE ADIACENTI, solo la coppia IX/X esplicitamente citata dal testo (non generalizzata ad
+  altre coppie adiacenti, per coerenza con la scelta gia' fatta per la Regola 31): se Saturno e'
+  entro 3 gradi PRIMA della cuspide del Medio Cielo (X casa, ancora in IX) e un benefico
+  (Sole/Venere/Giove) e' entro 3 gradi DOPO la stessa cuspide (appena entrato in X), veto
+  assoluto "Saturno prevale (Regola 33 - case adiacenti)". Tolleranza di 3 gradi allineata
+  all'orbo gia' stabilito dalla Regola 23 per i transiti di Giove e Saturno.
+- **Motivazione:** la Regola 33 non e' limitata alla casa tematica della condizione cercata ne'
+  a un sistema opzionale: si applica in generale, in ogni RSM/RL, indipendentemente da quale
+  condizione si stia cercando. Implementarla nel motore FREEZE la rende coerente con le altre
+  regole inderogabili gia' allineate in questa sessione.
+- **Beneficio atteso:** ALTO
+- **Costo tecnico stimato:** MEDIO (due blocchi distinti, nuova logica di confronto per il caso
+  adiacente, nessuna modifica al codice esistente riusato)
+- **Rischi:** riduce il numero di risultati per ricerche esistenti con Saturno e un benefico
+  nella stessa casa o in configurazione IX/X ravvicinata - comportamento atteso e voluto.
+  `RuleEngineExtended.php`/`MYASTRAL_ALIGNMENT_MODE` restano un sistema separato: se il flag e'
+  gia' attivo sul Pi, il suo `saturno_prevale` (ristretto alla casa tematica) e il nuovo veto
+  incondizionato in `RuleEngine.php` (qualunque casa) opereranno in parallelo senza conflitto,
+  quest'ultimo piu' ampio.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 33), `RuleEngineExtended.php`
+- **Eventuale voce della roadmap tecnica:** `docs/ROADMAP_34_REGOLE.md` - Fase 2
+
+---
+
 Nessuna ulteriore decisione registrata.
