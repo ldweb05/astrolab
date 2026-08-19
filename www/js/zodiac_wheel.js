@@ -635,3 +635,11 @@ const ZodiacWheel = {
 
 window.toggleGradiPianeti = function() { ZodiacWheel.toggleGradi(); };
 window.toggleCuspidiCase = function() { ZodiacWheel.toggleCuspidi(); };
+
+window.toggleDatiTabella = function(suffix) {
+    const wrap = document.getElementById('dati-' + suffix);
+    const btn = document.getElementById('btn-toggle-dati-' + suffix);
+    if (!wrap || !btn) return;
+    const nascosto = wrap.classList.toggle('is-hidden');
+    btn.textContent = nascosto ? '▼ Mostra Dati' : '▲ Nascondi Dati';
+};

@@ -900,6 +900,14 @@ main {
 }
 .tema-info { font-size: 11px; color: #667; margin-top: 4px; }
 
+.tema-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.tema-info-row .tema-info { margin-top: 0; text-align: left; }
+
 /* ── Tabelle pianeti ─────────────────────────────────────────── */
 .tabella-pianeti {
     width: 100%;
