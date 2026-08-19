@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/NascitaGmtHelper.php';
 /**
  * api/stampa_pdf_api.php — Generazione PDF nativo lato server
  * Astrologia Attiva — Scuola Ciro Discepolo
@@ -29,7 +31,6 @@
  *   - I PNG vengono validati (devono iniziare con "data:image/png;base64,")
  */
 
-declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 
 session_start();
@@ -109,11 +110,18 @@ $condizioniValide = ['Decima','Lavoro','Amore','Salute','Denaro','Denaro Low','C
 if (!in_array($condizione, $condizioniValide, true)) $condizione = 'Decima';
 
 // ── Dati natali del soggetto ────────────────────────────────────────────
-$dateNascita = new DateTime($soggetto['data_nascita']);
-$g = (int)$dateNascita->format('d');
-$m = (int)$dateNascita->format('m');
-$a = (int)$dateNascita->format('Y');
-$oraGmtParts = explode(':', $soggetto['ora_nascita_gmt']);
+// Calcolo corretto data/ora GMT gestendo il cambio di giorno
+$gmtData = calcolaDataOraGmtCorretta(
+    $soggetto['data_nascita'],
+    $soggetto['ora_nascita'],
+    (float)$soggetto['offset_gmt']
+);
+
+$dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+$g = (int)$dateGmt->format('d');
+$m = (int)$dateGmt->format('m');
+$a = (int)$dateGmt->format('Y');
+$oraGmtParts = explode(':', $gmtData['ora_gmt']);
 $oraGmt = (int)$oraGmtParts[0] + ((isset($oraGmtParts[1]) ? (int)$oraGmtParts[1] : 0)) / 60.0;
 $latNasc = (float)$soggetto['latitudine'];
 $lonNasc = (float)$soggetto['longitudine'];
