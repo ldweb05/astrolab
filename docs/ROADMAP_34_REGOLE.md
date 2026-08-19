@@ -53,9 +53,15 @@ chiamate dirette all'API:
    nascite vicine a un cambio DST.
 
 Dettagli completi della diagnosi in `docs/ROADMAP_BUG_GIORNO_GMT.md`,
-sezione "Nota — bug distinto scoperto durante l'analisi". Bug confermato
-ma **ancora non risolto** — resta fuori scope, richiede sessione dedicata
-separata.
+sezione "Nota — bug distinto scoperto durante l'analisi".
+
+**RISOLTO — 2026-08-19** (branch `fix/oscillazione-dst-timezonedb`):
+`ottieniOffsetTimeZone()` in `js/app.js` e `calcolaTransiti()` in
+`transiti.php` riscritte per usare `Intl.DateTimeFormat` (database IANA
+nativo del browser) invece di approssimare un timestamp UTC sconosciuto.
+Verificato stabile su chiamate ripetute identiche (nessuna oscillazione)
+e corretto sui confini DST reali. Dettagli completi in
+`docs/ROADMAP_BUG_GIORNO_GMT.md`, sezione "RISOLTO — 2026-08-19".
 
 ## Fase 1 — Le 4 regole a scarto automatico (priorità massima) — COMPLETATA (2026-08-18)
 

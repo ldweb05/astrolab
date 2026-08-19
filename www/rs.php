@@ -901,7 +901,13 @@ function aggiornaFusoOrarioLocale(lat, lon, gmtString) {
     fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=position&lat=${lat}&lng=${lon}&time=${ts}`)
         .then(r => r.json())
         .then(data => {
-            if (data.status !== 'OK') return;
+            if (data.status !== 'OK') {
+                const elOra  = document.getElementById('rs-ora-locale-label');
+                const elFuso = document.getElementById('rs-fuso-label');
+                if (elOra)  { elOra.textContent  = 'N/D'; elOra.title  = 'Servizio fuso orario non disponibile'; }
+                if (elFuso) { elFuso.textContent = 'N/D'; elFuso.title = 'Servizio fuso orario non disponibile'; }
+                return;
+            }
             let oraLocaleStr = data.formatted;
             let partiLocale  = oraLocaleStr.split(' ');
             document.getElementById('rs-ora-locale-label').textContent = partiLocale[1];
@@ -914,7 +920,12 @@ function aggiornaFusoOrarioLocale(lat, lon, gmtString) {
             else if (giornoLocale < giornoGmt)  { el.textContent = '-1 Giorno'; el.style.display = 'inline-block'; }
             else                                { el.style.display = 'none'; }
         })
-        .catch(() => {});
+        .catch(() => {
+            const elOra  = document.getElementById('rs-ora-locale-label');
+            const elFuso = document.getElementById('rs-fuso-label');
+            if (elOra)  { elOra.textContent  = 'N/D'; elOra.title  = 'Errore di rete verso servizio fuso orario'; }
+            if (elFuso) { elFuso.textContent = 'N/D'; elFuso.title = 'Errore di rete verso servizio fuso orario'; }
+        });
 }
  
 // ── Link viaggio ─────────────────────────────────────────────────────────
