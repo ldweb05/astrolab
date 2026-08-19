@@ -3236,3 +3236,12 @@ avviare M1 — Comparazione ricerche RSM.
 - Query soggetti a rischio: solo 4 trovati, tutti creati durante i test di questa sessione, nessun soggetto reale pre-esistente affetto; campo `ora_nascita_gmt` di questi 4 gia' corretto (creati dopo il fix), nessuna migrazione dati necessaria.
 - Lavoro fix/giorno-nascita-gmt considerato chiuso lato codice e verifica. PR da aprire su GitHub.
 - File toccati: `www/index.php`, `www/js/app.js` (codice); `docs/ROADMAP_BUG_GIORNO_GMT.md` (documentazione).
+
+## 2026-08-19 — Risolto bug oscillazione oraria DST da timezonedb.com (branch fix/oscillazione-dst-timezonedb)
+
+- Risolto il bug distinto diagnosticato in sessione precedente (2026-08-19, allineamento fix/giorno-nascita-gmt): oscillazione di un'ora nell'offset GMT calcolato da `ottieniOffsetTimeZone()` in `js/app.js`, causata da un'approssimazione strutturale (nessun istante UTC noto su cui basare la chiamata API).
+- Riscritta `ottieniOffsetTimeZone()` (app.js) e `calcolaTransiti()` (transiti.php, punto non previsto nella diagnosi originale, trovato durante la riverifica) con nuova funzione condivisa `calcolaOffsetPreciso()` basata su `Intl.DateTimeFormat` — nessuna chiamata API aggiuntiva, database IANA nativo del browser, algoritmo a due iterazioni per correggere i casi al confine DST.
+- Migliorati 3 punti "display-only" (`rl.js`, `rs.php`, `transiti.php::aggiornaFusoOrarioLocale()`) per mostrare "N/D" con tooltip invece di fallire silenziosamente quando l'API non risponde.
+- Verifica: test isolati con Node (6 casi, incluso confine DST primavera/autunno), stabilita' confermata (10 chiamate identiche = 10 risultati identici, zero oscillazione), test funzionali reali nel browser su form soggetto e pagina Transiti (offset corretto su entrambi i lati del confine DST 29/03/2026), nessuna regressione su RS/Transiti/RL in condizioni normali.
+- Suite `tests/run.php`: sezioni Backend e casi JSON RS passate; sezione RL non eseguibile per limite pre-esistente `passthru()` (non ri-sbloccato, non necessario per questo lavoro client-side).
+- File toccati: `www/js/app.js`, `www/js/rl.js`, `www/rs.php`, `www/transiti.php` (codice); `docs/ROADMAP_BUG_GIORNO_GMT.md`, `docs/ROADMAP_34_REGOLE.md` (documentazione, nota chiusa definitivamente).
