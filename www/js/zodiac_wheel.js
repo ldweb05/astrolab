@@ -643,3 +643,17 @@ window.toggleDatiTabella = function(suffix) {
     const nascosto = wrap.classList.toggle('is-hidden');
     btn.textContent = nascosto ? '▼ Mostra Dati' : '▲ Nascondi Dati';
 };
+
+window.toggleCollapse = function(suffix) {
+    const body = document.getElementById('collapse-body-' + suffix);
+    const chevron = document.getElementById('collapse-chevron-' + suffix);
+    if (!body || !chevron) return;
+    const aperto = body.style.display !== 'none';
+    if (aperto) {
+        body.style.display = 'none';
+        chevron.classList.remove('aperto');
+    } else {
+        body.style.display = 'block';
+        chevron.classList.add('aperto');
+    }
+};
