@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
 // ===== INIZIO PATCH AUTH MULTI-ASTROLOGO =====
 session_start();
 require_once 'includes/Auth.php';
@@ -416,14 +417,20 @@ JAVASCRIPT
 <script>
 // ── Dati soggetti dal PHP ──────────────────────────────────────────────────
 const soggettiData = <?= json_encode(array_map(function($s) {
-$oraGmt = explode(':', $s['ora_nascita_gmt'] ?? '12:00');
-$date   = new DateTime($s['data_nascita']);
+// Calcolo corretto data/ora GMT gestendo il cambio di giorno
+$gmtData = calcolaDataOraGmtCorretta(
+    $s['data_nascita'],
+    $s['ora_nascita'],
+    (float)($s['offset_gmt'] ?? 0)
+);
+$dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+$oraGmtParts = explode(':', $gmtData['ora_gmt']);
 return [
 'id'     => (int)$s['id'],
-'giorno' => (int)$date->format('d'),
-'mese'   => (int)$date->format('m'),
-'anno'   => (int)$date->format('Y'),
-'ora_gmt'=> (int)$oraGmt[0] + ((int)($oraGmt[1] ?? 0) / 60),
+'giorno' => (int)$dateGmt->format('d'),
+'mese'   => (int)$dateGmt->format('m'),
+'anno'   => (int)$dateGmt->format('Y'),
+'ora_gmt'=> (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0) / 60),
 'lat'    => (float)$s['latitudine'],
 'lon'    => (float)$s['longitudine'],
 ];
