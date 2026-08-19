@@ -3131,3 +3131,12 @@ avviare M1 — Comparazione ricerche RSM.
 - Corretto disallineamento estetico in `ricerca_rl.php`: il pulsante "Aggiorna elenco RL" stava su una riga separata sotto la select, disallineando la barra filtri rispetto agli altri campi. Wrappati select+pulsante in un'unica riga flex (`.rl-index-row`), pulsante trasformato in icona-soltanto (rotondo, 🔄) con tooltip CSS custom via `data-tooltip`/`::after` (il `title` nativo del browser non risultava affidabile in hover) — modifica CSS page-scoped solo in `ricerca_rl.php`.
 - Verifica: `php -l` superato nel container per tutti i file PHP toccati, `node --check` superato su `zodiac_wheel.js`, `git diff --check` pulito, test funzionale confermato dal committente nel browser su entrambe le modifiche.
 - File toccati: `www/css/style.css`, `www/js/zodiac_wheel.js`, `www/rs.php`, `www/rl.php`, `www/ricerca_rl.php`. Nessuna decisione UX necessaria (RuleEngine.php non toccato).
+
+## 2026-08-19 bis — Sezioni collassabili "Sessioni Salvate" e "Bonus e Veti" in rs.php/rl.php (branch feature/allineamento-myastral)
+
+- Rese collassabili (chiuse di default, header cliccabile con freccina che ruota) due sezioni presenti identicamente in `rs.php` e `rl.php`:
+  - Card "Sessioni Salvate" (`#card-sessioni-rs` / `#card-sessioni-rl`).
+  - Intero box "Bonus e Veti" (`#valutazione`, comprese stelle/punteggio/condizione, non solo le liste sotto) — aggiunto anche un titolo "Bonus e Veti" che prima non esisteva.
+- Riuso del pattern grafico gia' esistente in `rs.php` per "Analisi Sensibilita' Oraria" (stessa classe `.sensib-chevron` per la freccina rotante). Aggiunte solo due nuove classi generiche condivise in `css/style.css` (`.collapse-toggle`, `.valutazione .collapse-toggle`) e una nuova funzione globale condivisa `toggleCollapse(suffix)` in `js/zodiac_wheel.js`, riusabile per entrambe le sezioni su entrambe le pagine — nessuna duplicazione di CSS/JS tra rs.php e rl.php.
+- Verifica: `php -l` superato nel container su entrambi i file PHP, `node --check` superato su `zodiac_wheel.js`, `git diff --check` pulito, test funzionale confermato dal committente nel browser su entrambe le pagine.
+- File toccati: `www/css/style.css`, `www/js/zodiac_wheel.js`, `www/rs.php`, `www/rl.php`. Nessuna decisione UX necessaria (RuleEngine.php non toccato).
