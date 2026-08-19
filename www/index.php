@@ -143,6 +143,7 @@ $soggettoNome = $auth->getSoggettoNome();
                             <button type="button" class="btn-time" onclick="modificaMinutiGMT(1)">▲</button>
                             <button type="button" class="btn-time" onclick="modificaMinutiGMT(-1)">▼</button>
                         </div>
+                        <span id="gmt-giorno-label" class="rs-next-day-label is-hidden"></span>
                     </div>
                 </div>
                 <div class="form-group">
