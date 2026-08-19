@@ -390,7 +390,11 @@ if ($soggetto) {
                 <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
             <svg id="wheel-natale" width="480" height="480" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-natale"></p>
+            <div class="tema-info-row">
+                <p class="tema-info" id="info-natale"></p>
+                <button class="btn-toggle-gradi" id="btn-toggle-dati-natale" onclick="toggleDatiTabella('natale')">▼ Mostra Dati</button>
+            </div>
+            <div id="dati-natale" class="is-hidden">
             <table class="tabella-pianeti" id="tab-natale"></table>
             <div class="aspetti-container">
                 <h4 class="rs-table-section-title">📐 Aspetti nella Rivoluzione Solare</h4>
@@ -400,13 +404,18 @@ if ($soggetto) {
                 </tbody>
             </table>
             </div>
+            </div>
         </div>
  
         <div class="tema-box">
             <h3 id="rs-titolo">Rivoluzione Solare</h3>
             <div class="map-loading-overlay" id="rs-mappa-loading">⟳ Ricalcolo RS...</div>
             <svg id="wheel-rs" width="480" height="480" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-rs"></p>
+            <div class="tema-info-row">
+                <p class="tema-info" id="info-rs"></p>
+                <button class="btn-toggle-gradi" id="btn-toggle-dati-rs" onclick="toggleDatiTabella('rs')">▼ Mostra Dati</button>
+            </div>
+            <div id="dati-rs" class="is-hidden">
             <table class="tabella-pianeti" id="tab-rs"></table>
             <div class="cuspidi-container">
                 <h4 class="rs-table-section-title">🏠 Cuspidi Case RS</h4>
@@ -415,6 +424,7 @@ if ($soggetto) {
                     <tbody id="cuspidi-rs-body"><tr><td colspan="2" class="table-empty-cell">—</td></tr>
                 </tbody>
             </table>
+            </div>
             </div>
         </div>
     </div>
