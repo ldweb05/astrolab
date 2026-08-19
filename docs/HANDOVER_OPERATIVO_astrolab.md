@@ -3228,3 +3228,11 @@ avviare M1 — Comparazione ricerche RSM.
 - Fase 3 (coerenza lato client in `js/app.js`) e parte della Fase 4 (suite `tests/run.php`, query soggetti esistenti a rischio) restano aperte — vedi `docs/ROADMAP_BUG_GIORNO_GMT.md` per lo stato dettagliato fase per fase.
 - Durante l'allineamento della documentazione, diagnosticato (non risolto) un bug **distinto** gia' segnalato come fuori scope in `docs/ROADMAP_34_REGOLE.md`: oscillazione di un'ora esatta nell'offset GMT calcolato da `ottieniOffsetTimeZone()` (chiamata a timezonedb.com), causa diversa da quella corretta qui. Confermate con script diagnostico due cause concorrenti reali: fallback su longitudine che ignora il DST, e approssimazione "ora locale come UTC" che attraversa il confine DST per nascite vicine a un cambio d'ora. Dettagli in `docs/ROADMAP_BUG_GIORNO_GMT.md`. Richiede sessione dedicata separata.
 - File toccati: gli 11 file server-side sopra elencati + `www/includes/NascitaGmtHelper.php` e `www/tests/test_gmt_helper.php` (nuovi, codice); `docs/ROADMAP_BUG_GIORNO_GMT.md` e `docs/ROADMAP_34_REGOLE.md` (documentazione, in corso di allineamento in questa stessa sessione).
+
+## 2026-08-19 — Chiusura Fase 3 e Fase 4, fix bug giorno GMT (branch fix/giorno-nascita-gmt)
+
+- Fase 3 completata: badge visivo '+1/-1 Giorno' nel form soggetto (`index.php`), `aggiornaOraGmt()` riscritta in `js/app.js` con calcolo preciso al secondo (Date nativo, offset in secondi esatti). Verificato nel browser sui 3 casi. Commit `ed916f1`.
+- Fase 4 completata: suite `tests/run.php` eseguita (con `passthru` temporaneamente sbloccato nel container, poi ripristinato e verificato via md5sum identico) — RS, RL (13 rivoluzioni lunari), rilocazione tutte OK; sezione "Ricerca API" non eseguibile da CLI per limite pre-esistente della suite (richiede sessione HTTP/Apache), fuori scope.
+- Query soggetti a rischio: solo 4 trovati, tutti creati durante i test di questa sessione, nessun soggetto reale pre-esistente affetto; campo `ora_nascita_gmt` di questi 4 gia' corretto (creati dopo il fix), nessuna migrazione dati necessaria.
+- Lavoro fix/giorno-nascita-gmt considerato chiuso lato codice e verifica. PR da aprire su GitHub.
+- File toccati: `www/index.php`, `www/js/app.js` (codice); `docs/ROADMAP_BUG_GIORNO_GMT.md` (documentazione).

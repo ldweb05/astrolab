@@ -32,21 +32,41 @@ Nessuna regressione su soggetto normale (Lorenzo Diana). Commit `0bd5a3a`
 su branch `fix/giorno-nascita-gmt`, pushato su origin — PR non ancora
 aperta.
 
-**Fase 3 (Coerenza lato client, `js/app.js` `aggiornaOraGmt()`):** NON
-INIZIATA. La UI mostra ancora solo l'ora GMT, senza indicare l'eventuale
-cambio di giorno. I calcoli reali (server-side) sono corretti da questo
-lavoro, quindi non è un bug funzionale, ma resta una fase aperta.
+**Fase 3 (Coerenza lato client, `js/app.js` `aggiornaOraGmt()`):**
+COMPLETATA. Aggiunto badge visivo ('+1 Giorno' / '-1 Giorno', riuso di
+`.rs-next-day-label`) nel form soggetto (`index.php`), accanto al campo
+Ora GMT. Riscritta `aggiornaOraGmt()`: da wrap manuale dei minuti
+(`% 1440`, nessuna indicazione di giorno) a calcolo preciso al secondo
+con `Date` nativo, usando data+ora locali e offset in secondi esatti —
+stessa logica di `calcolaDataOraGmtCorretta()` lato server. Verificato
+nel browser sui 3 casi (-1 Giorno, +1 Giorno, nessun badge). Commit
+`ed916f1`.
 
-**Fase 4 (Verifica finale e chiusura):** PARZIALE.
-- Test funzionali reali nel browser: fatti (vedi Fase 2).
-- Suite di regressione `tests/run.php`: NON ancora eseguita per questo fix.
-- Query DB sui soggetti esistenti con nascita "a rischio": NON ancora fatta.
+**Fase 4 (Verifica finale e chiusura):** COMPLETATA (con una nota).
+- Test funzionali reali nel browser: fatti (vedi Fase 2 e Fase 3).
+- Suite di regressione `tests/run.php`: eseguita (disabilitando
+  temporaneamente `passthru` in `disable_functions` del container, poi
+  ripristinato — verificato via md5sum identico all'originale, nessuna
+  modifica versionata). Risultato: validazione backend OK, 3 casi JSON
+  RS OK, 13 Rivoluzioni Lunari OK, rilocazione OK — tutte le sezioni
+  toccate da questo fix passano. La sezione "Ricerca API" fallisce per
+  un limite pre-esistente della suite (richiede una sessione HTTP/Apache
+  attiva, non disponibile da CLI) — non collegato a questo fix, fuori
+  scope.
+- Query DB sui soggetti esistenti con nascita "a rischio" (ora locale
+  offset): trovati solo 4 soggetti, tutti creati durante le sessioni di
+  test di questo stesso lavoro (Sinner 2, Test 3, Test 5 badge, Test
+  Alice Springs) — nessun soggetto reale pre-esistente era affetto.
+  Verificato inoltre che il campo `ora_nascita_gmt` salvato per questi 4
+  soggetti è già corretto (creati dopo il completamento della Fase 3),
+  quindi nessuna migrazione dati necessaria.
 - Aggiornamento `docs/HANDOVER_OPERATIVO_astrolab.md`: fatto in sessione
   separata lo stesso giorno.
 - Aggiornamento `docs/ROADMAP_34_REGOLE.md`: la nota "bug noto
   sull'oscillazione dell'ora GMT" lì presente descrive un problema
-  **diverso e ancora aperto** (vedi nota nella Fase 4 aggiornata sotto),
-  non lo stesso risolto qui — quella nota NON va chiusa da questo lavoro.
+  **diverso e ancora aperto** (vedi nota sotto), non lo stesso risolto
+  qui — quella nota NON è stata chiusa da questo lavoro, resta per una
+  sessione dedicata separata.
 
 ### Nota — bug distinto scoperto durante l'analisi: oscillazione oraria da timezonedb.com
 
