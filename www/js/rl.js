@@ -593,28 +593,48 @@ const RLModule = (function () {
          );
          const ts  = Math.floor(utcMs / 1000);
          const key = TIMEZONE_API_KEY; // definita in app.js, caricato prima di rl.js
+         const mostraElemento = (html, title) => {
+             const hrlEl = document.getElementById('header-rl');
+             if (!hrlEl) return;
+             let oraLocEl = document.getElementById('rl-ora-locale-wrap');
+             if (!oraLocEl) {
+                 oraLocEl = document.createElement('div');
+                 oraLocEl.id = 'rl-ora-locale-wrap';
+                 hrlEl.appendChild(oraLocEl);
+             }
+             if (title) oraLocEl.title = title;
+             oraLocEl.innerHTML = html;
+         };
+
          fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${key}&format=json&by=position&lat=${lat}&lng=${lon}&time=${ts}`)
              .then(r => r.json())
              .then(tz => {
-                 if (tz.status !== 'OK') return;
-                 const oraLocale    = tz.formatted.split(' ')[1] || '—';
-                 const hrlEl = document.getElementById('header-rl');
-                 if (!hrlEl) return;
-                 let oraLocEl = document.getElementById('rl-ora-locale-wrap');
-                 if (!oraLocEl) {
-                     oraLocEl = document.createElement('div');
-                     oraLocEl.id = 'rl-ora-locale-wrap';
-                     hrlEl.appendChild(oraLocEl);
+                 if (tz.status !== 'OK') {
+                     mostraElemento(
+                         `<span class="rl-time-label">Ora locale: </span><b class="rl-time-value">N/D</b>` +
+                         `<span class="rl-time-label rl-time-label-spaced">Fuso: </span><b class="rl-time-value">N/D</b>`,
+                         'Servizio fuso orario non disponibile'
+                     );
+                     return;
                  }
+                 const oraLocale = tz.formatted.split(' ')[1] || '—';
                  const offsetH  = Math.round(tz.gmtOffset / 3600 * 10) / 10;
                  const segno    = offsetH >= 0 ? '+' : '';
-                 oraLocEl.innerHTML =
+                 mostraElemento(
                      `<span class="rl-time-label">Ora locale: </span>` +
                      `<b class="rl-time-value">${oraLocale}</b>` +
                      `<span class="rl-time-label rl-time-label-spaced">Fuso: </span>` +
-                     `<b class="rl-time-value">GMT ${segno}${offsetH}</b>`;
+                     `<b class="rl-time-value">GMT ${segno}${offsetH}</b>`,
+                     null
+                 );
              })
-             .catch(() => {});
+             .catch(() => {
+                 mostraElemento(
+                     `<span class="rl-time-label">Ora locale: </span><b class="rl-time-value">N/D</b>` +
+                     `<span class="rl-time-label rl-time-label-spaced">Fuso: </span><b class="rl-time-value">N/D</b>`,
+                     'Errore di rete verso servizio fuso orario'
+                 );
+             });
      } catch(e) {}
  }
  // ════════════════════════════════════════════════════════════════════════

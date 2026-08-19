@@ -256,7 +256,13 @@ function aggiornaFusoOrarioLocale(lat, lon, gmtString) {
     fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=position&lat=${lat}&lng=${lon}&time=${ts}`)
         .then(r => r.json())
         .then(data => {
-            if (data.status !== 'OK') return;
+            if (data.status !== 'OK') {
+                const elOra  = document.getElementById('rs-ora-locale-label');
+                const elFuso = document.getElementById('rs-fuso-label');
+                if (elOra)  { elOra.textContent  = 'N/D'; elOra.title  = 'Servizio fuso orario non disponibile'; }
+                if (elFuso) { elFuso.textContent = 'N/D'; elFuso.title = 'Servizio fuso orario non disponibile'; }
+                return;
+            }
             let oraLocaleStr = data.formatted;
             let partiLocale  = oraLocaleStr.split(' ');
             document.getElementById('rs-ora-locale-label').textContent = partiLocale[1];
@@ -269,7 +275,12 @@ function aggiornaFusoOrarioLocale(lat, lon, gmtString) {
             else if (giornoLocale < giornoGmt)  { el.textContent = '-1 Giorno'; el.style.display = 'inline-block'; }
             else                                { el.style.display = 'none'; }
         })
-        .catch(() => {});
+        .catch(() => {
+            const elOra  = document.getElementById('rs-ora-locale-label');
+            const elFuso = document.getElementById('rs-fuso-label');
+            if (elOra)  { elOra.textContent  = 'N/D'; elOra.title  = 'Errore di rete verso servizio fuso orario'; }
+            if (elFuso) { elFuso.textContent = 'N/D'; elFuso.title = 'Errore di rete verso servizio fuso orario'; }
+        });
 }
  
 // ── Carica tema natale iniziale ──────────────────────────────────────────
@@ -301,14 +312,25 @@ function calcolaTransiti(latOvr, lonOvr) {
     document.getElementById('temi-wrapper').style.display = 'none';
     document.getElementById('header-rs').style.display    = 'none';
 
-    const tsGuess = Date.UTC(a, m - 1, g, oreLoc, minLoc, 0);
+    // Data/ora locale in formato stringa per calcolaOffsetPreciso (definita in app.js)
+    const dataLocaleStr = String(a).padStart(4,'0') + '-' + String(m).padStart(2,'0') + '-' + String(g).padStart(2,'0');
+    const oraLocaleStr  = String(oreLoc).padStart(2,'0') + ':' + String(minLoc).padStart(2,'0');
     const apiKey  = TIMEZONE_API_KEY;
 
-    fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=position&lat=${latT}&lng=${lonT}&time=${Math.floor(tsGuess/1000)}`)
+    fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=position&lat=${latT}&lng=${lonT}`)
         .then(r => r.json())
         .then(tz => {
-            const offsetSec = (tz.status === 'OK') ? tz.gmtOffset : 0;
-            const dUtc = new Date(tsGuess - offsetSec * 1000);
+            let offsetOre;
+            if (tz.status === 'OK' && tz.zoneName) {
+                const preciso = calcolaOffsetPreciso(tz.zoneName, dataLocaleStr, oraLocaleStr);
+                offsetOre = (preciso !== null) ? preciso : tz.gmtOffset / 3600;
+            } else {
+                // Fallback: stima da longitudine (DST non considerata, come ultima risorsa)
+                offsetOre = Math.max(-12, Math.min(12, Math.round(lonT / 15 * 2) / 2));
+                console.warn('Transiti: fallback offset da longitudine, DST non considerata');
+            }
+            const istanteLocaleComeUtc = Date.UTC(a, m - 1, g, oreLoc, minLoc, 0);
+            const dUtc = new Date(istanteLocaleComeUtc - offsetOre * 3600000);
             eseguiCalcoloTransiti(
                 dUtc.getUTCDate(), dUtc.getUTCMonth() + 1, dUtc.getUTCFullYear(),
                 dUtc.getUTCHours() + dUtc.getUTCMinutes() / 60,
