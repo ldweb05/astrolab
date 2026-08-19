@@ -34,6 +34,29 @@ servizio esterno timezonedb.com in `www/js/app.js`
 — non toccare in questo lavoro, ma tenerne conto se i test producono numeri
 incoerenti tra loro: verificare prima se l'ora GMT usata è la stessa.
 
+**NOTA — Bug distinto da quello del giorno di nascita.** Questa nota NON va
+confusa con (e non e' stata chiusa da) il fix del bug sistematico del
+giorno di nascita nella conversione GMT, risolto il 2026-08-19 su branch
+`fix/giorno-nascita-gmt` (vedi `docs/ROADMAP_BUG_GIORNO_GMT.md`): quel
+lavoro correggeva `aggiornaOraGmt()` (consumo di un offset gia' noto),
+mentre questo bug riguarda `ottieniOffsetTimeZone()` (scoperta
+dell'offset via API esterna) — codice diverso, causa diversa.
+
+Diagnosi effettuata il 2026-08-19 (script diagnostico, non committato) ha
+confermato due cause concorrenti reali, entrambe riproducibili con
+chiamate dirette all'API:
+1. Il fallback su longitudine (usato quando l'API fallisce) ignora
+   completamente il DST — scarto di 1h esatta rispetto al risultato
+   corretto dell'API durante i mesi di ora legale.
+2. L'approssimazione "ora locale trattata come UTC" nel timestamp passato
+   all'API fa cadere il timestamp dal lato sbagliato del confine per
+   nascite vicine a un cambio DST.
+
+Dettagli completi della diagnosi in `docs/ROADMAP_BUG_GIORNO_GMT.md`,
+sezione "Nota — bug distinto scoperto durante l'analisi". Bug confermato
+ma **ancora non risolto** — resta fuori scope, richiede sessione dedicata
+separata.
+
 ## Fase 1 — Le 4 regole a scarto automatico (priorità massima) — COMPLETATA (2026-08-18)
 
 Queste 4 regole, se violate, impongono lo scarto automatico della RSM/RL —
