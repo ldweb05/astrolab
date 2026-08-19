@@ -3256,6 +3256,7 @@ avviare M1 — Comparazione ricerche RSM.
 - Verifica: `php -l` su rs.php, `git diff --check` pulito, test funzionali reali confermati dal committente su tutti e 4 i punti (header fisso, background, trasparenza, drag).
 - File toccati: `www/css/style.css`, `www/rs.php`.
 
+
 ## REGOLA PERMANENTE — Modale "Correzione tempo ed ora" in rs.php (congelata 2026-08-21)
 
 Il pannello "Correzione tempo ed ora" in `www/rs.php` DEVE restare un modale orizzontale indipendente (`#correzione-tempo-modal`, introdotto 2026-08-18 dal commit `0e7e023`).
