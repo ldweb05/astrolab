@@ -33,17 +33,27 @@ $latRiloc_Url   = isset($_GET['lat_riloc'])   ? (float)$_GET['lat_riloc']  : nul
 $lonRiloc_Url   = isset($_GET['lon_riloc'])   ? (float)$_GET['lon_riloc']  : null;
 $luogoRiloc_Url = $_GET['luogo_riloc']        ?? null;
 
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
+
 $jsData = null;
 if ($soggetto) {
-    $date   = new DateTime($soggetto['data_nascita']);
-    $oraGmt = explode(':', $soggetto['ora_nascita_gmt']);
+    // Calcolo corretto data/ora GMT gestendo il cambio di giorno
+    $gmtData = calcolaDataOraGmtCorretta(
+        $soggetto['data_nascita'],
+        $soggetto['ora_nascita'],
+        (float)($soggetto['offset_gmt'] ?? 0)
+    );
+
+    $dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+    $oraGmtParts = explode(':', $gmtData['ora_gmt']);
+
     $jsData = [
         'id'          => $soggetto['id'],
         'nome'        => $soggetto['nome'],
-        'giorno'      => (int)$date->format('d'),
-        'mese'        => (int)$date->format('m'),
-        'anno'        => (int)$date->format('Y'),
-        'ora_gmt'     => (int)$oraGmt[0] + (int)$oraGmt[1] / 60,
+        'giorno'      => (int)$dateGmt->format('d'),
+        'mese'        => (int)$dateGmt->format('m'),
+        'anno'        => (int)$dateGmt->format('Y'),
+        'ora_gmt'     => (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0)) / 60,
         'lat'         => (float)$soggetto['latitudine'],
         'lon'         => (float)$soggetto['longitudine'],
         'luogo'       => $soggetto['luogo_nascita'],

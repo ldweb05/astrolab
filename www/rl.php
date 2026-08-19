@@ -34,6 +34,8 @@ $defaultLat   = 0;
 $defaultLon   = 0;
 $defaultLuogo = '';
  
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
+
 $jsData = null;
 if ($soggetto) {
     $defaultLat  = $latRL_Url  !== null ? $latRL_Url
@@ -45,15 +47,25 @@ if ($soggetto) {
                     ? $soggetto['residenza_luogo'] . ($soggetto['residenza_nazione'] ? ', '.$soggetto['residenza_nazione'] : '')
                     : ($soggetto['luogo_nascita'] ?? ''));
  
-    $date   = new DateTime($soggetto['data_nascita']);
-    $oraGmt = explode(':', $soggetto['ora_nascita_gmt']);
+    $date = new DateTime($soggetto['data_nascita']); // Data locale per visualizzazione
+
+    // Calcolo corretto data/ora GMT gestendo il cambio di giorno
+    $gmtData = calcolaDataOraGmtCorretta(
+        $soggetto['data_nascita'],
+        $soggetto['ora_nascita'],
+        (float)($soggetto['offset_gmt'] ?? 0)
+    );
+
+    $dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+    $oraGmtParts = explode(':', $gmtData['ora_gmt']);
+
     $jsData = [
         'id'         => $soggetto['id'],
         'nome'       => $soggetto['nome'],
-        'giorno'     => (int)$date->format('d'),
-        'mese'       => (int)$date->format('m'),
-        'anno'       => (int)$date->format('Y'),
-        'ora_gmt'    => (int)$oraGmt[0] + (int)$oraGmt[1]/60,
+        'giorno'     => (int)$dateGmt->format('d'),
+        'mese'       => (int)$dateGmt->format('m'),
+        'anno'       => (int)$dateGmt->format('Y'),
+        'ora_gmt'    => (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0))/60,
         'ora_loc'    => substr($soggetto['ora_nascita'], 0, 5),
         'lat'        => (float)$soggetto['latitudine'],
         'lon'        => (float)$soggetto['longitudine'],

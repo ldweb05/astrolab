@@ -6,6 +6,98 @@
 documentato come "bug noto sull'oscillazione dell'ora GMT" in
 `docs/ROADMAP_34_REGOLE.md` e lasciato volutamente fuori scope in quel lavoro.
 
+## Stato — 2026-08-19
+
+**Fase 0 (Setup):** COMPLETATA. Elenco file riverificato con grep, invariato
+rispetto a quello sopra.
+
+**Fase 1 (Helper centralizzato):** COMPLETATA. `calcolaDataOraGmtCorretta()`
+creata in `www/includes/NascitaGmtHelper.php`. Durante l'implementazione
+trovato e corretto un bug aggiuntivo non previsto nel piano originale:
+`DateInterval` non accetta offset frazionari (es. +5.5 India, -3.5
+Terranova) se costruito in ore intere — corretto convertendo l'offset in
+secondi. Test unitari estesi da 5 a 7 casi per coprire anche gli offset
+frazionari. Tutti i test passano (`www/tests/test_gmt_helper.php`).
+
+**Fase 2 (Migrazione file):** COMPLETATA per tutti gli 11 file elencati.
+Durante la migrazione trovato un problema non previsto in `stampa.php`:
+`giorno`/`mese`/`anno` non erano allineati alla data GMT corretta (solo
+`ora_gmt` lo era) — corretto. Uniformati anche i path dei `require_once`
+di `NascitaGmtHelper.php` con `__DIR__` in 8 file, per coerenza/robustezza.
+
+Verificato con caso reale Sinner (16/08/2001 00:52 loc. +2 → 15/08 22:52
+GMT) e con soggetto reale a offset frazionario (Alice Springs, +9.5,
+19/08/2026 00:12 loc. → 18/08 14:42 GMT) — nessun crash, giorno corretto.
+Nessuna regressione su soggetto normale (Lorenzo Diana). Commit `0bd5a3a`
+su branch `fix/giorno-nascita-gmt`, pushato su origin — PR non ancora
+aperta.
+
+**Fase 3 (Coerenza lato client, `js/app.js` `aggiornaOraGmt()`):**
+COMPLETATA. Aggiunto badge visivo ('+1 Giorno' / '-1 Giorno', riuso di
+`.rs-next-day-label`) nel form soggetto (`index.php`), accanto al campo
+Ora GMT. Riscritta `aggiornaOraGmt()`: da wrap manuale dei minuti
+(`% 1440`, nessuna indicazione di giorno) a calcolo preciso al secondo
+con `Date` nativo, usando data+ora locali e offset in secondi esatti —
+stessa logica di `calcolaDataOraGmtCorretta()` lato server. Verificato
+nel browser sui 3 casi (-1 Giorno, +1 Giorno, nessun badge). Commit
+`ed916f1`.
+
+**Fase 4 (Verifica finale e chiusura):** COMPLETATA (con una nota).
+- Test funzionali reali nel browser: fatti (vedi Fase 2 e Fase 3).
+- Suite di regressione `tests/run.php`: eseguita (disabilitando
+  temporaneamente `passthru` in `disable_functions` del container, poi
+  ripristinato — verificato via md5sum identico all'originale, nessuna
+  modifica versionata). Risultato: validazione backend OK, 3 casi JSON
+  RS OK, 13 Rivoluzioni Lunari OK, rilocazione OK — tutte le sezioni
+  toccate da questo fix passano. La sezione "Ricerca API" fallisce per
+  un limite pre-esistente della suite (richiede una sessione HTTP/Apache
+  attiva, non disponibile da CLI) — non collegato a questo fix, fuori
+  scope.
+- Query DB sui soggetti esistenti con nascita "a rischio" (ora locale
+  offset): trovati solo 4 soggetti, tutti creati durante le sessioni di
+  test di questo stesso lavoro (Sinner 2, Test 3, Test 5 badge, Test
+  Alice Springs) — nessun soggetto reale pre-esistente era affetto.
+  Verificato inoltre che il campo `ora_nascita_gmt` salvato per questi 4
+  soggetti è già corretto (creati dopo il completamento della Fase 3),
+  quindi nessuna migrazione dati necessaria.
+- Aggiornamento `docs/HANDOVER_OPERATIVO_astrolab.md`: fatto in sessione
+  separata lo stesso giorno.
+- Aggiornamento `docs/ROADMAP_34_REGOLE.md`: la nota "bug noto
+  sull'oscillazione dell'ora GMT" lì presente descrive un problema
+  **diverso e ancora aperto** (vedi nota sotto), non lo stesso risolto
+  qui — quella nota NON è stata chiusa da questo lavoro, resta per una
+  sessione dedicata separata.
+
+### Nota — bug distinto scoperto durante l'analisi: oscillazione oraria da timezonedb.com
+
+Durante l'allineamento di questa roadmap con `docs/ROADMAP_34_REGOLE.md` è
+emerso che la nota "bug noto sull'oscillazione dell'ora GMT" lì presente
+descrive un problema **separato** da quello risolto in questo lavoro:
+riguarda `ottieniOffsetTimeZone()` in `js/app.js` (chiamata a
+`api.timezonedb.com`), non `aggiornaOraGmt()`.
+
+Diagnosi effettuata (script Python diagnostico via chiamate reali
+all'API, non committato) su due ipotesi:
+- **Fallback su longitudine ignora il DST**: per un soggetto fittizio
+  nato in piena estate a Roma, l'API restituisce correttamente +2
+  (CEST), ma il fallback usato quando l'API fallisce restituisce +1
+  (nessuna consapevolezza del DST) — scarto di 1h esatta, coerente col
+  sintomo riportato.
+- **Approssimazione "ora locale letta come UTC" attraversa il confine
+  DST**: per un soggetto fittizio nato 30 minuti prima dello scatto
+  dell'ora legale (29/03/2026, 01:30 locale a Roma), l'API stessa
+  restituisce un offset diverso (+2 invece del vero +1) a seconda che il
+  timestamp passato sia l'approssimazione o il vero istante UTC.
+
+Entrambe le ipotesi confermate riproducibili. Causa radice comune:
+`ottieniOffsetTimeZone()` non ha mai un vero istante UTC su cui basarsi
+(serve a scoprire l'offset stesso), quindi qualunque approssimazione
+usata (locale-come-UTC o fallback longitudine) è strutturalmente
+inaffidabile in una finestra di ±1h attorno a un cambio DST, e il
+fallback è inaffidabile sempre durante il DST. Bug reale, diagnosticato,
+non ancora risolto — richiede una sessione dedicata separata (fuori
+scope da questo lavoro).
+
 ## Il problema
 
 Quando l'ora di nascita locale è precedente all'offset del fuso orario (es.
