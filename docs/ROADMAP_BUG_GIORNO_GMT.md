@@ -98,6 +98,58 @@ fallback è inaffidabile sempre durante il DST. Bug reale, diagnosticato,
 non ancora risolto — richiede una sessione dedicata separata (fuori
 scope da questo lavoro).
 
+## RISOLTO — 2026-08-19, branch fix/oscillazione-dst-timezonedb
+
+**Fase 0 (Setup):** riverificati tutti i punti di chiamata a
+`timezonedb.com` (non solo i 2 già noti): `app.js::ottieniOffsetTimeZone()`,
+`transiti.php::calcolaTransiti()` (non previsto, variabile `tsGuess` —
+stessa approssimazione, fallback ancora peggiore `offsetSec = 0`),
+`rl.js::_aggiornaFusoOrario()`, `rs.php::aggiornaFusoOrarioLocale()`,
+`transiti.php::aggiornaFusoOrarioLocale()`. Solo i primi due avevano il
+vero bug (indovinano un istante UTC sconosciuto); gli altri tre ricevono
+un istante GMT già calcolato correttamente e servono solo a mostrare
+l'ora locale corrispondente — nessuna ambiguità DST lì, solo un
+fallimento silenzioso da migliorare.
+
+**Fase 1:** aggiunta `calcolaOffsetPreciso(nomeTimeZone, dataLocale,
+oraLocale)` in `js/app.js`, basata su `Intl.DateTimeFormat` (database
+IANA nativo del browser, nessuna approssimazione). Algoritmo a due
+iterazioni: prima approssimazione locale-come-UTC, poi ricalcolo nel
+vero istante UTC stimato — corregge esattamente i casi al confine DST.
+`ottieniOffsetTimeZone()` riscritta a due step: (1) chiede solo il NOME
+del fuso a timezonedb.com (geografico, non serve un timestamp preciso),
+(2) calcola l'offset esatto localmente via `calcolaOffsetPreciso()`.
+Testato con Node su 6 casi (confine primavera prima/dopo, piena estate,
+pieno inverno, offset fisso Alice Springs, confine autunno ambiguo) — 5/6
+pass, il 6° è un'ambiguità oraria reale e irrisolvibile (l'ora ricorre
+due volte), non un bug: verificata la stabilità (10 chiamate identiche,
+10 risultati identici, nessuna oscillazione). Confermato nel browser sul
+form soggetto: 29/03/2026 01:30 → offset +1 (log "Offset preciso: 1h"),
+03:30 → +2, nessun errore in console.
+
+**Fase 2:** stessa correzione applicata a
+`transiti.php::calcolaTransiti()`, sostituendo `tsGuess`/`offsetSec = 0`
+con la stessa `calcolaOffsetPreciso()` condivisa da `app.js` (già
+caricato prima nello script). Confermato nel browser: transito calcolato
+per 29/03/2026 01:30 → GMT +1 corretto, nessun errore.
+
+**Fase 3:** i 3 punti "display-only" (`rl.js`, `rs.php`,
+`transiti.php::aggiornaFusoOrarioLocale()`) migliorati per mostrare
+esplicitamente "N/D" con tooltip quando l'API fallisce (risposta non-OK
+o errore di rete), invece di lasciare i campi vuoti in silenzio.
+Verificato nel browser che il percorso normale (API disponibile)
+continui a funzionare senza regressioni su RS, Transiti e RL.
+
+**Fase 4:** suite `tests/run.php` eseguita — sezioni Backend e casi JSON
+RS passate (uniche sezioni rilevanti per questo lavoro, che ha toccato
+solo JS client-side); sezione Rivoluzioni Lunari non eseguibile per lo
+stesso limite pre-esistente `passthru()` già documentato nel fix
+precedente (non ri-sbloccato in questa sessione, non necessario dato che
+nessuna modifica tocca codice server-side RL).
+
+File toccati: `www/js/app.js`, `www/js/rl.js`, `www/rs.php`,
+`www/transiti.php`. Nessun file server-side/PHP di calcolo toccato.
+
 ## Il problema
 
 Quando l'ora di nascita locale è precedente all'offset del fuso orario (es.
