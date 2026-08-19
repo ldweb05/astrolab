@@ -354,6 +354,25 @@ class RuleEngine {
             ];
         }
 
+        // UX-0008: Marte entro 2,5° dalla cuspide della X Casa (in qualunque
+        // direzione) o fisicamente assegnato alla X Casa — avviso informativo
+        // non bloccante (non e' una delle 34 regole ufficiali, ex veto
+        // "astrolab-angoli"). La RSM/RL viene valutata normalmente con tutte
+        // le regole, punteggio e stelline come qualunque altra localita'.
+        if (isset($pianeti[4])) {
+            $marteInCasaX = ((int)$pianeti[4]['casa'] === 10);
+            $diffMarteX = isset($case[10]['longitudine'])
+                ? abs($this->diffAngolo($pianeti[4]['longitudine'], $case[10]['longitudine']))
+                : null;
+            if ($marteInCasaX || ($diffMarteX !== null && $diffMarteX <= 2.5)) {
+                $note[] = [
+                    'codice' => 'MA10',
+                    'tipo'   => 'AVV',
+                    'nota'   => 'Marte ' . ($marteInCasaX ? 'in X Casa' : ('a ' . round($diffMarteX, 1) . '° dalla cuspide della X Casa')) . ' — conflitti con autorità o esposizione alla reputazione possibili, valuta con cautela',
+                ];
+            }
+        }
+
         // ── FASE 3: FILTRO ASTRI IN CASA ─────────────────────────────────
         $penalitaAstri = $this->filtraAstri($astriInCasa, $pianeti);
 
@@ -674,11 +693,14 @@ class RuleEngine {
         }
 
         // Veto astrolab-angoli (NON e' la Regola 33 ufficiale, vedi commento
-        // sul messaggio sotto): Marte o Saturno entro 2° dagli angoli
+        // sul messaggio sotto): Marte o Saturno entro 2° dagli angoli.
+        // UX-0008: Marte sulla X Casa escluso da qui, gestito come avviso
+        // non bloccante dopo il calcolo del punteggio (vedi FASE 2 di valuta()).
         foreach ([4, 6] as $mal) {
             if (!isset($pianeti[$mal])) continue;
             $lonP = $pianeti[$mal]['longitudine'];
             foreach (self::ANGOLARI as $ang) {
+                if ($mal === 4 && $ang === 10) continue;
                 if (!isset($case[$ang])) continue;
                 $diff = abs($this->diffAngolo($lonP, $case[$ang]['longitudine']));
                 if ($diff <= 2.0) {
