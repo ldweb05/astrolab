@@ -3149,3 +3149,12 @@ avviare M1 — Comparazione ricerche RSM.
 - Verifica: test isolati con Node (6 casi, incluso confine DST primavera/autunno), stabilita' confermata (10 chiamate identiche = 10 risultati identici, zero oscillazione), test funzionali reali nel browser su form soggetto e pagina Transiti (offset corretto su entrambi i lati del confine DST 29/03/2026), nessuna regressione su RS/Transiti/RL in condizioni normali.
 - Suite `tests/run.php`: sezioni Backend e casi JSON RS passate; sezione RL non eseguibile per limite pre-esistente `passthru()` (non ri-sbloccato, non necessario per questo lavoro client-side).
 - File toccati: `www/js/app.js`, `www/js/rl.js`, `www/rs.php`, `www/transiti.php` (codice); `docs/ROADMAP_BUG_GIORNO_GMT.md`, `docs/ROADMAP_34_REGOLE.md` (documentazione, nota chiusa definitivamente).
+
+## 2026-08-19 — Header fisso, background zodiacale, pannello trascinabile
+
+- Header di navigazione reso fisso in cima (`position: fixed`), con compensazione `padding-top` sul body e riallineamento dell'intestazione sticky della tabella risultati ricerca (`.tabella-risultati th`, offset a 56px invece di 0) per non finire nascosta dietro la barra.
+- Aggiunto background al body con 3 simboli zodiacali (Vergine, Pesci, Scorpione) disegnati in SVG inline, tono su tono sul crema esistente (`#F2EDE4`), `background-attachment: fixed`. Dimensione ridotta su richiesta dopo prima verifica visiva.
+- Sfondo di 10 pannelli di contenuto (`.card`, `.tema-box`, `.controlli`, `.valutazione`, `.time-controls`, `.rl-timeline`, `#pannello-sensibilita`, `.tabella-risultati`, `.stats-bar`, `.pwd-box`) reso semi-trasparente (`rgba(255,255,255,0.88)`) per lasciar intravedere i simboli del background; dropdown, select, bottoni e modali lasciati bianco pieno per non compromettere la leggibilita'.
+- Pannello "Correzione tempo ed ora" (`#correzione-tempo-modal`, rs.php) reso trascinabile: drag scoped per id (non tocca altre eventuali finestre che riusassero le stesse classi `.annual-report-*`), maniglia sull'header esistente, limiti ai bordi della viewport, click sulla X di chiusura non attiva il trascinamento, posizione resettata alla chiusura. Nessuna modifica a dimensioni o colori.
+- Verifica: `php -l` su rs.php, `git diff --check` pulito, test funzionali reali confermati dal committente su tutti e 4 i punti (header fisso, background, trasparenza, drag).
+- File toccati: `www/css/style.css`, `www/rs.php`.
