@@ -553,7 +553,74 @@ function toggleCorrezioneTempo() {
 
     const nascosto = pannello.style.display === 'none' || !pannello.style.display;
     pannello.style.display = nascosto ? 'block' : 'none';
+
+    if (!nascosto) {
+        // sto chiudendo: resetta la posizione trascinata, cosi' riapre sempre al centro
+        const win = pannello.querySelector('.annual-report-window');
+        if (win) {
+            win.style.position = '';
+            win.style.left = '';
+            win.style.top = '';
+            win.style.margin = '';
+        }
+    }
 }
+
+// ── Trascinamento pannello "Correzione tempo ed ora" ─────────────────────
+// Solo per #correzione-tempo-modal (scoped per id): non tocca dimensioni,
+// colori o altre finestre che eventualmente riusassero le stesse classi.
+(function initDragCorrezioneTempo() {
+    const header = document.querySelector('#correzione-tempo-modal .annual-report-header');
+    const win    = document.querySelector('#correzione-tempo-modal .annual-report-window');
+    if (!header || !win) return;
+
+    header.style.cursor = 'move';
+    header.style.userSelect = 'none';
+
+    let dragging = false, offsetX = 0, offsetY = 0;
+
+    function onPointerDown(e) {
+        if (e.target.closest('.annual-report-close')) return; // non trascinare cliccando su "chiudi"
+        dragging = true;
+        const rect  = win.getBoundingClientRect();
+        const point = e.touches ? e.touches[0] : e;
+        offsetX = point.clientX - rect.left;
+        offsetY = point.clientY - rect.top;
+        win.style.position = 'fixed';
+        win.style.margin   = '0';
+        win.style.left = rect.left + 'px';
+        win.style.top  = rect.top  + 'px';
+        document.addEventListener('mousemove', onPointerMove);
+        document.addEventListener('mouseup', onPointerUp);
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('touchend', onPointerUp);
+    }
+
+    function onPointerMove(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        const point = e.touches ? e.touches[0] : e;
+        let newLeft = point.clientX - offsetX;
+        let newTop  = point.clientY - offsetY;
+        const maxLeft = window.innerWidth  - win.offsetWidth;
+        const maxTop  = window.innerHeight - win.offsetHeight;
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop  = Math.max(0, Math.min(newTop, maxTop));
+        win.style.left = newLeft + 'px';
+        win.style.top  = newTop  + 'px';
+    }
+
+    function onPointerUp() {
+        dragging = false;
+        document.removeEventListener('mousemove', onPointerMove);
+        document.removeEventListener('mouseup', onPointerUp);
+        document.removeEventListener('touchmove', onPointerMove);
+        document.removeEventListener('touchend', onPointerUp);
+    }
+
+    header.addEventListener('mousedown', onPointerDown);
+    header.addEventListener('touchstart', onPointerDown, { passive: true });
+})();
 
 function stampaPrevisioneAnnuale() {
     const contenuto = document.getElementById('previsione-annuale-contenuto');
