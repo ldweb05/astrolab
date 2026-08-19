@@ -217,7 +217,11 @@ if ($soggetto) {
                         onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
             <svg id="wheel-natale" width="480" height="480" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-natale">—</p>
+            <div class="tema-info-row">
+                <p class="tema-info" id="info-natale">—</p>
+                <button class="btn-toggle-gradi" id="btn-toggle-dati-natale" onclick="toggleDatiTabella('natale')">▼ Mostra Dati</button>
+            </div>
+            <div id="dati-natale" class="is-hidden">
             <table class="tabella-pianeti" id="tab-natale"></table>
             <div class="aspetti-container">
                 <h4 class="rl-table-section-title">📐 Aspetti nella Rivoluzione Lunare</h4>
@@ -228,12 +232,17 @@ if ($soggetto) {
                     </tbody>
                 </table>
             </div>
+            </div>
         </div>
         <div class="tema-box">
             <h3 id="rl-titolo">Rivoluzione Lunare</h3>
             <div class="rl-loading-overlay" id="rl-overlay">⟳ Ricalcolo RL...</div>
             <svg id="wheel-rl" width="480" height="480" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-rl">—</p>
+            <div class="tema-info-row">
+                <p class="tema-info" id="info-rl">—</p>
+                <button class="btn-toggle-gradi" id="btn-toggle-dati-rl" onclick="toggleDatiTabella('rl')">▼ Mostra Dati</button>
+            </div>
+            <div id="dati-rl" class="is-hidden">
             <table class="tabella-pianeti" id="tab-rl"></table>
             <div class="cuspidi-container">
                 <h4 class="rl-table-section-title">🏠 Cuspidi Case RL</h4>
@@ -242,6 +251,7 @@ if ($soggetto) {
                     <tbody id="cuspidi-rl-body"><tr><td colspan="2" class="table-empty-cell">—</td></tr>
                 </tbody>
             </table>
+            </div>
             </div>
         </div>
     </div>
