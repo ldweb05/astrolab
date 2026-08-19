@@ -330,16 +330,62 @@ async function selezionaLuogo(lat, lon, displayName, paese) {
 
 function aggiornaOraGmt() {
     const oraN   = document.getElementById('ora-nascita').value;
+    const dataN  = document.getElementById('data-nascita').value;
     const offset = parseFloat(document.getElementById('offset-gmt').value) || 0;
     if (!oraN) return;
 
+    const badge = document.getElementById('gmt-giorno-label');
+
+    // Calcolo preciso al secondo: costruiamo l'istante locale come timestamp
+    // UTC "fittizio" (stesse cifre, senza fuso) e sottraiamo l'offset in
+    // secondi esatti (non ore/minuti arrotondati), cosi' Date gestisce da
+    // sola il cambio di giorno/mese/anno, senza reimplementare a mano la
+    // logica di wrap che ha causato il bug originale lato server.
     const [hh, mm] = oraN.split(':').map(Number);
-    let gmtMin = hh * 60 + mm - offset * 60;
-    gmtMin = ((gmtMin % 1440) + 1440) % 1440;
-    const hGmt = Math.floor(gmtMin / 60);
-    const mGmt = gmtMin % 60;
+    if (!dataN) {
+        // Nessuna data disponibile: fallback al solo wrap dell'orario,
+        // senza indicazione di giorno (comportamento precedente).
+        let gmtMin = hh * 60 + mm - offset * 60;
+        gmtMin = ((gmtMin % 1440) + 1440) % 1440;
+        const hGmt = Math.floor(gmtMin / 60);
+        const mGmt = gmtMin % 60;
+        document.getElementById('ora-gmt').value =
+            String(hGmt).padStart(2,'0') + ':' + String(mGmt).padStart(2,'0');
+        if (badge) badge.classList.add('is-hidden');
+        return;
+    }
+
+    const istanteLocaleComeUtc = new Date(dataN + 'T' + oraN + ':00Z');
+    const offsetSecondi = Math.round(offset * 3600);
+    const istanteGmt = new Date(istanteLocaleComeUtc.getTime() - offsetSecondi * 1000);
+
+    const hGmt = istanteGmt.getUTCHours();
+    const mGmt = istanteGmt.getUTCMinutes();
     document.getElementById('ora-gmt').value =
         String(hGmt).padStart(2,'0') + ':' + String(mGmt).padStart(2,'0');
+
+    // Confronto solo sul giorno (non sull'ora), per capire se la conversione
+    // GMT ha spostato la data rispetto al giorno locale di nascita.
+    const giornoLocale = istanteLocaleComeUtc.getUTCDate();
+    const giornoGmt     = istanteGmt.getUTCDate();
+    const meseLocale    = istanteLocaleComeUtc.getUTCMonth();
+    const meseGmt        = istanteGmt.getUTCMonth();
+    const annoLocale     = istanteLocaleComeUtc.getUTCFullYear();
+    const annoGmt        = istanteGmt.getUTCFullYear();
+
+    if (badge) {
+        const dataLocaleNum = annoLocale * 10000 + meseLocale * 100 + giornoLocale;
+        const dataGmtNum    = annoGmt * 10000 + meseGmt * 100 + giornoGmt;
+        if (dataGmtNum < dataLocaleNum) {
+            badge.textContent = '-1 Giorno';
+            badge.classList.remove('is-hidden');
+        } else if (dataGmtNum > dataLocaleNum) {
+            badge.textContent = '+1 Giorno';
+            badge.classList.remove('is-hidden');
+        } else {
+            badge.classList.add('is-hidden');
+        }
+    }
 }
 
 /**
