@@ -3218,6 +3218,7 @@ avviare M1 — Comparazione ricerche RSM.
 - Verifica: `php -l` superato nel container su entrambi i file PHP, `node --check` superato su `zodiac_wheel.js`, `git diff --check` pulito, test funzionale confermato dal committente nel browser su entrambe le pagine.
 - File toccati: `www/css/style.css`, `www/js/zodiac_wheel.js`, `www/rs.php`, `www/rl.php`. Nessuna decisione UX necessaria (RuleEngine.php non toccato).
 
+
 ## 2026-08-19 — Fix bug giorno di nascita in conversione GMT (branch fix/giorno-nascita-gmt)
 
 - Risolto il bug sistematico gia' confermato in sessione 2026-08-18 (validazione 34 regole, caso Sinner): quando l'ora di nascita locale precede l'offset del fuso, il calcolo usava sempre `data_nascita` locale senza mai retrocederla al vero giorno UTC.
