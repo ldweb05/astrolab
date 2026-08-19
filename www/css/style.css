@@ -1516,6 +1516,23 @@ main {
 }
 .sensib-chevron.aperto { transform: rotate(90deg); }
 
+.collapse-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+}
+.valutazione .collapse-toggle {
+    font-size: 15px;
+    color: #2C3E6B;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #E0D8CC;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+}
+
 /* Body collassabile */
 .sensib-body { padding: 14px 18px 16px; }
 

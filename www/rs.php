@@ -196,8 +196,13 @@ if ($soggetto) {
     </div>
  
     <div class="card is-hidden" id="card-sessioni-rs">
-        <h3>📂 Sessioni RS salvate per questo soggetto</h3>
-        <div id="lista-sessioni-rs"></div>
+        <h3 class="collapse-toggle" onclick="toggleCollapse('sessioni-rs')">
+            📂 Sessioni RS salvate per questo soggetto
+            <span class="sensib-chevron" id="collapse-chevron-sessioni-rs">▶</span>
+        </h3>
+        <div id="collapse-body-sessioni-rs" style="display:none">
+            <div id="lista-sessioni-rs"></div>
+        </div>
     </div>
 
     <div id="modifica-note-rs" class="annual-report-modal is-hidden">
@@ -300,6 +305,11 @@ if ($soggetto) {
     </div>
  
     <div class="valutazione is-hidden" id="valutazione">
+        <h3 class="collapse-toggle" onclick="toggleCollapse('bonus-veti')">
+            Bonus e Veti
+            <span class="sensib-chevron" id="collapse-chevron-bonus-veti">▶</span>
+        </h3>
+        <div id="collapse-body-bonus-veti" style="display:none">
         <div class="val-header">
             <div class="stelle-grandi" id="val-stelle"></div>
             <div class="val-stringa"   id="val-stringa"></div>
@@ -310,6 +320,7 @@ if ($soggetto) {
             <div class="val-section"><h4>⚠️ Penalità / Note</h4><div id="val-penali"></div></div>
         </div>
         <div id="val-veti"></div>
+        </div>
     </div>
         <div id="pannello-sensibilita" class="is-hidden">
         <div class="sensib-header" onclick="toggleSensibilita()">

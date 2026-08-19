@@ -183,8 +183,13 @@ if ($soggetto) {
     </div>
  
     <div class="card is-hidden" id="card-sessioni-rl">
-        <h3>☽ Sessioni RL salvate per questo soggetto</h3>
-        <div id="lista-sessioni-rl"></div>
+        <h3 class="collapse-toggle" onclick="toggleCollapse('sessioni-rl')">
+            ☽ Sessioni RL salvate per questo soggetto
+            <span class="sensib-chevron" id="collapse-chevron-sessioni-rl">▶</span>
+        </h3>
+        <div id="collapse-body-sessioni-rl" style="display:none">
+            <div id="lista-sessioni-rl"></div>
+        </div>
     </div>
  
     <div class="rl-timeline" id="rl-timeline">
@@ -195,6 +200,11 @@ if ($soggetto) {
     <div id="rl-loading"><p>⟳ Calcolo in corso...</p></div>
  
     <div class="valutazione" id="valutazione">
+        <h3 class="collapse-toggle" onclick="toggleCollapse('bonus-veti')">
+            Bonus e Veti
+            <span class="sensib-chevron" id="collapse-chevron-bonus-veti">▶</span>
+        </h3>
+        <div id="collapse-body-bonus-veti" style="display:none">
         <div class="val-header">
             <div class="stelle-grandi" id="val-stelle"></div>
             <div class="val-stringa"   id="val-stringa"></div>
@@ -205,6 +215,7 @@ if ($soggetto) {
             <div class="val-section"><h4>⚠️ Penalità</h4> <div id="val-penali"></div></div>
         </div>
         <div id="val-veti"></div>
+        </div>
     </div>
  
     <div class="temi-wrapper is-hidden" id="temi-wrapper">
