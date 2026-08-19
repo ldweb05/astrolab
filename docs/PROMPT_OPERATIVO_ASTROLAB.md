@@ -130,6 +130,16 @@ presentazione del risultato → **richiesta di conferma esplicita** → solo dop
 Non aggiungere mai `git add .` o `git add -A`: elencare sempre esplicitamente i file coinvolti,
 per non rischiare di includere file fuori obiettivo.
 
+**Pull Request obbligatoria per ogni branch di lavoro** (decisione permanente, 2026-08-19):
+dopo l'ultimo push su un branch dedicato (`fix/...`, `feature/...`), aprire sempre una PR verso
+il branch di destinazione con `gh pr create` (mai commit diretti sul branch di destinazione).
+`gh` è installato e autenticato sul Raspberry Pi (account `ldweb05`). Motivazione: punto di
+revisione prima che il merge sia irreversibile, e traccia navigabile a distanza di anni — vedi
+`docs/HANDOVER_OPERATIVO_astrolab.md`, entry 2026-08-19 "Chiusura Fase 3 e Fase 4" per la
+discussione completa. Il merge (`gh pr merge <numero> --merge`, strategia "merge commit" per
+default salvo diversa indicazione) resta comunque **solo su conferma esplicita dell'utente**,
+come ogni altra azione Git in questa sezione.
+
 ---
 
 ## 7. DOCUMENTAZIONE
