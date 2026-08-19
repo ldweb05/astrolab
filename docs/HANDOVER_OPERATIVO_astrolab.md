@@ -3198,3 +3198,13 @@ avviare M1 — Comparazione ricerche RSM.
 - Verifica: `php -l` superato nel container, `git diff --check` pulito, test funzionali con script PHP temporanei (poi rimossi, non committati) su piu' localita' reali (Kortrijk-Wevelgem, Lynn Lake, Baker Lake, XLB, YBT), suite di regressione `tests/run.php` eseguita dopo il commit.
 - File toccati: `www/includes/RuleEngine.php` (codice, UX-0007) e `docs/ux-myastral/DECISION_LOG_ux.md` (decisione UX-0007). Nessun altro file toccato.
 - **Conclusione della validazione:** il lavoro di allineamento alle 34 regole (Fasi 1-5) ha superato con successo un confronto reale contro il software di riferimento myastral.org - zero falsi positivi trovati sulle regole ufficiali. L'unico problema reale identificato e corretto era un'aggiunta proprietaria (veto latitudine), non una delle 34 regole. Resta aperto, volutamente fuori scope, il bug sistematico sul giorno di nascita in caso di conversione GMT a cavallo di mezzanotte.
+
+## 2026-08-19 — Toggle "Mostra Dati" su rs.php/rl.php e allineamento riga RL in ricerca_rl.php (branch feature/allineamento-myastral)
+
+- Aggiunto un toggle "Mostra Dati"/"Nascondi Dati" (freccia + testo, stile identico a "Nascondi Cuspidi"/"Mostra Gradi") per mostrare/nascondere le tabelle sotto ogni grafico. Tabelle nascoste di default al caricamento.
+  - CSS condiviso: nuova classe `.tema-info-row` in `css/style.css` (riga info ASC/MC + pulsante allineati orizzontalmente).
+  - JS condiviso: nuova funzione globale `toggleDatiTabella(suffix)` in `js/zodiac_wheel.js`, riusabile per ogni box.
+  - Applicato a `rs.php` (box Tema Natale + box Rivoluzione Solare) e `rl.php` (box Tema Natale + box Rivoluzione Lunare). Su indicazione del committente la feature resta scoped a queste due pagine: non estesa a `rilocazione.php`, `transiti.php`, `tema.php`.
+- Corretto disallineamento estetico in `ricerca_rl.php`: il pulsante "Aggiorna elenco RL" stava su una riga separata sotto la select, disallineando la barra filtri rispetto agli altri campi. Wrappati select+pulsante in un'unica riga flex (`.rl-index-row`), pulsante trasformato in icona-soltanto (rotondo, 🔄) con tooltip CSS custom via `data-tooltip`/`::after` (il `title` nativo del browser non risultava affidabile in hover) — modifica CSS page-scoped solo in `ricerca_rl.php`.
+- Verifica: `php -l` superato nel container per tutti i file PHP toccati, `node --check` superato su `zodiac_wheel.js`, `git diff --check` pulito, test funzionale confermato dal committente nel browser su entrambe le modifiche.
+- File toccati: `www/css/style.css`, `www/js/zodiac_wheel.js`, `www/rs.php`, `www/rl.php`, `www/ricerca_rl.php`. Nessuna decisione UX necessaria (RuleEngine.php non toccato).
