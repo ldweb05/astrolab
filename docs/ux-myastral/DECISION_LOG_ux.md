@@ -278,4 +278,40 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0008 - Veto Marte entro 2,5 gradi (o dentro) la X Casa declassato ad avviso
+
+- **Data:** 2026-08-19
+- **Area:** Rule Engine (`includes/RuleEngine.php`) - veto proprietario "astrolab-angoli"
+- **Stato:** APPROVATA
+- **Problema osservato:** il veto proprietario "astrolab-angoli" scarta automaticamente ogni
+  RSM/RL in cui Marte si trova entro 2 gradi da una delle 4 case angolari (I, IV, VII, X),
+  indipendentemente dal resto della configurazione astrale. Per la X Casa in particolare
+  (rilevanza diretta per la condizione "Decima"), questo veto risulta eccessivamente
+  restrittivo rispetto al peso reale della configurazione.
+- **Decisione:** per Marte e la sola X Casa, il controllo esce dalla sezione veti assoluti di
+  `calcolaVeti()`. Aggiunto invece, dopo il calcolo del punteggio (FASE 2 di `valuta()`), un
+  controllo indipendente: se Marte si trova entro 2,5 gradi dalla cuspide della X Casa (in
+  qualunque direzione) oppure e' assegnato dal calcolo casa alla X Casa stessa, viene aggiunta
+  una voce all'array `note` (stesso canale gia' usato per l'avviso di latitudine UX-0007) con
+  testo esplicito di cautela. La RSM/RL viene quindi valutata normalmente con tutte le regole
+  (veti, punteggio, stelline) come qualunque altra localita', con in piu' questa nota visibile.
+  Il veto "astrolab-angoli" resta invariato per Marte sulle altre 3 case angolari (I, IV, VII)
+  e per Saturno su tutte e 4 le case angolari, incluso Marte-Saturno entro 2 gradi come gia'
+  previsto. Resta invariato anche il veto separato "Marte in I/VI/XII" (Regola 2-4), con la sua
+  soglia di pre-ingresso a 3 gradi.
+- **Motivazione:** la X Casa non e' equiparabile alle altre 3 case angolari per la condizione
+  "Decima": un Marte vicino al Medio Cielo puo' indicare tensione o esposizione, non
+  necessariamente un rischio da scarto automatico. Un avviso informativo permette di valutare
+  consapevolmente la configurazione senza perdere risultati potenzialmente validi.
+- **Beneficio atteso:** ALTO - piu' risultati utili per la condizione "Decima" senza perdere
+  l'avviso di cautela tecnica.
+- **Costo tecnico stimato:** BASSO - riuso del canale `note` gia' esistente (pattern UX-0007),
+  rimozione mirata di un solo ramo del blocco veto esistente.
+- **Rischi:** nessuno noto; la nota e' puramente informativa, non cambia stelline o punteggio.
+  Il veto Marte-Saturno entro 2 gradi dagli angoli (incluso su X) resta attivo se coinvolge
+  Saturno.
+- **Documento collegato:** richiesta esplicita dell'utente, sessione 2026-08-19
+
+---
+
 Nessuna ulteriore decisione registrata.
