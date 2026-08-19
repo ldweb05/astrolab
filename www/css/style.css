@@ -3,18 +3,37 @@
 
 body {
     font-family: 'Montserrat', 'Verdana', sans-serif;
-    background: #F2EDE4;
     color: #2C2C2C;
     font-size: 14px;
     line-height: 1.5;
+    padding-top: 56px;
+
+    background-color: #F2EDE4;
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none' stroke='%23E4D9C0' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 60 60 L 60 260 Q 60 300 100 300 Q 140 300 140 260 L 140 60 M 140 260 Q 140 300 180 300 Q 220 300 220 260 L 220 60 M 220 260 Q 220 300 260 300 Q 300 300 300 260 L 300 100 Q 300 60 340 60 Q 370 60 370 90'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='440' height='440' viewBox='0 0 440 440' fill='none' stroke='%23E4D9C0' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 90 60 Q 30 140 90 220 Q 30 300 90 380'/%3E%3Cpath d='M 350 60 Q 410 140 350 220 Q 410 300 350 380'/%3E%3Cline x1='90' y1='220' x2='350' y2='220'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none' stroke='%23E4D9C0' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 60 60 L 60 260 Q 60 300 100 300 Q 140 300 140 260 L 140 60 M 140 260 Q 140 300 180 300 Q 220 300 220 260 L 220 60 M 220 260 Q 220 300 260 300 Q 300 300 300 260 L 300 100 Q 300 60 340 90 L 380 60 M 340 90 L 355 130'/%3E%3C/svg%3E");
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position:
+        -40px 100px,
+        calc(100% + 60px) 55%,
+        45% calc(100% + 55px);
+    background-size: 320px, 350px, 320px;
+    background-attachment: fixed, fixed, fixed;
 }
 
 /* ── HEADER ───────────────────────────────────────────────────────── */
 header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
     background: #2C3E6B;
     color: white;
     padding: 0 24px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    z-index: 1000;
 }
 .header-inner {
     display: flex;
@@ -595,7 +614,7 @@ main {
 
 /* ── CARD ─────────────────────────────────────────────────────────── */
 .card {
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 8px;
     padding: 20px 24px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -880,7 +899,7 @@ main {
     align-items: flex-start;
 }
 .tema-box {
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 8px;
     padding: 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -1011,7 +1030,7 @@ main {
 
 /* ── Controlli ───────────────────────────────────────────────── */
 .controlli {
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 8px;
     padding: 14px 20px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -1025,7 +1044,7 @@ main {
 
 /* ── Valutazione ─────────────────────────────────────────────── */
 .valutazione {
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 8px;
     padding: 14px 20px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -1097,7 +1116,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 12px;
     padding: 16px 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -1355,7 +1374,7 @@ main {
 
 /* ── Timeline chips ──────────────────────────────────────────── */
 .rl-timeline {
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 8px;
     padding: 12px 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -1477,7 +1496,7 @@ main {
 
 /* Contenitore principale */
 #pannello-sensibilita {
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 8px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.10);
     margin-bottom: 14px;
@@ -2076,10 +2095,10 @@ main {
 .totale-label { margin-left: auto; color: #666; font-size: 12px; align-self: center; }
 
 /* ── Tabella risultati ─────────────────────────────────────────── */
-.tabella-risultati { width: 100%; border-collapse: collapse; font-size: 12px; background: white; }
+.tabella-risultati { width: 100%; border-collapse: collapse; font-size: 12px; background: rgba(255, 255, 255, 0.88); }
 .tabella-risultati th {
     background: #2C3E6B; color: #D4C9A8; padding: 9px 10px;
-    text-align: left; position: sticky; top: 0;
+    text-align: left; position: sticky; top: 56px;
 }
 .tabella-risultati td { padding: 7px 10px; border-bottom: 1px solid #EDE8E0; vertical-align: middle; }
 .tabella-risultati tr:hover td { background: #FAF7F3; }
@@ -2297,7 +2316,7 @@ tr.riga-corrente td:first-child::before {
 .stats-bar {
     display: flex;
     gap: 24px;
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 8px;
     padding: 14px 20px;
     margin-bottom: 16px;
@@ -2345,7 +2364,7 @@ tr.riga-corrente td:first-child::before {
    ════════════════════════════════════════════════════════════════════ */
 
 .pwd-box {
-    background: white;
+    background: rgba(255, 255, 255, 0.88);
     border-radius: 10px;
     box-shadow: 0 4px 24px rgba(44,62,107,0.12);
     padding: 32px 40px;
