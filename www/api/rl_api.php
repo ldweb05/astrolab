@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/NascitaGmtHelper.php';
 require_once __DIR__ . '/../includes/bootstrap.php';
 /**
  * api/rl_api.php — Endpoint JSON per le Rivoluzioni Lunari
@@ -48,12 +49,19 @@ if (!$soggetto) {
     echo json_encode(['errore' => 'Soggetto non trovato o non autorizzato.']); exit;
 }
 
-$dateNascita = new DateTime($soggetto['data_nascita']);
-$g = (int)$dateNascita->format('d');
-$m = (int)$dateNascita->format('m');
-$a = (int)$dateNascita->format('Y');
+// Calcolo corretto data/ora GMT gestendo il cambio di giorno
+$gmtData = calcolaDataOraGmtCorretta(
+    $soggetto['data_nascita'],
+    $soggetto['ora_nascita'],
+    (float)$soggetto['offset_gmt']
+);
 
-$oraGmtParts = explode(':', $soggetto['ora_nascita_gmt']);
+$dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+$g = (int)$dateGmt->format('d');
+$m = (int)$dateGmt->format('m');
+$a = (int)$dateGmt->format('Y');
+
+$oraGmtParts = explode(':', $gmtData['ora_gmt']);
 $oraGmt = (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0)) / 60.0;
 
 $latNascita = (float)$soggetto['latitudine'];

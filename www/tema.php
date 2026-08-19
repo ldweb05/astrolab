@@ -20,6 +20,7 @@ $id = intval($_GET['id'] ?? $soggettoAttivo ?? 0);
 if ($id > 0) { $auth->setSoggettoAttivo($id); $soggettoNome = $auth->getSoggettoNome(); }
 // ===== FINE PATCH AUTH MULTI-ASTROLOGO =====
 require_once 'includes/SweCalc.php';
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
 
 $soggetto = null;
 if ($id) {
@@ -29,14 +30,21 @@ if ($id) {
 // Prepara i dati per JavaScript
 $jsData = null;
 if ($soggetto) {
-    $date = new DateTime($soggetto['data_nascita']);
-    $oraGmt = explode(':', $soggetto['ora_nascita_gmt']);
-    $oraGmtDec = $oraGmt[0] + $oraGmt[1]/60;
+    // Calcolo corretto data/ora GMT gestendo il cambio di giorno
+    $gmtData = calcolaDataOraGmtCorretta(
+        $soggetto['data_nascita'],
+        $soggetto['ora_nascita'],
+        (float)$soggetto['offset_gmt']
+    );
+
+    $dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+    $oraGmtParts = explode(':', $gmtData['ora_gmt']);
+    $oraGmtDec = (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0)) / 60.0;
 
     $jsData = [
-        'giorno' => (int)$date->format('d'),
-        'mese'   => (int)$date->format('m'),
-        'anno'   => (int)$date->format('Y'),
+        'giorno' => (int)$dateGmt->format('d'),
+        'mese'   => (int)$dateGmt->format('m'),
+        'anno'   => (int)$dateGmt->format('Y'),
         'ora_gmt'=> $oraGmtDec,
         'lat'    => (float)$soggetto['latitudine'],
         'lon'    => (float)$soggetto['longitudine'],
