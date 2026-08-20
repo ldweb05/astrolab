@@ -415,6 +415,7 @@ try {
     $totaleEsclusiAmore    = 0; // contatore RS escluse dal filtro specifico Amore
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
     $totaleEsclusiDecima   = 0; // contatore RS escluse dal filtro specifico Decima
+    $totaleEsclusiLavoro   = 0; // contatore RS escluse dal filtro specifico Lavoro
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
     $totaleEsclusiDenaroLow = 0; // contatore RS escluse dal filtro specifico Denaro Low
@@ -586,6 +587,38 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                                 'esclusi_amore'    => $totaleEsclusiAmore,
                                 'esclusi_casa'     => $totaleEsclusiCasa,
                                 'esclusi_decima'   => $totaleEsclusiDecima,
+                            ]);
+                        }
+                        continue;
+                    }
+                }
+
+                // ── C-quater-ter. FILTRO SPECIFICO PER LAVORO ────────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Verifica che almeno un benefico (SO/GI/VE) sia in VI o X casa
+                // RS con pre-ingresso di 3°, che non ci siano malevoli
+                // (MA/SA/UR/NE/PLU) in VI o X casa (con pre-ingresso), e che i
+                // benefici non siano troppo vicini all'uscita dalla casa.
+                if ($condizione === 'Lavoro') {
+                    $verificaLavoro = verificaCondizioneLavoro($pianetiConCase, $caseRS);
+                    if (!$verificaLavoro['valida']) {
+                        $totaleEsclusiLavoro++;
+                        // Le RS escluse dal filtro Lavoro NON vengono incluse nei risultati
+                        // (non c'è un checkbox "Mostra anche le RS escluse da Lavoro")
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                                'esclusi_amore'    => $totaleEsclusiAmore,
+                                'esclusi_casa'     => $totaleEsclusiCasa,
+                                'esclusi_decima'   => $totaleEsclusiDecima,
+                                'esclusi_lavoro'   => $totaleEsclusiLavoro,
                             ]);
                         }
                         continue;
@@ -920,6 +953,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
         'totale_esclusi_amore'    => $totaleEsclusiAmore,
         'totale_esclusi_casa'     => $totaleEsclusiCasa,
         'totale_esclusi_decima'   => $totaleEsclusiDecima,
+        'totale_esclusi_lavoro'   => $totaleEsclusiLavoro,
         'totale_esclusi_salute'   => $totaleEsclusiSalute,
         'totale_esclusi_denaro'   => $totaleEsclusiDenaro,
         'totale_esclusi_denaro_low' => $totaleEsclusiDenaroLow,
