@@ -1821,7 +1821,8 @@ function getRisultatiConfronto() {
             r.lat,
             r.lon,
             r.iata || '',
-            r.icao || ''
+            r.icao || '',
+            r.nome || ''
         ].join('|') === key);
     }).filter(Boolean);
 }
