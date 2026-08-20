@@ -457,4 +457,29 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0008 - Regola 33 declassata da veto assoluto a nota informativa (revoca UX-0006)
+
+- **Data:** 2026-08-20
+- **Area:** Rule Engine (`includes/RuleEngine.php`) - Regola 33
+- **Stato:** APPROVATA
+- **Problema osservato:** in decisione UX-0006 (Fase 2) la Regola 33 era stata implementata come
+  veto assoluto incondizionato, su esplicita richiesta del committente. Il committente ha ora
+  chiarito che la Regola 33 NON e' tra le regole a scarto automatico (che sono solo 4, 5, 31, 32,
+  34) - e' un principio interpretativo su cui l'astrologo deve dare un giudizio, non un criterio
+  di esclusione automatica.
+- **Decisione:** revocata UX-0006 nella parte relativa allo scarto automatico. I due controlli
+  gia' implementati in `calcolaVeti()` (caso "stessa casa" incondizionato, caso "case adiacenti"
+  IX/X) vengono spostati dall'array `$veti` all'array `$note` (stesso canale gia' usato per
+  UX-0007, veto latitudine), con testo che spiega la situazione ("Saturno prevale su X - valutare
+  con attenzione") invece di scartare la RSM/RL.
+- **Motivazione:** allineamento letterale alle indicazioni del committente sulle regole realmente
+  inderogabili (4, 5, 31, 32, 34 - non 33).
+- **Beneficio atteso:** piu' risultati utili, coerenti con l'effettiva severita' della regola
+  secondo il committente.
+- **Costo tecnico stimato:** BASSO - stesso pattern gia' collaudato per UX-0007.
+- **Rischi:** nessuno noto.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 33), UX-0006, UX-0007
+
+---
+
 Nessuna ulteriore decisione registrata.
