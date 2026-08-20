@@ -373,6 +373,57 @@ class RuleEngine {
             }
         }
 
+        // UX-0013: Regola 33 (Saturno prevale su Giove/Venere/Sole) declassata
+        // da veto assoluto a nota informativa non bloccante — non è tra le
+        // regole a scarto automatico (solo 4, 5, 31, 32, 34 lo sono), è un
+        // principio interpretativo su cui l'astrologo deve dare un giudizio
+        // (revoca UX-0006). Caso (a) stessa casa, qualunque essa sia.
+        if (isset($pianeti[6])) {
+            $casaSaturno = $pianeti[6]['casa'];
+            $beneficiStessaCasa = [];
+            foreach ([0, 3, 5] as $idBenef) {
+                if (isset($pianeti[$idBenef]) && $pianeti[$idBenef]['casa'] === $casaSaturno) {
+                    $beneficiStessaCasa[] = $idBenef;
+                }
+            }
+            if (!empty($beneficiStessaCasa)) {
+                $nomiSat = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', $beneficiStessaCasa));
+                $note[] = [
+                    'codice' => 'SA33',
+                    'tipo'   => 'AVV',
+                    'nota'   => "Saturno prevale su {$nomiSat} in {$casaSaturno}a casa (Regola 33) — valuta con attenzione, l'anno può avere un andamento più saturnino che gioviano/venusino/solare",
+                ];
+            }
+        }
+
+        // UX-0013: Regola 33, caso (b) case adiacenti IX/X (Medio Cielo),
+        // entro 3° dalla stessa cuspide su lati opposti — stessa nota
+        // informativa, non blocca la RSM/RL.
+        if (isset($case[10]['longitudine'])) {
+            $cuspideMC33 = $case[10]['longitudine'];
+            $saturnoVicino33 = null;
+            if (isset($pianeti[6]) && (int)$pianeti[6]['casa'] === 9) {
+                $diffSat33 = $this->diffAngolo($pianeti[6]['longitudine'], $cuspideMC33);
+                if ($diffSat33 > -3.0 && $diffSat33 <= 0.0) {
+                    $saturnoVicino33 = round(abs($diffSat33), 1);
+                }
+            }
+            if ($saturnoVicino33 !== null) {
+                foreach ([0, 3, 5] as $idBenef) {
+                    if (!isset($pianeti[$idBenef]) || (int)$pianeti[$idBenef]['casa'] !== 10) continue;
+                    $diffBenef33 = $this->diffAngolo($pianeti[$idBenef]['longitudine'], $cuspideMC33);
+                    if ($diffBenef33 >= 0.0 && $diffBenef33 < 3.0) {
+                        $nome33 = self::VAL_NOMI[$idBenef] ?? '?';
+                        $note[] = [
+                            'codice' => 'SA33ADJ',
+                            'tipo'   => 'AVV',
+                            'nota'   => "Saturno a {$saturnoVicino33}° dal MC in IX e {$nome33} a " . round($diffBenef33,1) . "° dal MC in X (Regola 33) — Saturno prevale, valuta con attenzione",
+                        ];
+                    }
+                }
+            }
+        }
+
         // ── FASE 3: FILTRO ASTRI IN CASA ─────────────────────────────────
         $penalitaAstri = $this->filtraAstri($astriInCasa, $pianeti);
 
@@ -635,49 +686,6 @@ class RuleEngine {
             && (count($inCasa12) + count($inCasa1)) >= 3) {
             $nomi = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', array_merge($inCasa12, $inCasa1)));
             $veti[] = "VETO (Regola 31): Stellium diviso XII/I ({$nomi}) — vale come stellium pieno in XII";
-        }
-
-        // Regola 33 (UX-0006), caso (a): Saturno e un benefico (Sole/Venere/
-        // Giove) nella stessa casa, qualunque essa sia - Saturno prevale sempre,
-        // incondizionatamente (indipendente dal flag MYASTRAL_ALIGNMENT_MODE,
-        // che resta un sistema separato per RuleEngineExtended.php - UX-0001).
-        if (isset($pianeti[6])) {
-            $casaSaturno = $pianeti[6]['casa'];
-            $beneficiStessaCasa = [];
-            foreach ([0, 3, 5] as $idBenef) {
-                if (isset($pianeti[$idBenef]) && $pianeti[$idBenef]['casa'] === $casaSaturno) {
-                    $beneficiStessaCasa[] = $idBenef;
-                }
-            }
-            if (!empty($beneficiStessaCasa)) {
-                $nomi = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', $beneficiStessaCasa));
-                $veti[] = "VETO (Regola 33): Saturno prevale su {$nomi} in {$casaSaturno}a casa";
-            }
-        }
-
-        // Regola 33 (UX-0006), caso (b): Saturno e un benefico in case
-        // adiacenti IX/X (Medio Cielo), entro 3° dalla stessa cuspide su lati
-        // opposti. Solo questa coppia, come esplicitamente citata dal testo -
-        // non generalizzata ad altre case adiacenti (coerente con la Regola 31).
-        if (isset($case[10]['longitudine'])) {
-            $cuspideMC = $case[10]['longitudine'];
-            $saturnoVicino = null;
-            if (isset($pianeti[6]) && (int)$pianeti[6]['casa'] === 9) {
-                $diffSat = $this->diffAngolo($pianeti[6]['longitudine'], $cuspideMC);
-                if ($diffSat > -3.0 && $diffSat <= 0.0) {
-                    $saturnoVicino = round(abs($diffSat), 1);
-                }
-            }
-            if ($saturnoVicino !== null) {
-                foreach ([0, 3, 5] as $idBenef) {
-                    if (!isset($pianeti[$idBenef]) || (int)$pianeti[$idBenef]['casa'] !== 10) continue;
-                    $diffBenef = $this->diffAngolo($pianeti[$idBenef]['longitudine'], $cuspideMC);
-                    if ($diffBenef >= 0.0 && $diffBenef < 3.0) {
-                        $nome = self::VAL_NOMI[$idBenef] ?? '?';
-                        $veti[] = "VETO (Regola 33 — case adiacenti): Saturno a {$saturnoVicino}° dal MC in IX e {$nome} a " . round($diffBenef,1) . "° dal MC in X — Saturno prevale";
-                    }
-                }
-            }
         }
 
         // Regola 34 — UX-0003: Marte e Saturno nella stessa casa RS/RL,
