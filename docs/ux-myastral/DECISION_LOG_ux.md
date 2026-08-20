@@ -394,4 +394,36 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0011 - Tempo di calcolo batch RS/RL dell'anno accettato senza cache (3,3s con loader)
+
+- **Data:** 2026-08-20
+- **Area:** Endpoint batch RS/RL dell'anno per la pagina `ricerche.php` (UX-0010)
+- **Stato:** APPROVATA
+- **Problema osservato:** UX-0010 imponeva come primo step tecnico obbligatorio la misura del
+  tempo reale di calcolo dei ritorni RS/RL dell'anno prima di decidere se serve una cache.
+  Misurato sul Raspberry Pi con `rl_api.php?action=lista` (soggetto id=23, anno 2025): 3,34
+  secondi per 14 ritorni RL, sopra la soglia indicativa di 1-2 secondi fissata in UX-0010. Causa
+  identificata: `calcolaTutteRLLibsweCompatibileLunaApi` in `SweCalc.php` usa uno scan orario
+  sull'intero anno (~8760 iterazioni FFI) invece di una bisezione mirata come `calcolaRS`.
+- **Evidenze:** misurazione diretta via curl con timing (`time_total`), sessione 2026-08-20.
+- **Decisione:** si accettano i 3,3s cosi' come sono, mostrando un loader/spinner in UI durante
+  il calcolo batch (attivato al cambio Anno in `ricerche.php`). Non si introduce ne' una cache
+  (tabella DB) ne' un'ottimizzazione dell'algoritmo di calcolo (es. bisezione al posto dello scan
+  orario) in questa fase.
+- **Motivazione:** ottimizzare l'algoritmo richiederebbe modificare una funzione condivisa
+  (`calcolaTutteRLLibsweCompatibileLunaApi`) gia' in produzione su `rl.php`, con rischio di
+  regressione silenziosa sui risultati esistenti - non giustificato per un miglioramento di UX
+  gestibile con un semplice loader. Una cache aggiungerebbe complessita' (invalidazione,
+  coerenza) senza dati reali di utilizzo multi-utente che la giustifichino.
+- **Beneficio atteso:** BASSO (nessun cambiamento di performance) ma rischio zero su codice
+  esistente.
+- **Costo tecnico stimato:** BASSO (solo loader/spinner lato frontend in Fase 2)
+- **Rischi:** l'attesa di 3,3s per singolo astrologo resta accettabile; se in futuro l'uso
+  diventasse multi-utente concorrente o l'attesa percepita risultasse fastidiosa, riconsiderare
+  bisezione o cache con una sessione dedicata e test di regressione su `rl.php`.
+- **Documento collegato:** `docs/ux-myastral/03_RICERCA_RSM_ux.md` (UX-0010)
+- **Eventuale voce della roadmap tecnica:** roadmap Fase 2 (PROMPT_OPERATIVO_ASTROLAB_ALLIUNEAMENTO_UX)
+
+---
+
 Nessuna ulteriore decisione registrata.
