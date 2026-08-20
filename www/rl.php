@@ -236,8 +236,6 @@ if ($soggetto) {
                 <button class="btn-toggle-gradi" id="btn-toggle-cuspidi"
                         onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
                 <h3>Tema Natale</h3>
-                <button class="btn-toggle-gradi" id="btn-toggle-gradi"
-                        onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
             <svg id="wheel-natale" width="480" height="480" class="zodiac-wheel-responsive"></svg>
             <div class="tema-info-row">
@@ -258,7 +256,10 @@ if ($soggetto) {
             </div>
         </div>
         <div class="tema-box">
-            <h3 id="rl-titolo">Rivoluzione Lunare</h3>
+            <div class="tema-box-header">
+                <h3 id="rl-titolo">Rivoluzione Lunare</h3>
+                <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
+            </div>
             <div class="rl-loading-overlay" id="rl-overlay">⟳ Ricalcolo RL...</div>
             <svg id="wheel-rl" width="480" height="480" class="zodiac-wheel-responsive"></svg>
             <div class="tema-info-row">
