@@ -426,4 +426,35 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0012 - Parita' dropdown Condizione tra ricerca.php (RS) e ricerca_rl.php (RL)
+
+- **Data:** 2026-08-20
+- **Area:** `www/ricerca_rl.php`
+- **Stato:** APPROVATA
+- **Problema osservato:** il menu Condizione di `ricerca_rl.php` mostra solo 7 voci (le
+  condizioni tematiche), escludendo con un `array_diff()` le due voci speciali
+  '— Astri nelle Case —' e '— Longitudine Cuspidi —' presenti invece nelle 9 voci ufficiali di
+  `RicercaPageData.php` e nel menu di `ricerca.php` (RS). Confermato anche un impatto funzionale
+  reale sul flusso `ricerche.php` -> `ricerca_rl.php`: se l'utente sceglie una di quelle due
+  condizioni per una RL, la preselezione via URL non trova l'opzione nel <select> e la ricerca
+  automatica parte con la condizione di default sbagliata. Tutta la logica JS per le due
+  modalita' speciali (costanti CONDIZIONE_CUSPIDI/CONDIZIONE_ASTRI, pannelli dedicati, calcolo
+  modalitaBase, ricerca a griglia) e' gia' presente e funzionante in `ricerca_rl.php` - le due
+  voci sono irraggiungibili solo a causa del filtro nel <select>.
+- **Decisione:** rimuovere il filtro `array_diff()` in `ricerca_rl.php`, riportando il menu
+  Condizione a tutte e 9 le voci ufficiali, identico a `ricerca.php`. Nessuna altra modifica
+  alla logica di ricerca RL.
+- **Motivazione:** richiesto esplicitamente dal committente dopo aver verificato il flusso
+  `ricerche.php` -> `ricerca_rl.php`; necessario per coerenza con la nuova pagina `ricerche.php`
+  (UX-0010), che deve mostrare sempre tutte e 9 le condizioni indipendentemente dal fatto che
+  l'utente abbia scelto un RS o un RL.
+- **Beneficio atteso:** ALTO (coerenza UI, corregge un bug funzionale reale nel nuovo flusso)
+- **Costo tecnico stimato:** BASSO (rimozione di una riga, nessuna nuova logica)
+- **Rischi:** minimi - la logica per le due modalita' speciali e' gia' testata lato RS; verificare
+  comunque con un test funzionale reale su ricerca_rl.php dopo la modifica.
+- **Documento collegato:** `docs/ux-myastral/03_RICERCA_RSM_ux.md` (UX-0010)
+- **Eventuale voce della roadmap tecnica:** roadmap Fase 2 (PROMPT_OPERATIVO_ASTROLAB_ALLIUNEAMENTO_UX)
+
+---
+
 Nessuna ulteriore decisione registrata.
