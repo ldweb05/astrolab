@@ -457,7 +457,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
-### UX-0008 - Regola 33 declassata da veto assoluto a nota informativa (revoca UX-0006)
+### UX-0013 - Regola 33 declassata da veto assoluto a nota informativa (revoca UX-0006)
 
 - **Data:** 2026-08-20
 - **Area:** Rule Engine (`includes/RuleEngine.php`) - Regola 33
