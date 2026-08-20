@@ -410,7 +410,6 @@ if ($soggetto) {
             <div class="tema-box-header">
                 <button class="btn-toggle-gradi" id="btn-toggle-cuspidi" onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
                 <h3>Tema Natale</h3>
-                <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
             <svg id="wheel-natale" width="480" height="480" class="zodiac-wheel-responsive"></svg>
             <div class="tema-info-row">
@@ -431,7 +430,10 @@ if ($soggetto) {
         </div>
  
         <div class="tema-box">
-            <h3 id="rs-titolo">Rivoluzione Solare</h3>
+            <div class="tema-box-header">
+                <h3 id="rs-titolo">Rivoluzione Solare</h3>
+                <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
+            </div>
             <div class="map-loading-overlay" id="rs-mappa-loading">⟳ Ricalcolo RS...</div>
             <svg id="wheel-rs" width="480" height="480" class="zodiac-wheel-responsive"></svg>
             <div class="tema-info-row">
