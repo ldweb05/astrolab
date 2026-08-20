@@ -414,6 +414,7 @@ try {
     $totaleEsclusiFiltro   = 0; // contatore RS escluse da FiltroEsclusione (checkbox)
     $totaleEsclusiAmore    = 0; // contatore RS escluse dal filtro specifico Amore
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
+    $totaleEsclusiDecima   = 0; // contatore RS escluse dal filtro specifico Decima
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
     $totaleEsclusiDenaroLow = 0; // contatore RS escluse dal filtro specifico Denaro Low
@@ -554,6 +555,37 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                             'calcoli_placido'  => $totaleCalcoliPlacido,
                                 'esclusi_amore'    => $totaleEsclusiAmore,
                                 'esclusi_casa'     => $totaleEsclusiCasa,
+                            ]);
+                        }
+                        continue;
+                    }
+                }
+
+                // ── C-quater-bis. FILTRO SPECIFICO PER DECIMA ────────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Verifica che almeno un benefico (SO/GI/VE) sia in X casa RS
+                // con pre-ingresso di 3°, che non ci siano malevoli (MA/SA/UR/NE/PLU)
+                // in X casa (con pre-ingresso), e che i benefici non siano
+                // troppo vicini all'uscita dalla X (cuspide XI).
+                if ($condizione === 'Decima') {
+                    $verificaDecima = verificaCondizioneDecima($pianetiConCase, $caseRS);
+                    if (!$verificaDecima['valida']) {
+                        $totaleEsclusiDecima++;
+                        // Le RS escluse dal filtro Decima NON vengono incluse nei risultati
+                        // (non c'è un checkbox "Mostra anche le RS escluse da Decima")
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                                'esclusi_amore'    => $totaleEsclusiAmore,
+                                'esclusi_casa'     => $totaleEsclusiCasa,
+                                'esclusi_decima'   => $totaleEsclusiDecima,
                             ]);
                         }
                         continue;
@@ -887,6 +919,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
         ], SweCalc::getProfilazione()),
         'totale_esclusi_amore'    => $totaleEsclusiAmore,
         'totale_esclusi_casa'     => $totaleEsclusiCasa,
+        'totale_esclusi_decima'   => $totaleEsclusiDecima,
         'totale_esclusi_salute'   => $totaleEsclusiSalute,
         'totale_esclusi_denaro'   => $totaleEsclusiDenaro,
         'totale_esclusi_denaro_low' => $totaleEsclusiDenaroLow,
