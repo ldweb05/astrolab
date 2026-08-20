@@ -314,4 +314,84 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0009 - Riorganizzazione navigazione globale (nav a 9 voci, pagina Ricerche al posto del dropdown)
+
+- **Data:** 2026-08-20
+- **Area:** Navigazione globale (`www/includes/header_nav.php`)
+- **Stato:** APPROVATA
+- **Problema osservato:** la nav attuale espone un dropdown "Ricerche" con 6 voci dirette (RS,
+  RL, Localita RS, Localita RL, Rilocazione, Transiti) e una voce "Soggetti" separata dal badge
+  "Soggetto attivo", creando ridondanza e una struttura piu affollata rispetto al workflow
+  osservato in MyAstral.org (Anno -> ritorni gia calcolati -> Condizione).
+- **Evidenze:** confronto diretto con screenshot di un'app di riferimento in stile MyAstral
+  condiviso dal committente (schermata soggetto con Year + dropdown Solar/Lunar returns gia
+  calcolati + ricerca localita).
+- **Confronto MyAstral.org / Astrolab:** MyAstral.org non espone un dropdown di navigazione con
+  6 destinazioni dirette, ma un flusso guidato Anno -> ritorno -> condizione; Astrolab attuale
+  richiede scelta della destinazione prima ancora di sapere anno/ritorno.
+- **Decisione:** nav riorganizzata a 9 voci, ordine sx->dx: Logo, Tema Natale, Ricerche (link
+  secco, non piu dropdown), Help, separatore "|", Nome Astrologo, Soggetto attivo, Password,
+  Esci. Voce "Soggetti" dedicata rimossa: "Soggetto attivo" diventa link cliccabile verso
+  index.php (da <span> a <a>), mantenendo lo stesso stile grafico del badge attuale. Le 6
+  destinazioni oggi nel dropdown restano raggiungibili solo passando dalla nuova pagina
+  "Ricerche" (UX-0010): nessuna di esse viene rimossa o modificata nella logica.
+- **Motivazione:** ridurre la ridondanza (Soggetti + Soggetto attivo) e allineare l'accesso alle
+  ricerche a un flusso guidato per anno/ritorno invece di un elenco piatto di 6 destinazioni,
+  senza alterare le pagine di destinazione esistenti.
+- **Beneficio atteso:** ALTO
+- **Costo tecnico stimato:** MEDIO (file condiviso `header_nav.php` da tutte le pagine, richiede
+  test su ciascuna pagina che lo include)
+- **Rischi:** `header_nav.php` e condiviso da tutte le pagine; una modifica non attenta puo
+  rompere la nav ovunque - da trattare con la massima cautela (Fase 3 dedicata, un file alla
+  volta, test su ogni pagina).
+- **Documento collegato:** `docs/ux-myastral/10_NAVIGAZIONE_GLOBALE_ux.md`
+- **Eventuale voce della roadmap tecnica:** roadmap Fase 3 (PROMPT_OPERATIVO_ASTROLAB_ALLIUNEAMENTO_UX)
+
+---
+
+### UX-0010 - Pagina dedicata "Ricerche" (non modale) con calcolo batch RS/RL dell'anno
+
+- **Data:** 2026-08-20
+- **Area:** Nuova pagina `www/ricerche.php` (file nuovo, nessun impatto su pagine esistenti)
+- **Stato:** APPROVATA
+- **Problema osservato:** oggi non esiste un punto di ingresso unico che mostri all'astrologo,
+  per un dato anno, l'elenco dei ritorni (1 RSM + ~12-13 RL) gia calcolati con data/ora esatta,
+  in stile MyAstral.org; la scelta della destinazione (RS, RL, Rilocazione, Transiti) avviene
+  oggi tramite dropdown di navigazione senza contesto anno/ritorno.
+- **Evidenze:** screenshot app di riferimento in stile MyAstral (Year + dropdown "Solar and
+  Lunar returns" con elenco unico separato da divisore Solar/Lunar, search box localita) e
+  secondo screenshot con conferma della voce "Condition" sopra il dropdown.
+- **Confronto MyAstral.org / Astrolab:** MyAstral.org presenta i ritorni dell'anno gia calcolati
+  con data/ora specifica prima che l'utente scelga la condizione; Astrolab attuale calcola RS/RL
+  solo on-demand, senza un elenco precalcolato per l'anno.
+- **Decisione:**
+  1. **Pagina vs modale:** si sceglie una pagina dedicata (`ricerche.php`), non un modale, perche
+     il compito richiede un elenco con scroll di data/ora (13 ritorni) e non e un'azione one-shot
+     sotto i 30 secondi - un modale comprimerebbe eccessivamente il contenuto o richiederebbe
+     scroll interno poco ergonomico.
+  2. **Contenuto:** Anno + dropdown unico RS/RL dell'anno selezionato (calcolo batch on-demand
+     via chiamata AJAX al cambio Anno, riusando le funzioni di calcolo RS/RL esistenti in loop
+     per i 13 ritorni, nessuna cache/tabella DB in questa prima fase) + Condizione (instrada
+     verso `ricerca.php`/`ricerca_rl.php` invariate) + due pulsanti separati per Rilocazione e
+     Transiti.
+  3. **Direttiva grafica:** card con ombra molto accentuata (effetto 3D), sfondo bianco,
+     trasparenza al 65%, solo i campi essenziali, disposizione verticale ariosa (non densa come
+     la barra controlli di `ricerca.php`).
+  4. **Primo step tecnico obbligatorio (Fase 1):** misurare sul Raspberry Pi il tempo reale di
+     calcolo dei 13 ritorni per un soggetto di test prima di qualunque decisione su cache;
+     introduzione di cache solo se il tempo risultasse eccessivo (indicativamente oltre 1-2
+     secondi), da discutere col committente prima di implementarla.
+- **Motivazione:** dare un punto di ingresso guidato per anno/ritorno coerente col workflow
+  osservato in MyAstral.org, senza toccare la logica o i risultati delle pagine esistenti
+  (RS, RL, Ricerca RSM/RL, Rilocazione, Transiti restano invariate a valle).
+- **Beneficio atteso:** ALTO
+- **Costo tecnico stimato:** MEDIO (file nuovo a rischio zero su pagine esistenti, ma richiede
+  nuovo endpoint di calcolo batch)
+- **Rischi:** performance del calcolo batch dei 13 ritorni non ancora misurata sul Pi (da
+  verificare in Fase 1 prima di procedere); nessun rischio sulle pagine esistenti in questa fase.
+- **Documento collegato:** `docs/ux-myastral/03_RICERCA_RSM_ux.md`
+- **Eventuale voce della roadmap tecnica:** roadmap Fase 1 e Fase 2 (PROMPT_OPERATIVO_ASTROLAB_ALLIUNEAMENTO_UX)
+
+---
+
 Nessuna ulteriore decisione registrata.
