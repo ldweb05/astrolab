@@ -19,10 +19,6 @@ ini_set('display_errors', 0);
 
 require_once __DIR__ . '/includes/RicercaPageData.php';
 
-$_annoPreselezionato = intval($_GET['anno'] ?? 0);
-$_condizionePreselezionata = $_GET['condizione'] ?? '';
-$_autoCerca = ($_annoPreselezionato > 0 && $_condizionePreselezionata !== '');
-
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -99,7 +95,7 @@ BARRA CONTROLLI PRINCIPALE
 <label>Anno Rivoluzione</label>
 <select id="anno-rs">
 <?php for ($y = 1960; $y <= $annoCorrente + 5; $y++): ?>
-<option value="<?= $y ?>" <?= $y == ($_annoPreselezionato ?: $annoCorrente) ? 'selected' : '' ?>><?= $y ?></option>
+<option value="<?= $y ?>" <?= $y == $annoCorrente ? 'selected' : '' ?>><?= $y ?></option>
 <?php endfor; ?>
 </select>
 </div>
@@ -116,7 +112,7 @@ BARRA CONTROLLI PRINCIPALE
 <label>Condizione</label>
 <select id="condizione" onchange="onCondizioneChange(this.value)">
 <?php foreach ($condizioni as $c): ?>
-<option value="<?= $c ?>" <?= $c === $_condizionePreselezionata ? 'selected' : '' ?>><?= $c ?></option>
+<option value="<?= $c ?>"><?= $c ?></option>
 <?php endforeach; ?>
 </select>
 </div>
@@ -505,7 +501,6 @@ const USER_FEATURES = {
     dynamic_orb: <?= json_encode($auth->hasFeature('dynamic_orb')) ?>
 };
 
-const RICERCA_AUTO_CERCA = <?= json_encode($_autoCerca) ?>;
 const SUPPORTER_MESSAGE = 'Questa funzione è riservata agli utenti del piano Supporter.';
 const COMPARATOR_LIMIT = <?= json_encode($auth->getComparatorLimit()) ?>;
 const COMPARATOR_LIMIT_MESSAGE = COMPARATOR_LIMIT < 3
@@ -1901,9 +1896,6 @@ caricaNazioniLocalita();
 onTipoLocalitaChange(document.getElementById('tipo-localita').value);
 ripristinaStatoRicerca();
 
-if (RICERCA_AUTO_CERCA && stato.tutti.length === 0) {
-    avviaRicerca();
-}
 popolaSelectRLPagina();
 
 document.getElementById('risultati-area').addEventListener('change', function(event) {
