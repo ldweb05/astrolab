@@ -8,16 +8,6 @@
 
 ---
 
-## Decisione applicata — UX-0009
-
-Riorganizzazione della nav a 9 voci e sostituzione del dropdown "Ricerche" con link secco
-verso la nuova pagina dedicata (vedi UX-0010). Decisione registrata in `DECISION_LOG_ux.md`
-il 2026-08-20, in attesa di implementazione tecnica (roadmap Fase 3,
-`PROMPT_OPERATIVO_ASTROLAB_ALLIUNEAMENTO_UX`). Il protocollo di analisi comparativa sotto
-resta valido per eventuali affinamenti futuri della navigazione globale.
-
----
-
 ## 1. Obiettivo
 
 Valutare coerenza, prevedibilità e continuità dell'intera applicazione, individuando duplicazioni, percorsi interrotti e perdita del contesto.

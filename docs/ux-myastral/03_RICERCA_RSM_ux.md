@@ -8,18 +8,6 @@
 
 ---
 
-## Decisione applicata — UX-0010
-
-Nuova pagina dedicata `ricerche.php` (Anno + dropdown RS/RL dell'anno gia calcolate via
-calcolo batch on-demand + Condizione + pulsanti Rilocazione/Transiti) come punto di ingresso
-guidato verso questo workflow, senza modificare la logica o i risultati di `ricerca.php`
-descritti sotto. Decisione registrata in `DECISION_LOG_ux.md` il 2026-08-20, in attesa di
-implementazione tecnica (roadmap Fase 1-2, `PROMPT_OPERATIVO_ASTROLAB_ALLIUNEAMENTO_UX`). Il
-protocollo di analisi comparativa sotto resta valido per eventuali affinamenti futuri della
-ricerca RSM stessa.
-
----
-
 ## 1. Obiettivo
 
 Valutare se l'astrologo può impostare, eseguire, comprendere, correggere e confrontare una ricerca RSM senza perdere il contesto del soggetto.
