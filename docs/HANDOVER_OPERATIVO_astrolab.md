@@ -3158,3 +3158,11 @@ avviare M1 — Comparazione ricerche RSM.
 - Pannello "Correzione tempo ed ora" (`#correzione-tempo-modal`, rs.php) reso trascinabile: drag scoped per id (non tocca altre eventuali finestre che riusassero le stesse classi `.annual-report-*`), maniglia sull'header esistente, limiti ai bordi della viewport, click sulla X di chiusura non attiva il trascinamento, posizione resettata alla chiusura. Nessuna modifica a dimensioni o colori.
 - Verifica: `php -l` su rs.php, `git diff --check` pulito, test funzionali reali confermati dal committente su tutti e 4 i punti (header fisso, background, trasparenza, drag).
 - File toccati: `www/css/style.css`, `www/rs.php`.
+
+## REGOLA PERMANENTE — Modale "Correzione tempo ed ora" in rs.php (congelata 2026-08-21)
+
+Il pannello "Correzione tempo ed ora" in `www/rs.php` DEVE restare un modale orizzontale indipendente (`#correzione-tempo-modal`, introdotto 2026-08-18 dal commit `0e7e023`).
+
+**NON reintrodurre** il vecchio div `time-controls time-controls-top` posizionato tra le due colonne (Tema Natale / Rivoluzione Solare). Questo è già successo due volte per errore, causato da lavoro svolto su branch divergenti (`feature/allineamento-myastral` vs `fase9-comparator-quota`) mai riallineati tra loro.
+
+Aggiunto un commento HTML di protezione direttamente nel codice sopra il div del modale (commit su branch `chore/porta-feature-da-allineamento-myastral`, 2026-08-21). Qualunque sessione futura che debba modificare questo blocco deve chiedere conferma esplicita all'utente prima di procedere.
