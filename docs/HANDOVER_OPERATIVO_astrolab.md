@@ -3255,6 +3255,14 @@ avviare M1 — Comparazione ricerche RSM.
 - Verifica: `php -l` su rs.php, `git diff --check` pulito, test funzionali reali confermati dal committente su tutti e 4 i punti (header fisso, background, trasparenza, drag).
 - File toccati: `www/css/style.css`, `www/rs.php`.
 
+## REGOLA PERMANENTE — Modale "Correzione tempo ed ora" in rs.php (congelata 2026-08-21)
+
+Il pannello "Correzione tempo ed ora" in `www/rs.php` DEVE restare un modale orizzontale indipendente (`#correzione-tempo-modal`, introdotto 2026-08-18 dal commit `0e7e023`).
+
+**NON reintrodurre** il vecchio div `time-controls time-controls-top` posizionato tra le due colonne (Tema Natale / Rivoluzione Solare). Questo è già successo due volte per errore, causato da lavoro svolto su branch divergenti (`feature/allineamento-myastral` vs `fase9-comparator-quota`) mai riallineati tra loro.
+
+Aggiunto un commento HTML di protezione direttamente nel codice sopra il div del modale (commit su branch `chore/porta-feature-da-allineamento-myastral`, 2026-08-21). Qualunque sessione futura che debba modificare questo blocco deve chiedere conferma esplicita all'utente prima di procedere.
+
 ## 2026-08-22 — Avvio idea "Astri in Cuspide" e creazione roadmap dedicata (branch feature/2-astri-in-cuspide)
 
 - Discussa con il committente l'idea di estendere il pannello "Astri nelle Case" per permettere la ricerca di piu' pianeti "in cuspide" di casa (entro l'orbo ufficiale di Regola 32), Supporter-gated, orbo fisso non configurabile dall'utente.
