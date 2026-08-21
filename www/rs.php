@@ -797,10 +797,23 @@ function chiudiMappa() {
  
 function usaPosizione() {
     if (!posMappa) return;
-    document.getElementById('rs-lat').value = posMappa.lat.toFixed(4);
-    document.getElementById('rs-lon').value = posMappa.lon.toFixed(4);
+    const latPos = posMappa.lat;
+    const lonPos = posMappa.lon;
+    document.getElementById('rs-lat').value = latPos.toFixed(4);
+    document.getElementById('rs-lon').value = lonPos.toFixed(4);
     chiudiMappa();
-    calcolaRS();
+    fetch('https://nominatim.openstreetmap.org/reverse?lat='+latPos+'&lon='+lonPos+'&format=json&addressdetails=1')
+        .then(r => r.json())
+        .then(r => {
+            const nome = (r && !r.error) ? _estraiNomeLuogoNominatim(r) : '';
+            document.getElementById('luogo-rs-input').value = nome || 'NaN';
+        })
+        .catch(() => {
+            document.getElementById('luogo-rs-input').value = 'NaN';
+        })
+        .finally(() => {
+            calcolaRS();
+        });
 }
  
 // ── Ora nascita con controlli ─────────────────────────────────────────────
