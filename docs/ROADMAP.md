@@ -610,3 +610,37 @@ La selezione obbligatoria della nazione e il limite 50/100/150/Tutte per
 - componente modificato: `www/js/zodiac_wheel.js`;
 - riusato `ZodiacWheel.disegna()` senza duplicazioni;
 - nessuna modifica al motore astrologico, alle API o al Rule Engine.
+
+## BUG APERTO — Header sticky tabella risultati si sovrappone alla prima riga (ricerca.php, ricerca_rl.php)
+
+⚠️ Da correggere in una sessione dedicata futura
+
+- **Sintomo:** l'header sticky (`.tabella-risultati th`, `position: sticky; top: 56px`)
+  della tabella risultati copre/taglia parzialmente la prima riga di risultati quando
+  la finestra del browser è a larghezza naturale/ampia; il problema sparisce
+  ridimensionando la finestra a una larghezza minore (comportamento intermittente
+  legato alla larghezza della finestra, causa non ancora identificata con certezza).
+- **Tentativi già fatti, senza successo:** aggiunto `z-index: 5` alla regola
+  (nessun effetto); aggiunto `overflow-y: visible` esplicito al div
+  `overflow-x:auto` che avvolge la tabella, per escludere che il wrapper diventasse
+  un contenitore di scroll indipendente rompendo il calcolo dello sticky (nessun
+  effetto, confermato via ispezione DOM in console: `wrapper.getBoundingClientRect()`
+  e `getComputedStyle(wrapper).overflowY` restavano `auto` anche dopo il fix,
+  suggerendo che il problema non è (solo) lì).
+- **Escluso:** nessuna media query nota cambia l'altezza dell'header fisso (56px)
+  a larghezze di finestra >900px (dove il menu resta inline, non ad hamburger);
+  nessun `transform`/`will-change`/`contain`/`filter` sugli antenati della tabella
+  che potrebbe creare un containing block alternativo; nessun listener JS su
+  `resize` che ri-renderizzi la tabella (quindi il "fix" ottenuto ridimensionando
+  la finestra è un genuino effetto di ricalcolo layout del browser, non un
+  side-effect di codice JS).
+- **Soluzione tampone applicata (21-08-2026):** aggiunto uno spacer trasparente
+  di 8px (`<div style="height:8px" class="tabella-risultati-spacer"></div>`)
+  subito prima del div `overflow-x:auto` che avvolge ciascuna tabella risultati,
+  in tutti e 4 i punti di rendering di `ricerca.php` e `ricerca_rl.php`. Attenua
+  visivamente il problema ma non lo risolve alla radice.
+- **Da fare in una sessione dedicata:** diagnosi approfondita (probabilmente serve
+  ispezione live con DevTools a più larghezze di finestra, verificando il valore
+  calcolato di `top` sull'elemento sticky e la posizione esatta della prima riga
+  `tbody` rispetto ad esso ad ogni larghezza) e correzione definitiva, poi
+  rimuovere lo spacer temporaneo.
