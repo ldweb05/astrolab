@@ -3263,6 +3263,32 @@ Il pannello "Correzione tempo ed ora" in `www/rs.php` DEVE restare un modale ori
 
 Aggiunto un commento HTML di protezione direttamente nel codice sopra il div del modale (commit su branch `chore/porta-feature-da-allineamento-myastral`, 2026-08-21). Qualunque sessione futura che debba modificare questo blocco deve chiedere conferma esplicita all'utente prima di procedere.
 
+## 2026-08-21 bis — Fix sticky header tabella risultati (ricerca.php, ricerca_rl.php) e ripristino pulsante icona RL
+
+- Componenti modificati:
+  - `www/css/style.css`;
+  - `www/ricerca.php`;
+  - `www/ricerca_rl.php`.
+
+- Obiettivo:
+  - risolvere in via definitiva il bug (documentato solo su `feature/allineamento-myastral`, mai portato qui) per cui l'header sticky della tabella risultati (`.tabella-risultati th`, `position: sticky; top: 56px` ancorato al viewport) si sovrapponeva/tagliava la prima riga di dati a certe larghezze di finestra, con tentativi precedenti (z-index, overflow-y esplicito sui wrapper, spacer da 8px) rimasti senza successo o solo tampone.
+
+- Risultato:
+  - introdotto un contenitore di scroll dedicato `.tabella-risultati-wrap` (`overflow-x:auto; overflow-y:auto; max-height: calc(100vh - 260px)`) attorno a ciascuna tabella risultati (4 punti di rendering per file, sia in `ricerca.php` che `ricerca_rl.php`);
+  - `.tabella-risultati th` passato da `position: sticky; top: 56px` (ancorato al viewport, dipendente dall'header fisso globale e dalla larghezza finestra) a `position: sticky; top: 0; z-index: 2` (ancorato al nuovo contenitore locale, indipendente dalla larghezza della pagina);
+  - la tabella ora scorre al proprio interno con barra di scorrimento verticale dedicata, invece che con l'intera pagina;
+  - corretto anche un refuso di markup preesistente, non collegato al bug sticky: `</td></td>` → `</td></tr>` nel messaggio "Nessun risultato. Prova ad aumentare la tolleranza." (una occorrenza per file, vista Cuspidi);
+  - ripristinato il pulsante "Aggiorna elenco RL" in `ricerca_rl.php` all'aspetto icona rotonda con tooltip (`.btn-refresh-rl`, `data-tooltip`) invece del pulsante testuale su riga propria — regressione dovuta al fatto che il commit `34e1e34` (19/08, "fix: allineamento riga Rivoluzione Lunare... pulsante Aggiorna elenco RL a icona con tooltip") esisteva solo su `feature/allineamento-myastral` e non era mai stato portato su questo branch; applicato qui come patch mirata equivalente, non come cherry-pick.
+
+- Verifiche eseguite:
+  - `docker compose exec -T astrolab-web php -l ricerca.php`: OK;
+  - `docker compose exec -T astrolab-web php -l ricerca_rl.php`: OK;
+  - `git diff --check`: OK su tutti e 3 i file;
+  - riavvio `astrolab-web` dopo ogni modifica CSS/PHP;
+  - test funzionale confermato dal committente nel browser: sticky header stabile a diverse larghezze di finestra, nessuna sovrapposizione con la prima riga; pulsante RL tornato a icona con tooltip funzionante; messaggio "nessun risultato" corretto.
+
+- Nota per sessioni future: la vecchia nota nell'audit di `[[astrolab-rs-time-controls-regressione]]` sui commit orfani "fix header sticky tabella risultati" (5ecaa91/d30fdd5/338b9e5) può considerarsi superata per la parte funzionale — questo fix adotta un approccio diverso (contenitore di scroll dedicato) rispetto ai tentativi precedenti su quel branch, quindi quei 3 commit non vanno portati qui. Resta invece ancora da valutare `338b9e5` (larghezza max 1250px + centratura tabella), puramente estetico e indipendente dal bug, se lo si vuole per coerenza visiva. Il commit `34e1e34` (icona RL) non va più cercato tra i commit orfani da portare: è stato riapplicato qui come patch equivalente.
+
 ## 2026-08-22 — Avvio idea "Astri in Cuspide" e creazione roadmap dedicata (branch feature/2-astri-in-cuspide)
 
 - Discussa con il committente l'idea di estendere il pannello "Astri nelle Case" per permettere la ricerca di piu' pianeti "in cuspide" di casa (entro l'orbo ufficiale di Regola 32), Supporter-gated, orbo fisso non configurabile dall'utente.
