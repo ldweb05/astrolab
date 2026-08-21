@@ -260,6 +260,11 @@ if ($soggetto) {
         </div>
     </div>
  
+    <!-- ATTENZIONE — NON SPOSTARE: il pannello "Correzione tempo ed ora" DEVE restare qui come
+         modale orizzontale indipendente (introdotto 2026-08-18, commit 0e7e023). NON reintrodurre
+         il vecchio div "time-controls time-controls-top" tra le due colonne Tema Natale/RS: è
+         già successo due volte per errore durante refactoring/merge di rs.php. Se serve modificare
+         questo blocco, chiedere sempre conferma esplicita prima. -->
     <div id="correzione-tempo-modal" class="annual-report-modal is-hidden">
         <div class="annual-report-window" style="width:min(480px,calc(100vw - 48px));min-height:180px;">
             <div class="annual-report-header">
