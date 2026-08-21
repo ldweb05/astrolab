@@ -2099,6 +2099,7 @@ main {
 .tabella-risultati th {
     background: #2C3E6B; color: #D4C9A8; padding: 9px 10px;
     text-align: left; position: sticky; top: 56px;
+    z-index: 5;
 }
 .tabella-risultati td { padding: 7px 10px; border-bottom: 1px solid #EDE8E0; vertical-align: middle; }
 .tabella-risultati tr:hover td { background: #FAF7F3; }
