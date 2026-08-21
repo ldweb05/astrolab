@@ -28,6 +28,46 @@ $condizioni = array_values(array_diff($condizioni, ['— Astri nelle Case —', 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ricerca Località — Astrologia Attiva</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+.rl-index-row { display: flex; gap: 6px; align-items: center; }
+.rl-index-row select { flex: 1; min-width: 0; }
+.btn-refresh-rl {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #D0C8BC;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.2s, border-color 0.2s;
+}
+.btn-refresh-rl:hover { background: #F0EDE5; border-color: #2C3E6B; }
+.btn-refresh-rl { position: relative; }
+.btn-refresh-rl::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 130%;
+    right: 0;
+    background: #2C3E6B;
+    color: white;
+    font-size: 11px;
+    font-family: inherit;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+}
+.btn-refresh-rl:hover::after { opacity: 1; }
+</style>
 </head>
 <body>
 <?php $paginaAttiva = 'ricerca_rl'; include 'includes/header_nav.php'; ?>
@@ -62,10 +102,12 @@ BARRA CONTROLLI PRINCIPALE
 </div>
 <div class="form-group">
 <label>Rivoluzione Lunare</label>
+<div class="rl-index-row">
 <select id="rl-index">
 <option value="">— Aggiorna elenco —</option>
 </select>
-<button type="button" onclick="popolaSelectRLPagina()" style="margin-top:4px;font-size:11px">🔄 Aggiorna elenco RL</button>
+<button type="button" class="btn-refresh-rl" data-tooltip="Aggiorna elenco RL" onclick="popolaSelectRLPagina()">🔄</button>
+</div>
 </div>
 <div class="form-group">
 <label>Condizione</label>
@@ -1541,7 +1583,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </div>
             <div class="totale-label">${totale.toLocaleString()} punti validi · pag. ${pagina} / ${totPagine}</div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="tabella-risultati-wrap">
             <table class="tabella-risultati">
                 <thead><tr>
                     <th>#</th><th>Stelle</th><th>VAL</th><th>Lat</th><th>Lon</th><th>RS</th>
@@ -1605,7 +1647,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </div>
             <div class="totale-label">${totale.toLocaleString()} punti trovati · pag. ${pagina} / ${totPagine}</div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="tabella-risultati-wrap">
             <table class="tabella-risultati">
                 <thead><tr>
                     <th>#</th><th>Casa ${casa} (cuspide RS)</th><th>Lat</th><th>Lon</th><th>RS</th>
@@ -1737,7 +1779,7 @@ document.getElementById('risultati-area').innerHTML = `
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
 ${confrontoToolbar}
-<div style="overflow-x:auto">
+<div class="tabella-risultati-wrap">
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Stelle</th><th>VAL</th>
@@ -1808,14 +1850,14 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
-<div style="overflow-x:auto">
+<div class="tabella-risultati-wrap">
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Casa ${casa} (cuspide RS)</th>
 <th>IATA / ICAO</th><th>Aeroporto</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th>
 </tr></thead>
-<tbody>${righe||'<tr><td colspan="9" class="empty-results">Nessun risultato. Prova ad aumentare la tolleranza.</td></td>'}</tbody>
+<tbody>${righe||'<tr><td colspan="9" class="empty-results">Nessun risultato. Prova ad aumentare la tolleranza.</td></tr>'}</tbody>
 </table>
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
