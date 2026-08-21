@@ -3121,3 +3121,33 @@ avviare M1 — Comparazione ricerche RSM.
 - Secondo bug reale scoperto durante il test (diagnosi via DevTools Network + confronto CSS con rs.php): dopo il fix del pulsante, la richiesta a Nominatim arrivava correttamente (200 OK, dati validi) ma il menu a tendina dei risultati non era visibile — causa: `.rl-location-group` (contenitore del campo Luogo RL) non aveva `position: relative`, mentre l'equivalente `.luogo-group` di `rs.php` si; il dropdown (`position: absolute`) veniva quindi posizionato rispetto a un antenato sbagliato, fuori vista ma presente nel DOM. Fix: aggiunto `position: relative` a `.rl-location-group` in `css/style.css` (classe usata esclusivamente in `rl.php`, nessun impatto su altre pagine).
 - File modificati: `www/rs.php`, `www/js/rl.js`, `www/rl.php`, `www/css/style.css`. Nessuna modifica a `ricerca.php`, `ricerca_rl.php`, motore di ricerca RSM/RL o RuleEngine.
 - Verifica: `php -l` su `rs.php`/`rl.php`; bilanciamento graffe verificato su `js/rl.js`; `git diff --check` pulito; diagnosi con richiesta reale a Nominatim (indirizzo USA con numero civico) tramite DevTools Network dell'utente; test end-to-end in UI con l'utente su entrambe le pagine dopo ogni fix.
+
+## 2026-08-21 — Fix nome posizione dopo "USA QUESTA POSIZIONE" su mappa (branch fix/nome-posizione-mappa)
+
+- Componente modificato:
+  - `www/rs.php` (funzione `usaPosizione()`).
+
+- Obiettivo:
+  - correggere il bug per cui, dopo aver spostato il puntatore sulla mappa flottante di `rs.php` e cliccato "USA QUESTA POSIZIONE", il grafico e le coordinate si aggiornavano correttamente ma il nome della località nell'header restava quello della posizione di partenza.
+
+- Risultato:
+  - `usaPosizione()` esegue ora una chiamata di reverse geocoding a Nominatim (stesso servizio già usato per il forward geocoding, riusata `_estraiNomeLuogoNominatim()` esistente) per recuperare il nome reale della nuova posizione;
+  - se la chiamata fallisce o non restituisce un nome utilizzabile, il campo luogo viene impostato a `"NaN"` invece di lasciare il vecchio nome;
+  - nessun'altra parte della funzione toccata (coordinate, chiusura mappa, chiamata a `calcolaRS()` invariate).
+
+- Verifiche eseguite:
+  - `php -l` su `rs.php`: OK;
+  - `git diff --check`: OK;
+  - test funzionale reale in browser confermato dall'utente, sia con nome reale trovato sia con fallback NaN.
+
+- Branch: creato `fix/nome-posizione-mappa` da `fase9-comparator-quota` (non da `feature/allineamento-myastral`, dedicato solo alla roadmap 34 regole e non aggiornato con gli ultimi commit su `rs.php`).
+
+- Stato:
+  - fix su `rs.php` completato e committato (commit `3108ced`).
+
+- Lavoro sospeso (su richiesta dell'utente):
+  - verificato che `rl.php`/`js/rl.js` hanno un flusso strutturalmente diverso da `rs.php`: il bottone "Usa questa posizione" chiama `RLModule.usaPosizioneCorrente()`, che sincronizza solo le coordinate senza chiudere la mappa né richiamare `calcolaRL()`; il ricalcolo avviene già su `dragend`/click del marker. `calcolaRL()` legge comunque il nome da `luogo-rl-input` con lo stesso identico pattern di `rs.php` (probabile stesso bug, non ancora confermato dall'utente su rl.php reale);
+  - nessuna modifica applicata a `rl.php`/`rl.js` in questa sessione.
+
+- Prossimo passo:
+  - riprendere l'analisi su `rl.php` in una sessione dedicata, confermando prima il comportamento reale riscontrato dall'utente.
