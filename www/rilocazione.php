@@ -1507,6 +1507,7 @@ let _eventoAngolari = null;  // EventSource attivo
 let _tuttiRisultati = [];    // Cache dei risultati totali ricevuti
 let _paginaCorrente = 1;     // Stato della pagina corrente
 let _rilocConfronto = [];    // Rilocazioni selezionate secondo il piano
+let _filtroAngolare = '';    // Filtro pianeta-casa attivo ('' = nessun filtro, mostra tutto)
 
 function _chiaveRilocConfronto(r) {
     return [
@@ -1603,6 +1604,41 @@ function _rigaTabella(r, idx) {
     </tr>`;
 }
 
+const CASE_ANGOLARI_FILTRO = {1: 'I (ASC)', 4: 'IV (FC)', 7: 'VII (DSC)', 10: 'X (MC)'};
+
+/** true se il risultato soddisfa il filtro pianeta-casa selezionato ('' = nessun filtro) */
+function _passaFiltroAngolare(r) {
+    if (!_filtroAngolare) return true;
+    const [pianeta, casaStr] = _filtroAngolare.split('-');
+    const casa = parseInt(casaStr, 10);
+    const match = pianeta === 'venere' ? r.match_venere : r.match_giove;
+    return !!(match && match.some(m => m.casa === casa));
+}
+
+/** Markup del dropdown filtro pianeta-casa, con la selezione corrente preservata */
+function _htmlSelectFiltroAngolare() {
+    let opzioni = `<option value="" ${_filtroAngolare === '' ? 'selected' : ''}>Tutte le località</option>`;
+    ['venere', 'giove'].forEach(pianeta => {
+        const simbolo = pianeta === 'venere' ? '♀ Venere' : '♃ Giove';
+        Object.keys(CASE_ANGOLARI_FILTRO).forEach(casa => {
+            const valore = `${pianeta}-${casa}`;
+            opzioni += `<option value="${valore}" ${_filtroAngolare === valore ? 'selected' : ''}>` +
+                `${simbolo} — ${CASE_ANGOLARI_FILTRO[casa]}</option>`;
+        });
+    });
+    return `<div class="form-group" style="margin-bottom:10px">
+        <label style="display:block;font-size:11px;color:#3a2c6b;margin-bottom:4px">Filtra risultati</label>
+        <select id="ang-filtro-combo" style="width:100%;max-width:260px">${opzioni}</select>
+    </div>`;
+}
+
+/** Gestisce il cambio del filtro pianeta-casa */
+function _onCambiaFiltroAngolare() {
+    _filtroAngolare = document.getElementById('ang-filtro-combo')?.value || '';
+    _paginaCorrente = 1;
+    _renderTabellaPaginata();
+}
+
 /** Gestisce il rendering e la paginazione interna dei risultati */
 function _renderTabellaPaginata() {
     const area = document.getElementById('angolari-risultati-area');
@@ -1613,8 +1649,17 @@ function _renderTabellaPaginata() {
         return;
     }
 
+    const risultatiFiltrati = _tuttiRisultati.filter(_passaFiltroAngolare);
+
+    if (risultatiFiltrati.length === 0) {
+        area.innerHTML = _htmlSelectFiltroAngolare() +
+            '<div class="angolari-empty">Nessuna località corrisponde al filtro selezionato.</div>';
+        document.getElementById('ang-filtro-combo')?.addEventListener('change', _onCambiaFiltroAngolare);
+        return;
+    }
+
     const limite = parseInt(document.getElementById('ang-pagine-limite')?.value || '50');
-    const totaleRecord = _tuttiRisultati.length;
+    const totaleRecord = risultatiFiltrati.length;
     const totalePagine = Math.ceil(totaleRecord / limite);
 
     if (_paginaCorrente > totalePagine) _paginaCorrente = totalePagine;
@@ -1622,11 +1667,11 @@ function _renderTabellaPaginata() {
 
     const inizio = (_paginaCorrente - 1) * limite;
     const fine = Math.min(inizio + limite, totaleRecord);
-    const risPaginati = _tuttiRisultati.slice(inizio, fine);
+    const risPaginati = risultatiFiltrati.slice(inizio, fine);
 
     const countStr = totaleRecord === 1 ? '1 luogo trovato' : totaleRecord + ' luoghi trovati';
 
-    let html = `
+    let html = _htmlSelectFiltroAngolare() + `
         <div style="font-size:12px;color:#3a2c6b;font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
             <span>✅ ${countStr} (ordinati per distanza minima)</span>
             <span style="display:flex;align-items:center;gap:10px">
@@ -1672,6 +1717,8 @@ function _renderTabellaPaginata() {
     }
 
     area.innerHTML = html;
+
+    document.getElementById('ang-filtro-combo')?.addEventListener('change', _onCambiaFiltroAngolare);
 
     document.querySelectorAll('.compare-riloc-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', () => {
@@ -1786,6 +1833,7 @@ window.avviaRicercaAngolari = function() {
     _tuttiRisultati = [];
     _paginaCorrente = 1;
     _rilocConfronto = [];
+    _filtroAngolare = '';
 
     // Costruisci URL SSE
     const params = new URLSearchParams({
