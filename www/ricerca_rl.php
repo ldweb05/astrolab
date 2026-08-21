@@ -1590,6 +1590,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </div>
             <div class="totale-label">${totale.toLocaleString()} punti validi · pag. ${pagina} / ${totPagine}</div>
         </div>
+        <div style="height:8px" class="tabella-risultati-spacer"></div>
         <div style="overflow-x:auto;overflow-y:visible">
             <table class="tabella-risultati">
                 <thead><tr>
@@ -1654,6 +1655,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </div>
             <div class="totale-label">${totale.toLocaleString()} punti trovati · pag. ${pagina} / ${totPagine}</div>
         </div>
+        <div style="height:8px" class="tabella-risultati-spacer"></div>
         <div style="overflow-x:auto;overflow-y:visible">
             <table class="tabella-risultati">
                 <thead><tr>
@@ -1786,7 +1788,8 @@ document.getElementById('risultati-area').innerHTML = `
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
 ${confrontoToolbar}
-<div style="overflow-x:auto;overflow-y:visible">
+<div style="height:8px" class="tabella-risultati-spacer"></div>
+        <div style="overflow-x:auto;overflow-y:visible">
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Stelle</th><th>VAL</th>
@@ -1857,7 +1860,8 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
-<div style="overflow-x:auto;overflow-y:visible">
+<div style="height:8px" class="tabella-risultati-spacer"></div>
+        <div style="overflow-x:auto;overflow-y:visible">
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Casa ${casa} (cuspide RS)</th>
