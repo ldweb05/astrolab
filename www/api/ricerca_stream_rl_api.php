@@ -223,10 +223,15 @@ if (!empty($_GET['astri_in_casa'])) {
                 $pid = intval($pid);
                 if (!in_array($pid, [0,1,2,3,4,5,6,7,8,9,11], true)) continue;
             }
+            $modalitaF = ($f['modalita'] ?? 'in_casa') === 'cuspide' ? 'cuspide' : 'in_casa';
+            if ($modalitaF === 'cuspide' && !$auth->hasFeature('astri_in_cuspide')) {
+                $modalitaF = 'in_casa'; // UX-0014: senza piano Supporter, fallback forzato
+            }
             $astriInCasa[] = [
-                'pianeta' => $pid,
-                'casa'    => $casaF,
-                'vuole'   => (bool)$f['vuole'],
+                'pianeta'  => $pid,
+                'casa'     => $casaF,
+                'vuole'    => (bool)$f['vuole'],
+                'modalita' => $modalitaF,
             ];
         }
     }
