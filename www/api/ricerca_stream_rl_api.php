@@ -682,7 +682,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
 
                 // ── E. Filtro Astri in Casa anticipato ─────────────────────────
                 if ($modalitaAstri && !empty($astriInCasa)) {
-                    $violazioniDirette = verificaAstriInCasaDirectly($pianetiConCase, $astriInCasa);
+                    $violazioniDirette = verificaAstriInCasaDirectly($pianetiConCase, $astriInCasa, $caseRS);
                     if (!empty($violazioniDirette)) {
                         $processed++;
                         continue;
