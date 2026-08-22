@@ -158,6 +158,7 @@ class Auth {
             'locality_search' => $piano === 'supporter',
             'grid_search' => $piano === 'supporter',
             'dynamic_orb' => $piano === 'supporter',
+            'astri_in_cuspide' => $piano === 'supporter', // UX-0014
             default => false,
         };
     }

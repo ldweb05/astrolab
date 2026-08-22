@@ -81,7 +81,7 @@ File coinvolti: `www/ricerca.php`, `www/ricerca_rl.php`.
   `ricerca_rl.php` (quel branch ha già un fix più recente sull'header sticky di questi stessi
   file).
 
-## Fase 3 — Gating Supporter lato server
+## Fase 3 — Gating Supporter lato server (COMPLETATA)
 
 File coinvolti: `www/includes/Auth.php`, endpoint API.
 

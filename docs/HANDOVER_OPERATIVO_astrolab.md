@@ -3320,3 +3320,30 @@ avviare M1 — Comparazione ricerche RSM.
   (Supporter incluso) finche' la Fase 3 non registra la feature key in `Auth::hasFeature()`.
 - File toccati: `www/ricerca.php`, `www/ricerca_rl.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`
   (Fase 2 marcata completata).
+
+## 2026-08-22 quater — Fase 3 (gating Supporter) completata + riportato fix "nome posizione mappa" (branch feature/2-astri-in-cuspide)
+
+- Fase 3 "Astri in Cuspide" completata: `Auth::hasFeature()` registra la chiave
+  `astri_in_cuspide` (Supporter-only, stesso pattern di `dynamic_orb`/`grid_search`/
+  `locality_search`). `ricerca_stream_api.php` e `ricerca_stream_rl_api.php` ora leggono
+  davvero il campo `modalita` dal parametro `astri_in_casa` (prima veniva silenziosamente
+  ignorato in parsing, nonostante il frontend lo inviasse gia' dalla Fase 2) e forzano
+  `'in_casa'` se l'utente non ha il piano Supporter — validazione server-side reale, non solo
+  lato client. Progetto "Astri in Cuspide" (Fasi 1-3) considerato completo lato codice.
+- Segnalata dal committente una regressione apparente sul fix "nome posizione dopo USA QUESTA
+  POSIZIONE su mappa" (rs.php) — verificato che NON e' una regressione introdotta da questo
+  lavoro: il fix (commit 3108ced) era stato applicato solo sul branch fix/nome-posizione-mappa
+  (creato da fase9-comparator-quota), mai su feature/allineamento-myastral/feature/2-astri-in-
+  cuspide, stessa divergenza di branch gia' documentata piu' volte in questa sessione.
+- Riportata la stessa identica patch (non cherry-pick, patch equivalente come da convenzione
+  gia' in uso su chore/porta-feature-da-allineamento-myastral) su `www/rs.php` in questo branch:
+  `usaPosizione()` ora fa reverse geocoding Nominatim al click su "USA QUESTA POSIZIONE" e
+  aggiorna `luogo-rs-input` (fallback "NaN" se la chiamata fallisce), riusando la funzione
+  `_estraiNomeLuogoNominatim()` gia' presente su questo branch.
+- Verifica: `php -l` superato nel container su tutti i file, `git diff --check` pulito, test
+  funzionale reale nel browser confermato dal committente su entrambi i punti (accesso admin per
+  la parte Supporter-gated, comportamento verificabile solo strutturalmente finche' non si
+  testa con un account Supporter/free reale).
+- File toccati: `www/includes/Auth.php`, `www/api/ricerca_stream_api.php`,
+  `www/api/ricerca_stream_rl_api.php`, `www/rs.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`
+  (Fase 3 marcata completata).
