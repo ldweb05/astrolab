@@ -68,6 +68,21 @@ solo perché il comportamento di `index.php` osservato coincide).
 
 ---
 
+## Decisioni future su header/navbar (2026-08-22, NON ora)
+
+Da fare dopo il collegamento delle pagine (Fase 4), su richiesta esplicita:
+
+- Rimuovere la voce testuale "👤 Nome Astrologo" dalla nav, sostituendola
+  con il piccolo avatar/foto già presente in alto a destra (placeholder
+  attuale, "potrà servire in futuro per una foto dell'astrologo").
+- L'icona ingranaggio (attualmente placeholder) deve aprire un **modale**
+  che permette all'astrologo di cambiare la password — a quel punto la
+  voce testuale "🔑 Password" nella nav va rimossa (funzione assorbita
+  dal modale).
+- L'icona campanella va sostituita con un'icona "porta aperta" (logout),
+  con tooltip "ESCI" al passaggio del mouse — a quel punto la voce
+  testuale "Esci" nella nav va rimossa (funzione assorbita dall'icona).
+
 ## Rischi noti / cautele
 
 - `header_nav.php` e `js/app.js` sono condivisi da più pagine — ogni
