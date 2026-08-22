@@ -15,6 +15,9 @@ $soggettoNome   = $auth->getSoggettoNome();
 // Stessa convenzione di _navUrl() in header_nav.php: ?id= solo se c'è un soggetto attivo
 $transitiUrl    = $soggettoAttivo > 0 ? 'transiti.php?id=' . (int)$soggettoAttivo : 'transiti.php';
 $rilocazioneUrl = $soggettoAttivo > 0 ? 'rilocazione.php?id=' . (int)$soggettoAttivo : 'rilocazione.php';
+
+// Range anni per la ricerca RS/RL: 1960 -> anno corrente + 7
+$annoCorrente = (int)date('Y');
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -212,11 +215,10 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <div class="flex flex-col gap-2 flex-1 relative z-10 w-full">
 <label class="font-label-caps text-label-caps text-on-surface-variant">Scelta Anno</label>
 <div class="relative">
-<select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none pr-10 cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
-<option>2023</option>
-<option selected>2024</option>
-<option>2025</option>
-<option>2026</option>
+<select id="dash-anno" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none pr-10 cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+<?php for ($y = 1960; $y <= $annoCorrente + 7; $y++): ?>
+<option value="<?= $y ?>" <?= $y === $annoCorrente ? 'selected' : '' ?>><?= $y ?></option>
+<?php endfor; ?>
 </select>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
 </div>
@@ -224,14 +226,14 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <div class="flex flex-col gap-2 flex-1 relative z-10 w-full">
 <label class="font-label-caps text-label-caps text-on-surface-variant">Tipo Analisi</label>
 <div class="relative">
-<select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none pr-10 cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+<select id="dash-tipo-analisi" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none pr-10 cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
 <option selected>Rivoluzione Solare</option>
 <option>Rivoluzione Lunare</option>
 </select>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
 </div>
 </div>
-<button class="w-full md:w-auto px-8 py-3 bg-primary text-on-primary hover:bg-primary/90 rounded-lg font-title-md text-title-md transition-all shadow-md shadow-primary/20 relative z-10 flex items-center justify-center gap-2 group">
+<button type="button" onclick="eseguiCercaDashboard()" class="w-full md:w-auto px-8 py-3 bg-primary text-on-primary hover:bg-primary/90 rounded-lg font-title-md text-title-md transition-all shadow-md shadow-primary/20 relative z-10 flex items-center justify-center gap-2 group">
 <span class="material-symbols-outlined group-hover:scale-110 transition-transform">search</span>
                     Cerca
                 </button>
@@ -287,5 +289,16 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 </div>
 </div>
 </main>
+<script>
+function eseguiCercaDashboard() {
+    const anno = document.getElementById('dash-anno').value;
+    const tipo = document.getElementById('dash-tipo-analisi').value;
+    const soggettoId = <?= (int)($soggettoAttivo ?? 0) ?>;
+    const pagina = (tipo === 'Rivoluzione Lunare') ? 'rl.php' : 'rs.php';
+    let url = pagina + '?anno=' + encodeURIComponent(anno);
+    if (soggettoId > 0) { url += '&id=' + soggettoId; }
+    window.location.href = url;
+}
+</script>
 </body>
 </html>
