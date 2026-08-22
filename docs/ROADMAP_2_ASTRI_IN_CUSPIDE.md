@@ -67,7 +67,7 @@ File coinvolti: `www/includes/RicercaRSFilters.php`, `www/api/ricerca_stream_api
   `verificaCondizioneDecima`/`verificaCondizioneDenaroLow`.
 - Nessuna modifica al passaggio del `RuleEngine` sui veti 4/5/31/34: resta a valle, invariato.
 
-## Fase 2 — Frontend: UI del pannello "Astri nelle Case"
+## Fase 2 — Frontend: UI del pannello "Astri nelle Case" (COMPLETATA - verificata da admin)
 
 File coinvolti: `www/ricerca.php`, `www/ricerca_rl.php`.
 
