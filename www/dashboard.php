@@ -179,12 +179,12 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <button class="px-4 py-3 border-b-2 border-primary text-primary font-label-caps text-label-caps transition-colors -mb-[1px]">
                     TEMA
                 </button>
-<button class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
+<a href="ricerca.php?tipo=localita" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
                     LOCALITÀ
-                </button>
-<button class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
+                </a>
+<a href="ricerca.php" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
                     AEROPORTI
-                </button>
+                </a>
 </div>
 <!-- 2. Personal Info Row -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
