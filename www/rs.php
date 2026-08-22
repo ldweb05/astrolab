@@ -141,7 +141,7 @@ if ($soggetto) {
         <div class="form-group">
             <label>Anno RS</label>
             <select id="anno-rs">
-                <?php for($y = $annoCorrente - 67; $y <= $annoCorrente + 15; $y++): ?>
+                <?php for($y = 1960; $y <= $annoCorrente + 7; $y++): ?>
                 <option value="<?= $y ?>" <?= ($annoRS_Url ?? $annoCorrente) == $y ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
