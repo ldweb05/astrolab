@@ -3263,4 +3263,8 @@ avviare M1 — Comparazione ricerche RSM.
 - Rilevata (analisi in sandbox di sola lettura) una divergenza reale e non ancora riconciliata tra `feature/allineamento-myastral` e `fase9-comparator-quota`, dal commit comune `a52c2e9`; il branch `chore/porta-feature-da-allineamento-myastral` porta manualmente alcune feature stabili verso l'altra linea. Il div `time-controls` di `rs.php` resta congelato per questo lavoro (nota gia' presente su quel branch, regressione gia' occorsa due volte).
 - Creato `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` con l'analisi completa e le 5 fasi di lavoro pianificate; aggiunta voce di rimando in `docs/ROADMAP.md`.
 - Nessuna modifica al codice applicativo in questa sessione: solo setup del branch e documentazione.
-- File toccati: `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` (nuovo), `docs/ROADMAP.md`.
+- Registrata decisione **UX-0014** in `docs/ux-myastral/DECISION_LOG_ux.md` (nuova modalita'
+  'in cuspide' nel pannello Astri nelle Case), come richiesto dal FREEZE su
+  `RuleEngine.php`/`RicercaRSFilters.php` prima di toccare codice.
+- File toccati: `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` (nuovo), `docs/ROADMAP.md`,
+  `docs/ux-myastral/DECISION_LOG_ux.md`.
