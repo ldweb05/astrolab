@@ -64,7 +64,7 @@ solo perché il comportamento di `index.php` osservato coincide).
 - [~] Fase 4 — Collegare tab/pannelli ai dati reali (tema.php, rs.php, rl.php, ricerca.php, transiti.php, rilocazione.php), un blocco alla volta
   - [x] Bottoni Transiti/Rilocazione → transiti.php / rilocazione.php (con ?id= se soggetto attivo)
   - [x] Tab LOCALITÀ/AEROPORTI → ricerca.php (con ?tipo=localita per LOCALITÀ)
-  - [ ] Riga ricerca (Scelta Anno + Tipo Analisi + Cerca) → rs.php / rl.php
+  - [x] Riga ricerca (Scelta Anno 1960->+7 + Tipo Analisi + Cerca) → rs.php / rl.php
   - [ ] Pannello "Cielo Natale" → dati reali da tema.php
   - [ ] Pannello "RS per residenza" → dati reali da rs.php
 - [ ] Fase 5 — Restyle dropdown Help con palette Sahara (solo colori/font, nessuna modifica di contenuto/struttura)
