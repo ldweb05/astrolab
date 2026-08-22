@@ -53,7 +53,7 @@ stesso div).
   `RuleEngine.php` o `RicercaRSFilters.php` (obbligatorio per la regola di FREEZE già in vigore).
 - [ ] Questo documento creato e collegato da `docs/ROADMAP.md` e `docs/HANDOVER_OPERATIVO_astrolab.md`.
 
-## Fase 1 — Backend: nuova modalità nella regola "Astri nelle Case"
+## Fase 1 — Backend: nuova modalità nella regola "Astri nelle Case" (COMPLETATA - commit 627379e)
 
 File coinvolti: `www/includes/RicercaRSFilters.php`, `www/api/ricerca_stream_api.php`,
 `www/api/ricerca_stream_rl_api.php`.
