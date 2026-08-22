@@ -3254,3 +3254,13 @@ avviare M1 — Comparazione ricerche RSM.
 - Pannello "Correzione tempo ed ora" (`#correzione-tempo-modal`, rs.php) reso trascinabile: drag scoped per id (non tocca altre eventuali finestre che riusassero le stesse classi `.annual-report-*`), maniglia sull'header esistente, limiti ai bordi della viewport, click sulla X di chiusura non attiva il trascinamento, posizione resettata alla chiusura. Nessuna modifica a dimensioni o colori.
 - Verifica: `php -l` su rs.php, `git diff --check` pulito, test funzionali reali confermati dal committente su tutti e 4 i punti (header fisso, background, trasparenza, drag).
 - File toccati: `www/css/style.css`, `www/rs.php`.
+
+## 2026-08-22 — Avvio idea "Astri in Cuspide" e creazione roadmap dedicata (branch feature/2-astri-in-cuspide)
+
+- Discussa con il committente l'idea di estendere il pannello "Astri nelle Case" per permettere la ricerca di piu' pianeti "in cuspide" di casa (entro l'orbo ufficiale di Regola 32), Supporter-gated, orbo fisso non configurabile dall'utente.
+- Creato branch `feature/2-astri-in-cuspide` a partire da `feature/allineamento-myastral`, per ereditare il lavoro gia' fatto sulle 34 regole e sul pannello "Astri nelle Case".
+- Confermato con il committente: le regole 4, 5, 31, 34 restano veti assoluti incondizionati del RuleEngine, applicati come oggi a prescindere dalla modalita' di ricerca che ha prodotto il candidato; l'orbo per la nuova modalita' segue quello gia' definito dalla Regola 32, senza reinventarlo.
+- Rilevata (analisi in sandbox di sola lettura) una divergenza reale e non ancora riconciliata tra `feature/allineamento-myastral` e `fase9-comparator-quota`, dal commit comune `a52c2e9`; il branch `chore/porta-feature-da-allineamento-myastral` porta manualmente alcune feature stabili verso l'altra linea. Il div `time-controls` di `rs.php` resta congelato per questo lavoro (nota gia' presente su quel branch, regressione gia' occorsa due volte).
+- Creato `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` con l'analisi completa e le 5 fasi di lavoro pianificate; aggiunta voce di rimando in `docs/ROADMAP.md`.
+- Nessuna modifica al codice applicativo in questa sessione: solo setup del branch e documentazione.
+- File toccati: `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` (nuovo), `docs/ROADMAP.md`.

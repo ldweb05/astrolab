@@ -9,6 +9,8 @@ Deve essere aggiornato al completamento di ogni milestone significativa.
 >
 > La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org è mantenuta separatamente nel documento `docs/roadmap_comparazione_myastral.md`, che costituisce il riferimento ufficiale per le attività di allineamento con il software di Ciro Discepolo.
 >
+> La roadmap relativa alla ricerca RSM "Astri in Cuspide" (pianeti in cuspide di casa con orbo Regola 32, feature Supporter-gated) è mantenuta separatamente nel documento `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`, sul branch `feature/2-astri-in-cuspide`, che costituisce il riferimento ufficiale per tale funzionalità.
+>
 > `docs/ROADMAP.md` continua invece a descrivere l'evoluzione generale di Astro-DSS e delle funzionalità principali del progetto.
 
 ---
