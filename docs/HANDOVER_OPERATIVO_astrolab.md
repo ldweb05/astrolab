@@ -3294,3 +3294,29 @@ avviare M1 — Comparazione ricerche RSM.
 - File toccati: `www/includes/RicercaRSFilters.php`, `www/api/ricerca_stream_api.php`,
   `www/api/ricerca_stream_rl_api.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` (Fase 1
   marcata completata).
+
+## 2026-08-22 ter — Fase 2 (frontend) completata: UI modalita' "cuspide" in Astri nelle Case (branch feature/2-astri-in-cuspide)
+
+- `ricerca.php` e `ricerca_rl.php`: nuovo select "Vicinanza" per ogni riga regola del pannello
+  "Astri nelle Case" ('Ovunque nella casa' / 'In cuspide (Regola 32)'), stesso schema HTML/JS in
+  entrambi i file (clone gia' esistente).
+- Gating Supporter lato client: nuova chiave `USER_FEATURES.astri_in_cuspide`, opzione "cuspide"
+  disabilitata + suffisso "(Supporter)" via `applicaRestrizioniInterfaccia()`, nuova funzione
+  `onModalitaRegolaChange()` con `SUPPORTER_MESSAGE` — stesso pattern gia' in uso per
+  `dynamic_orb`/`grid_search`/`locality_search`.
+- `aggiungiRegola()`, `aggiornaListaRegole()`, `aggiornaSommarioAstri()`, `buildAstriInCasaParam()`
+  aggiornate per leggere, mostrare ("Cuspide N" invece di "Casa N" quando applicabile) e inviare
+  il campo `modalita` all'API.
+- Verificato prima della patch: nessuna sovrapposizione con le modifiche presenti su
+  `chore/porta-feature-da-allineamento-myastral` per questi due file (tooltip "Escluse dal
+  filtro", fix header sticky, dropdown condizioni RL) - divergenza reale ma confinata ad aree
+  diverse dal pannello Astri nelle Case.
+- Verifica: `php -l` superato nel container su entrambi i file, `git diff --check` pulito, test
+  funzionale reale nel browser confermato dal committente (accesso admin - bypassa `hasFeature()`
+  per definizione): select "Vicinanza" presente, opzione "In cuspide" correttamente bloccata per
+  utenti non-admin/non-Supporter (Fase 3 non ancora fatta), nessuna regressione sulla modalita'
+  "in casa" esistente.
+- Stato atteso e corretto: l'opzione "cuspide" resta bloccata per tutti gli utenti non-admin
+  (Supporter incluso) finche' la Fase 3 non registra la feature key in `Auth::hasFeature()`.
+- File toccati: `www/ricerca.php`, `www/ricerca_rl.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`
+  (Fase 2 marcata completata).

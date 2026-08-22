@@ -236,6 +236,13 @@ SUB-PANNELLO: ASTRI NELLE CASE
 <option value="evita">✗ NON lo voglio in questa casa</option>
 </select>
 </div>
+<div class="form-group">
+<label>Vicinanza</label>
+<select id="nuova-modalita-select" onchange="onModalitaRegolaChange(this)">
+<option value="in_casa">Ovunque nella casa</option>
+<option value="cuspide">In cuspide (Regola 32)</option>
+</select>
+</div>
 <button class="btn-aggiungi" onclick="aggiungiRegola()">+ Aggiungi regola</button>
 </div>
 <div class="regole-lista" id="regole-lista">
@@ -498,7 +505,8 @@ const CONDIZIONE_ASTRI   = '— Astri nelle Case —';
 const USER_FEATURES = {
     locality_search: <?= json_encode($auth->hasFeature('locality_search')) ?>,
     grid_search: <?= json_encode($auth->hasFeature('grid_search')) ?>,
-    dynamic_orb: <?= json_encode($auth->hasFeature('dynamic_orb')) ?>
+    dynamic_orb: <?= json_encode($auth->hasFeature('dynamic_orb')) ?>,
+    astri_in_cuspide: <?= json_encode($auth->hasFeature('astri_in_cuspide')) ?>
 };
 
 const SUPPORTER_MESSAGE = 'Questa funzione è riservata agli utenti del piano Supporter.';
@@ -608,6 +616,13 @@ document.getElementById('wrap-nazione-localita').style.display = ricercaLocalita
 document.getElementById('wrap-numero-localita').style.display = ricercaLocalita ? '' : 'none';
 }
 
+function onModalitaRegolaChange(select) {
+if (select.value === 'cuspide' && !USER_FEATURES.astri_in_cuspide) {
+alert(SUPPORTER_MESSAGE);
+select.value = 'in_casa';
+}
+}
+
 function applicaRestrizioniInterfaccia() {
 const localitaOption = document.querySelector('#tipo-localita option[value="localita"]');
 if (localitaOption && !USER_FEATURES.locality_search) {
@@ -629,6 +644,12 @@ const dynamicOrbOption = document.querySelector('#filt-espandi-orbe option[value
 if (dynamicOrbOption && !USER_FEATURES.dynamic_orb) {
 dynamicOrbOption.disabled = true;
 dynamicOrbOption.textContent = 'Abilitato (Supporter)';
+}
+
+const modalitaCuspideOption = document.querySelector('#nuova-modalita-select option[value="cuspide"]');
+if (modalitaCuspideOption && !USER_FEATURES.astri_in_cuspide) {
+modalitaCuspideOption.disabled = true;
+modalitaCuspideOption.textContent += ' (Supporter)';
 }
 }
 
@@ -748,12 +769,19 @@ function aggiungiRegola() {
 const pianeta = document.getElementById('nuovo-astro-select').value;
 const casa    = parseInt(document.getElementById('nuova-casa-select').value);
 const vuole   = document.getElementById('nuova-condizione-select').value === 'deve';
+const modalitaSelect = document.getElementById('nuova-modalita-select');
+let modalita = modalitaSelect.value;
+if (modalita === 'cuspide' && !USER_FEATURES.astri_in_cuspide) {
+alert(SUPPORTER_MESSAGE);
+modalitaSelect.value = 'in_casa';
+modalita = 'in_casa';
+}
 const esiste = regoleAstri.some(r => String(r.pianeta) === String(pianeta));
 if (esiste) {
 alert('Esiste già una regola per ' + ASTRO_NOMI[pianeta] + '. Rimuovila prima di aggiungerne una nuova.');
 return;
 }
-regoleAstri.push({ pianeta: pianeta === 'ASC' ? 'ASC' : parseInt(pianeta), casa, vuole });
+regoleAstri.push({ pianeta: pianeta === 'ASC' ? 'ASC' : parseInt(pianeta), casa, vuole, modalita });
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 }
@@ -782,13 +810,14 @@ const sim    = ASTRO_SIMBOLI[pKey] || '★';
 const nome   = ASTRO_NOMI[pKey] || pKey;
 const azione = r.vuole ? '✓ VOGLIO in' : '✗ NON VOGLIO in';
 const cls    = r.vuole ? 'deve' : 'evita';
+const modalitaLabel = r.modalita === 'cuspide' ? 'Cuspide' : 'Casa';
 html += `<div class="regola-item ${cls}">
 <div class="regola-info">
 <span class="astro-simbolo">${sim}</span>
 <span class="astro-nome">${nome}</span>
 </div>
 <div class="regola-azione ${cls}">${azione}</div>
-<div class="casa-numero">Casa ${r.casa}</div>
+<div class="casa-numero">${modalitaLabel} ${r.casa}</div>
 <button class="btn-rimuovi" onclick="rimuoviRegola(${idx})">✕</button>
 </div>`;
 });
@@ -803,13 +832,14 @@ const pKey = String(r.pianeta);
 const sim  = ASTRO_SIMBOLI[pKey] || '★';
 const nome = ASTRO_NOMI[pKey] || pKey;
 const cls  = r.vuole ? 'tag-deve' : 'tag-evita';
-const txt  = r.vuole ? `→ Casa ${r.casa}` : `✗ Casa ${r.casa}`;
+const modalitaLabel = r.modalita === 'cuspide' ? 'Cuspide' : 'Casa';
+const txt  = r.vuole ? `→ ${modalitaLabel} ${r.casa}` : `✗ ${modalitaLabel} ${r.casa}`;
 return `<span class="tag-regola ${cls}">${sim} ${nome} ${txt}</span>`;
 }).join('');
 sommario.classList.add('visibile');
 }
 function buildAstriInCasaParam() {
-return regoleAstri.map(r => ({ pianeta: r.pianeta, casa: r.casa, vuole: r.vuole }));
+return regoleAstri.map(r => ({ pianeta: r.pianeta, casa: r.casa, vuole: r.vuole, modalita: r.modalita || 'in_casa' }));
 }
 // ════════════════════════════════════════════════════════════════════════
 //  HELPERS GENERALI
