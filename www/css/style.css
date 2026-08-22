@@ -2095,10 +2095,11 @@ main {
 .totale-label { margin-left: auto; color: #666; font-size: 12px; align-self: center; }
 
 /* ── Tabella risultati ─────────────────────────────────────────── */
+.tabella-risultati-wrap { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 260px); }
 .tabella-risultati { width: 100%; max-width: 1250px; margin: 0 auto; border-collapse: collapse; font-size: 12px; background: rgba(255, 255, 255, 0.60); }
 .tabella-risultati th {
     background: #2C3E6B; color: #D4C9A8; padding: 9px 10px;
-    text-align: left; position: sticky; top: 56px;
+    text-align: left; position: sticky; top: 0;
     z-index: 5;
 }
 .tabella-risultati td { padding: 7px 10px; border-bottom: 1px solid #EDE8E0; vertical-align: middle; }

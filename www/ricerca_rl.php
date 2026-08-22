@@ -1615,8 +1615,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </div>
             <div class="totale-label">${totale.toLocaleString()} punti validi · pag. ${pagina} / ${totPagine}</div>
         </div>
-        <div style="height:8px" class="tabella-risultati-spacer"></div>
-        <div style="overflow-x:auto;overflow-y:visible">
+        <div class="tabella-risultati-wrap">
             <table class="tabella-risultati">
                 <thead><tr>
                     <th>#</th><th>Stelle</th><th>VAL</th><th>Lat</th><th>Lon</th><th>RS</th>
@@ -1680,8 +1679,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </div>
             <div class="totale-label">${totale.toLocaleString()} punti trovati · pag. ${pagina} / ${totPagine}</div>
         </div>
-        <div style="height:8px" class="tabella-risultati-spacer"></div>
-        <div style="overflow-x:auto;overflow-y:visible">
+        <div class="tabella-risultati-wrap">
             <table class="tabella-risultati">
                 <thead><tr>
                     <th>#</th><th>Casa ${casa} (cuspide RS)</th><th>Lat</th><th>Lon</th><th>RS</th>
@@ -1813,8 +1811,7 @@ document.getElementById('risultati-area').innerHTML = `
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
 ${confrontoToolbar}
-<div style="height:8px" class="tabella-risultati-spacer"></div>
-        <div style="overflow-x:auto;overflow-y:visible">
+<div class="tabella-risultati-wrap">
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Stelle</th><th>VAL</th>
@@ -1885,15 +1882,14 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
-<div style="height:8px" class="tabella-risultati-spacer"></div>
-        <div style="overflow-x:auto;overflow-y:visible">
+<div class="tabella-risultati-wrap">
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Casa ${casa} (cuspide RS)</th>
 <th>IATA / ICAO</th><th>Aeroporto</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th>
 </tr></thead>
-<tbody>${righe||'<tr><td colspan="9" class="empty-results">Nessun risultato. Prova ad aumentare la tolleranza.</td></td>'}</tbody>
+<tbody>${righe||'<tr><td colspan="9" class="empty-results">Nessun risultato. Prova ad aumentare la tolleranza.</td></tr>'}</tbody>
 </table>
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
