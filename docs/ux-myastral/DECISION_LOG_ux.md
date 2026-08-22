@@ -370,4 +370,41 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0014 - Nuova modalita' "in cuspide" nel pannello Astri nelle Case (ricerca RSM/RL)
+
+- **Data:** 2026-08-22
+- **Area:** Ricerca RSM/RL - pannello "Astri nelle Case" (`ricerca.php`, `ricerca_rl.php`,
+  `RicercaRSFilters.php`, `ricerca_stream_api.php`, `ricerca_stream_rl_api.php`) - non tocca
+  RuleEngine.php
+- **Stato:** APPROVATA
+- **Problema osservato:** oggi il pannello "Astri nelle Case" verifica solo l'appartenenza di un
+  pianeta a una casa (match esatto), non la vicinanza a una cuspide. Il committente vuole poter
+  combinare piu' pianeti "in cuspide" nella stessa ricerca (es. Venere in cuspide II, Giove in
+  cuspide X).
+- **Decisione:** ogni riga della regola "Astri nelle Case" guadagna un campo opzionale
+  `modalita` ('in_casa', default, invariato; oppure 'cuspide'). In modalita' 'cuspide' si verifica
+  la distanza angolare tra il pianeta e la cuspide richiesta con `AstroUtils::diffAngolo()`, orbo
+  fisso 2 gradi e 30 minuti (stesso valore di Regola 32, non configurabile dall'utente). Feature
+  Supporter-gated (stesso pattern di `dynamic_orb`/`grid_search`/`locality_search` in
+  `Auth::hasFeature()`); sul piano free l'opzione resta visibile ma disabilitata, con tooltip
+  `SUPPORTER_MESSAGE` al click. Le regole 4, 5, 31, 34 restano veti assoluti incondizionati del
+  `RuleEngine`, applicati come oggi a valle, senza alcuna logica di scarto duplicata o parallela
+  per questa nuova modalita'.
+- **Motivazione:** richiesto esplicitamente dal committente; l'orbo riusa quello gia' ufficiale di
+  Regola 32 (vedi UX-0013, dove il committente ha confermato che le regole a scarto automatico
+  sono 4, 5, 31, 32, 34) invece di inventarne uno nuovo.
+- **Beneficio atteso:** ALTO - nuovo criterio di ricerca richiesto dal committente, coerente con
+  il pannello gia' esistente.
+- **Costo tecnico stimato:** MEDIO - nuova funzione di verifica angolare, UI aggiuntiva, gating
+  Supporter lato server e client.
+- **Rischi:** `ricerca.php`/`ricerca_rl.php` sono file con storico di divergenza tra
+  `feature/allineamento-myastral` e altre linee (`chore/porta-feature-da-allineamento-myastral`,
+  `fase9-comparator-quota`) - verificare in Fase 2 se le stesse porzioni sono state toccate
+  altrove prima di modificare.
+- **Documento collegato:** `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`, `docs/status/34_regole_rsm.md`
+  (Regola 32), UX-0013
+- **Eventuale voce della roadmap tecnica:** `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`, Fase 1
+
+---
+
 Nessuna ulteriore decisione registrata.
