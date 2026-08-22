@@ -15,6 +15,9 @@ $soggettoNome   = $auth->getSoggettoNome();
 // ===== FINE PATCH AUTH MULTI-ASTROLOGO =====
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
+
+// Permette di preselezionare il tipo di ricerca via URL (es. da dashboard.php)
+$tipoLocalitaDefault = ($_GET['tipo'] ?? '') === 'localita' ? 'localita' : 'aeroporti';
 // ---- QUERY SOGGETTI CON FILTRO PER UTENTE ----
 
 require_once __DIR__ . '/includes/RicercaPageData.php';
@@ -70,8 +73,8 @@ BARRA CONTROLLI PRINCIPALE
 <div class="form-group">
 <label>Tipo località</label>
 <select id="tipo-localita" onchange="onTipoLocalitaChange(this.value)">
-<option value="aeroporti">Aeroporti</option>
-<option value="localita">Località</option>
+<option value="aeroporti" <?= $tipoLocalitaDefault === 'aeroporti' ? 'selected' : '' ?>>Aeroporti</option>
+<option value="localita" <?= $tipoLocalitaDefault === 'localita' ? 'selected' : '' ?>>Località</option>
 </select>
 </div>
 <div class="form-group" id="wrap-nazione-localita" style="display:none">
