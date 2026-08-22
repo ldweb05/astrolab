@@ -3347,3 +3347,26 @@ avviare M1 — Comparazione ricerche RSM.
 - File toccati: `www/includes/Auth.php`, `www/api/ricerca_stream_api.php`,
   `www/api/ricerca_stream_rl_api.php`, `www/rs.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`
   (Fase 3 marcata completata).
+
+## 2026-08-22 (sessione pomeridiana) — Creato FREEZE.md; riportato fix header sticky tabella risultati (branch feature/2-astri-in-cuspide)
+
+- Creato docs/FREEZE.md (nuovo documento): Sezione 1 chiarisce definitivamente che i due
+  sistemi "Rule Engine" del repository (le 120 Rule del forecast/Annual Report su main,
+  ADR-012, e le 34 regole di Discepolo in RuleEngine.php) sono completamente indipendenti;
+  Sezione 2 e' il registro dei fix noti che esistono solo su alcuni branch. Portato anche
+  su main (worktree dedicato, commit 3412d0c), con rimando aggiunto in START_HERE.md su
+  entrambi i branch.
+- Segnalata dal committente una seconda regressione nota (gia' in FREEZE.md): l'header
+  della tabella risultati copre la prima riga sia in RS che in RL. Confermato che e' lo
+  stesso caso della "versione superata" vs "versione buona" gia' documentato - la versione
+  buona esisteva solo su chore/porta-feature-da-allineamento-myastral (commit f914d2b).
+- Riportata la stessa identica soluzione CSS (nuovo contenitore .tabella-risultati-wrap con
+  scroll proprio, sticky th ancorato al contenitore invece che al viewport) su
+  www/css/style.css, www/ricerca.php, www/ricerca_rl.php - rimossi i 4+4 blocchi "spacer
+  temporaneo" (la versione superata), corretto anche un refuso di markup </td></td> presente
+  in entrambi i file. Non riportato il ripristino del pulsante icona "Aggiorna elenco RL"
+  incluso nel commit originale: non necessario su questo branch.
+- Verifica: php -l superato nel container su tutti e 3 i file, git diff --check pulito, test
+  funzionale reale nel browser confermato dal committente su ricerca.php e ricerca_rl.php.
+- File toccati: www/css/style.css, www/ricerca.php, www/ricerca_rl.php (codice);
+  docs/FREEZE.md (voce aggiornata).

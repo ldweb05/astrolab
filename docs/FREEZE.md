@@ -65,13 +65,15 @@ ogni caso in docs/HANDOVER_OPERATIVO_astrolab.md (cercare la data).
 - Stato: non ancora verificato se impatta questo branch
 
 ### Fix header sticky tabella risultati (due versioni diverse)
-- Data: 2026-08-19/22
-- Versione superata: feature/allineamento-myastral
+- Data: 2026-08-19/22, portato su questo branch il 2026-08-22
+- Versione superata (rimossa qui il 2026-08-22): feature/allineamento-myastral
   (commit 5eca91, d30fd1d, 338b923)
-- Versione buona (definitiva): chore/porta-feature-da-allineamento-myastral
+- Versione buona (definitiva), origine: chore/porta-feature-da-allineamento-myastral
   (commit f914d2b)
-- La versione buona NON e' su feature/2-astri-in-cuspide
-- Dettagli: HANDOVER 2026-08-19, nota su branch chore
+- Portata su feature/2-astri-in-cuspide il 2026-08-22 (patch equivalente,
+  senza il ripristino pulsante RL incluso nel commit originale, non necessario qui)
+- NON ancora portata su main
+- Dettagli: HANDOVER 2026-08-19, 2026-08-22 (sessione pomeridiana), nota su branch chore
 
 ### Regressione ricorrente div time-controls (rs.php)
 - Causa: lavoro parallelo su feature/allineamento-myastral e
