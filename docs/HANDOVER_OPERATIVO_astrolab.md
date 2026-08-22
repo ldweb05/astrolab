@@ -3268,3 +3268,29 @@ avviare M1 — Comparazione ricerche RSM.
   `RuleEngine.php`/`RicercaRSFilters.php` prima di toccare codice.
 - File toccati: `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` (nuovo), `docs/ROADMAP.md`,
   `docs/ux-myastral/DECISION_LOG_ux.md`.
+
+## 2026-08-22 bis — Fase 1 (backend) completata: modalita' "cuspide" in Astri nelle Case (branch feature/2-astri-in-cuspide)
+
+- `verificaAstriInCasaDirectly()` (`RicercaRSFilters.php`) estesa con parametro opzionale `modalita`
+  per riga filtro ('in_casa', default invariato, oppure 'cuspide'). In modalita' 'cuspide' verifica
+  la distanza angolare pianeta-cuspide con `AstroUtils::diffAngolo()`, orbo fisso 2°30' (nuova
+  costante `ORBO_CUSPIDE_REGOLA32_GRADI`, Regola 32, non configurabile dall'utente).
+- `ricerca_stream_api.php` e `ricerca_stream_rl_api.php` aggiornati per passare `$caseRS` (gia' in
+  scope) alla funzione.
+- Nessuna modifica al `RuleEngine`: i veti 4/5/31/34 restano invariati a valle, la nuova modalita'
+  e' solo un criterio di selezione a monte.
+- Verifica: `php -l` superato nel container su tutti e 3 i file, `git diff --check` pulito, test
+  funzionale con script PHP temporaneo (non committato, rimosso dopo l'uso) eseguito nel container
+  - 5 casi verificati: pianeta entro orbo (0 violazioni), pianeta fuori orbo (1 violazione,
+  messaggio corretto), due pianeti combinati entrambi entro orbo nella stessa ricerca (0
+  violazioni, scenario centrale della feature), retro-compatibilita' con `modalita: 'in_casa'`
+  esplicita e con chiamata a 2 argomenti come prima della patch (0 violazioni in entrambi i casi,
+  nessuna rottura sulle ricerche esistenti).
+- Decisione UX-0014 gia' registrata in sessione precedente (stesso giorno) in
+  `docs/ux-myastral/DECISION_LOG_ux.md`.
+- Ancora non testabile da browser: la UI del pannello "Astri nelle Case" non espone ancora
+  l'opzione "cuspide" (Fase 2, non ancora fatta).
+- Commit `627379e`, pushato su `origin/feature/2-astri-in-cuspide`.
+- File toccati: `www/includes/RicercaRSFilters.php`, `www/api/ricerca_stream_api.php`,
+  `www/api/ricerca_stream_rl_api.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` (Fase 1
+  marcata completata).
