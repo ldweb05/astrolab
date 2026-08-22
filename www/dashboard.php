@@ -11,6 +11,10 @@ $isAdmin        = $auth->isAdmin();
 $username       = $auth->getCurrentUsername();
 $soggettoAttivo = $auth->getSoggettoAttivo();
 $soggettoNome   = $auth->getSoggettoNome();
+
+// Stessa convenzione di _navUrl() in header_nav.php: ?id= solo se c'è un soggetto attivo
+$transitiUrl    = $soggettoAttivo > 0 ? 'transiti.php?id=' . (int)$soggettoAttivo : 'transiti.php';
+$rilocazioneUrl = $soggettoAttivo > 0 ? 'rilocazione.php?id=' . (int)$soggettoAttivo : 'rilocazione.php';
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -234,14 +238,14 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 </div>
 <!-- 4. Action Buttons Row -->
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<button class="py-4 border border-primary/50 rounded-xl text-primary hover:bg-primary/5 font-title-md text-title-md transition-colors flex items-center justify-center gap-3 bg-white shadow-sm">
+<a href="<?= htmlspecialchars($transitiUrl) ?>" class="py-4 border border-primary/50 rounded-xl text-primary hover:bg-primary/5 font-title-md text-title-md transition-colors flex items-center justify-center gap-3 bg-white shadow-sm">
 <span class="material-symbols-outlined">sync_alt</span>
                     Transiti
-                </button>
-<button class="py-4 border border-outline-variant rounded-xl text-on-surface hover:bg-surface-container hover:border-outline font-title-md text-title-md transition-colors flex items-center justify-center gap-3 bg-white shadow-sm">
+                </a>
+<a href="<?= htmlspecialchars($rilocazioneUrl) ?>" class="py-4 border border-outline-variant rounded-xl text-on-surface hover:bg-surface-container hover:border-outline font-title-md text-title-md transition-colors flex items-center justify-center gap-3 bg-white shadow-sm">
 <span class="material-symbols-outlined">map</span>
                     Rilocazione
-                </button>
+                </a>
 </div>
 <!-- 5. Bottom Split Area (Charts) -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
