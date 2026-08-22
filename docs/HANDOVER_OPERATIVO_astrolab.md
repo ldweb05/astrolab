@@ -3370,3 +3370,18 @@ avviare M1 — Comparazione ricerche RSM.
   funzionale reale nel browser confermato dal committente su ricerca.php e ricerca_rl.php.
 - File toccati: www/css/style.css, www/ricerca.php, www/ricerca_rl.php (codice);
   docs/FREEZE.md (voce aggiornata).
+
+## 2026-08-22 (sera) — Aggiunta pagina statica 34_regole.html (branch feature/2-astri-in-cuspide)
+
+- Il committente ha aggiunto autonomamente (commit 89a0ee2, fuori dal workflow assistito)
+  www/34_regole.html: pagina statica standalone (Tailwind via CDN, nessuna logica server)
+  con le 34 regole di Morpurgo-Discepolo, e un nuovo link nel menu Help in
+  www/includes/header_nav.php.
+- Verificato a posteriori: contenuto coerente con lo stato reale del motore - 34 card, 5
+  con icona di avviso, esattamente le regole 4, 5, 31, 32, 34 (le uniche a scarto
+  automatico confermate in UX-0013/FREEZE.md); la Regola 33 correttamente senza avviso.
+  php -l superato su header_nav.php.
+- Corretto (commit 2b91ee6) un piccolo disallineamento: il tag <title> diceva ancora
+  "Morpurgo-Discepolo" mentre il titolo visibile in pagina era gia' "Le 34 Regole
+  dell'Astrologia Attiva (scuola Ciro Discepolo)".
+- File toccati: www/34_regole.html, www/includes/header_nav.php.
