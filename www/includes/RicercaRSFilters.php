@@ -74,7 +74,12 @@ function escludiPerRuleMap(array $pianetiConCase, string $condizione): bool {
     return false;
 }
 
-function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa): array
+// UX-0014: orbo fisso di Regola 32 (2°30') per la modalita' "cuspide" del
+// filtro Astri nelle Case. Non configurabile dall'utente, non sostituisce
+// né duplica i veti 4/5/31/34 del RuleEngine, che restano invariati a valle.
+const ORBO_CUSPIDE_REGOLA32_GRADI = 2.5;
+
+function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa, array $caseRS = []): array
 {
     if (empty($astriInCasa)) {
         return [];
@@ -89,9 +94,10 @@ function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa):
     $violazioni = [];
 
     foreach ($astriInCasa as $filtro) {
-        $pid   = $filtro['pianeta'];
-        $casaV = (int)$filtro['casa'];
-        $vuole = (bool)$filtro['vuole'];
+        $pid      = $filtro['pianeta'];
+        $casaV    = (int)$filtro['casa'];
+        $vuole    = (bool)$filtro['vuole'];
+        $modalita = $filtro['modalita'] ?? 'in_casa';
 
         // ASC è sempre in casa 1 della RS per definizione di Placido.
         // Non è un pianeta indicizzato in $pianetiConCase → saltiamo.
@@ -108,8 +114,26 @@ function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa):
             continue;
         }
 
+        $nome = $NOMI[$idP] ?? 'P'.$idP;
+
+        if ($modalita === 'cuspide') {
+            if (!isset($caseRS[$casaV]['longitudine'])) {
+                continue; // cuspide non disponibile, nessuna verifica possibile
+            }
+            $lonPianeta = (float)$pianetiConCase[$idP]['longitudine'];
+            $lonCuspide = (float)$caseRS[$casaV]['longitudine'];
+            $distanza   = abs(diffAngolo($lonPianeta, $lonCuspide));
+            $inOrbo     = $distanza <= ORBO_CUSPIDE_REGOLA32_GRADI;
+
+            if ($vuole && !$inOrbo) {
+                $violazioni[] = $nome . ' non è entro l\'orbo di Regola 32 dalla cuspide ' . $casaV . ' (distanza ' . round($distanza, 2) . '°)';
+            } elseif (!$vuole && $inOrbo) {
+                $violazioni[] = $nome . ' è entro l\'orbo di Regola 32 dalla cuspide ' . $casaV . ' (indesiderato)';
+            }
+            continue;
+        }
+
         $casaEff = (int)$pianetiConCase[$idP]['casa'];
-        $nome    = $NOMI[$idP] ?? 'P'.$idP;
 
         if ($vuole && $casaEff !== $casaV) {
             $violazioni[] = $nome . ' è in casa ' . $casaEff . ' (richiesta casa ' . $casaV . ')';
