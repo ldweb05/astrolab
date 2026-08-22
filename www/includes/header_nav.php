@@ -197,14 +197,15 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
                     Help
                 </button>
                 <div class="nav-dropdown-menu">
-                    <a href="help_account.php" target="_blank">1. Introduzione e Account</a>
-                    <a href="help_soggetti.php" target="_blank">2. Gestione Soggetti</a>
-                    <a href="help_calcoli.php" target="_blank">3. Calcoli e Analisi</a>
-                    <a href="help_ricerca.php" target="_blank">4. Ricerca Geografica</a>
-                    <a href="help_report.php" target="_blank">5. Report e Stampa</a>
-                    <a href="help_comparatore.php" target="_blank">6. Comparatore e DSS</a>
-                    <a href="help_interfaccia.php" target="_blank">7. Interfaccia e Visualizzazione</a>
-                    <a href="help_faq.php" target="_blank">8. FAQ e Limiti</a>
+                    <a href="34_regole.html" target="_blank">1. Le 34 Regole</a>
+                    <a href="help_account.php" target="_blank">2. Introduzione e Account</a>
+                    <a href="help_soggetti.php" target="_blank">3. Gestione Soggetti</a>
+                    <a href="help_calcoli.php" target="_blank">4. Calcoli e Analisi</a>
+                    <a href="help_ricerca.php" target="_blank">5. Ricerca Geografica</a>
+                    <a href="help_report.php" target="_blank">6. Report e Stampa</a>
+                    <a href="help_comparatore.php" target="_blank">7. Comparatore e DSS</a>
+                    <a href="help_interfaccia.php" target="_blank">8. Interfaccia e Visualizzazione</a>
+                    <a href="help_faq.php" target="_blank">9. FAQ e Limiti</a>
                 </div>
             </div>
             <!-- ── Fine dropdown ────────────────────────────────────── -->
