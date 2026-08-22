@@ -15,6 +15,9 @@ Il suo scopo è descrivere:
 Questo documento deve sempre rappresentare lo stato corrente del
 repository.
 
+**Prima di toccare codice, leggi `docs/FREEZE.md`** — elenca cosa è congelato (e perché) e
+i fix noti che esistono solo su alcuni branch.
+
 ---
 
 # Stato del progetto
