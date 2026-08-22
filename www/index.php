@@ -344,7 +344,7 @@ function caricaSoggettiConDropdown() {
 
                 html += `<tr class="${isAttivo ? 'riga-soggetto-attivo' : ''}">
                     <td>${s.codice || '—'}</td>
-                    <td><b>${s.nome}</b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
+                    <td><b><a onclick="apriRS(${s.id})" style="cursor:pointer;color:inherit;text-decoration:none;">${s.nome}</a></b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
                     <td>${formatData(s.data_nascita)}</td>
                     <td>${s.ora_nascita}</td>
                     <td>
@@ -354,8 +354,6 @@ function caricaSoggettiConDropdown() {
                     ${tdProp}
                     <td><div class="azioni">
                         <button class="btn-icon" title="Imposta attivo" onclick="impostaSoggettoAttivo(${s.id})">⭐</button>
-                        <button class="btn-icon" title="Tema Natale" onclick="apriTema(${s.id})">TN</button>
-                        <button class="btn-icon" title="Rivoluzione Solare" onclick="apriRS(${s.id})">RS</button>
                         <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${s.id})">✏️</button>
                         <button class="btn-icon" title="Elimina" onclick="eliminaSoggetto(${s.id}, '${s.nome.replace(/'/g, "\\'")}')">🗑️</button>
                     </div></td>
