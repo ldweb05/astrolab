@@ -89,6 +89,21 @@ ogni caso in docs/HANDOVER_OPERATIVO_astrolab.md (cercare la data).
 - Regola pratica: verificare sempre l'ultimo numero libero con un
   grep mirato prima di assegnarne uno nuovo, mai a memoria
 
+### Fix geocoding Nominatim (ordina risultati + etichetta tipo)
+- Data: 2026-08-23
+- Bug: coordinate imprecise per luogo di nascita/residenza (dettagli in
+  docs/BUG_GEOCODING_NOMINATIM.md e docs/ROADMAP.md, sezione "BUG APERTO")
+- File coinvolti: www/js/app.js (cercaLuogo, cercaLuogoResidenza),
+  www/rs.php (cercaLuogoRS), www/rilocazione.php (cercaLuogoRiloc);
+  stesso pattern anche in www/rl.php (via app.js) e www/transiti.php
+  (solo su fase9-comparator-quota, non su main)
+- Esiste su: fix/geocoding-nominatim-precisione (base origin/main) -
+  SOLO PARZIALE: fatto www/js/app.js, mancano ancora
+  www/rs.php e www/rilocazione.php
+- NON esiste su: new_dashboard, feature/2-astri-in-cuspide, main,
+  fase9-comparator-quota, tutti gli altri branch
+- Dettagli: HANDOVER 23-08-2026
+
 ---
 
 Nota sulla causa comune: feature/allineamento-myastral e
