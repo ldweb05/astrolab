@@ -27,6 +27,7 @@ require_once __DIR__ . '/includes/RicercaPageData.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ricerca Località — Astrologia Attiva</title>
 <link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Eb+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 .rl-index-row { display: flex; gap: 6px; align-items: center; }
 .rl-index-row select { flex: 1; min-width: 0; }

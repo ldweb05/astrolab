@@ -75,7 +75,9 @@ if ($soggetto) {
     <title>Rilocazione — Astrologia Attiva</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Symbols+2&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="js/svg_zoom.js"></script>
     <style>

@@ -101,7 +101,9 @@ if ($soggetto) {
     <title>Transiti Planetari</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Symbols+2&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
 </head>
 <body>
 <?php $paginaAttiva = 'transiti'; include 'includes/header_nav.php'; ?>
