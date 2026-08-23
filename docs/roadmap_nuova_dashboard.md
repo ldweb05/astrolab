@@ -78,7 +78,7 @@ solo perché il comportamento di `index.php` osservato coincide).
     via JS (aggiornaSoggettoSelezionato) in base al soggetto scelto nel dropdown.
   - [x] Campo Tipo Analisi disabilitato finché non è selezionato un soggetto (solo
     caso multi-soggetto; con un soggetto solo è già abilitato al caricamento).
-- [ ] Fase 5 — Restyle dropdown Help con palette Sahara (solo colori/font, nessuna modifica di contenuto/struttura)
+- [x] Fase 5 — Dropdown Help costruito direttamente con palette Sahara fin dall'inizio (Fase 4), nessun restyle successivo necessario
 - [ ] Fase 6 — SOLO a fine lavoro, su conferma esplicita: collegare il logo (da ogni pagina del sito) e il nome soggetto in `index.php` a `dashboard.php`
 - [ ] Fase 7 — Verifica finale (php -l, git diff, restart container, test reale) e commit solo su conferma esplicita
 
