@@ -19,6 +19,7 @@ $soggettoNome = $auth->getSoggettoNome();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Comparatore rilocazioni</title>
 <link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Eb+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 .compare-ril-grid {
     display: grid;
