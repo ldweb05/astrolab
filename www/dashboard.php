@@ -162,7 +162,7 @@ $annoCorrente = (int)date('Y');
 <body class="text-on-surface font-body-lg overflow-x-hidden pt-16 bg-surface">
 <!-- TopAppBar -->
 <header class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-xl border-b border-outline-variant shadow-sm flex justify-between items-center px-container-desktop h-16 transition-all duration-300 ease-in-out">
-<div class="flex items-center gap-4">
+<div class="flex items-center gap-4 pl-2">
 <button class="md:hidden text-on-surface-variant hover:text-on-surface transition-colors">
 <span class="material-symbols-outlined">menu</span>
 </button>
@@ -194,14 +194,14 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <a class="text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium" href="cambia_password.php">&#128273; Password</a>
 <a class="text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium" href="logout.php">Esci</a>
 </nav>
-<div class="flex items-center gap-4">
+<div class="flex items-center gap-4 pr-2">
 <button class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container p-2 rounded-full transition-colors">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
 </button>
-<button class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container p-2 rounded-full transition-colors">
+<button id="dash-btn-settings" class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container p-2 rounded-full transition-colors">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
 </button>
-<div class="h-8 w-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2"></div>
+<div class="h-10 w-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2"></div>
 </div>
 </header>
 <main class="p-container-padding-mobile md:p-container-padding-desktop min-h-[calc(100vh-64px)] flex items-center justify-center pb-32 md:pb-12 bg-white">
