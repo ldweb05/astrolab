@@ -97,7 +97,18 @@ solo perché il comportamento di `index.php` osservato coincide).
     invariata su richiesta esplicita. Il committente aggiungerà manualmente
     il link Google Fonts Eb Garamond nell'<head> delle 12 pagine (scelta
     esplicita: <link> nel body funzionava ma giudicato "poco professionale")
-- [ ] Fase 7 — Verifica finale (php -l, git diff, restart container, test reale) e commit solo su conferma esplicita
+- [x] Fase 7 — Verifica finale completata (23-08-2026): php -l pulito su
+  tutti e 8 i file PHP toccati sul branch, node --check pulito su app.js,
+  git status pulito, git diff --check pulito (un solo trailing whitespace
+  cosmetico in un file di documentazione, lasciato di proposito)
+
+## ROADMAP COMPLETATA (23-08-2026)
+
+Tutte le 7 fasi concluse. `dashboard.php` è ora la pagina di destinazione
+raggiungibile da: click sul nome soggetto in `index.php`, e dal logo su
+tutte le 12 pagine che includono `header_nav.php`. Resta da fare, a
+discrezione del committente e senza fretta: aggiungere il link Google
+Fonts Eb Garamond nell'`<head>` delle 12 pagine (dettagli in Fase 6).
 
 ---
 
