@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 /**
  * login.php — Pagina di login
- * Astrologia Attiva — Ciro Discepolo
+ * Astrologia Attiva 
  */
 session_start();
 
@@ -117,7 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: #F2EDE4;
+            /* background: #F2EDE4; */
+            background-color: #FFFFFF;
         }
         .login-box {
             background: white;
@@ -202,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="login-box">
         <div class="login-logo">
-            <h1>☉ AstroLab</h1>
+            <h1>AstroLab</h1>
             <p>Rivoluzioni Solari Mirate — Astrologia Attiva</p>
         </div>
 
