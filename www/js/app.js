@@ -78,7 +78,6 @@ function caricaSoggetti() {
                     </td>
                     <td><div class="azioni">
                         <button class="btn-icon" title="Tema Natale" onclick="apriTema(${s.id})">☉</button>
-                        <button class="btn-icon" title="Rivoluzione Solare" onclick="apriRS(${s.id})">↺</button>
                         <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${s.id})">✏️</button>
                         <button class="btn-icon" title="Elimina" onclick="eliminaSoggetto(${s.id}, '${s.nome.replace(/'/g, "\\'")}')">🗑️</button>
                     </div></td>
@@ -223,6 +222,10 @@ function apriTema(id) {
 
 function apriRS(id) {
     window.location.href = 'rs.php?id=' + id;
+}
+
+function apriDashboard(id) {
+    window.location.href = 'dashboard.php?id=' + id;
 }
 
 // ── GEOCODING OSM + TIMEZONE ──────────────────────────────────────────────
