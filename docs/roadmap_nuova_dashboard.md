@@ -107,3 +107,11 @@ Da fare dopo il collegamento delle pagine (Fase 4), su richiesta esplicita:
 - Branch potenzialmente divergenti (vedi `docs/FREEZE.md`): verificare
   sempre lo stato reale di `new_dashboard` prima di ogni step, non
   assumere che coincida con altri branch controllati in fase di analisi.
+
+## Nota (23-08-2026) — Rimossa voce "Password" dalla nav, sostituita dal modale Impostazioni
+
+Prima della rimozione, il link nella navbar era: <a class="text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium" href="cambia_password.php">🔑 Password</a> Puntava direttamente a `cambia_password.php` (pagina dedicata esistente). Ora il
+cambio password avviene dal modale "Impostazioni" (icona ingranaggio in alto a
+destra), che in una fase successiva verra' collegato funzionalmente riusando
+`Auth::cambiaPropriaPassword()` (stessa logica gia' usata da
+`cambia_password.php`) tramite un endpoint AJAX dedicato, non ancora creato.
