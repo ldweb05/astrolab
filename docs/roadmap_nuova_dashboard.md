@@ -79,7 +79,24 @@ solo perché il comportamento di `index.php` osservato coincide).
   - [x] Campo Tipo Analisi disabilitato finché non è selezionato un soggetto (solo
     caso multi-soggetto; con un soggetto solo è già abilitato al caricamento).
 - [x] Fase 5 — Dropdown Help costruito direttamente con palette Sahara fin dall'inizio (Fase 4), nessun restyle successivo necessario
-- [ ] Fase 6 — SOLO a fine lavoro, su conferma esplicita: collegare il logo (da ogni pagina del sito) e il nome soggetto in `index.php` a `dashboard.php`
+- [x] Fase 6 — Collegamento completato (23-08-2026):
+  - [x] Click sul nome soggetto in index.php: da apriRS() (rs.php) a nuova
+    apriDashboard() (dashboard.php), con id preservato
+  - [x] dashboard.php ora gestisce ?id= esplicito: verifica appartenenza
+    all'astrologo, imposta soggetto attivo, preseleziona nel dropdown anche
+    con più soggetti salvati (prima funzionava solo con un soggetto unico)
+  - [x] Rimosso in app.js il bottone "↺ Rivoluzione Solare" (confermato
+    codice morto: nessuna pagina chiamava caricaSoggetti(), solo la versione
+    locale caricaSoggettiConDropdown() di index.php, senza quel bottone).
+    Funzione caricaSoggetti() lasciata intatta (referenziata da
+    _caricaSoggettiOrig in index.php, anche se mai invocata)
+  - [x] Logo in header_nav.php (condiviso da 12 pagine) ora punta a
+    dashboard.php invece di index.php, via _navUrl() come gli altri link nav
+  - [x] Logo unificato esteticamente a dashboard.php: colore #c2652a,
+    font-family Eb Garamond, rimosso simbolo ☉ — dimensione lasciata
+    invariata su richiesta esplicita. Il committente aggiungerà manualmente
+    il link Google Fonts Eb Garamond nell'<head> delle 12 pagine (scelta
+    esplicita: <link> nel body funzionava ma giudicato "poco professionale")
 - [ ] Fase 7 — Verifica finale (php -l, git diff, restart container, test reale) e commit solo su conferma esplicita
 
 ---
