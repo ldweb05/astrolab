@@ -15,6 +15,8 @@ $soggettoNome   = $auth->getSoggettoNome();
 // Stessa convenzione di _navUrl() in header_nav.php: ?id= solo se c'è un soggetto attivo
 $transitiUrl    = $soggettoAttivo > 0 ? 'transiti.php?id=' . (int)$soggettoAttivo : 'transiti.php';
 $rilocazioneUrl = $soggettoAttivo > 0 ? 'rilocazione.php?id=' . (int)$soggettoAttivo : 'rilocazione.php';
+$temaUrl        = $soggettoAttivo > 0 ? 'tema.php?id=' . (int)$soggettoAttivo : 'tema.php';
+$rsmUrl         = $soggettoAttivo > 0 ? 'rs.php?id=' . (int)$soggettoAttivo : 'rs.php';
 
 // Range anni per la ricerca RS/RL: 1960 -> anno corrente + 7
 $annoCorrente = (int)date('Y');
@@ -176,12 +178,15 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 </div>
 </header>
 <main class="p-container-padding-mobile md:p-container-padding-desktop min-h-[calc(100vh-64px)] flex items-center justify-center pb-32 md:pb-12 bg-white">
-<div class="bg-white rounded-[2rem] w-full max-w-4xl p-8 flex flex-col gap-8 shadow-xl border border-outline-variant/30">
+<div class="bg-white rounded-[2rem] w-full max-w-3xl p-8 flex flex-col gap-8 shadow-xl border border-outline-variant/30">
 <!-- 1. Tabs Row -->
 <div class="flex gap-6 border-b border-outline-variant">
-<button class="px-4 py-3 border-b-2 border-primary text-primary font-label-caps text-label-caps transition-colors -mb-[1px]">
+<a href="<?= htmlspecialchars($temaUrl) ?>" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
                     TEMA
-                </button>
+                </a>
+<a href="<?= htmlspecialchars($rsmUrl) ?>" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
+                    RSM
+                </a>
 <a href="ricerca.php?tipo=localita" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
                     LOCALITÀ
                 </a>
@@ -190,7 +195,7 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
                 </a>
 </div>
 <!-- 2. Personal Info Row -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-[1.8fr_1fr_0.8fr] gap-6">
 <div class="flex flex-col gap-2">
 <label class="font-label-caps text-label-caps text-on-surface-variant">Nome Cognome</label>
 <input class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="Mario Rossi"/>
@@ -212,7 +217,7 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 </div>
 <!-- 3. Search Row -->
 <div class="flex flex-col md:flex-row gap-6 items-end bg-surface-container p-6 rounded-2xl border border-outline-variant relative overflow-hidden">
-<div class="flex flex-col gap-2 flex-1 relative z-10 w-full">
+<div class="flex flex-col gap-2 w-full md:w-32 shrink-0 relative z-10">
 <label class="font-label-caps text-label-caps text-on-surface-variant">Scelta Anno</label>
 <div class="relative">
 <select id="dash-anno" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none pr-10 cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
@@ -249,44 +254,7 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
                     Rilocazione
                 </a>
 </div>
-<!-- 5. Bottom Split Area (Charts) -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-<div class="bg-surface-container rounded-2xl p-6 border border-outline-variant flex flex-col gap-4 relative overflow-hidden group">
-<div class="flex justify-between items-center relative z-10">
-<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">CIELO NATALE</h3>
-<span class="font-label-caps text-label-caps text-on-surface-variant bg-white border border-outline-variant px-2 py-1 rounded">Base</span>
-</div>
-<div class="relative w-full aspect-square bg-white rounded-xl border border-outline-variant flex items-center justify-center overflow-hidden z-10 p-4">
-<div class="w-full h-full rounded-full border border-outline-variant relative flex items-center justify-center group-hover:border-primary/50 transition-colors duration-700">
-<div class="w-[80%] h-[80%] rounded-full border border-surface-container absolute"></div>
-<div class="w-[60%] h-[60%] rounded-full border-dashed border-outline-variant absolute animate-[spin_120s_linear_infinite]"></div>
-<div class="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-80 transition-opacity duration-500">
-<span class="material-symbols-outlined text-[120px] text-primary/50 font-thin">all_inclusive</span>
-</div>
-<div class="absolute top-4 right-1/4 bg-white px-2 py-1 rounded text-[10px] font-label-caps tracking-widest text-secondary border border-secondary/50 shadow-sm">SUN</div>
-<div class="absolute bottom-1/4 left-4 bg-white px-2 py-1 rounded text-[10px] font-label-caps tracking-widest text-primary border border-primary/50 shadow-sm">MOON</div>
-<div class="absolute top-1/3 left-8 bg-white px-2 py-1 rounded text-[10px] font-label-caps tracking-widest text-error border border-error/50 shadow-sm">MARS</div>
-</div>
-</div>
-</div>
-<div class="bg-surface-container rounded-2xl p-6 border border-outline-variant flex flex-col gap-4 relative overflow-hidden group">
-<div class="flex justify-between items-center relative z-10">
-<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-secondary tracking-tight">RS per residenza</h3>
-<span class="font-label-caps text-label-caps text-on-surface-variant bg-white border border-outline-variant px-2 py-1 rounded">Roma, IT</span>
-</div>
-<div class="relative w-full aspect-square bg-white rounded-xl border border-outline-variant flex items-center justify-center overflow-hidden z-10 p-4">
-<div class="w-full h-full rounded-full border border-outline-variant relative flex items-center justify-center group-hover:border-secondary/50 transition-colors duration-700">
-<div class="w-[80%] h-[80%] rounded-full border border-surface-container absolute"></div>
-<div class="w-[60%] h-[60%] rounded-full border-dashed border-outline-variant absolute animate-[spin_90s_linear_infinite_reverse]"></div>
-<div class="absolute inset-0 flex items-center justify-center opacity-40 group-hover:opacity-80 transition-opacity duration-500">
-<span class="material-symbols-outlined text-[120px] text-secondary/50 font-thin">blur_circular</span>
-</div>
-<div class="absolute top-8 left-1/4 bg-white px-2 py-1 rounded text-[10px] font-label-caps tracking-widest text-tertiary border border-tertiary/50 shadow-sm">VENUS</div>
-<div class="absolute bottom-1/3 right-8 bg-white px-2 py-1 rounded text-[10px] font-label-caps tracking-widest text-primary border border-primary/50 shadow-sm">JUPITER</div>
-</div>
-</div>
-</div>
-</div>
+
 </div>
 </main>
 <script>
