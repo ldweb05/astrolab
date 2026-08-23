@@ -29,6 +29,13 @@ if ($isAdmin) {
 }
 $dashSoggettoUnicoId = count($dashSoggetti) === 1 ? (int)$dashSoggetti[0]['id'] : 0;
 
+// Modale impostazioni: cambio password (tutti) + foto profilo (solo Supporter/admin)
+$hasFotoProfilo = $auth->hasFeature('foto_profilo');
+if (empty($_SESSION['dash_settings_csrf'])) {
+    $_SESSION['dash_settings_csrf'] = bin2hex(random_bytes(32));
+}
+$dashSettingsCsrf = $_SESSION['dash_settings_csrf'];
+
 // Mappa id -> {data, ora} per riempire i campi via JS quando c'è più di un soggetto
 // (stesso formato di tema.php: d/m/Y e ora locale, non GMT)
 $dashSoggettiDatiJs = [];
@@ -341,8 +348,49 @@ document.addEventListener('DOMContentLoaded', function () {
     aggiornaSoggettoSelezionato(dashSoggettoSelezionatoId);
 });
 </script>
+<!-- Modale Impostazioni: cambio password + foto profilo -->
+<div id="dash-modale-overlay" class="hidden fixed inset-0 bg-black/40 z-[999] flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl w-full max-w-md p-7 flex flex-col gap-6 shadow-xl">
+<div class="flex justify-between items-center">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Impostazioni</h2>
+<button type="button" onclick="chiudiModaleImpostazioni()" class="text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+
+<!-- Sezione cambio password (in arrivo: collegamento funzionale) -->
+<div class="flex flex-col gap-3">
+<h3 class="font-title-md text-title-md text-on-surface">🔑 Cambia Password</h3>
+<p class="text-sm text-on-surface-variant">Modulo in costruzione.</p>
+</div>
+
+<div class="border-t border-outline-variant/60"></div>
+
+<!-- Sezione foto profilo -->
+<div class="flex flex-col gap-3">
+<h3 class="font-title-md text-title-md text-on-surface">🖼️ Foto Profilo</h3>
+<?php if ($hasFotoProfilo): ?>
+<p class="text-sm text-on-surface-variant">Modulo in costruzione (piano Supporter).</p>
+<?php else: ?>
+<p class="text-sm text-on-surface-variant">Disponibile solo per il piano <span class="text-primary font-medium">Supporter</span>.</p>
+<?php endif; ?>
+</div>
+</div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+function apriModaleImpostazioni() {
+    document.getElementById('dash-modale-overlay').classList.remove('hidden');
+}
+function chiudiModaleImpostazioni() {
+    document.getElementById('dash-modale-overlay').classList.add('hidden');
+}
+document.addEventListener('DOMContentLoaded', function () {
+    const btnSettings = document.getElementById('dash-btn-settings');
+    if (btnSettings) { btnSettings.addEventListener('click', apriModaleImpostazioni); }
+});
+
 let dashLeafletMap = null;
 let dashLeafletMarker = null;
 
