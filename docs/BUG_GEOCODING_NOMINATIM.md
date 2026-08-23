@@ -26,12 +26,26 @@ comunale**, che per comuni con territorio esteso/irregolare può
 cadere a diversi km dal centro città. Coerente con lo scostamento
 osservato in entrambi i casi.
 
-## Superficie del bug
-Riguarda potenzialmente ENTRAMBI i campi di geocoding (non solo
-residenza): `cercaLuogo()` (luogo di nascita) e
-`cercaLuogoResidenza()` (residenza), stesso codice condiviso in
-`www/js/app.js` — quindi impatta ogni pagina che permette di
-inserire/modificare un soggetto.
+## Superficie del bug (aggiornata 2026-08-23, verificata nel codice)
+Riguarda OGNI punto dell'app dove si digita manualmente un nome di
+città e viene geocodificato al volo via Nominatim (stesso pattern
+`fetch nominatim.openstreetmap.org/search`, nessun filtro sul tipo
+di risultato, in tutti i casi):
+
+- `cercaLuogo()` — luogo di nascita (in `www/js/app.js`)
+- `cercaLuogoResidenza()` — residenza (in `www/js/app.js`)
+- `cercaLuogoRS()` — ricerca puntuale di un luogo dentro `rs.php`
+  (RS "per un altro posto", non la residenza salvata)
+- stesso meccanismo in `rl.php`
+- ricerca puntuale di un luogo in `rilocazione.php`
+- ricerca puntuale di un luogo in `transiti.php`
+
+**CONFERMATO NON COINVOLTO**: `ricerca.php` (motore RSM di ricerca
+per condizione su tutto il mondo) — verificato che non contiene
+alcuna chiamata a Nominatim (0 occorrenze). Lavora su un database di
+località pre-caricato (atlante GeoNames + tabella Postgres aeroporti,
+vedi handover del progetto), non su geocoding in tempo reale. Non è
+a rischio.
 
 ## Da fare (non ancora iniziato)
 - Confermare la causa (verificare la risposta raw di Nominatim per
