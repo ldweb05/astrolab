@@ -138,7 +138,7 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
 
 <header>
     <div class="header-inner">
-        <h1><a href="index.php" class="header-logo">☉ AstroLab</a></h1>
+        <h1><a href="<?= _navUrl('dashboard.php', $_navSoggettoId) ?>" class="header-logo">AstroLab</a></h1>
         <button class="nav-toggle"
                 type="button"
                 aria-expanded="false"

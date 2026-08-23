@@ -2495,7 +2495,8 @@ tr.riga-corrente td:first-child::before {
 }
 
 .header-logo {
-    color: #D4C9A8;
+    color: #c2652a;
+    font-family: 'Eb Garamond', Georgia, serif;
     text-decoration: none;
 }
 
