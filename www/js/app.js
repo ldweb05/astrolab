@@ -229,6 +229,33 @@ function apriRS(id) {
 
 let geocodeTimer = null;
 
+// ── FIX GEOCODING: Nominatim a volte restituisce come primo risultato ──────
+// un'area amministrativa generica (provincia/regione/stato/nazione) invece
+// del punto preciso cercato (es. "Caserta" provincia prima di "Caserta" città).
+// Non li eliminiamo (potrebbero essere quello che serve in casi limite),
+// li spostiamo in fondo alla lista ed etichettiamo il tipo così chi sceglie
+// vede chiaramente cosa sta selezionando.
+const NOMINATIM_TIPI_GENERICI = ['county', 'state', 'country', 'region', 'state_district'];
+const NOMINATIM_ETICHETTE_TIPO = {
+    city: 'Città', town: 'Città', village: 'Paese', hamlet: 'Frazione',
+    municipality: 'Comune', suburb: 'Quartiere',
+    county: 'Provincia', state: 'Regione/Stato', country: 'Nazione',
+    region: 'Regione', state_district: 'Distretto'
+};
+
+function _nominatimOrdinaRisultati(risultati) {
+    return [...risultati].sort((a, b) => {
+        const aGenerico = NOMINATIM_TIPI_GENERICI.includes(a.addresstype) ? 1 : 0;
+        const bGenerico = NOMINATIM_TIPI_GENERICI.includes(b.addresstype) ? 1 : 0;
+        return aGenerico - bGenerico;
+    });
+}
+
+function _nominatimEtichetta(r) {
+    const etichetta = NOMINATIM_ETICHETTE_TIPO[r.addresstype];
+    return etichetta ? ` <span style="color:#888;font-size:11px">(${etichetta})</span>` : '';
+}
+
 function cercaLuogo() {
     const q = document.getElementById('luogo-search').value.trim();
     if (q.length < 3) return;
@@ -242,12 +269,12 @@ function cercaLuogo() {
                 div.classList.add('visible');
                 return;
             }
-            div.innerHTML = risultati.map(r => `
+            div.innerHTML = _nominatimOrdinaRisultati(risultati).map(r => `
                 <div class="dropdown-item" onclick="selezionaLuogo(
                     ${r.lat}, ${r.lon},
                     '${r.display_name.replace(/'/g,"\\'")}',
                     '${(r.address?.country_code || '').toUpperCase()}'
-                )">${r.display_name}</div>
+                )">${r.display_name}${_nominatimEtichetta(r)}</div>
             `).join('');
             div.classList.add('visible');
         });
@@ -390,12 +417,12 @@ function cercaLuogoResidenza() {
                 div.classList.add('visible');
                 return;
             }
-            div.innerHTML = risultati.map(r => `
+            div.innerHTML = _nominatimOrdinaRisultati(risultati).map(r => `
                 <div class="dropdown-item" onclick="selezionaResidenza(
                     '${r.display_name.replace(/'/g,"\\'")}',
                     ${r.lat}, ${r.lon},
                     '${(r.address?.country_code || '').toUpperCase()}'
-                )">${r.display_name}</div>
+                )">${r.display_name}${_nominatimEtichetta(r)}</div>
             `).join('');
             div.classList.add('visible');
         });
