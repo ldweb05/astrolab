@@ -1,3 +1,16 @@
+/* ── DESIGN SYSTEM SAHARA (token, non ancora in uso) ────────────────── */
+/* Estratti da dashboard.php (Tailwind config) per futuro allineamento   */
+/* grafico delle altre pagine. Nessuna regola esistente qui sotto usa    */
+/* ancora queste variabili: aggiunta senza effetti visivi.               */
+:root {
+    --sahara-primary: #c2652a;
+    --sahara-background: #faf5ee;
+    --sahara-surface: #faf5ee;
+    --sahara-surface-bright: #faf5ee;
+    --sahara-font-heading: 'Eb Garamond', Georgia, serif;
+    --sahara-font-body: 'Manrope', 'Montserrat', 'Verdana', sans-serif;
+}
+
 /* ── RESET & BASE ─────────────────────────────────────────────────── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -7,7 +20,8 @@ body {
     font-size: 14px;
     line-height: 1.5;
     padding-top: 56px;
-    background-color: #F2EDE4;
+    background-color: #FFFFFF;
+    /* originale: #F2EDE4 */
     background-image:
     /* 1. Scorpione / Vergine (in alto a sinistra) */
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none' stroke='%23E4D9C0' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 60 60 L 60 260 Q 60 300 100 300 Q 140 300 140 260 L 140 60 M 140 260 Q 140 300 180 300 Q 220 300 220 260 L 220 60 M 220 260 Q 220 300 260 300 Q 300 300 300 260 L 300 100 Q 300 60 340 60 Q 370 60 370 90'/%3E%3C/svg%3E"),    
@@ -34,10 +48,11 @@ header {
     left: 0;
     right: 0;
     width: 100%;
-    background: #2C3E6B;
-    color: white;
+    background: #FFFFFF;
+    color: #2C3E6B;
     padding: 0 24px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border-bottom: 2px solid #2C3E6B;
+    box-shadow: 0 4px 10px rgba(44,62,107,0.15);
     z-index: 1000;
 }
 .header-inner {
@@ -52,11 +67,11 @@ header h1 {
     font-size: 18px;
     font-weight: normal;
     letter-spacing: 0.1em;
-    color: #D4C9A8;
+    color: #c2652a;
 }
 nav { display: flex; gap: 4px; }
 nav a {
-    color: #A8B8D8;
+    color: #6b5c4f;
     text-decoration: none;
     padding: 6px 14px;
     border-radius: 4px;
@@ -65,8 +80,8 @@ nav a {
     transition: all 0.2s;
 }
 nav a:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
 }
 /* 🔵 Voce attiva — sfondo #12A0D7 come nel dropdown Rivoluzioni */
 nav a.active {
@@ -80,10 +95,10 @@ nav a.active {
     justify-content: center;
     width: 42px;
     height: 38px;
-    border: 1px solid #5A6F9F;
+    border: 1px solid #2C3E6B;
     border-radius: 5px;
     background: transparent;
-    color: #D4C9A8;
+    color: #2C3E6B;
     font-size: 23px;
     line-height: 1;
     cursor: pointer;
@@ -91,8 +106,8 @@ nav a.active {
 
 .nav-toggle:hover,
 .nav-toggle[aria-expanded="true"] {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
 }
 
 @media (max-width: 900px) {
@@ -124,7 +139,7 @@ nav a.active {
         flex-direction: column;
         gap: 4px;
         padding: 8px 0;
-        border-top: 1px solid rgba(255,255,255,0.12);
+        border-top: 1px solid rgba(44,62,107,0.15);
     }
 
     .header-inner .main-nav.is-open {
@@ -163,7 +178,7 @@ nav a.active {
         padding: 0;
         border: 0;
         box-shadow: none;
-        background: rgba(0,0,0,0.12);
+        background: rgba(44,62,107,0.06);
     }
 
     .header-inner .nav-dropdown.is-open .nav-dropdown-menu {
@@ -188,7 +203,7 @@ nav a.active {
         align-items: stretch;
         gap: 4px;
         padding: 10px 0 2px;
-        border-top: 1px solid rgba(255,255,255,0.12);
+        border-top: 1px solid rgba(44,62,107,0.15);
     }
 
     .header-inner.menu-open .header-user {
@@ -198,7 +213,7 @@ nav a.active {
 
     .nav-separator {
         border: 0;
-        border-top: 1px solid rgba(255,255,255,.15);
+        border-top: 1px solid rgba(44,62,107,0.15);
         margin: 10px 0;
     }
 
@@ -2461,33 +2476,33 @@ tr.riga-corrente td:first-child::before {
 /* ── Header esteso con info utente/soggetto ────────────────── */
 .header-user {
     font-size: 12px;
-    color: #A8B8D8;
+    color: #6b5c4f;
     display: flex;
     gap: 14px;
     align-items: center;
     flex-wrap: wrap;
 }
 .header-user .soggetto-attivo {
-    background: rgba(255,255,255,0.12);
+    background: rgba(44,62,107,0.08);
     border-radius: 4px;
     padding: 3px 10px;
-    color: #D4C9A8;
+    color: #2C3E6B;
 }
 .header-user a {
-    color: #A8B8D8;
+    color: #6b5c4f;
     text-decoration: none;
-    border: 1px solid #3A5090;
+    border: 1px solid #2C3E6B;
     border-radius: 3px;
     padding: 3px 10px;
     font-size: 11px;
     transition: all 0.2s;
 }
-.header-user a:hover { background: rgba(255,255,255,0.15); color: white; }
+.header-user a:hover { background: rgba(44,62,107,0.08); color: #2C3E6B; }
 
 .header-link {
-    color: #A8B8D8;
+    color: #6b5c4f;
     text-decoration: none;
-    border: 1px solid #3A5090;
+    border: 1px solid #2C3E6B;
     border-radius: 3px;
     padding: 3px 10px;
     font-size: 11px;
@@ -2495,13 +2510,15 @@ tr.riga-corrente td:first-child::before {
 }
 
 .header-link:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
 }
 
 .header-logo {
     color: #c2652a;
     font-family: 'Eb Garamond', Georgia, serif;
+    font-size: 36px;
+    font-weight: bold;
     text-decoration: none;
 }
 
@@ -2510,11 +2527,11 @@ tr.riga-corrente td:first-child::before {
 }
 
 .header-role-admin {
-    color: #D4C9A8;
+    color: #c2652a;
 }
 
 .header-role-user {
-    color: #7A9ABB;
+    color: #6b5c4f;
 }
 
 .soggetto-attivo {
