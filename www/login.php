@@ -111,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accesso — AstroLab</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Eb+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <style>
         body {
             display: flex;
@@ -133,10 +134,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 28px;
         }
         .login-logo h1 {
-            font-size: 22px;
+            font-family: 'Eb Garamond', Georgia, serif;
+            font-size: 48px;
+            line-height: 56px;
             color: #2C3E6B;
-            font-weight: normal;
-            letter-spacing: 0.08em;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
         .login-logo p {
             font-size: 12px;
