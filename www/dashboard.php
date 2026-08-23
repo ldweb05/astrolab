@@ -382,7 +382,10 @@ document.addEventListener('DOMContentLoaded', function () {
 <div class="flex flex-col gap-3">
 <h3 class="font-title-md text-title-md text-on-surface">🖼️ Foto Profilo</h3>
 <?php if ($hasFotoProfilo): ?>
-<p class="text-sm text-on-surface-variant">Modulo in costruzione (piano Supporter).</p>
+<div id="dash-foto-msg" class="hidden text-sm rounded-lg px-3 py-2"></div>
+<input id="dash-foto-input" type="file" accept="image/jpeg,image/png,image/webp" class="text-sm text-on-surface-variant file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border file:border-outline-variant file:bg-surface-container-lowest file:text-sm file:cursor-pointer hover:file:bg-surface-container"/>
+<p class="text-xs text-on-surface-variant">JPG, PNG o WEBP, max 2MB.</p>
+<button type="button" onclick="dashCaricaFoto()" class="bg-primary text-on-primary rounded-lg py-2 font-title-md text-sm hover:bg-primary/90 transition-colors">Carica Foto</button>
 <?php else: ?>
 <p class="text-sm text-on-surface-variant">Disponibile solo per il piano <span class="text-primary font-medium">Supporter</span>.</p>
 <?php endif; ?>
@@ -397,6 +400,41 @@ function apriModaleImpostazioni() {
 }
 function chiudiModaleImpostazioni() {
     document.getElementById('dash-modale-overlay').classList.add('hidden');
+}
+
+function dashCaricaFoto() {
+    const input = document.getElementById('dash-foto-input');
+    const msg = document.getElementById('dash-foto-msg');
+    if (!input.files || !input.files[0]) {
+        msg.classList.remove('hidden');
+        msg.className = 'text-sm rounded-lg px-3 py-2 bg-red-50 text-red-700';
+        msg.textContent = 'Seleziona prima un file.';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('foto', input.files[0]);
+    formData.append('csrf_token', DASH_SETTINGS_CSRF);
+
+    fetch('api/foto_profilo_api.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            msg.classList.remove('hidden');
+            if (data.ok) {
+                msg.className = 'text-sm rounded-lg px-3 py-2 bg-green-50 text-green-700';
+                msg.textContent = 'Foto aggiornata.';
+                const wrap = document.getElementById('dash-avatar-wrap');
+                wrap.innerHTML = '<img id="dash-avatar-img" src="' + data.url + '" class="w-full h-full object-cover" alt="Foto profilo">';
+            } else {
+                msg.className = 'text-sm rounded-lg px-3 py-2 bg-red-50 text-red-700';
+                msg.textContent = data.errore || 'Errore imprevisto.';
+            }
+        })
+        .catch(() => {
+            msg.classList.remove('hidden');
+            msg.className = 'text-sm rounded-lg px-3 py-2 bg-red-50 text-red-700';
+            msg.textContent = 'Errore di connessione. Riprova.';
+        });
 }
 
 function dashCambiaPassword() {
