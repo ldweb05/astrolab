@@ -61,12 +61,23 @@ solo perché il comportamento di `index.php` osservato coincide).
 - [x] Fase 1 — Rebranding testuale mockup statico (AstroPrecision → AstroLab)
 - [x] Fase 2 — Mockup statico rifinito (navbar centrata, dimensioni voci menu, palette Sahara) — approvato dall'utente
 - [x] Fase 3 — Creare `dashboard.php` reale sul Pi (scheletro protetto da auth, non linkato da nessuna parte), verificare che il container lo serva senza errori
-- [~] Fase 4 — Collegare tab/pannelli ai dati reali (tema.php, rs.php, rl.php, ricerca.php, transiti.php, rilocazione.php), un blocco alla volta
-  - [x] Bottoni Transiti/Rilocazione → transiti.php / rilocazione.php (con ?id= se soggetto attivo)
+- [x] Fase 4 — Collegare tab/pannelli ai dati reali
+  - [x] Bottoni Transiti/Rilocazione → transiti.php / rilocazione.php (con ?id= dinamico)
   - [x] Tab LOCALITÀ/AEROPORTI → ricerca.php (con ?tipo=localita per LOCALITÀ)
   - [x] Riga ricerca (Scelta Anno 1960->+7 + Tipo Analisi + Cerca) → rs.php / rl.php
-  - [ ] Pannello "Cielo Natale" → dati reali da tema.php
-  - [ ] Pannello "RS per residenza" → dati reali da rs.php
+  - [x] DECISIONE (2026-08-23): i due pannelli grafico "Cielo Natale"/"RS per residenza"
+    del mockup sono stati eliminati — rs.php mostra già entrambe le ruote insieme
+    (Tema Natale + RS) con pulsanti/collassabili/mappa; duplicarli in dashboard.php
+    avrebbe richiesto o un iframe ingombrante o la duplicazione della logica di
+    rendering. Sostituiti con: tab TEMA (→ tema.php) e nuovo tab RSM (→ rs.php),
+    entrambi con ?id= dinamico. Contenitore centrale ristretto di conseguenza.
+  - [x] Nome Cognome: dropdown reale con i soggetti dell'astrologo (1 solo soggetto
+    → nome mostrato in automatico; più soggetti → placeholder "Seleziona Soggetto").
+    Campi Data/Ora di Nascita (ora locale, non GMT) si riempiono di conseguenza.
+  - [x] Tab TEMA/RSM, bottoni Transiti/Rilocazione e "Cerca" si aggiornano dinamicamente
+    via JS (aggiornaSoggettoSelezionato) in base al soggetto scelto nel dropdown.
+  - [x] Campo Tipo Analisi disabilitato finché non è selezionato un soggetto (solo
+    caso multi-soggetto; con un soggetto solo è già abilitato al caricamento).
 - [ ] Fase 5 — Restyle dropdown Help con palette Sahara (solo colori/font, nessuna modifica di contenuto/struttura)
 - [ ] Fase 6 — SOLO a fine lavoro, su conferma esplicita: collegare il logo (da ogni pagina del sito) e il nome soggetto in `index.php` a `dashboard.php`
 - [ ] Fase 7 — Verifica finale (php -l, git diff, restart container, test reale) e commit solo su conferma esplicita
