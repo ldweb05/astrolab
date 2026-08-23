@@ -19,6 +19,7 @@ postgres-data/
 
 www/cache/
 www/tmp/
+www/uploads/
 .bak_*
 
 # Configurazioni e backup sensibili
