@@ -344,7 +344,7 @@ function caricaSoggettiConDropdown() {
 
                 html += `<tr class="${isAttivo ? 'riga-soggetto-attivo' : ''}">
                     <td>${s.codice || '—'}</td>
-                    <td><b><a onclick="apriRS(${s.id})" style="cursor:pointer;color:inherit;text-decoration:none;">${s.nome}</a></b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
+                    <td><b><a onclick="apriDashboard(${s.id})" style="cursor:pointer;color:inherit;text-decoration:none;">${s.nome}</a></b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
                     <td>${formatData(s.data_nascita)}</td>
                     <td>${s.ora_nascita}</td>
                     <td>
