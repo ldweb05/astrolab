@@ -161,3 +161,24 @@ Commit di riferimento per Fase B/B-fix/C-parziale: `7412b2e` su
 
 Restano da fare, invariate rispetto a stamattina: Fase C (resto),
 Fase D, Fase E — vedi sopra.
+
+---
+
+## Aggiornamento 23-08-2026 (sera, 2) — login.php: toggle occhiolino password
+
+### Decisione presa
+10. **Campo password `login.php`**: aggiunto bottone toggle
+    mostra/nascondi password (emoji 👁️/🙈, coerente con la scelta
+    già presa di non introdurre font-icona esterni). Markup: input
+    avvolto in `.password-field-wrap` (position relative), bottone
+    assoluto a destra dentro il campo. JS vanilla, nessuna
+    dipendenza esterna, alterna `input.type` tra `password`/`text`.
+
+### File toccati
+- `www/login.php`: markup + CSS (`.password-field-wrap`,
+  `.password-toggle-btn`) + JS toggle
+
+### Stato Fasi (aggiornato)
+- [x] Fase G (nuova) — `login.php`: toggle occhiolino password
+
+Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
