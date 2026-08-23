@@ -3385,3 +3385,45 @@ avviare M1 — Comparazione ricerche RSM.
   "Morpurgo-Discepolo" mentre il titolo visibile in pagina era gia' "Le 34 Regole
   dell'Astrologia Attiva (scuola Ciro Discepolo)".
 - File toccati: www/34_regole.html, www/includes/header_nav.php.
+
+## 23-08-2026 — Dashboard: mappa residenza, dropdown soggetti; scoperto bug geocoding Nominatim (branch new_dashboard + fix/geocoding-nominatim-precisione)
+
+- Proseguito lo sviluppo di `dashboard.php` (branch `new_dashboard`): dropdown soggetti
+  reale (nome auto-compilato se unico, "Seleziona Soggetto" se piu' d'uno), campi Data/Ora
+  di Nascita popolati dai dati reali (ora locale, non GMT, etichetta "(Local)" in
+  orangered), tab TEMA/RSM/LOCALITA'/AEROPORTI e bottoni Transiti/Rilocazione aggiornati
+  dinamicamente via JS in base al soggetto selezionato. I due pannelli grafico del mockup
+  originale (Cielo Natale / RS per residenza) sono stati eliminati su decisione esplicita:
+  `rs.php` mostra gia' entrambe le ruote insieme con pulsanti/collassabili/mappa,
+  duplicarli avrebbe richiesto iframe o duplicazione di logica - sostituiti dal tab RSM.
+- Aggiunta mappa interattiva (Leaflet 1.9.4, stessa versione gia' usata in rs.php/rl.php/
+  rilocazione.php) sotto i bottoni Transiti/Rilocazione: rapporto 3:1, marker circolare
+  color celeste centrato sulla residenza del soggetto selezionato (fallback a
+  latitudine/longitudine di nascita se la residenza non e' impostata, stessa logica gia'
+  in rs.php), completamente interattiva su richiesta esplicita del committente.
+- **Scoperto un bug reale** (non introdotto da questa sessione, solo reso visibile dalla
+  mappa): il geocoding via Nominatim per luogo di nascita/residenza puo' restituire le
+  coordinate di un'area amministrativa (provincia/regione/cantone) invece del centro
+  citta' preciso. Confermato con query dirette a Nominatim per "Caserta" (primo risultato
+  = provincia, secondo = citta') e "Zurigo" (primo risultato corretto, ma il secondo -
+  il Canton Zurigo - facilmente scambiato per errore). Non riguarda `ricerca.php` (motore
+  RSM per condizione, usa un database di localita' pre-caricato, non geocoding live).
+  Documentazione completa: `docs/BUG_GEOCODING_NOMINATIM.md`; voce anche in
+  `docs/ROADMAP.md` (sezione "BUG APERTO").
+- Aperto branch dedicato `fix/geocoding-nominatim-precisione` da `origin/main` (base scelta
+  perche' il codice del bug e' confermato presente li'). Fix parziale committato in
+  `www/js/app.js` (helper `_nominatimOrdinaRisultati`/`_nominatimEtichetta`, applicati a
+  `cercaLuogo()` e `cercaLuogoResidenza()`); restano da fare `cercaLuogoRS()` in `rs.php` e
+  `cercaLuogoRiloc()` in `rilocazione.php`. `transiti.php` non esiste su `main`, presente
+  solo su `fase9-comparator-quota` - fix da propagare separatamente li'.
+- **Incidente registrato**: passando dal branch `new_dashboard` a `fix/geocoding-nominatim-
+  precisione` (basato su `main`) sul Raspberry Pi live, il login e' entrato in loop.
+  Causa identificata: `main` ha una versione piu' vecchia di `Auth.php` con confronto
+  username case-sensitive/esatto, mentre `new_dashboard` usa `LOWER(TRIM())`
+  (case-insensitive) - cambiare branch cambia il codice servito ma non la sessione PHP ne'
+  lo schema DB. Risolto tornando su `new_dashboard` (login di nuovo funzionante). Lavoro
+  sul fix geocoding sospeso, da riprendere in una sessione dedicata sul branch
+  `fix/geocoding-nominatim-precisione`.
+- File toccati: `www/dashboard.php` (codice, branch new_dashboard); `www/js/app.js`
+  (codice, branch fix/geocoding-nominatim-precisione, WIP); `docs/roadmap_nuova_dashboard.md`,
+  `docs/BUG_GEOCODING_NOMINATIM.md`, `docs/ROADMAP.md` (documentazione).
