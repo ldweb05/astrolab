@@ -646,3 +646,58 @@ La selezione obbligatoria della nazione e il limite 50/100/150/Tutte per
   calcolato di `top` sull'elemento sticky e la posizione esatta della prima riga
   `tbody` rispetto ad esso ad ogni larghezza) e correzione definitiva, poi
   rimuovere lo spacer temporaneo.
+
+---
+
+## BUG APERTO — Geocoding Nominatim impreciso per luogo di nascita/residenza (scoperto 23-08-2026)
+
+⚠️ Da correggere in una sessione dedicata futura — branch aperto:
+`fix/geocoding-nominatim-precisione` (base: `origin/main`), lavoro iniziato ma
+non completato (bloccato da un problema di login legato alla divergenza tra
+branch, vedi `docs/FREEZE.md` e `docs/HANDOVER_OPERATIVO_astrolab.md`)
+
+Documentazione completa: `docs/BUG_GEOCODING_NOMINATIM.md`
+
+- **Sintomo:** cercando una città (es. "Caserta", "Zurigo") nei campi di
+  ricerca località con geocoding automatico via Nominatim, le coordinate
+  salvate possono corrispondere a un'area amministrativa più ampia
+  (provincia/regione/cantone) invece che al centro città preciso — scostamento
+  di diversi km, verificato visivamente tramite la mappa aggiunta a
+  `dashboard.php` sul branch `new_dashboard`.
+- **Causa confermata:** la query a Nominatim
+  (`nominatim.openstreetmap.org/search?q=...`) non filtra per tipo di
+  risultato (`addresstype`). A volte il risultato più "importante" secondo
+  Nominatim (e quindi il primo in lista) è un'area amministrativa
+  (`addresstype: county/state`) invece del punto città (`addresstype:
+  city/town`); in altri casi il risultato corretto è primo ma il dropdown non
+  distingue visivamente i tipi, favorendo la scelta sbagliata per errore
+  umano (caso osservato con "Zurigo": scelto per errore il Canton Zurigo
+  invece della città).
+- **Superficie del bug:** `cercaLuogo()` e `cercaLuogoResidenza()` in
+  `www/js/app.js` (luogo di nascita e residenza); `cercaLuogoRS()` in
+  `rs.php`; `cercaLuogoRiloc()` in `rilocazione.php`; stesso pattern anche in
+  `rl.php` (via `app.js`) e in `transiti.php` (feature presente solo su
+  `fase9-comparator-quota`, non su `main` — da propagare separatamente).
+  **Confermato NON coinvolto:** `ricerca.php` (motore RSM per condizione),
+  che lavora su un database di località pre-caricato, non su geocoding live.
+- **Fix in corso (parziale, committato su `fix/geocoding-nominatim-precisione`):**
+  aggiunta in `www/js/app.js` di due helper (`_nominatimOrdinaRisultati`,
+  `_nominatimEtichetta`) che spostano i risultati troppo generici
+  (county/state/country/region/state_district) in fondo alla lista senza
+  eliminarli, ed etichettano il tipo di ciascun risultato nel dropdown.
+  Applicato a `cercaLuogo()` e `cercaLuogoResidenza()`. **Restano da fare:**
+  `cercaLuogoRS()` in `rs.php`, `cercaLuogoRiloc()` in `rilocazione.php`, e
+  valutare la propagazione a `transiti.php` su `fase9-comparator-quota`.
+- **Nota operativa importante:** passare a un branch diverso (es. da
+  `new_dashboard` a `main`) su un ambiente live cambia il codice servito ma
+  NON la sessione PHP attiva né lo schema del database — se il branch di
+  destinazione ha una versione più vecchia di `Auth.php`/`login.php`
+  incompatibile con l'utente corrente, il login può entrare in loop. Successo
+  qui: `main` confronta l'username in modo case-sensitive/esatto, mentre
+  `new_dashboard` lo fa case-insensitive con `TRIM()` — cambiare branch ha
+  temporaneamente impedito l'accesso, risolto tornando su `new_dashboard`.
+- **Da fare in una sessione dedicata:** completare `cercaLuogoRS()` e
+  `cercaLuogoRiloc()` sul branch `fix/geocoding-nominatim-precisione`,
+  verificare se propagare a `transiti.php`, poi decidere come/quando fondere
+  il fix sui branch `main`/`new_dashboard`/altri; valutare anche se soggetti
+  già esistenti hanno coordinate imprecise da ricorreggere manualmente.
