@@ -115,3 +115,26 @@ cambio password avviene dal modale "Impostazioni" (icona ingranaggio in alto a
 destra), che in una fase successiva verra' collegato funzionalmente riusando
 `Auth::cambiaPropriaPassword()` (stessa logica gia' usata da
 `cambia_password.php`) tramite un endpoint AJAX dedicato, non ancora creato.
+
+## Modale Impostazioni completato (23-08-2026)
+
+Sostituita la voce nav "Password" con un modale "Impostazioni" aperto
+dall'icona ingranaggio in header, con due sezioni:
+
+- Cambia Password: form (attuale/nuova/conferma), endpoint dedicato
+  www/api/cambia_password_api.php che riusa Auth::cambiaPropriaPassword()
+  (stessa logica di cambia_password.php), CSRF via sessione
+  $_SESSION['dash_settings_csrf'], testato funzionante end-to-end.
+- Foto Profilo: riservata al piano Supporter (nuovo feature-code
+  'foto_profilo' in Auth::hasFeature(), stesso meccanismo gia' usato
+  per locality_search/grid_search/astri_in_cuspide). Colonna
+  utenti.foto_profilo aggiunta con sql/009_foto_profilo_utenti.sql.
+  Upload validato (MIME reale via finfo, max 2MB, solo jpg/png/webp)
+  in www/api/foto_profilo_api.php, salvato in www/uploads/avatar/
+  (cartella persistente ma esclusa da git, permessi corretti per
+  l'utente www-data del container). L'avatar nell'header mostra la
+  foto salvata al posto del cerchietto vuoto, aggiornato subito dopo
+  l'upload senza ricaricare la pagina. Testato funzionante end-to-end.
+
+Rifiniture layout header nella stessa sessione: respiro a sinistra del
+logo e a destra delle icone, avatar ingrandito da 32px a 40px.
