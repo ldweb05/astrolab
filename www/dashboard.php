@@ -36,6 +36,10 @@ if (empty($_SESSION['dash_settings_csrf'])) {
 }
 $dashSettingsCsrf = $_SESSION['dash_settings_csrf'];
 
+$stmtFoto = $pdo->prepare('SELECT foto_profilo FROM utenti WHERE id = ?');
+$stmtFoto->execute([$auth->getCurrentUserId()]);
+$dashFotoProfilo = $stmtFoto->fetchColumn() ?: null;
+
 // Mappa id -> {data, ora} per riempire i campi via JS quando c'è più di un soggetto
 // (stesso formato di tema.php: d/m/Y e ora locale, non GMT)
 $dashSoggettiDatiJs = [];
@@ -207,7 +211,11 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <button id="dash-btn-settings" class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container p-2 rounded-full transition-colors">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
 </button>
-<div class="h-10 w-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2"></div>
+<div id="dash-avatar-wrap" class="h-10 w-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2">
+<?php if ($dashFotoProfilo): ?>
+<img id="dash-avatar-img" src="<?= htmlspecialchars($dashFotoProfilo) ?>" class="w-full h-full object-cover" alt="Foto profilo"/>
+<?php endif; ?>
+</div>
 </div>
 </header>
 <main class="p-container-padding-mobile md:p-container-padding-desktop min-h-[calc(100vh-64px)] flex items-center justify-center pb-32 md:pb-12 bg-white">
