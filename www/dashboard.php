@@ -312,6 +312,7 @@ const DASH_LINK_BASES = {
     'dash-link-transiti': 'transiti.php',
     'dash-link-rilocazione': 'rilocazione.php'
 };
+const DASH_SETTINGS_CSRF = "<?= $dashSettingsCsrf ?>";
 let dashSoggettoSelezionatoId = <?= (int)$dashSoggettoUnicoId ?>;
 const DASH_SOGGETTI_DATI = <?= json_encode($dashSoggettiDatiJs, JSON_FORCE_OBJECT) ?>;
 
@@ -357,10 +358,14 @@ document.addEventListener('DOMContentLoaded', function () {
 </button>
 </div>
 
-<!-- Sezione cambio password (in arrivo: collegamento funzionale) -->
+<!-- Sezione cambio password -->
 <div class="flex flex-col gap-3">
 <h3 class="font-title-md text-title-md text-on-surface">🔑 Cambia Password</h3>
-<p class="text-sm text-on-surface-variant">Modulo in costruzione.</p>
+<div id="dash-pwd-msg" class="hidden text-sm rounded-lg px-3 py-2"></div>
+<input id="dash-pwd-attuale" type="password" autocomplete="off" placeholder="Password attuale" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-body-lg text-sm w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+<input id="dash-pwd-nuova" type="password" autocomplete="off" placeholder="Nuova password (min. 8 caratteri)" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-body-lg text-sm w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+<input id="dash-pwd-conferma" type="password" autocomplete="off" placeholder="Conferma nuova password" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-body-lg text-sm w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"/>
+<button type="button" onclick="dashCambiaPassword()" class="bg-primary text-on-primary rounded-lg py-2 font-title-md text-sm hover:bg-primary/90 transition-colors">Aggiorna Password</button>
 </div>
 
 <div class="border-t border-outline-variant/60"></div>
@@ -384,6 +389,43 @@ function apriModaleImpostazioni() {
 }
 function chiudiModaleImpostazioni() {
     document.getElementById('dash-modale-overlay').classList.add('hidden');
+}
+
+function dashCambiaPassword() {
+    const attuale  = document.getElementById('dash-pwd-attuale').value;
+    const nuova    = document.getElementById('dash-pwd-nuova').value;
+    const conferma = document.getElementById('dash-pwd-conferma').value;
+    const msg = document.getElementById('dash-pwd-msg');
+
+    fetch('api/cambia_password_api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            csrf_token: DASH_SETTINGS_CSRF,
+            password_attuale: attuale,
+            nuova_password: nuova,
+            conferma_password: conferma
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        msg.classList.remove('hidden');
+        if (data.ok) {
+            msg.className = 'text-sm rounded-lg px-3 py-2 bg-green-50 text-green-700';
+            msg.textContent = 'Password aggiornata con successo.';
+            document.getElementById('dash-pwd-attuale').value = '';
+            document.getElementById('dash-pwd-nuova').value = '';
+            document.getElementById('dash-pwd-conferma').value = '';
+        } else {
+            msg.className = 'text-sm rounded-lg px-3 py-2 bg-red-50 text-red-700';
+            msg.textContent = data.errore || 'Errore imprevisto.';
+        }
+    })
+    .catch(() => {
+        msg.classList.remove('hidden');
+        msg.className = 'text-sm rounded-lg px-3 py-2 bg-red-50 text-red-700';
+        msg.textContent = 'Errore di connessione. Riprova.';
+    });
 }
 document.addEventListener('DOMContentLoaded', function () {
     const btnSettings = document.getElementById('dash-btn-settings');
