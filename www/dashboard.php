@@ -198,7 +198,6 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <span class="text-on-surface-variant font-title-md text-[16px] leading-6 font-medium" title="Soggetto attivo — vai a Soggetti per cambiarlo">&#11088; <?= htmlspecialchars($soggettoNome) ?></span>
 <?php endif; ?>
 <a class="text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium" href="#">|</a>
-<a class="text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium" href="cambia_password.php">&#128273; Password</a>
 <a class="text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium" href="logout.php">Esci</a>
 </nav>
 <div class="flex items-center gap-4 pr-2">
