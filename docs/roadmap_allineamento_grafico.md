@@ -105,3 +105,59 @@ Commit di riferimento per Fase B/B-fix/C-parziale: `7412b2e` su
   applicare un pattern in 8 colpi, ma rischioso se si dimentica una
   delle 8 (verificare sempre il conteggio grep prima di dare per
   completato un giro).
+
+---
+
+## Aggiornamento 23-08-2026 (sera) — index.php: navbar minimale + fix link dashboard.php
+
+### Decisioni prese
+6. **Logo `index.php`**: allineato allo stesso schema delle altre pagine
+   — rimosso il simbolo `☉`, ora `<a class="header-logo">AstroLab</a>`
+   dentro `<h1>`, con link a `dashboard.php` (preservando `?id=` se
+   c'è un soggetto attivo, stessa convenzione di `_navUrl()` in
+   `header_nav.php`, qui reimplementata inline perché `index.php`
+   non include quel file).
+7. **Navbar `index.php` ridotta al minimo** (decisione esplicita
+   dell'utente, DEVIAZIONE dal principio "solo grafica" — qui si
+   tocca anche il funzionamento): rimossi i link diretti Soggetti
+   (self-link), Tema Natale, Rivoluzione Solare, Ricerca Località,
+   Utenti (admin), il link separato "🔑 Password" e il badge
+   "⭐ soggetto attivo". Restano SOLO: nome astrologo, icona
+   ingranaggio (modale Impostazioni), avatar, link "Esci" (mantenuto
+   su richiesta esplicita per poter fare logout anche da questa
+   pagina). Il soggetto attivo resta visibile solo nelle altre
+   pagine; da `index.php` ci si arriva a `dashboard.php` cliccando
+   il nome del soggetto (comportamento preesistente, invariato).
+8. **Modale Impostazioni in `index.php`**: `dashboard.php` usa
+   Tailwind (CDN) per bottone ingranaggio/modale/avatar — non
+   riusabile direttamente in `index.php`, che resta su CSS classico
+   (stessa decisione presa per non migrare `dashboard.php`).
+   Ricostruito l'equivalente in CSS classico (nuove classi in
+   `style.css`: `.header-icon-btn`, `.header-avatar`,
+   `.idx-modal-*`), riusando 1:1 la stessa logica JS (fetch) e le
+   stesse API backend già esistenti e non toccate:
+   `api/foto_profilo_api.php`, `api/cambia_password_api.php`.
+   Icona ingranaggio: emoji ⚙️ invece del font Material Symbols
+   Outlined usato in dashboard.php, per non introdurre una nuova
+   dipendenza esterna in una pagina che non l'aveva.
+9. **`dashboard.php` — fix voce navbar**: la voce "Utenti"
+   (`href="#"`, non collegata a nulla) rinominata in "Soggetti" e
+   collegata a `index.php` — è la pagina reale di gestione soggetti,
+   l'etichetta "Utenti" era fuorviante/residua.
+
+### File toccati
+- `www/index.php`: variabili PHP modale (`$idxHasFotoProfilo`,
+  `$idxSettingsCsrf`, `$idxFotoProfilo`), header semplificato,
+  markup + JS modale Impostazioni
+- `www/css/style.css`: nuove classi `.header-icon-btn`,
+  `.header-avatar`, `.idx-modal-overlay`, `.idx-modal-box` e
+  derivate
+- `www/dashboard.php`: fix link "Utenti"→"Soggetti"
+
+### Stato Fasi (aggiornato)
+- [x] Fase F (nuova) — `index.php`: navbar minimale + modale
+  Impostazioni in CSS classico + fix link "Soggetti" in
+  `dashboard.php`
+
+Restano da fare, invariate rispetto a stamattina: Fase C (resto),
+Fase D, Fase E — vedi sopra.
