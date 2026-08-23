@@ -201,6 +201,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #BBB;
             margin-top: 24px;
         }
+        .password-field-wrap {
+            position: relative;
+        }
+        .password-field-wrap input {
+            padding-right: 40px !important;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            top: 50%;
+            right: 6px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 6px;
+            color: #6b5c4f;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .password-toggle-btn:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -222,7 +246,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" autocomplete="current-password" required>
+                <div class="password-field-wrap">
+                    <input type="password" name="password" id="login-password" autocomplete="current-password" required>
+                    <button type="button" id="login-toggle-password" class="password-toggle-btn" tabindex="-1" aria-label="Mostra password" title="Mostra password">👁️</button>
+                </div>
             </div>
             <button type="submit" class="btn-login">Accedi →</button>
         </form>
@@ -233,5 +260,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="version-note">Uso personale — Swiss Ephemeris AGPL</div>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('login-toggle-password');
+    const input = document.getElementById('login-password');
+    if (!btn || !input) return;
+
+    btn.addEventListener('click', function () {
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.textContent = isHidden ? '🙈' : '👁️';
+        btn.setAttribute('aria-label', isHidden ? 'Nascondi password' : 'Mostra password');
+        btn.setAttribute('title', isHidden ? 'Nascondi password' : 'Mostra password');
+    });
+});
+</script>
 </body>
 </html>
