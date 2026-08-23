@@ -29,6 +29,20 @@ if ($isAdmin) {
 }
 $dashSoggettoUnicoId = count($dashSoggetti) === 1 ? (int)$dashSoggetti[0]['id'] : 0;
 
+// Se arriviamo con ?id= esplicito (es. click sul nome soggetto in index.php),
+// verifichiamo che appartenga a questo astrologo e lo pre-selezioniamo,
+// anche se ha più soggetti salvati (stessa convenzione di tema.php/rs.php).
+$dashIdRichiesto = intval($_GET['id'] ?? 0);
+if ($dashIdRichiesto > 0) {
+    foreach ($dashSoggetti as $dsCheck) {
+        if ((int)$dsCheck['id'] === $dashIdRichiesto) {
+            $dashSoggettoUnicoId = $dashIdRichiesto;
+            $auth->setSoggettoAttivo($dashIdRichiesto);
+            break;
+        }
+    }
+}
+
 // Modale impostazioni: cambio password (tutti) + foto profilo (solo Supporter/admin)
 $hasFotoProfilo = $auth->hasFeature('foto_profilo');
 if (empty($_SESSION['dash_settings_csrf'])) {
@@ -243,9 +257,9 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <input class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="<?= htmlspecialchars($dashSoggetti[0]['nome']) ?>"/>
 <?php elseif (count($dashSoggetti) > 1): ?>
 <select id="dash-soggetto" onchange="aggiornaSoggettoSelezionato(this.value)" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
-<option value="">Seleziona Soggetto</option>
+<option value="" <?= $dashSoggettoUnicoId === 0 ? 'selected' : '' ?>>Seleziona Soggetto</option>
 <?php foreach ($dashSoggetti as $ds): ?>
-<option value="<?= (int)$ds['id'] ?>"><?= htmlspecialchars($ds['nome']) ?></option>
+<option value="<?= (int)$ds['id'] ?>" <?= (int)$ds['id'] === $dashSoggettoUnicoId ? 'selected' : '' ?>><?= htmlspecialchars($ds['nome']) ?></option>
 <?php endforeach; ?>
 </select>
 <?php else: ?>
@@ -255,14 +269,14 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <div class="flex flex-col gap-2">
 <label class="font-label-caps text-label-caps text-on-surface-variant">Data di Nascita</label>
 <div class="relative">
-<input id="dash-data-nascita" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="<?= count($dashSoggetti) === 1 ? htmlspecialchars($dashSoggettiDatiJs[$dashSoggettoUnicoId]['data']) : '' ?>"/>
+<input id="dash-data-nascita" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="<?= $dashSoggettoUnicoId > 0 ? htmlspecialchars($dashSoggettiDatiJs[$dashSoggettoUnicoId]['data']) : '' ?>"/>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">calendar_today</span>
 </div>
 </div>
 <div class="flex flex-col gap-2">
 <label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap">Ora di Nascita <span class="text-[11px] normal-case font-normal" style="color:orangered">(Local)</span></label>
 <div class="relative">
-<input id="dash-ora-nascita" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="<?= count($dashSoggetti) === 1 ? htmlspecialchars($dashSoggettiDatiJs[$dashSoggettoUnicoId]['ora']) : '' ?>"/>
+<input id="dash-ora-nascita" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="<?= $dashSoggettoUnicoId > 0 ? htmlspecialchars($dashSoggettiDatiJs[$dashSoggettoUnicoId]['ora']) : '' ?>"/>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">schedule</span>
 </div>
 </div>
