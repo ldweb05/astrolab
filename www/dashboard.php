@@ -21,9 +21,9 @@ $rsmUrl         = $soggettoAttivo > 0 ? 'rs.php?id=' . (int)$soggettoAttivo : 'r
 // Elenco soggetti dell'astrologo (stessa logica di RicercaPageData.php)
 $userId = $auth->getCurrentUserId();
 if ($isAdmin) {
-    $dashSoggetti = $pdo->query("SELECT id, nome, data_nascita, ora_nascita FROM soggetti ORDER BY nome")->fetchAll(PDO::FETCH_ASSOC);
+    $dashSoggetti = $pdo->query("SELECT id, nome, data_nascita, ora_nascita, latitudine, longitudine, residenza_latitudine, residenza_longitudine, residenza_luogo FROM soggetti ORDER BY nome")->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    $stmtDashSoggetti = $pdo->prepare("SELECT id, nome, data_nascita, ora_nascita FROM soggetti WHERE utente_id = ? ORDER BY nome");
+    $stmtDashSoggetti = $pdo->prepare("SELECT id, nome, data_nascita, ora_nascita, latitudine, longitudine, residenza_latitudine, residenza_longitudine, residenza_luogo FROM soggetti WHERE utente_id = ? ORDER BY nome");
     $stmtDashSoggetti->execute([$userId]);
     $dashSoggetti = $stmtDashSoggetti->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -33,9 +33,14 @@ $dashSoggettoUnicoId = count($dashSoggetti) === 1 ? (int)$dashSoggetti[0]['id'] 
 // (stesso formato di tema.php: d/m/Y e ora locale, non GMT)
 $dashSoggettiDatiJs = [];
 foreach ($dashSoggetti as $ds) {
+    $resLat = $ds['residenza_latitudine']  ?: ($ds['latitudine']  ?? null);
+    $resLon = $ds['residenza_longitudine'] ?: ($ds['longitudine'] ?? null);
     $dashSoggettiDatiJs[(int)$ds['id']] = [
         'data' => $ds['data_nascita'] ? date('d/m/Y', strtotime($ds['data_nascita'])) : '',
         'ora'  => $ds['ora_nascita'] ? substr($ds['ora_nascita'], 0, 5) : '',
+        'lat'  => $resLat !== null ? (float)$resLat : null,
+        'lon'  => $resLon !== null ? (float)$resLon : null,
+        'luogo'=> $ds['residenza_luogo'] ?: null,
     ];
 }
 
@@ -51,6 +56,7 @@ $annoCorrente = (int)date('Y');
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Eb+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script id="tailwind-config">
   tailwind.config = {
     darkMode: "class",
@@ -286,6 +292,10 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
                     Rilocazione
                 </a>
 </div>
+<!-- 5. Mappa decorativa residenza (3:1, marker celeste centrato) -->
+<div id="dash-mappa-wrap" class="hidden w-full aspect-[3/1] rounded-2xl overflow-hidden border border-outline-variant">
+<div id="dash-mappa" class="w-full h-full"></div>
+</div>
 
 </div>
 </main>
@@ -315,6 +325,7 @@ function aggiornaSoggettoSelezionato(id) {
     const dati = DASH_SOGGETTI_DATI[dashSoggettoSelezionatoId];
     if (datiCampo) { datiCampo.value = dati ? dati.data : ''; }
     if (oraCampo) { oraCampo.value = dati ? dati.ora : ''; }
+    aggiornaMappaResidenza(dati);
 }
 
 function eseguiCercaDashboard() {
@@ -329,6 +340,49 @@ function eseguiCercaDashboard() {
 document.addEventListener('DOMContentLoaded', function () {
     aggiornaSoggettoSelezionato(dashSoggettoSelezionatoId);
 });
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let dashLeafletMap = null;
+let dashLeafletMarker = null;
+
+function aggiornaMappaResidenza(dati) {
+    const wrap = document.getElementById('dash-mappa-wrap');
+    if (!dati || dati.lat === null || dati.lon === null) {
+        wrap.classList.add('hidden');
+        return;
+    }
+    wrap.classList.remove('hidden');
+    if (!dashLeafletMap) {
+        dashLeafletMap = L.map('dash-mappa', {
+            zoomControl: true,
+            dragging: true,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            boxZoom: true,
+            keyboard: true,
+            touchZoom: true
+        }).setView([dati.lat, dati.lon], 9);
+        L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(dashLeafletMap);
+        dashLeafletMarker = L.circleMarker([dati.lat, dati.lon], {
+            radius: 10,
+            color: '#0284c7',
+            weight: 2,
+            fillColor: '#38bdf8',
+            fillOpacity: 0.9
+        }).addTo(dashLeafletMap);
+    } else {
+        dashLeafletMap.setView([dati.lat, dati.lon], 9);
+        dashLeafletMarker.setLatLng([dati.lat, dati.lon]);
+    }
+    setTimeout(function () {
+        dashLeafletMap.invalidateSize();
+        dashLeafletMap.setView([dati.lat, dati.lon], 9);
+    }, 100);
+}
 </script>
 </body>
 </html>
