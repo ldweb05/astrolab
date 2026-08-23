@@ -66,7 +66,7 @@ if ($soggetto) {
     <script src="js/app.js"></script>
     <script src="js/svg_zoom.js"></script>
     <style>
-        .tema-box.tema-box-full { max-width: 100%; min-width: 0; width: 100%; background: #F2EDE4; box-shadow: none; }
+        .tema-box.tema-box-full { max-width: 100%; min-width: 0; width: 100%; background: transparent; box-shadow: none; }
         .tema-col { display: flex; flex-direction: column; gap: 16px; flex: 1; min-width: 460px; max-width: 540px; }
         .tema-col .tema-box { min-width: 0; max-width: none; }
         .tema-box-full .tema-box-header { justify-content: center; gap: 14px; }

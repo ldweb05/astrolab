@@ -53,7 +53,7 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
     background: none;
     border: none;
     font-family: inherit;
-    color: #A8B8D8;
+    color: #6b5c4f;
     text-decoration: none;
     padding: 6px 14px;
     border-radius: 4px;
@@ -68,8 +68,8 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
     height: 100%;
 }
 .nav-dropdown-trigger:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
 }
 .nav-dropdown-trigger.active {
     background: #12A0D7;
@@ -90,10 +90,10 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
     top: calc(100% + 4px);
     left: 0;
     min-width: 180px;
-    background: #1E2E5A;
-    border: 1px solid rgba(255,255,255,0.12);
+    background: #FFFFFF;
+    border: 1px solid rgba(44,62,107,0.15);
     border-radius: 6px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    box-shadow: 0 8px 24px rgba(44,62,107,0.15);
     z-index: 9000;
     padding: 4px 0;
     /* piccolo gap invisibile per non perdere il hover passando dal trigger al menu */
@@ -107,7 +107,7 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
 
 .nav-dropdown-menu a {
     display: block;
-    color: #A8B8D8;
+    color: #6b5c4f;
     text-decoration: none;
     padding: 8px 18px;
     font-size: 13px;
@@ -117,22 +117,22 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
 }
 .nav-dropdown-menu a:hover,
 .nav-dropdown-menu a.active {
-    background: rgba(255,255,255,0.12);
-    color: white;
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
 }
 /* Separatore visivo tra le voci */
 .nav-dropdown-menu a + a {
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(44,62,107,0.08);
 }
 /* ── Trigger Help ──────────────────────────────────────────────── */
 .help-trigger {
-    color: #D4C9A8 !important;
+    color: #6b5c4f !important;
     background: none;
     border: none;
 }
 .help-trigger:hover,
 .help-trigger.active {
-    color: white !important;
+    color: #2C3E6B !important;
 }
 </style>
 
