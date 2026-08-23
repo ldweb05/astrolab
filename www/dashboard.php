@@ -18,6 +18,27 @@ $rilocazioneUrl = $soggettoAttivo > 0 ? 'rilocazione.php?id=' . (int)$soggettoAt
 $temaUrl        = $soggettoAttivo > 0 ? 'tema.php?id=' . (int)$soggettoAttivo : 'tema.php';
 $rsmUrl         = $soggettoAttivo > 0 ? 'rs.php?id=' . (int)$soggettoAttivo : 'rs.php';
 
+// Elenco soggetti dell'astrologo (stessa logica di RicercaPageData.php)
+$userId = $auth->getCurrentUserId();
+if ($isAdmin) {
+    $dashSoggetti = $pdo->query("SELECT id, nome, data_nascita, ora_nascita FROM soggetti ORDER BY nome")->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $stmtDashSoggetti = $pdo->prepare("SELECT id, nome, data_nascita, ora_nascita FROM soggetti WHERE utente_id = ? ORDER BY nome");
+    $stmtDashSoggetti->execute([$userId]);
+    $dashSoggetti = $stmtDashSoggetti->fetchAll(PDO::FETCH_ASSOC);
+}
+$dashSoggettoUnicoId = count($dashSoggetti) === 1 ? (int)$dashSoggetti[0]['id'] : 0;
+
+// Mappa id -> {data, ora} per riempire i campi via JS quando c'è più di un soggetto
+// (stesso formato di tema.php: d/m/Y e ora locale, non GMT)
+$dashSoggettiDatiJs = [];
+foreach ($dashSoggetti as $ds) {
+    $dashSoggettiDatiJs[(int)$ds['id']] = [
+        'data' => $ds['data_nascita'] ? date('d/m/Y', strtotime($ds['data_nascita'])) : '',
+        'ora'  => $ds['ora_nascita'] ? substr($ds['ora_nascita'], 0, 5) : '',
+    ];
+}
+
 // Range anni per la ricerca RS/RL: 1960 -> anno corrente + 7
 $annoCorrente = (int)date('Y');
 ?>
@@ -181,10 +202,10 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <div class="bg-white rounded-[2rem] w-full max-w-3xl p-8 flex flex-col gap-8 shadow-xl border border-outline-variant/30">
 <!-- 1. Tabs Row -->
 <div class="flex gap-6 border-b border-outline-variant">
-<a href="<?= htmlspecialchars($temaUrl) ?>" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
+<a id="dash-link-tema" href="<?= htmlspecialchars($temaUrl) ?>" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
                     TEMA
                 </a>
-<a href="<?= htmlspecialchars($rsmUrl) ?>" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
+<a id="dash-link-rsm" href="<?= htmlspecialchars($rsmUrl) ?>" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
                     RSM
                 </a>
 <a href="ricerca.php?tipo=localita" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
@@ -198,19 +219,30 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <div class="grid grid-cols-1 md:grid-cols-[1.8fr_1fr_0.8fr] gap-6">
 <div class="flex flex-col gap-2">
 <label class="font-label-caps text-label-caps text-on-surface-variant">Nome Cognome</label>
-<input class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="Mario Rossi"/>
+<?php if (count($dashSoggetti) === 1): ?>
+<input class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="<?= htmlspecialchars($dashSoggetti[0]['nome']) ?>"/>
+<?php elseif (count($dashSoggetti) > 1): ?>
+<select id="dash-soggetto" onchange="aggiornaSoggettoSelezionato(this.value)" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+<option value="">Seleziona Soggetto</option>
+<?php foreach ($dashSoggetti as $ds): ?>
+<option value="<?= (int)$ds['id'] ?>"><?= htmlspecialchars($ds['nome']) ?></option>
+<?php endforeach; ?>
+</select>
+<?php else: ?>
+<input class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface-variant w-full" readonly type="text" value="Nessun soggetto salvato"/>
+<?php endif; ?>
 </div>
 <div class="flex flex-col gap-2">
 <label class="font-label-caps text-label-caps text-on-surface-variant">Data di Nascita</label>
 <div class="relative">
-<input class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="15 Maggio 1980"/>
+<input id="dash-data-nascita" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="<?= count($dashSoggetti) === 1 ? htmlspecialchars($dashSoggettiDatiJs[$dashSoggettoUnicoId]['data']) : '' ?>"/>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">calendar_today</span>
 </div>
 </div>
 <div class="flex flex-col gap-2">
-<label class="font-label-caps text-label-caps text-on-surface-variant">Ora di Nascita</label>
+<label class="font-label-caps text-label-caps text-on-surface-variant whitespace-nowrap">Ora di Nascita <span class="text-[11px] normal-case font-normal" style="color:orangered">(Local)</span></label>
 <div class="relative">
-<input class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="14:30"/>
+<input id="dash-ora-nascita" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow" readonly type="text" value="<?= count($dashSoggetti) === 1 ? htmlspecialchars($dashSoggettiDatiJs[$dashSoggettoUnicoId]['ora']) : '' ?>"/>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">schedule</span>
 </div>
 </div>
@@ -231,7 +263,7 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <div class="flex flex-col gap-2 flex-1 relative z-10 w-full">
 <label class="font-label-caps text-label-caps text-on-surface-variant">Tipo Analisi</label>
 <div class="relative">
-<select id="dash-tipo-analisi" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none pr-10 cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+<select id="dash-tipo-analisi" disabled class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none pr-10 cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
 <option selected>Rivoluzione Solare</option>
 <option>Rivoluzione Lunare</option>
 </select>
@@ -245,11 +277,11 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 </div>
 <!-- 4. Action Buttons Row -->
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<a href="<?= htmlspecialchars($transitiUrl) ?>" class="py-4 border border-primary/50 rounded-xl text-primary hover:bg-primary/5 font-title-md text-title-md transition-colors flex items-center justify-center gap-3 bg-white shadow-sm">
+<a id="dash-link-transiti" href="<?= htmlspecialchars($transitiUrl) ?>" class="py-4 border border-primary/50 rounded-xl text-primary hover:bg-primary/5 font-title-md text-title-md transition-colors flex items-center justify-center gap-3 bg-white shadow-sm">
 <span class="material-symbols-outlined">sync_alt</span>
                     Transiti
                 </a>
-<a href="<?= htmlspecialchars($rilocazioneUrl) ?>" class="py-4 border border-outline-variant rounded-xl text-on-surface hover:bg-surface-container hover:border-outline font-title-md text-title-md transition-colors flex items-center justify-center gap-3 bg-white shadow-sm">
+<a id="dash-link-rilocazione" href="<?= htmlspecialchars($rilocazioneUrl) ?>" class="py-4 border border-outline-variant rounded-xl text-on-surface hover:bg-surface-container hover:border-outline font-title-md text-title-md transition-colors flex items-center justify-center gap-3 bg-white shadow-sm">
 <span class="material-symbols-outlined">map</span>
                     Rilocazione
                 </a>
@@ -258,15 +290,45 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 </div>
 </main>
 <script>
+const DASH_LINK_BASES = {
+    'dash-link-tema': 'tema.php',
+    'dash-link-rsm': 'rs.php',
+    'dash-link-transiti': 'transiti.php',
+    'dash-link-rilocazione': 'rilocazione.php'
+};
+let dashSoggettoSelezionatoId = <?= (int)$dashSoggettoUnicoId ?>;
+const DASH_SOGGETTI_DATI = <?= json_encode($dashSoggettiDatiJs, JSON_FORCE_OBJECT) ?>;
+
+function aggiornaSoggettoSelezionato(id) {
+    dashSoggettoSelezionatoId = parseInt(id, 10) || 0;
+    Object.keys(DASH_LINK_BASES).forEach(function (elId) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const base = DASH_LINK_BASES[elId];
+        el.href = dashSoggettoSelezionatoId > 0 ? (base + '?id=' + dashSoggettoSelezionatoId) : base;
+    });
+    const tipoAnalisi = document.getElementById('dash-tipo-analisi');
+    if (tipoAnalisi) { tipoAnalisi.disabled = dashSoggettoSelezionatoId <= 0; }
+
+    const datiCampo = document.getElementById('dash-data-nascita');
+    const oraCampo = document.getElementById('dash-ora-nascita');
+    const dati = DASH_SOGGETTI_DATI[dashSoggettoSelezionatoId];
+    if (datiCampo) { datiCampo.value = dati ? dati.data : ''; }
+    if (oraCampo) { oraCampo.value = dati ? dati.ora : ''; }
+}
+
 function eseguiCercaDashboard() {
     const anno = document.getElementById('dash-anno').value;
     const tipo = document.getElementById('dash-tipo-analisi').value;
-    const soggettoId = <?= (int)($soggettoAttivo ?? 0) ?>;
     const pagina = (tipo === 'Rivoluzione Lunare') ? 'rl.php' : 'rs.php';
     let url = pagina + '?anno=' + encodeURIComponent(anno);
-    if (soggettoId > 0) { url += '&id=' + soggettoId; }
+    if (dashSoggettoSelezionatoId > 0) { url += '&id=' + dashSoggettoSelezionatoId; }
     window.location.href = url;
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    aggiornaSoggettoSelezionato(dashSoggettoSelezionatoId);
+});
 </script>
 </body>
 </html>
