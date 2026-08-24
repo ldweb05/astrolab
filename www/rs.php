@@ -177,6 +177,7 @@ if ($soggetto) {
             <button class="btn-mappa is-hidden" id="btn-apri-mappa" onclick="toggleMappa()">🌍 Mappa</button>
             <button class="btn-mappa is-hidden" id="btn-previsione-annuale" onclick="togglePrevisioneAnnuale()">📖 Relazione Annuale</button>
             <button class="btn-mappa is-hidden" id="btn-correzione-tempo" onclick="toggleCorrezioneTempo()">⏱️ Correzione tempo ed ora</button>
+            <button class="btn-stampa-diretta" onclick="prepareStampaRS()">🖨️ Stampa Rivoluzione Solare</button>
         </div>
     </div>
  
@@ -190,9 +191,6 @@ if ($soggetto) {
         <div id="rs-link-viaggio" class="rs-travel-links"></div>
     </div>
 
-    <div class="page-title page-title-compact">
-    <button class="btn-stampa-diretta" onclick="prepareStampaRS()">🖨️ Stampa Rivoluzione Solare</button>
-</div>
     <div id="rs-btn-report-wrap" class="rs-report-wrap is-hidden">
         <a id="rs-btn-report" href="#" target="_blank" class="rs-report-link">
             📄 Stampa / PDF Report

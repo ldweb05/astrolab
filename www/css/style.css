@@ -634,7 +634,7 @@ main {
 
 /* ── CARD ─────────────────────────────────────────────────────────── */
 .card {
-    background: rgba(255, 255, 255, 0.60);
+    background: rgba(245, 242, 238, 0.65);
     border-radius: 8px;
     padding: 20px 24px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -1516,7 +1516,7 @@ main {
 
 /* Contenitore principale */
 #pannello-sensibilita {
-    background: rgba(255, 255, 255, 0.60);
+    background: rgba(255, 255, 255, 0.65);
     border-radius: 8px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.10);
     margin-bottom: 14px;

@@ -247,3 +247,44 @@ Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
   emoji come su index.php)
 
 Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
+
+---
+
+## Aggiornamento 24-08-2026 (notte, 2) — rs.php: spostamento bottone stampa + allineamento colore .card globale
+
+### Decisioni prese
+15. **`rs.php` — bottone "Stampa Rivoluzione Solare"**: spostato da
+    un contenitore dedicato (`.page-title.page-title-compact`, subito
+    dopo la fascia `.header-rs`) dentro `.rs-actions-row`, subito
+    dopo "⏱️ Correzione tempo ed ora". Solo posizione: classe,
+    `onclick`, testo e comportamento invariati. Contenitore
+    precedente (rimasto vuoto dopo lo spostamento) rimosso.
+16. **Colore box `.card` — allineamento GLOBALE**: la classe `.card`
+    (contenitore generico usato in 10 file diversi: rs.php, rl.php,
+    tema.php, index.php, stampa.php, admin_utenti.php, rilocazione.php,
+    transiti.php, compare_rs.php, compare_ril.php) era
+    `rgba(255,255,255,0.60)`. Allineata a `rgba(245,242,238,0.65)` —
+    stesso colore/trasparenza già usato per `.valutazione` (Bonus e
+    Veti). Decisione esplicita dell'utente: "l'immagine grafica deve
+    essere unica in tutto il sito" — cambio intenzionalmente globale,
+    non limitato al singolo box "Sessioni RS salvate" che aveva
+    originato la richiesta.
+17. **`#pannello-sensibilita` (Analisi Sensibilità Oraria)**:
+    trasparenza anch'essa portata da 0.60 a 0.65, stesso colore base
+    (bianco) invariato — ora tutti e tre i box (`.card`,
+    `.valutazione`, `#pannello-sensibilita`) condividono la stessa
+    trasparenza 0.65, con `.valutazione`/`.card` sul crema
+    `rgb(245,242,238)` e `#pannello-sensibilita` sul bianco puro
+    (la sua tinta effettiva arriva dall'header opaco `.sensib-header`
+    `#F5F2EE` sovrapposto, non dal contenitore).
+
+### File toccati
+- `www/rs.php`: bottone stampa spostato
+- `www/css/style.css`: `.card` e `#pannello-sensibilita` allineati
+
+### Stato Fasi (aggiornato)
+- [x] Fase J (nuova) — rs.php: bottone stampa riposizionato;
+  colore `.card`/`#pannello-sensibilita` allineato globalmente a
+  `.valutazione`
+
+Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
