@@ -288,3 +288,34 @@ Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
   `.valutazione`
 
 Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
+
+---
+
+## Aggiornamento 24-08-2026 (notte, 3) — rl.php: spostamento bottone stampa + rimozione trasparenza box
+
+### Decisioni prese
+18. **`rl.php` — bottone "Stampa Rivoluzione Lunare"**: stessa
+    operazione fatta ieri su `rs.php`. Spostato da un contenitore
+    dedicato (`.page-title.page-title-compact`, dopo `.header-rl`)
+    dentro `.rl-actions-row`, subito dopo "🌍 Mappa". Solo posizione:
+    classe, `onclick`, testo e comportamento invariati. Contenitore
+    vuoto rimosso.
+19. **`.card`, `.valutazione`, `#pannello-sensibilita` — trasparenza
+    rimossa**: modifica fatta direttamente dall'utente. I tre box
+    passano da `rgba(..., 0.65)` a colore pieno opaco (stesso valore
+    RGB, canale alpha rimosso): `.card`/`.valutazione` →
+    `rgb(245,242,238)`, `#pannello-sensibilita` → `rgb(255,255,255)`.
+    Riga originale con l'alpha lasciata commentata sopra ciascuna
+    regola per riferimento.
+
+### File toccati
+- `www/rl.php`: bottone stampa spostato
+- `www/css/style.css`: `.card`, `.valutazione`, `#pannello-sensibilita`
+  portati a colore pieno (no trasparenza)
+
+### Stato Fasi (aggiornato)
+- [x] Fase K (nuova) — rl.php: bottone stampa riposizionato;
+  box `.card`/`.valutazione`/`#pannello-sensibilita` portati a
+  colore pieno (rimossa trasparenza)
+
+Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
