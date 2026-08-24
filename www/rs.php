@@ -293,8 +293,6 @@ if ($soggetto) {
 
     <div id="rs-loading" class="is-hidden"><p>⟳ Calcolo in corso...</p></div>
  
-    <div id="rs-filtro-esclusione" class="val-item val-veto rs-filter-exclusion is-hidden"></div>
-
     <div id="rs-alert-stellium"></div>
 
     <div id="previsione-annuale" class="annual-report-modal is-hidden">
@@ -324,6 +322,7 @@ if ($soggetto) {
             <span class="sensib-chevron" id="collapse-chevron-bonus-veti">▶</span>
         </h3>
         <div id="collapse-body-bonus-veti" style="display:none">
+        <div id="rs-filtro-esclusione" class="val-item val-veto rs-filter-exclusion is-hidden"></div>
         <div class="val-header">
             <div class="stelle-grandi" id="val-stelle"></div>
             <div class="val-stringa"   id="val-stringa"></div>

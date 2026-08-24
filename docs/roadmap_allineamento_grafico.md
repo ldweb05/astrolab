@@ -182,3 +182,68 @@ Fase D, Fase E — vedi sopra.
 - [x] Fase G (nuova) — `login.php`: toggle occhiolino password
 
 Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
+
+---
+
+## Aggiornamento 24-08-2026 (notte) — rs.php: banner esclusione + opacità Bonus/Veti; header_nav.php: ingranaggio+modale+avatar su TUTTE le pagine
+
+### Correzioni/decisioni prese
+11. **`rs.php` — banner esclusione RS**: il div `#rs-filtro-esclusione`
+    (striscia rosa "Questa RS non viene elencata...") era fuori da
+    qualunque collassabile, sempre visibile. Spostato dentro
+    `#collapse-body-bonus-veti`: ora è visibile solo quando il
+    pannello "Bonus e Veti" è espanso. Nessuna modifica alla logica
+    JS (`aggiornaBannerEsclusione()` cerca l'elemento per id, invariato).
+12. **`.valutazione` (box "Bonus e Veti") — colore**: era
+    `rgba(255,255,255,0.60)`, visivamente diverso dall'header di
+    "Analisi Sensibilità Oraria" (`.sensib-header`, sfondo opaco
+    `#F5F2EE`) perché quest'ultimo ha uno sfondo proprio mentre
+    `.valutazione .collapse-toggle` no (eredita il contenitore).
+    Allineato: `.valutazione` ora è `rgba(245,242,238,0.65)` — stesso
+    colore base di Sensibilità Oraria, trasparenza fissata a 0.65
+    come richiesto.
+13. **IMPORTANTE — chiarimento di scope, per non ripetere l'errore**:
+    la richiesta di ieri sera "elimina le voci navbar, solo
+    ingranaggio+modale+avatar" riguardava ESPLICITAMENTE E SOLO
+    `index.php` nel testo originale. Il resto delle pagine (via
+    `header_nav.php`) NON era stato allineato di conseguenza, ed
+    era un errore: l'aspettativa reale dell'utente era che TUTTE le
+    pagine avessero già questo schema (ingranaggio+modale+avatar),
+    dato che `dashboard.php` lo aveva da prima. Corretto stanotte:
+    vedi punto 14. **Nota per il futuro**: quando un pattern viene
+    implementato su una pagina "presa a riferimento", chiedere
+    sempre esplicitamente se va esteso anche alle altre pagine
+    condivise, non assumere che lo scope sia limitato alla pagina
+    nominata nella richiesta.
+14. **`header_nav.php` (navbar condivisa da 13 pagine)**: link
+    "🔑 Password" sostituito con bottone ingranaggio + avatar +
+    stesso modale Impostazioni (password + foto profilo), stesso
+    schema di `dashboard.php` — qui però, a differenza di
+    `index.php` ieri sera, si è usata l'icona reale **Material
+    Symbols Outlined "settings"** (non l'emoji ⚙️), per fedeltà
+    visiva a `dashboard.php` su richiesta esplicita. Font caricato
+    via `@import` in cima al `<style>` già presente in
+    `header_nav.php` (evita di editare l'`<head>` di ogni pagina
+    singolarmente). Tab di navigazione (Soggetti/Tema Natale/
+    Ricerche/Help) e badge "⭐ soggetto attivo" INVARIATI — tocca
+    solo il blocco `.header-user` a destra. `index.php` NON toccata
+    (resta con l'emoji ⚙️, implementazione di ieri sera, per scelta
+    esplicita di non uniformare le due icone in questo giro).
+
+### File toccati
+- `www/rs.php`: banner esclusione spostato nel collassabile
+- `www/css/style.css`: `.valutazione` opacità aggiornata; nuove
+  classi `.settings-modal-*` (namespace separato da `.idx-modal-*`
+  di index.php, stesso pattern visivo)
+- `www/includes/header_nav.php`: variabili PHP modale, `@import`
+  font Material Symbols, bottone ingranaggio+avatar, markup+JS
+  modale Impostazioni
+
+### Stato Fasi (aggiornato)
+- [x] Fase H (nuova) — rs.php: banner esclusione nel collassabile +
+  opacità Bonus/Veti allineata
+- [x] Fase I (nuova) — header_nav.php: ingranaggio+modale+avatar
+  estesi a tutte le pagine condivise (icona Material Symbols, non
+  emoji come su index.php)
+
+Restano da fare, invariate: Fase C (resto), Fase D, Fase E.

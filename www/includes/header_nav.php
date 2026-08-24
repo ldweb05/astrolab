@@ -39,8 +39,20 @@ function _navUrl(string $base, int $soggettoId, array $extra = []): string {
 
 // Il trigger del dropdown è "attivo" se siamo in una delle tre pagine figlie
 $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transiti', 'ricerca', 'ricerca_rl']);
+
+// Modale Impostazioni (stessa logica/API di dashboard.php): cambio password + foto profilo
+$_hnUserId = $auth->getCurrentUserId();
+$_hnHasFotoProfilo = $auth->hasFeature('foto_profilo');
+if (empty($_SESSION['dash_settings_csrf'])) {
+    $_SESSION['dash_settings_csrf'] = bin2hex(random_bytes(32));
+}
+$_hnSettingsCsrf = $_SESSION['dash_settings_csrf'];
+$_stmtHnFoto = $pdo->prepare('SELECT foto_profilo FROM utenti WHERE id = ?');
+$_stmtHnFoto->execute([$_hnUserId]);
+$_hnFotoProfilo = $_stmtHnFoto->fetchColumn() ?: null;
 ?>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 /* ── Dropdown nav "Rivoluzioni" ────────────────────────────────────────── */
 .nav-dropdown {
     position: relative;
@@ -238,12 +250,17 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
             </span>
             <?php endif; ?>
 
-            <!-- Link: Password -->
-            <a href="cambia_password.php"
-               class="header-link"
-               title="Cambia la tua password">
-                🔑 Password
-            </a>
+            <!-- Bottone Impostazioni (modale: password + foto profilo) -->
+            <button type="button" id="hn-btn-settings" class="header-icon-btn" title="Impostazioni">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+            </button>
+
+            <!-- Avatar -->
+            <div id="hn-avatar-wrap" class="header-avatar">
+                <?php if ($_hnFotoProfilo): ?>
+                <img id="hn-avatar-img" src="<?= htmlspecialchars($_hnFotoProfilo) ?>" alt="Foto profilo"/>
+                <?php endif; ?>
+            </div>
 
             <!-- Link: Logout -->
             <a href="logout.php"
@@ -257,4 +274,120 @@ $_riviActive = in_array($paginaAttiva ?? '', ['rs', 'rl', 'rilocazione', 'transi
 
     </div>
 </header>
+
+<!-- Modale Impostazioni: cambio password + foto profilo (stessa logica/API di dashboard.php) -->
+<div id="hn-modale-overlay" class="settings-modal-overlay">
+    <div class="settings-modal-box">
+        <div class="settings-modal-header">
+            <h2>Impostazioni</h2>
+            <button type="button" onclick="hnChiudiModaleImpostazioni()" class="settings-modal-close">&times;</button>
+        </div>
+
+        <div class="settings-modal-section">
+            <h3>🔑 Cambia Password</h3>
+            <div id="hn-pwd-msg" class="settings-modal-msg"></div>
+            <input id="hn-pwd-attuale" type="password" autocomplete="off" placeholder="Password attuale">
+            <input id="hn-pwd-nuova" type="password" autocomplete="off" placeholder="Nuova password (min. 8 caratteri)">
+            <input id="hn-pwd-conferma" type="password" autocomplete="off" placeholder="Conferma nuova password">
+            <button type="button" onclick="hnCambiaPassword()" class="settings-btn-primary">Aggiorna Password</button>
+        </div>
+
+        <div class="settings-modal-divider"></div>
+
+        <div class="settings-modal-section">
+            <h3>🖼️ Foto Profilo</h3>
+            <?php if ($_hnHasFotoProfilo): ?>
+            <div id="hn-foto-msg" class="settings-modal-msg"></div>
+            <input id="hn-foto-input" type="file" accept="image/jpeg,image/png,image/webp">
+            <p class="settings-modal-hint">JPG, PNG o WEBP, max 2MB.</p>
+            <button type="button" onclick="hnCaricaFoto()" class="settings-btn-primary">Carica Foto</button>
+            <?php else: ?>
+            <p class="settings-modal-hint">Disponibile solo per il piano <strong>Supporter</strong>.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<script>
+const HN_SETTINGS_CSRF = "<?= $_hnSettingsCsrf ?>";
+
+function hnApriModaleImpostazioni() {
+    document.getElementById('hn-modale-overlay').classList.add('is-open');
+}
+function hnChiudiModaleImpostazioni() {
+    document.getElementById('hn-modale-overlay').classList.remove('is-open');
+}
+
+function hnCaricaFoto() {
+    const input = document.getElementById('hn-foto-input');
+    const msg = document.getElementById('hn-foto-msg');
+    if (!input.files || !input.files[0]) {
+        msg.className = 'settings-modal-msg err';
+        msg.textContent = 'Seleziona prima un file.';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('foto', input.files[0]);
+    formData.append('csrf_token', HN_SETTINGS_CSRF);
+
+    fetch('api/foto_profilo_api.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                msg.className = 'settings-modal-msg ok';
+                msg.textContent = 'Foto aggiornata.';
+                const wrap = document.getElementById('hn-avatar-wrap');
+                wrap.innerHTML = '<img id="hn-avatar-img" src="' + data.url + '" alt="Foto profilo">';
+            } else {
+                msg.className = 'settings-modal-msg err';
+                msg.textContent = data.errore || 'Errore imprevisto.';
+            }
+        })
+        .catch(() => {
+            msg.className = 'settings-modal-msg err';
+            msg.textContent = 'Errore di connessione. Riprova.';
+        });
+}
+
+function hnCambiaPassword() {
+    const attuale  = document.getElementById('hn-pwd-attuale').value;
+    const nuova    = document.getElementById('hn-pwd-nuova').value;
+    const conferma = document.getElementById('hn-pwd-conferma').value;
+    const msg = document.getElementById('hn-pwd-msg');
+
+    fetch('api/cambia_password_api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            csrf_token: HN_SETTINGS_CSRF,
+            password_attuale: attuale,
+            nuova_password: nuova,
+            conferma_password: conferma
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            msg.className = 'settings-modal-msg ok';
+            msg.textContent = 'Password aggiornata con successo.';
+            document.getElementById('hn-pwd-attuale').value = '';
+            document.getElementById('hn-pwd-nuova').value = '';
+            document.getElementById('hn-pwd-conferma').value = '';
+        } else {
+            msg.className = 'settings-modal-msg err';
+            msg.textContent = data.errore || 'Errore imprevisto.';
+        }
+    })
+    .catch(() => {
+        msg.className = 'settings-modal-msg err';
+        msg.textContent = 'Errore di connessione. Riprova.';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const btnSettings = document.getElementById('hn-btn-settings');
+    if (btnSettings) { btnSettings.addEventListener('click', hnApriModaleImpostazioni); }
+});
+</script>
 <script src="js/header_nav.js" defer></script>
