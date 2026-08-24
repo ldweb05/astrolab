@@ -163,6 +163,7 @@ if ($soggetto) {
         <div class="rl-actions-row">
             <button class="btn-primary" id="btn-calcola-rl" onclick="RLModule.calcolaListaRL()">☽ Calcola RL</button>
             <button class="btn-mappa-rl is-hidden" id="btn-apri-mappa-rl" onclick="toggleMappaRL()">🌍 Mappa</button>
+            <button class="btn-stampa-diretta" onclick="prepareStampaRL()">🖨️ Stampa Rivoluzione Lunare</button>
         </div>
     </div>
  
@@ -175,10 +176,6 @@ if ($soggetto) {
         <div><span>MC: </span><b id="rl-mc-label">—</b></div>
     </div>
  
-    <div class="page-title page-title-compact">
-        <button class="btn-stampa-diretta" onclick="prepareStampaRL()">🖨️ Stampa Rivoluzione Lunare</button>
-    </div>
-
     <div class="card is-hidden" id="card-salva-rl">
         <div class="rs-save-row">
             <div class="form-group rl-link-rs-group is-hidden" id="wrap-collega-rs">
