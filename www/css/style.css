@@ -1066,7 +1066,7 @@ main {
 /* ── Valutazione ─────────────────────────────────────────────── */
 .valutazione {
     /* background: rgba(245, 242, 238, 0.65); */
-    background: rgba(245, 242, 238);
+    background: rgba(245, 242, 238, 060);
     border-radius: 8px;
     padding: 14px 20px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);

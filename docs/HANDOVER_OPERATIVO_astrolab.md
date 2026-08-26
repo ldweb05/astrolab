@@ -3427,3 +3427,47 @@ avviare M1 — Comparazione ricerche RSM.
 - File toccati: `www/dashboard.php` (codice, branch new_dashboard); `www/js/app.js`
   (codice, branch fix/geocoding-nominatim-precisione, WIP); `docs/roadmap_nuova_dashboard.md`,
   `docs/BUG_GEOCODING_NOMINATIM.md`, `docs/ROADMAP.md` (documentazione).
+
+---
+
+## 2026-08-25 — Feature Stelline V2 (Sistema Valutativo Parallelo)
+
+**Branch:** `new_dashboard`
+**Stato:** IN CORSO (Fase 1 - Core Calculator)
+**Documentazione dedicata:** `docs/ROADMAP_STELLINE_V2.md`
+
+### Cosa si sta facendo
+Creazione di un sistema valutativo parallelo ("V2") per le stelline RSM/RL, basato su logica additiva per colore e allineato alla gerarchia delle 34 regole ufficiali di Astrologia Attiva. Il sistema V2 è completamente separato dal sistema attuale e serve come strumento di confronto per migliorare la qualità del ranking delle RS/RL valide.
+
+### Architettura decisa
+- **Zero modifiche a file esistenti** (RuleEngine.php e tutti gli altri restano intatti)
+- Nuovo file standalone: `www/includes/StellineV2Calculator.php`
+- Nuova API: `www/api/stelline_v2_api.php`
+- Nuova pagina admin-only: `www/test_stelline_v2.php` con link in navbar (solo admin)
+- Flusso: pagina admin → API → RuleEngine::valuta() (read-only) + StellineV2Calculator::calcola()
+
+### Decisioni tecniche chiave
+| Decisione | Motivazione |
+|-----------|-------------|
+| Logica additiva senza clamp | Visualizzazione "arcobaleno" di stelle colorate contigue richiesta esplicitamente |
+| Venere MAI bistabile | Solo Giove/Sole sono bistabili per Regola 8/9; Venere sempre verde anche in II/VII/VIII |
+| Stellium = entità unica | Trattato come singolo pianeta: benefico puro = 4-5★ verdi; misto = 1★/pianeta + ALERT ⚠️ |
+| Mercurio = 1★ gialla | Ricalibrazione accettata (era 2★ nel documento originale) |
+| Malefico in casa condizione = 1★ rossa | Contributo minimo ma non nullo |
+| Numeri celesti regole rispettate eliminati | Utente: "sovrappiù, lasciamo perdere" |
+| Legenda colori posticipata | Da implementare dopo il funzionamento base |
+| Veti assoluti immutati | Pre-filtro binario in calcolaVeti(), nessuna RS con veto entra in V2 |
+
+### Tabella pesi V2 definitiva
+ASC in X = 5★ verde | GI/VE cuspide angolare = 5★ verde | Stellium benefico cuspide = 5★ verde | VE casa cond = 4★ verde | GI casa cond (non II/VII/VIII) = 4★ verde | Stellium benefico casa cond = 4★ verde | Sole casa cond = 3★ verde | ASC casa cond = 3★ verde | Mercurio casa cond = 1★ gialla | Luna casa cond = 1★ gialla | Malefico casa cond = 1★ rossa | GI/SO in II/VII/VIII = 2★ arancio | VE in II/VII/VIII = 4★ verde | Stellium misto = 1★/pianeta + ALERT | Malefico III/IX = 0 | Malus: -2 ASC RS in VIII natale, -1 malefico in VII. Floor totale a 0.
+
+### File da creare (in ordine)
+1. `www/includes/StellineV2Calculator.php` — classe standalone (IN CORSO)
+2. `www/api/stelline_v2_api.php` — endpoint JSON
+3. `www/test_stelline_v2.php` — pagina confronto side-by-side
+4. Modifica minima `www/includes/header_nav.php` — link admin-only (solo dopo test funzionante)
+
+### File toccati in questa sessione
+- `docs/ROADMAP_STELLINE_V2.md` (creato)
+- `docs/HANDOVER_OPERATIVO_astrolab.md` (questa voce)
+- `docs/ROADMAP.md` (aggiornamento in corso)

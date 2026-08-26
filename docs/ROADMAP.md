@@ -11,6 +11,8 @@ Deve essere aggiornato al completamento di ogni milestone significativa.
 >
 > La roadmap relativa alla ricerca RSM "Astri in Cuspide" (pianeti in cuspide di casa con orbo Regola 32, feature Supporter-gated) è mantenuta separatamente nel documento `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`, sul branch `feature/2-astri-in-cuspide`, che costituisce il riferimento ufficiale per tale funzionalità.
 >
+> La roadmap relativa alla ristrutturazione del sistema valutativo stelline ("Stelline V2", logica additiva per colore parallela al sistema attuale, pagina admin-only di confronto) è mantenuta separatamente nel documento `docs/ROADMAP_STELLINE_V2.md`, sul branch `new_dashboard`, che costituisce il riferimento ufficiale per tale funzionalità.
+>
 > `docs/ROADMAP.md` continua invece a descrivere l'evoluzione generale di Astro-DSS e delle funzionalità principali del progetto.
 
 ---
