@@ -2,7 +2,7 @@
 
 **Data creazione:** 2026-08-26
 **Branch di lavoro:** `feature/sostituzione-stelline-v2` (creato da `new_dashboard`)
-**Stato:** IN CORSO — Fase 0
+**Stato:** IN CORSO — Fase 0 completata, avvio Fase 1
 **Documento studio/laboratorio di riferimento:** `docs/ROADMAP_STELLINE_V2.md`
 **Prompt operativo di riferimento:** `docs/PROMPT_OPERATIVO_ASTROLAB.md` v2.0 — seguito alla lettera
 
@@ -56,14 +56,18 @@ Il perimetro reale verificato è quello elencato nella Fase 3.
 
 ## Fase 0 — Fix bug nel Calculator condiviso
 
-- [ ] 0.1 Fix disallineamento ASC in X (`$totaleVerdi += 5` → `+= 4`, coerente con la
-      tabella pesi definitiva 2026-08-26)
-- [ ] 0.2 Fix `trovaCasaNatale()`: chiavi `inizio`/`fine` inesistenti → `longitudine`
+- [x] 0.1 Fix ASC in X e ASC in casa condizione: scoperto che il codice originale
+      controllava `$case['ASC']['casa']`, chiave mai esistente nella struttura reale
+      (SweCalc::calcolaCasePlacido non la imposta) — il bonus non scattava mai. Corretto
+      per mappare l'ASC di RS/RL sulle case del TEMA NATALE (via trovaCasaNatale), come
+      da regola fondamentale confermata dal committente. Valore ASC in X corretto a 5★
+      (non 4 come nella tabella pesi originale)
+- [x] 0.2 Fix `trovaCasaNatale()`: chiavi `inizio`/`fine` inesistenti → `longitudine`
       (riuso della stessa logica di `SweCalc::trovaCasa()`)
-- [ ] 0.3 Verifica sintassi + restart container + retest nel laboratorio admin
-      (`test_stelline_v2.php`) su un caso noto, per confermare che il malus ASC-VIII natale
-      e il conteggio ASC-in-X ora si comportino come atteso
-- [ ] 0.4 **Checkpoint:** commit + tag `checkpoint-fase0-bugfix-calculator`
+- [x] 0.3 Verifica sintassi + restart container + test isolato con script PHP temporaneo
+      su 3 scenari fittizi (ASC in X natale → 5★; ASC in casa bonus non-X, condizione
+      Lavoro → 3★; ASC in casa neutra → 0★) — tutti e tre confermati corretti
+- [x] 0.4 **Checkpoint:** commit `4deb822` + tag `checkpoint-fase0-bugfix-calculator` (pushato)
 
 ## Fase 1 — RSM di produzione (`ricerca.php` / `api/ricerca_stream_api.php`)
 
@@ -120,7 +124,7 @@ Ogni punto: checkpoint separato (commit + tag) dopo verifica e test funzionale.
 
 | Fase | Descrizione                          | Stato       | Data |
 |------|---------------------------------------|-------------|------|
-| 0    | Fix bug Calculator                    | IN CORSO    |      |
+| 0    | Fix bug Calculator                    | COMPLETATA  | 2026-08-26 |
 | 1    | RSM produzione                        | Da iniziare |      |
 | 2    | RL produzione                         | Da iniziare |      |
 | 3    | Pagine/endpoint secondari              | Da iniziare |      |
