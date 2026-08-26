@@ -419,7 +419,8 @@ const RLModule = (function () {
          const v = data.valutazione;
          const valEl = document.getElementById('valutazione');
          if (valEl) valEl.style.display = 'block';
-         _setText('val-stelle',    v.stelle_str || '');
+         const _valStelleEl = document.getElementById('val-stelle');
+         if (_valStelleEl) _valStelleEl.innerHTML = (data.valutazione_v2 && data.valutazione_v2.html) || v.stelle_str || '';
          _setText('val-stringa',   v.val || '');
          _setText('val-condizione','☽ Condizione: ' + v.condizione);
          const vetiEl = document.getElementById('val-veti');
