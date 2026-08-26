@@ -2,7 +2,7 @@
 
 **Data creazione:** 2026-08-26
 **Branch di lavoro:** `feature/sostituzione-stelline-v2` (creato da `new_dashboard`)
-**Stato:** IN CORSO — Fase 1 (RSM) completata, avvio Fase 2 (RL)
+**Stato:** IN CORSO — Fase 2 (RL) completata, avvio Fase 3 (pagine/endpoint secondari)
 **Documento studio/laboratorio di riferimento:** `docs/ROADMAP_STELLINE_V2.md`
 **Prompt operativo di riferimento:** `docs/PROMPT_OPERATIVO_ASTROLAB.md` v2.0 — seguito alla lettera
 
@@ -90,9 +90,18 @@ Il perimetro reale verificato è quello elencato nella Fase 3.
       "adesso è più coerente" — risultati con V2 alto ora emergono in cima
 - [x] 1.9 **Checkpoint:** `checkpoint-fase1c-v2-primario-rsm`
 
-## Fase 2 — RL di produzione (`ricerca_rl.php` / `api/ricerca_stream_rl_api.php`)
+## Fase 2 — RL di produzione (`ricerca_rl.php` / `api/ricerca_stream_rl_api.php`) — COMPLETATA
 
-Stesso schema della Fase 1 (2.1 → 2.9), applicato a RL. Checkpoint separati.
+- [x] 2.1-2.9 Stesso schema della Fase 1, applicato a RL, tutti i passaggi confermati
+      dall'utente su ricerche RL reali:
+      - Calcolo V2 parallelo (additivo) — commit `c270ee5`,
+        checkpoint `checkpoint-fase2a-v2-parallelo-rl`
+      - Colonna V2 affiancata in `ricerca_rl.php` — commit `568fdd1`,
+        checkpoint `checkpoint-fase2b-doppio-punteggio-rl`
+      - Switch V2 primario (filtro, streaming, ordinamento) — commit `d22d5d7`,
+        checkpoint `checkpoint-fase2c-v2-primario-rl`
+      - Fix buffer top-K già coperto in Fase 1 (file condiviso `RicercaRSTopK.php`,
+        nessun lavoro aggiuntivo necessario per RL)
 
 ## Fase 3 — Pagine ed endpoint secondari (perimetro verificato via grep)
 
@@ -127,6 +136,6 @@ Ogni punto: checkpoint separato (commit + tag) dopo verifica e test funzionale.
 |------|---------------------------------------|-------------|------|
 | 0    | Fix bug Calculator                    | COMPLETATA  | 2026-08-26 |
 | 1    | RSM produzione                        | COMPLETATA  | 2026-08-26 |
-| 2    | RL produzione                         | Da iniziare |      |
+| 2    | RL produzione                         | COMPLETATA  | 2026-08-26 |
 | 3    | Pagine/endpoint secondari              | Da iniziare |      |
 | 4    | Rimozione vecchio sistema + chiusura   | Da iniziare |      |
