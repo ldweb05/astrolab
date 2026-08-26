@@ -19,10 +19,14 @@ require_once '../includes/SweCalc.php';
 require_once '../includes/RuleEngine.php';
 require_once '../includes/AnnualForecastEngine.php';
 require_once '../includes/FiltroEsclusione.php';
+require_once '../includes/StellineV2Calculator.php';
 
 $swe    = new SweCalc();
 $engine   = new RuleEngine();
 $forecast = new AnnualForecastEngine();
+// Sistema V2 (roadmap sostituzione stelline) — sostituisce il vecchio come
+// unico punteggio mostrato in interfaccia (coerente con ricerca.php/ricerca_rl.php)
+$v2Calc = new StellineV2Calculator();
 
 $g      = intval($_GET['g']);
 $m      = intval($_GET['m']);
@@ -95,6 +99,14 @@ try {
 // Valuta con RuleEngine
 $val = $engine->valuta($temaNatale, $temaRS, $cond);
 $previsioneAnnuale = $forecast->genera($temaRS, $val);
+
+// Calcolo Stelline V2 (sistema primario per il punteggio mostrato all'utente)
+$pianetiRS_v2 = [];
+foreach ($temaRS['pianeti'] as $_pid => $_p) {
+    $pianetiRS_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+}
+$valV2 = $v2Calc->calcola($pianetiRS_v2, $temaRS['case'] ?? [], $cond, $temaNatale);
+$valV2['html'] = $v2Calc->renderHTML($valV2);
 
 // Tabella sintetica per Comparator RS: Pianeta | Casa | stato cromatico.
 // La classificazione usa direttamente le regole della condizione selezionata.
@@ -233,6 +245,7 @@ echo json_encode([
     'rs_gmt'     => $rs['stringa'],
     'tema_rs'    => $temaRS,
     'valutazione'=> $val,
+    'valutazione_v2' => $valV2,
     'previsione_annuale' => $previsioneAnnuale,
     'relazione_annuale' => $previsioneAnnuale['relazione_annuale'] ?? [],
     'tabella_confronto' => $tabellaConfronto,
