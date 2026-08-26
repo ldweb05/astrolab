@@ -2,7 +2,7 @@
 
 **Data creazione:** 2026-08-26
 **Branch di lavoro:** `feature/sostituzione-stelline-v2` (creato da `new_dashboard`)
-**Stato:** IN CORSO — Fase 2 (RL) completata, avvio Fase 3 (pagine/endpoint secondari)
+**Stato:** IN CORSO — Fase 3 completata, avvio Fase 4 (rimozione vecchio sistema + chiusura)
 **Documento studio/laboratorio di riferimento:** `docs/ROADMAP_STELLINE_V2.md`
 **Prompt operativo di riferimento:** `docs/PROMPT_OPERATIVO_ASTROLAB.md` v2.0 — seguito alla lettera
 
@@ -160,7 +160,12 @@ e `9e71ffd` (RL, checkpoint `checkpoint-fase2d-ranking-unico-rl`).
       (righe ~1169, 1542-43, 1610) appartengono alla feature separata "elenco
       RS salvate", FUORI SCOPE per questo punto — non toccate, da valutare
       eventualmente a parte.
-- [ ] 3.7 `api/rs_alert_api.php`
+- [x] 3.7 `api/rs_alert_api.php` — VERIFICATO, NON APPLICABILE. Grep esaustivo
+      conferma nessun riferimento a RuleEngine/stelline: il sistema di alert
+      si basa su altri criteri, non sul punteggio stelline. Nessuna modifica
+      necessaria.
+
+## FASE 3 COMPLETATA (2026-08-26)
 
 Ogni punto: checkpoint separato (commit + tag) dopo verifica e test funzionale.
 
@@ -183,5 +188,5 @@ Ogni punto: checkpoint separato (commit + tag) dopo verifica e test funzionale.
 | 0    | Fix bug Calculator                    | COMPLETATA  | 2026-08-26 |
 | 1    | RSM produzione                        | COMPLETATA  | 2026-08-26 |
 | 2    | RL produzione                         | COMPLETATA  | 2026-08-26 |
-| 3    | Pagine/endpoint secondari              | Da iniziare |      |
+| 3    | Pagine/endpoint secondari              | COMPLETATA  | 2026-08-26 |
 | 4    | Rimozione vecchio sistema + chiusura   | Da iniziare |      |
