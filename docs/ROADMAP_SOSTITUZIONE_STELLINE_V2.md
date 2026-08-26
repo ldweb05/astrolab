@@ -171,10 +171,79 @@ Ogni punto: checkpoint separato (commit + tag) dopo verifica e test funzionale.
 
 ## Fase 4 — Rimozione sistema vecchio e chiusura
 
-- [ ] 4.1 **Solo su conferma esplicita:** rimuovere il doppio calcolo/fallback, V2 unico
-      sistema attivo
-- [ ] 4.2 Aggiornare `HANDOVER_OPERATIVO_astrolab.md`, `ROADMAP.md`, `START_HERE.md` (solo
-      se il comportamento visibile all'utente finale cambia)
+**Rete di sicurezza creata prima di iniziare:** tag annotato
+`safety-net-pre-rimozione-vecchio-sistema` sull'ultimo commit di Fase 3 (stato
+doppio-sistema, tutto validato). Rollback totale in caso di problemi:
+`git reset --hard safety-net-pre-rimozione-vecchio-sistema`.
+
+**Scope confermato dal committente:** rimuovere SOLO l'uso del vecchio punteggio
+a stelle (`stelline`/`stelle_str`) per ordinamento/filtro/rendering. NON toccare
+`RuleEngine.php` (congelato) né le sue altre funzioni (veti, `is_valida`,
+`passed_amore/casa/denaro`, colonna VAL) — tutto questo resta invariato e
+continua a funzionare esattamente come prima.
+
+- [x] 4.1 Rimosso il vecchio sistema come fallback/tiebreaker in 6 file su 7
+      (un commit/checkpoint per file, ognuno testato funzionalmente prima del
+      commit; ogni rimozione lasciata commentata inline, non cancellata, per
+      un rollback puntuale immediato senza dover toccare git):
+      1. `RicercaRSTopK.php` — commit `4d27b49`, checkpoint `checkpoint-fase4-topk`
+      2. `api/ricerca_stream_api.php` (ordinamento RSM) — commit `df6a22b`,
+         checkpoint `checkpoint-fase4-rsm`
+      3. `api/ricerca_stream_rl_api.php` (ordinamento RL) — commit `2c58dbb`,
+         checkpoint `checkpoint-fase4-rl`
+      4. `api/ricerca_griglia_api.php` (vicinanza_gradi mantenuto come criterio
+         secondario, non è "vecchio sistema") — commit `1d5a925`,
+         checkpoint `checkpoint-fase4-griglia`
+      5. `rs.php` (riquadro valutazione principale) — commit `45e1e09`,
+         checkpoint `checkpoint-fase4-rs-frontend`
+      6. `js/rl.js` — commit `c949fb6`, checkpoint `checkpoint-fase4-rl-frontend`
+
+      **7. `api/stampa_pdf_api.php` — VOLUTAMENTE LASCIATO IN SOSPESO**,
+      rimandato a sessione futura (modifica vista/testata in sandbox ma MAI
+      committata, per esplicita decisione del committente). Cronologia:
+      - Scoperto che il link "📄 Stampa / PDF Report" in `rs.php` (che
+        dovrebbe attivare questo endpoint via `stampa.php`) non compare MAI
+        nell'interfaccia reale, nonostante il codice lo preveda — bug
+        preesistente, non introdotto da questa migrazione (la funzione
+        `_aggiornaLinkReportRS()` che dovrebbe renderlo visibile 600ms dopo
+        ogni calcolo RS non produce l'effetto atteso, causa non
+        diagnosticata)
+      - Il committente ricorda di aver fatto rimuovere questa feature in
+        passato — confermato: `rilocazione.php` ha LO STESSO identico
+        pattern di link nascosto verso `stampa.php` (verosimilmente con lo
+        stesso bug di visibilità), accanto al bottone "🖨️ Stampa
+        Rilocazione" che invece funziona regolarmente (browser-print,
+        meccanismo separato, non tocca `stampa.php`)
+      - Verificato che eliminare `stampa.php` + `api/stampa_pdf_api.php` NON
+        romperebbe nessuna delle stampe attualmente in uso (RS/RL/
+        Rilocazione sono tutte via bottoni diretti browser-print,
+        meccanismo indipendente) — unico impatto residuo: due script di
+        test manuali in `www/tests/` (`test_annual_report_browser_print.php`,
+        `test_api_unauthenticated_contract.php`) referenziano questi file
+        per path/URL; non eseguiti automaticamente, quindi zero rischio
+        pratico se lasciati così, ma andrebbero aggiornati/rimossi insieme
+        in un'eventuale pulizia futura
+      - **Decisione presa:** lasciare tutto com'è per ora (nessun file
+        toccato, nessuna eliminazione), da riprendere in una sessione
+        dedicata
+
+      **Caratteristiche di `stampa.php`/`stampa_pdf_api.php` per riferimento
+      futuro (nel caso si decida di recuperarlo invece di eliminarlo):**
+      genera un report PDF combinato (Dompdf, non window.print) che può
+      includere in un unico file Tema Natale + RS + RL + Rilocazione insieme
+      (moduli selezionabili via parametro `moduli`), con per ognuno ruota,
+      tabella pianeti, tabella case Placido, E il riquadro valutazione
+      completo (stelle/veti/bonus/penalità/VAL) — a differenza dei bottoni
+      diretti che mostrano solo ruote e dati soggetto. Se il modulo RS è
+      incluso, aggiunge anche la Relazione Annuale completa nello stesso PDF.
+
+      **TODO futuro (da decidere in una sessione dedicata):** eliminare
+      definitivamente `stampa.php`, `api/stampa_pdf_api.php`, i due link
+      nascosti in `rs.php`/`rilocazione.php`, e aggiornare/rimuovere i due
+      script di test collegati — oppure, in alternativa, diagnosticare e
+      correggere il bug di visibilità per far tornare la feature utilizzabile.
+
+- [ ] 4.2 Aggiornare `HANDOVER_OPERATIVO_astrolab.md`, `ROADMAP.md`, `START_HERE.md`
 - [ ] 4.3 **Checkpoint finale:** commit + tag `checkpoint-fase4-sostituzione-completata`
 - [ ] 4.4 Merge di `feature/sostituzione-stelline-v2` verso `new_dashboard`, solo su tua
       conferma esplicita
