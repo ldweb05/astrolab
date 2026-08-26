@@ -149,7 +149,17 @@ e `9e71ffd` (RL, checkpoint `checkpoint-fase2d-ranking-unico-rl`).
          riquadro valutazione con stelle/veti/bonus. V2 aggiunto qui come
          sistema di rendering delle stelle (fallback al vecchio se assente).
          Commit `f3cde78`, checkpoint `checkpoint-fase3d-v2-pdf`
-- [ ] 3.6 `api/sensibilita_api.php`
+- [x] 3.6 `api/sensibilita_api.php` — COMPLETATA. Nota: il pannello non mostra
+      mai le stelline grezze, ma calcola una % di stabilità e un'etichetta
+      (alta/media/critica) che DIPENDONO dal sistema stelline usato per il
+      confronto — quindi è comunque un valore visibile all'utente. Migrato
+      backend (commit `5bdcc21`, checkpoint `checkpoint-fase3e-v2-sensibilita`)
+      e frontend in rs.php (icone 🟡, colore riga, stelle nel dettaglio —
+      commit `7284cc7`, checkpoint `checkpoint-fase3e-sensibilita-frontend-v2`).
+      Scoperto durante l'analisi: altre occorrenze di `.stelline` in rs.php
+      (righe ~1169, 1542-43, 1610) appartengono alla feature separata "elenco
+      RS salvate", FUORI SCOPE per questo punto — non toccate, da valutare
+      eventualmente a parte.
 - [ ] 3.7 `api/rs_alert_api.php`
 
 Ogni punto: checkpoint separato (commit + tag) dopo verifica e test funzionale.
