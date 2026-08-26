@@ -64,8 +64,12 @@ if (!in_array($cond, $condizioniValide)) $cond = 'Decima';
 
 // ── Calcolo ───────────────────────────────────────────────────────────────
 try {
+    require_once '../includes/StellineV2Calculator.php';
     $swe    = new SweCalc();
     $engine = new RuleEngine();
+    // Sistema V2 (roadmap sostituzione stelline) — sistema primario per
+    // l'indice di stabilita (coerente con ricerca_stream_api.php)
+    $v2Calc = new StellineV2Calculator();
 
     // Tema natale dell'ora di nascita "ufficiale" — serve per trovaCasaNatale
     // Lo calcoliamo una sola volta perché le case natali si spostano con δ,
@@ -111,6 +115,13 @@ try {
         // (non vogliamo che cambino le case natali di riferimento con δ)
         $val = $engine->valuta($temaNataleBase, $temaRS, $cond);
 
+        // Calcolo Stelline V2 (sistema primario per l'indice di stabilita)
+        $pianetiRS_v2 = [];
+        foreach ($temaRS['pianeti'] as $_pid => $_p) {
+            $pianetiRS_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+        }
+        $valV2 = $v2Calc->calcola($pianetiRS_v2, $temaRS['case'] ?? [], $cond, $temaNataleBase);
+
         // ASC RS: longitudine e stringa formattata
         $ascLon    = $temaRS['case']['ASC']['longitudine'] ?? 0.0;
         $ascStr    = $temaRS['case']['ASC']['posizione']['stringa'] ?? '—';
@@ -139,6 +150,8 @@ try {
             'casa_natale_asc' => $casaNataleAsc,
             'stelline'        => $val['stelline'],
             'stelle_str'      => $val['stelle_str'],
+            'v2_stelle_totali'=> $valV2['stelle_totali'],
+            'v2_html'         => $v2Calc->renderHTML($valV2),
             'val'             => $val['val'],
             'veti'            => $val['veti'],
             'is_valida'       => $val['is_valida'],
@@ -162,7 +175,7 @@ try {
 
     if ($puntoBase) {
         foreach ($punti as $p) {
-            $stesseStelle = ($p['stelline'] === $puntoBase['stelline']);
+            $stesseStelle = ($p['v2_stelle_totali'] === $puntoBase['v2_stelle_totali']);
             $stessaCasa   = ($p['casa_natale_asc'] === $puntoBase['casa_natale_asc']);
             if ($stesseStelle && $stessaCasa) $nStabili++;
             if (!$stesseStelle)      $stelleCambiano = true;
