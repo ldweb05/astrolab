@@ -2,7 +2,7 @@
 
 **Data creazione:** 2026-08-26
 **Branch di lavoro:** `feature/sostituzione-stelline-v2` (creato da `new_dashboard`)
-**Stato:** IN CORSO — Fase 0 completata, avvio Fase 1
+**Stato:** IN CORSO — Fase 1 (RSM) completata, avvio Fase 2 (RL)
 **Documento studio/laboratorio di riferimento:** `docs/ROADMAP_STELLINE_V2.md`
 **Prompt operativo di riferimento:** `docs/PROMPT_OPERATIVO_ASTROLAB.md` v2.0 — seguito alla lettera
 
@@ -69,25 +69,26 @@ Il perimetro reale verificato è quello elencato nella Fase 3.
       Lavoro → 3★; ASC in casa neutra → 0★) — tutti e tre confermati corretti
 - [x] 0.4 **Checkpoint:** commit `4deb822` + tag `checkpoint-fase0-bugfix-calculator` (pushato)
 
-## Fase 1 — RSM di produzione (`ricerca.php` / `api/ricerca_stream_api.php`)
+## Fase 1 — RSM di produzione (`ricerca.php` / `api/ricerca_stream_api.php`) — COMPLETATA
 
-- [ ] 1.1 Analisi mirata (solo lettura) di `ricerca_stream_api.php`: dove viene costruito
-      il campo `stelline` nel record risultato e dove avviene l'ordinamento/il filtro
-      `stelline_min`
-- [ ] 1.2 Aggiungere (non sostituire) il calcolo V2 in parallelo — stesso pattern già
-      usato in `ricerca_stream_v2_api.php` — arricchendo il risultato con i campi
-      `v2_stelle_totali` ecc. Ordinamento e filtro `stelline_min` restano sul sistema
-      vecchio in questo sotto-step: è puramente additivo, nessuna differenza visibile
-- [ ] 1.3 Verifica + restart + test funzionale (nessun cambiamento visibile atteso)
-- [ ] 1.4 **Checkpoint:** commit + tag `checkpoint-fase1a-v2-parallelo-rsm`
-- [ ] 1.5 Modifica frontend di `ricerca.php` per mostrare **entrambi** i punteggi
-      affiancati (vecchio + V2), per validazione visiva diretta su casi reali
-- [ ] 1.6 **Checkpoint:** commit + tag `checkpoint-fase1b-doppio-punteggio-rsm`
-- [ ] 1.7 **Solo dopo tua conferma esplicita** di validazione sui casi reali: switch di
-      ordinamento e filtro `stelline_min` al sistema V2 come primario; il vecchio resta
-      come campo informativo secondario (non rimosso)
-- [ ] 1.8 Verifica + restart + test funzionale completo (casi noti, es. Sinner/Decima)
-- [ ] 1.9 **Checkpoint:** commit + tag `checkpoint-fase1c-v2-primario-rsm`
+- [x] 1.1 Analisi mirata completata: campo `stelline` costruito in `costruisciRisultatoRicercaRS`,
+      ordinamento/filtro individuati in `ricerca_stream_api.php`
+- [x] 1.2 Calcolo V2 aggiunto in parallelo (additivo) — commit `d20583c`
+- [x] 1.3 Verifica + restart + test funzionale (confermato via EventStream, nessuna differenza)
+- [x] 1.4 **Checkpoint:** `checkpoint-fase1a-v2-parallelo-rsm`
+- [x] 1.5 Colonna V2 affiancata a Stelle in `ricerca.php` — commit `0a29c58`
+- [x] 1.6 **Checkpoint:** `checkpoint-fase1b-doppio-punteggio-rsm`
+- [x] 1.6-bis (aggiunta non pianificata, scoperta durante 1.7) Fix `RicercaRSTopK.php`:
+      il buffer top-K in memoria (attivo solo in modalità "numero di località") scartava
+      risultati durante il calcolo confrontando il vecchio sistema — corretto per usare
+      V2 con fallback, altrimenti lo switch a V2 sarebbe stato incompleto in quella
+      modalità. Commit `642f9fe`, **Checkpoint:** `checkpoint-fase1c-topk-v2`
+- [x] 1.7 Switch confermato dall'utente su validazione visiva reale: filtro `stelline_min`,
+      soglia streaming e `usort` finale ora su V2 primario (vecchio sistema come criterio
+      secondario di stabilità). Commit `cc28f97`
+- [x] 1.8 Verifica + restart + test funzionale completo, confermato dall'utente:
+      "adesso è più coerente" — risultati con V2 alto ora emergono in cima
+- [x] 1.9 **Checkpoint:** `checkpoint-fase1c-v2-primario-rsm`
 
 ## Fase 2 — RL di produzione (`ricerca_rl.php` / `api/ricerca_stream_rl_api.php`)
 
@@ -125,7 +126,7 @@ Ogni punto: checkpoint separato (commit + tag) dopo verifica e test funzionale.
 | Fase | Descrizione                          | Stato       | Data |
 |------|---------------------------------------|-------------|------|
 | 0    | Fix bug Calculator                    | COMPLETATA  | 2026-08-26 |
-| 1    | RSM produzione                        | Da iniziare |      |
+| 1    | RSM produzione                        | COMPLETATA  | 2026-08-26 |
 | 2    | RL produzione                         | Da iniziare |      |
 | 3    | Pagine/endpoint secondari              | Da iniziare |      |
 | 4    | Rimozione vecchio sistema + chiusura   | Da iniziare |      |
