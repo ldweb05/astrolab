@@ -124,7 +124,11 @@ e `9e71ffd` (RL, checkpoint `checkpoint-fase2d-ranking-unico-rl`).
       mirata a una riga (commit `57e2e73`, checkpoint `checkpoint-fase3b-rl-frontend-v2`).
       Fix bug CSS `.valutazione` (`rgba(245, 242, 238, 060)` → `0.65`) completato
       (commit `c05b390`, checkpoint `checkpoint-fase3b-css-fix`)
-- [ ] 3.3 `api/cuspidi_search_api.php`
+- [x] 3.3 `api/cuspidi_search_api.php` — VERIFICATO, NON APPLICABILE. Analisi
+      (grep esaustivo su RuleEngine/stelline) conferma che questo endpoint non
+      usa affatto il sistema di valutazione stelline: è la modalità "Longitudine
+      Cuspidi", cerca dove cade una cuspide/segno/grado target, non valuta
+      condizioni. Nessuna modifica necessaria.
 - [ ] 3.4 `api/ricerca_griglia_api.php`
 - [ ] 3.5 `api/stampa_pdf_api.php` — verificare che le stelline stampate nel PDF siano
       coerenti con quelle mostrate a video
