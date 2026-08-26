@@ -129,7 +129,14 @@ e `9e71ffd` (RL, checkpoint `checkpoint-fase2d-ranking-unico-rl`).
       usa affatto il sistema di valutazione stelline: è la modalità "Longitudine
       Cuspidi", cerca dove cade una cuspide/segno/grado target, non valuta
       condizioni. Nessuna modifica necessaria.
-- [ ] 3.4 `api/ricerca_griglia_api.php`
+- [x] 3.4 `api/ricerca_griglia_api.php` — COMPLETATA. V2 sistema primario per
+      filtro/streaming/ordinamento nelle modalità standard/astri (stesso pattern
+      di ricerca_stream_api.php, vecchio sistema e vicinanza benefici come
+      criteri secondari di stabilità); modalità cuspidi non toccata (non usa
+      RuleEngine). Testato su RSM (funzionante). Nota: la "ricerca a griglia"
+      non è ancora disponibile in interfaccia per la RL (limite preesistente,
+      non introdotto da questa migrazione). Commit `1c1e967`,
+      checkpoint `checkpoint-fase3c-v2-griglia`
 - [ ] 3.5 `api/stampa_pdf_api.php` — verificare che le stelline stampate nel PDF siano
       coerenti con quelle mostrate a video
 - [ ] 3.6 `api/sensibilita_api.php`
