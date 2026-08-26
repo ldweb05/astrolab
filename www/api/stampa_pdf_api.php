@@ -128,6 +128,10 @@ $lonNasc = (float)$soggetto['longitudine'];
 
 $swe    = new SweCalc();
 $engine = new RuleEngine();
+require_once '../includes/StellineV2Calculator.php';
+// Sistema V2 (roadmap sostituzione stelline) — usato per il rendering delle
+// stelle nel PDF, coerente con quanto mostrato a video in rs.php/rl.php
+$v2Calc = new StellineV2Calculator();
 
 // ── Recupero dati per le tabelle (pianeti, case, valutazione) ───────────
 $temaNatale = null;
@@ -150,6 +154,12 @@ if (in_array('rs', $moduli)) {
     $rsGmt    = $rs['stringa'];
     $temaRS   = $swe->calcolaTema($rs['giorno'], $rs['mese'], $rs['anno'], $rs['ora_gmt'], $latRSeff, $lonRSeff);
     $valRS    = $engine->valuta($temaNatale, $temaRS, $condizione);
+    $pianetiRS_v2 = [];
+    foreach ($temaRS['pianeti'] as $_pid => $_p) {
+        $pianetiRS_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+    }
+    $valV2RS = $v2Calc->calcola($pianetiRS_v2, $temaRS['case'] ?? [], $condizione, $temaNatale);
+    $valRS['v2_html'] = $v2Calc->renderHTML($valV2RS);
 }
 
 if (in_array('rl', $moduli)) {
@@ -164,7 +174,15 @@ if (in_array('rl', $moduli)) {
                 $rlData['giorno'], $rlData['mese'], $rlData['anno'],
                 $rlData['ora_gmt'], $latRLeff, $lonRLeff
             );
-            if ($temaNatale) $valRL = $engine->valuta($temaNatale, $temaRL, $condizione);
+            if ($temaNatale) {
+                $valRL = $engine->valuta($temaNatale, $temaRL, $condizione);
+                $pianetiRL_v2 = [];
+                foreach ($temaRL['pianeti'] as $_pid => $_p) {
+                    $pianetiRL_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+                }
+                $valV2RL = $v2Calc->calcola($pianetiRL_v2, $temaRL['case'] ?? [], $condizione, $temaNatale);
+                $valRL['v2_html'] = $v2Calc->renderHTML($valV2RL);
+            }
         }
     } catch (Throwable $e) {
         // RL non disponibile — sezione sarà vuota
@@ -314,7 +332,7 @@ function _tabellaCase(?array $temaCase, string $title): string {
  */
 function _valutazioneHtml(?array $val): string {
     if (!$val) return '';
-    $stelle = str_repeat('&#9733;', $val['stelline']) . str_repeat('&#9734;', 5 - $val['stelline']);
+    $stelle = $val['v2_html'] ?? (str_repeat('&#9733;', $val['stelline']) . str_repeat('&#9734;', 5 - $val['stelline']));
     $valStr = isset($val['val']) ? htmlspecialchars($val['val']) : '';
     $cond   = isset($val['condizione']) ? htmlspecialchars($val['condizione']) : '';
 
