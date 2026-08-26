@@ -25,6 +25,7 @@ if (!$auth->isLoggedIn()) {
 header('Content-Type: application/json; charset=UTF-8');
 require_once '../includes/SweCalc.php';
 require_once '../includes/RuleEngine.php';
+require_once '../includes/StellineV2Calculator.php';
 set_time_limit(120);
 
 $action     = $_GET['action']      ?? 'lista';
@@ -80,6 +81,9 @@ if ($lonRL === null) {
 
 $swe    = new SweCalc();
 $engine = new RuleEngine();
+// Sistema V2 (roadmap sostituzione stelline) — sostituisce il vecchio come
+// unico punteggio mostrato in interfaccia (coerente con rs.php)
+$v2Calc = new StellineV2Calculator();
 
 // ════════════════════════════════════════════════════════════════════════════
 // Helper per aspetti
@@ -209,6 +213,15 @@ if ($action === 'calcola') {
         $temaNatale = $swe->calcolaTema($g, $m, $a, $oraGmt, $latNascita, $lonNascita);
         $temaRL = $swe->calcolaTema($giornoRL, $meseRL, $annoRLeff, $oraGmtRL, $latRL, $lonRL);
         $val = $engine->valuta($temaNatale, $temaRL, $condizione);
+
+        // Calcolo Stelline V2 (sistema primario per il punteggio mostrato all'utente)
+        $pianetiRL_v2 = [];
+        foreach ($temaRL['pianeti'] as $_pid => $_p) {
+            $pianetiRL_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+        }
+        $valV2 = $v2Calc->calcola($pianetiRL_v2, $temaRL['case'] ?? [], $condizione, $temaNatale);
+        $valV2['html'] = $v2Calc->renderHTML($valV2);
+
         $aspetti = calcolaAspettiRL($temaRL['pianeti']);
         
         // Calcola RS per metadati
@@ -229,6 +242,7 @@ if ($action === 'calcola') {
             'tema_natale' => $temaNatale,
             'tema_rl' => $temaRL,
             'valutazione' => $val,
+            'valutazione_v2' => $valV2,
             'aspetti' => $aspetti,
             'rl_list' => $rlList,
             'rs_gmt' => $rsInizio['stringa'],
