@@ -1903,7 +1903,8 @@ function getRisultatiConfronto() {
             r.lat,
             r.lon,
             r.iata || '',
-            r.icao || ''
+            r.icao || '',
+            r.nome || ''
         ].join('|') === key);
     }).filter(Boolean);
 }
@@ -1979,8 +1980,9 @@ document.getElementById('risultati-area').addEventListener('click', function(eve
         risultati
     };
 
-    sessionStorage.setItem('astroDssConfrontoRs', JSON.stringify(payload));
-    window.location.href = 'compare_rs.php';
+    salvaStatoRicerca();
+    sessionStorage.setItem('astroDssConfrontoRiloc', JSON.stringify(payload));
+    window.location.href = 'compare_ril.php';
 });
 
 // Preset orbe sincronizza con pannello cuspidi in tempo reale

@@ -1833,7 +1833,8 @@ function getRisultatiConfronto() {
             r.lat,
             r.lon,
             r.iata || '',
-            r.icao || ''
+            r.icao || '',
+            r.nome || ''
         ].join('|') === key);
     }).filter(Boolean);
 }
@@ -1907,6 +1908,7 @@ document.getElementById('risultati-area').addEventListener('click', function(eve
         risultati
     };
 
+    salvaStatoRicerca();
     sessionStorage.setItem('astroDssConfrontoRs', JSON.stringify(payload));
     window.location.href = 'compare_rs.php';
 });
