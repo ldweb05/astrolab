@@ -1391,7 +1391,7 @@ function _renderSensibilita(data) {
             rigaCls = 'sensib-row-base';
         } else if (!p.is_valida || (base && p.casa_natale_asc !== base.casa_natale_asc)) {
             rigaCls = 'sensib-row-critica';
-        } else if (base && p.stelline !== base.stelline) {
+        } else if (base && p.v2_stelle_totali !== base.v2_stelle_totali) {
             rigaCls = 'sensib-row-stelle-cambiano';
         } else {
             rigaCls = 'sensib-row-ok';
@@ -1413,12 +1413,12 @@ function _renderSensibilita(data) {
             if (!p.is_valida && base.is_valida)        icona = '🔴';
             else if (p.is_valida && !base.is_valida)   icona = '🟢';
             else if (p.casa_natale_asc !== base.casa_natale_asc) icona = '🔴';
-            else if (p.stelline !== base.stelline)     icona = '🟡';
+            else if (p.v2_stelle_totali !== base.v2_stelle_totali) icona = '🟡';
             else                                       icona = '🟢';
         }
  
-        const stelle = p.stelline > 0
-            ? `<span class="stelle-sensib">${'★'.repeat(p.stelline)}${'☆'.repeat(5-p.stelline)}</span>`
+        const stelle = p.v2_html
+            ? `<span class="stelle-sensib">${p.v2_html}</span>`
             : `<span class="sensib-zero-stars">0 ⛔</span>`;
  
         const vetiHtml = p.veti && p.veti.length > 0
