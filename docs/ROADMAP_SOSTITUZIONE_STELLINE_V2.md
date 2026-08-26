@@ -117,9 +117,13 @@ e `9e71ffd` (RL, checkpoint `checkpoint-fase2d-ranking-unico-rl`).
       checkpoint `checkpoint-fase3a-v2-rs-singola`). Frontend: riquadro "Bonus e Veti"
       mostra ora il rendering V2 al posto delle vecchie stelle, con fallback
       (commit `9da810f`, checkpoint `checkpoint-fase3a-rs-frontend-v2`)
-- [ ] 3.2 `rl.php` / `api/rl_api.php` — **incluso** il fix del bug CSS `.valutazione`
-      (`rgba(245, 242, 238, 060)` → valore alpha valido) approfittando del passaggio su
-      questo file
+- [x] 3.2 `rl.php` / `api/rl_api.php` — COMPLETATA.
+      Backend: campo `valutazione_v2` aggiunto (commit `cc3ab9e`,
+      checkpoint `checkpoint-fase3b-v2-rl-singola`). Frontend: scoperto che la
+      logica di rl.php vive in `js/rl.js` (file condiviso), non inline — patch
+      mirata a una riga (commit `57e2e73`, checkpoint `checkpoint-fase3b-rl-frontend-v2`).
+      Fix bug CSS `.valutazione` (`rgba(245, 242, 238, 060)` → `0.65`) completato
+      (commit `c05b390`, checkpoint `checkpoint-fase3b-css-fix`)
 - [ ] 3.3 `api/cuspidi_search_api.php`
 - [ ] 3.4 `api/ricerca_griglia_api.php`
 - [ ] 3.5 `api/stampa_pdf_api.php` — verificare che le stelline stampate nel PDF siano
