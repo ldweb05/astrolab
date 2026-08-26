@@ -112,7 +112,11 @@ e `9e71ffd` (RL, checkpoint `checkpoint-fase2d-ranking-unico-rl`).
 
 ## Fase 3 — Pagine ed endpoint secondari (perimetro verificato via grep)
 
-- [ ] 3.1 `rs.php` / `api/rs_api.php` (vista singola RSM salvata)
+- [x] 3.1 `rs.php` / `api/rs_api.php` (vista singola RSM salvata) — COMPLETATA.
+      Backend: campo `valutazione_v2` aggiunto alla risposta JSON (commit `d920f81`,
+      checkpoint `checkpoint-fase3a-v2-rs-singola`). Frontend: riquadro "Bonus e Veti"
+      mostra ora il rendering V2 al posto delle vecchie stelle, con fallback
+      (commit `9da810f`, checkpoint `checkpoint-fase3a-rs-frontend-v2`)
 - [ ] 3.2 `rl.php` / `api/rl_api.php` — **incluso** il fix del bug CSS `.valutazione`
       (`rgba(245, 242, 238, 060)` → valore alpha valido) approfittando del passaggio su
       questo file
