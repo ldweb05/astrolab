@@ -30,12 +30,15 @@ function aggiungiRisultatoTopK(
         return;
     }
 
-    $stellineNuove = (int)($nuovoRisultato['stelline'] ?? 0);
+    // Usa il punteggio V2 (se disponibile) per decidere cosa tenere/scartare,
+    // coerente con l'ordinamento finale ora basato su V2 (roadmap sostituzione
+    // stelline). Fallback al vecchio campo 'stelline' se V2 non è presente.
+    $stellineNuove = (int)($nuovoRisultato['v2_stelle_totali'] ?? $nuovoRisultato['stelline'] ?? 0);
     $stellineMinime = PHP_INT_MAX;
     $ultimoIndiceMinimo = null;
 
     foreach ($risultati as $indice => $risultato) {
-        $stelline = (int)($risultato['stelline'] ?? 0);
+        $stelline = (int)($risultato['v2_stelle_totali'] ?? $risultato['stelline'] ?? 0);
 
         if ($stelline < $stellineMinime) {
             $stellineMinime = $stelline;
