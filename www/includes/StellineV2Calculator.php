@@ -172,27 +172,32 @@ class StellineV2Calculator {
             }
         }
 
+        // ASC di RS/RL mappato sulle case del TEMA NATALE (non sulle case della
+        // RS: l'ASC di un tema è sempre cuspide della propria casa I, quindi un
+        // controllo su $case['ASC']['casa'] non ha senso e infatti quella chiave
+        // non esiste mai nella struttura prodotta da SweCalc::calcolaCasePlacido()).
+        $casaAscNatale = isset($case['ASC']['longitudine'])
+            ? $this->trovaCasaNatale($case['ASC']['longitudine'], $temaNatale['case'] ?? [])
+            : 0;
+
         // ASC in X (bonus indipendente dai pianeti)
         $ascInX = false;
-        if (isset($case['ASC']['casa']) && $case['ASC']['casa'] === 10) {
+        if ($casaAscNatale === 10) {
             $ascInX = true;
             $contributi[] = [
                 'pianeta' => 'ASC', 'casa' => 10,
-                'stelle' => 4, 'colore' => self::COLOR_VERDE, 'note' => 'ASC in X',
+                'stelle' => 5, 'colore' => self::COLOR_VERDE, 'note' => 'ASC in X (tema natale)',
             ];
             $totaleVerdi += 5;
         }
 
         // ASC in casa condizione bonus (se non gia in X)
-        if (!$ascInX && isset($case['ASC']['casa'])) {
-            $casaAsc = $case['ASC']['casa'];
-            if (in_array($casaAsc, $ct['bonus'])) {
-                $contributi[] = [
-                    'pianeta' => 'ASC', 'casa' => $casaAsc,
-                    'stelle' => 3, 'colore' => self::COLOR_VERDE, 'note' => 'ASC in casa condizione',
-                ];
-                $totaleVerdi += 3;
-            }
+        if (!$ascInX && $casaAscNatale > 0 && in_array($casaAscNatale, $ct['bonus'])) {
+            $contributi[] = [
+                'pianeta' => 'ASC', 'casa' => $casaAscNatale,
+                'stelle' => 3, 'colore' => self::COLOR_VERDE, 'note' => 'ASC in casa condizione (tema natale)',
+            ];
+            $totaleVerdi += 3;
         }
 
         // Malus sottrattivi
@@ -289,13 +294,15 @@ class StellineV2Calculator {
      * Trova la casa natale in cui cade una longitudine.
      */
     private function trovaCasaNatale(float $longitudine, array $caseNatali): int {
-        for ($i = 1; $i <= 12; $i++) {
-            $inizio = $caseNatali[$i]['inizio'] ?? 0;
-            $fine   = $caseNatali[$i]['fine'] ?? 0;
-            if ($inizio < $fine) {
-                if ($longitudine >= $inizio && $longitudine < $fine) return $i;
+        $lon = fmod($longitudine + 360, 360);
+        for ($c = 1; $c <= 12; $c++) {
+            if (!isset($caseNatali[$c]['longitudine'])) continue;
+            $ini  = fmod($caseNatali[$c]['longitudine'] + 360, 360);
+            $fine = fmod(($caseNatali[($c % 12) + 1]['longitudine'] ?? 0) + 360, 360);
+            if ($ini <= $fine) {
+                if ($lon >= $ini && $lon < $fine) return $c;
             } else {
-                if ($longitudine >= $inizio || $longitudine < $fine) return $i;
+                if ($lon >= $ini || $lon < $fine) return $c;
             }
         }
         return 0;
