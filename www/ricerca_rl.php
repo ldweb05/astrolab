@@ -1602,6 +1602,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
         return `<tr class="${rigaCls}">
             <td style="color:#999;font-size:11px">${offset+idx+1}</td>
             <td>${stelleHtml(r.stelline)}</td>
+            <td>${r.v2_html||'—'}</td>
             <td><div class="td-val-wrap"><div><span class="val-badge">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${vicinanzaHtml}${pannelloVeti}</div></td>
             <td style="color:#888">${r.lat.toFixed(3)}</td>
             <td style="color:#888">${r.lon.toFixed(3)}</td>
@@ -1619,9 +1620,9 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
         <div class="tabella-risultati-wrap">
             <table class="tabella-risultati">
                 <thead><tr>
-                    <th>#</th><th>Stelle</th><th>VAL</th><th>Lat</th><th>Lon</th><th>RS</th>
+                    <th>#</th><th>Stelle</th><th>V2</th><th>VAL</th><th>Lat</th><th>Lon</th><th>RS</th>
                 </tr></thead>
-                <tbody>${righe||'<tr><td colspan="6" class="empty-results">Nessun punto trovato.</td></tr>'}</tbody>
+                <tbody>${righe||'<tr><td colspan="7" class="empty-results">Nessun punto trovato.</td></tr>'}</tbody>
             </table>
         </div>
         ${buildPaginazione(pagina, totPagine)}`;
@@ -1779,6 +1780,7 @@ vetiRighe +
 return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
 <td>${stelleHtml(r.stelline)}</td>
+<td>${r.v2_html||'—'}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
 <td>${codicePunto}</td>
 <td style="max-width:200px"><strong>${nomePunto}</strong>${popolazione}</td>
@@ -1815,11 +1817,11 @@ ${confrontoToolbar}
 <div class="tabella-risultati-wrap">
 <table class="tabella-risultati">
 <thead><tr>
-<th>#</th><th>Stelle</th><th>VAL</th>
+<th>#</th><th>Stelle</th><th>V2</th><th>VAL</th>
 <th>Codice / Tipo</th><th>Punto geografico</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RL</th><th>Confronta</th>
 </tr></thead>
-<tbody>${righe||'<tr><td colspan="11" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
+<tbody>${righe||'<tr><td colspan="12" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
 </table>
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
