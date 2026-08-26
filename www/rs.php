@@ -891,7 +891,7 @@ function ricalcolaTuttoConNuovaOra() {
                 if (btnPrevisione) btnPrevisione.style.display = 'none';
                 if (pannelloPrevisione) pannelloPrevisione.style.display = 'none';
             }
-            document.getElementById('val-stelle').textContent  = v.stelle_str;
+            document.getElementById('val-stelle').innerHTML = data.valutazione_v2 ? data.valutazione_v2.html : v.stelle_str;
             document.getElementById('val-stringa').textContent = v.val;
             aggiornaBannerEsclusione(data);
             
@@ -1114,7 +1114,7 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
                 if (btnPrevisione) btnPrevisione.style.display = 'none';
                 if (pannelloPrevisione) pannelloPrevisione.style.display = 'none';
             }
-            document.getElementById('val-stelle').textContent    = v.stelle_str;
+            document.getElementById('val-stelle').innerHTML = data.valutazione_v2 ? data.valutazione_v2.html : v.stelle_str;
             document.getElementById('val-stringa').textContent   = v.val;
             document.getElementById('val-condizione').textContent= 'Condizione: '+v.condizione;
  
