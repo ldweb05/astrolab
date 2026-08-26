@@ -593,11 +593,11 @@ try {
     if ($modalita === 'cuspidi') {
         usort($risultati, static fn(array $a, array $b): int => $a['distanza'] <=> $b['distanza']);
     } else {
+        // Fase 4: rimosso tiebreaker vecchio sistema. Riga commentata per
+        // rollback rapido: $cmpStelle = $b['stelline'] <=> $a['stelline']; if ($cmpStelle !== 0) return $cmpStelle;
         usort($risultati, static function (array $a, array $b): int {
             $cmpV2 = $b['v2_stelle_totali'] <=> $a['v2_stelle_totali'];
             if ($cmpV2 !== 0) return $cmpV2;
-            $cmpStelle = $b['stelline'] <=> $a['stelline'];
-            if ($cmpStelle !== 0) return $cmpStelle;
             $va = $a['vicinanza_gradi'] ?? PHP_FLOAT_MAX;
             $vb = $b['vicinanza_gradi'] ?? PHP_FLOAT_MAX;
             return $va <=> $vb;
