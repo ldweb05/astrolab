@@ -2,7 +2,7 @@
 
 **Data creazione:** 2026-08-26
 **Branch di lavoro:** `feature/sostituzione-stelline-v2` (creato da `new_dashboard`)
-**Stato:** IN CORSO — Fase 3 completata, avvio Fase 4 (rimozione vecchio sistema + chiusura)
+**Stato:** Fase 4 sostanzialmente completata (4.1-4.3 fatti, stampa_pdf_api.php in sospeso su decisione esplicita) — in attesa di conferma per il merge finale (4.4)
 **Documento studio/laboratorio di riferimento:** `docs/ROADMAP_STELLINE_V2.md`
 **Prompt operativo di riferimento:** `docs/PROMPT_OPERATIVO_ASTROLAB.md` v2.0 — seguito alla lettera
 
@@ -248,9 +248,10 @@ continua a funzionare esattamente come prima.
       in `ROADMAP.md` (commit `9edf514`). `START_HERE.md` non toccato: non
       descrive il sistema stelline in modo specifico, nessuna informazione
       diventata falsa.
-- [ ] 4.3 **Checkpoint finale:** commit + tag `checkpoint-fase4-sostituzione-completata`
+- [x] 4.3 **Checkpoint finale:** tag `checkpoint-fase4-sostituzione-completata` creato e
+      pushato
 - [ ] 4.4 Merge di `feature/sostituzione-stelline-v2` verso `new_dashboard`, solo su tua
-      conferma esplicita
+      conferma esplicita — IN ATTESA
 
 ---
 
@@ -262,4 +263,4 @@ continua a funzionare esattamente come prima.
 | 1    | RSM produzione                        | COMPLETATA  | 2026-08-26 |
 | 2    | RL produzione                         | COMPLETATA  | 2026-08-26 |
 | 3    | Pagine/endpoint secondari              | COMPLETATA  | 2026-08-26 |
-| 4    | Rimozione vecchio sistema + chiusura   | Da iniziare |      |
+| 4    | Rimozione vecchio sistema + chiusura   | 4.1-4.3 fatti, 4.4 in attesa | 2026-08-26 |
