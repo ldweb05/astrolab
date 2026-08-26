@@ -103,6 +103,13 @@ Il perimetro reale verificato è quello elencato nella Fase 3.
       - Fix buffer top-K già coperto in Fase 1 (file condiviso `RicercaRSTopK.php`,
         nessun lavoro aggiuntivo necessario per RL)
 
+**Rifinitura post-Fase 2 (richiesta esplicita dell'utente):** rimossa la colonna
+"Stelle" (vecchio sistema) da entrambe le tabelle di `ricerca.php` e `ricerca_rl.php`;
+colonna "V2" rinominata in "Ranking", ora unico punteggio visibile in interfaccia.
+Il vecchio sistema resta solo internamente come criterio secondario di stabilita
+nell'ordinamento. Commit `263f6e1` (RSM, checkpoint `checkpoint-fase1d-ranking-unico-rsm`)
+e `9e71ffd` (RL, checkpoint `checkpoint-fase2d-ranking-unico-rl`).
+
 ## Fase 3 — Pagine ed endpoint secondari (perimetro verificato via grep)
 
 - [ ] 3.1 `rs.php` / `api/rs_api.php` (vista singola RSM salvata)
