@@ -3471,3 +3471,71 @@ ASC in X = 5★ verde | GI/VE cuspide angolare = 5★ verde | Stellium benefico 
 - `docs/ROADMAP_STELLINE_V2.md` (creato)
 - `docs/HANDOVER_OPERATIVO_astrolab.md` (questa voce)
 - `docs/ROADMAP.md` (aggiornamento in corso)
+
+
+## 2026-08-26 — Sostituzione sistema stelline: V2 promosso a sistema primario in produzione (branch feature/sostituzione-stelline-v2)
+
+### Cosa è stato fatto
+Il sistema "Stelline V2" (nato come strumento di confronto parallelo, vedi voce
+del 2026-08-25) è stato promosso a sistema primario di valutazione a stelle in
+TUTTA l'interfaccia di produzione, sostituendo il vecchio punteggio di
+`RuleEngine::valuta()['stelline']` per ordinamento, filtro e visualizzazione.
+Documentazione dedicata completa: `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`.
+
+### Cosa NON è cambiato (scope esplicitamente limitato)
+`RuleEngine.php` resta congelato e invariato. Veti, `is_valida`,
+`passed_amore/casa/denaro`, la colonna "VAL" e tutti i filtri per condizione
+continuano a funzionare esattamente come prima — la migrazione ha toccato
+SOLO il punteggio a stelle mostrato/usato per ordinare e filtrare.
+
+### Bug scoperti e corretti in `StellineV2Calculator.php` durante l'analisi
+- Il bonus "ASC in X" e "ASC in casa condizione" controllavano una chiave
+  (`$case['ASC']['casa']`) mai presente nella struttura reale prodotta da
+  `SweCalc::calcolaCasePlacido()` — i due bonus non scattavano MAI. Corretto
+  mappando l'ASC di RS/RL sulle case del TEMA NATALE (non su quelle della
+  RS/RL stessa, che sarebbe concettualmente sbagliato). Valore ASC in X
+  confermato a 5★ (non 4).
+- `trovaCasaNatale()` usava chiavi `inizio`/`fine` inesistenti (la struttura
+  reale usa `longitudine` per cuspide) — riscritta riusando la stessa logica
+  di `SweCalc::trovaCasa()`.
+
+### Perimetro migrato (fasi 0-3, tutte completate e validate dal committente)
+- **RSM produzione**: `ricerca.php` / `api/ricerca_stream_api.php`
+- **RL produzione**: `ricerca_rl.php` / `api/ricerca_stream_rl_api.php`
+- **Vista singola**: `rs.php`/`api/rs_api.php`, `rl.php`/`api/rl_api.php`
+  (+ fix bug preesistente: valore alpha CSS non valido in `.valutazione`)
+- **Endpoint secondari**: `api/ricerca_griglia_api.php` (modalità
+  standard/astri), `api/sensibilita_api.php` (indice di stabilità)
+- **Verificati come NON applicabili** (non usano il sistema stelline):
+  `api/cuspidi_search_api.php`, `api/rs_alert_api.php`
+- Colonna "Stelle" (vecchio sistema) rimossa dall'interfaccia di ricerca,
+  "V2" rinominata in "Ranking" — unico punteggio visibile
+
+### Fase 4 (rimozione vecchio sistema) — parziale, per scelta esplicita
+Rete di sicurezza creata prima di iniziare: tag `safety-net-pre-rimozione-vecchio-sistema`.
+Rimosso il vecchio sistema come fallback/tiebreaker in 6 file su 7 (ogni
+rimozione commentata inline, non cancellata, per rollback puntuale immediato).
+**`api/stampa_pdf_api.php` lasciato volutamente in sospeso**: il report PDF
+combinato che questo endpoint alimenta (via `stampa.php`) risulta
+irraggiungibile in produzione — il link che dovrebbe attivarlo non compare
+mai in `rs.php` né in `rilocazione.php` (stesso bug di visibilità in
+entrambi i punti, causa non diagnosticata, preesistente a questa
+migrazione). Il committente ha confermato di non usare questa feature
+(usa le stampe dirette browser-print di RS/RL/Rilocazione, meccanismo
+separato e non toccato). Decisione: lasciare il file com'è, TODO annotato
+in `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md` per una sessione futura
+dedicata (eliminare la feature oppure correggerne la visibilità).
+
+### File NON committati, lasciati intenzionalmente fuori da questo lavoro
+- `www/compare_ril.php` / `www/compare_rs.php`: modifiche WIP del
+  committente su una feature di confronto separata, precedenti a questa
+  migrazione (checkpoint dedicato `checkpoint-wip-confronto-sospeso`)
+- `www/api/stelline_v2_api.php`: file non tracciato, probabile abbozzo
+  superato da `ricerca_stream_v2_api.php`, mai committato
+
+### Test eseguiti
+Ogni singolo file modificato (>15 file complessivi) verificato con
+`php -l`, `git status`/`git diff` per isolamento delle modifiche, e test
+funzionale reale confermato dal committente prima di ogni commit — un
+checkpoint git (tag) per ogni singolo passaggio, elencati per intero in
+`docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`.
