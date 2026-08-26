@@ -137,8 +137,18 @@ e `9e71ffd` (RL, checkpoint `checkpoint-fase2d-ranking-unico-rl`).
       non è ancora disponibile in interfaccia per la RL (limite preesistente,
       non introdotto da questa migrazione). Commit `1c1e967`,
       checkpoint `checkpoint-fase3c-v2-griglia`
-- [ ] 3.5 `api/stampa_pdf_api.php` — verificare che le stelline stampate nel PDF siano
-      coerenti con quelle mostrate a video
+- [x] 3.5 `api/stampa_pdf_api.php` — COMPLETATA, con scoperta importante.
+      Esistono DUE percorsi di stampa distinti e indipendenti:
+      1) i bottoni "🖨️ Stampa Rivoluzione Solare/Lunare" in rs.php/rl.php
+         (prepareStampaRS/RL → stampaPagina, stampa lato BROWSER via
+         window.print()) — quello realmente usato dal committente. Non mostra
+         mai stelline (né vecchie né nuove), per scelta esplicita: deve
+         mostrare solo grafici e dati soggetto. NON TOCCATO, su richiesta.
+      2) `stampa.php` → `api/stampa_pdf_api.php` (Dompdf, PDF lato SERVER),
+         raggiungibile da un link poco visibile in rs.php — mostra il
+         riquadro valutazione con stelle/veti/bonus. V2 aggiunto qui come
+         sistema di rendering delle stelle (fallback al vecchio se assente).
+         Commit `f3cde78`, checkpoint `checkpoint-fase3d-v2-pdf`
 - [ ] 3.6 `api/sensibilita_api.php`
 - [ ] 3.7 `api/rs_alert_api.php`
 
