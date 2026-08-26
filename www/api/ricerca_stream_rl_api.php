@@ -739,8 +739,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     continue;
                 }
 
-                // ── F. Filtro stelline minime ──────────────────────────────────
-                if ($stellineMin > 0 && $val['stelline'] < $stellineMin) {
+                // ── F. Filtro stelline minime (ora su V2, sistema primario) ────
+                if ($stellineMin > 0 && $valV2['stelle_totali'] < $stellineMin) {
                     $processed++;
                     continue;
                 }
@@ -808,8 +808,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             );
                 // ── I. Streaming live dei risultati top ───────────────────────
                 // Inviamo subito al frontend i risultati sopra la soglia streaming
-                // (default 3 stelle) senza aspettare la fine del loop.
-                if ($val['stelline'] >= $streamingMin) {
+                // (default 3 stelle) senza aspettare la fine del loop. Ora su V2.
+                if ($valV2['stelle_totali'] >= $streamingMin) {
                     sse('result', $ris);
                 }
 
@@ -879,8 +879,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // ─────────────────────────────────────────────────────────────────────
     //  Step 6 — Ordina per stelline decrescenti e invia evento 'done'
     // ─────────────────────────────────────────────────────────────────────
+    // Ordinamento primario su V2 (roadmap sostituzione stelline); a parità
+    // di V2, il vecchio sistema resta come criterio secondario di stabilita.
     usort($risultati, static fn(array $a, array $b): int =>
-        $b['stelline'] <=> $a['stelline']
+        ($b['v2_stelle_totali'] <=> $a['v2_stelle_totali'])
+            ?: ($b['stelline'] <=> $a['stelline'])
     );
 
     if ($tipoLocalita === 'localita') {
