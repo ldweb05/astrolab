@@ -879,11 +879,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // ─────────────────────────────────────────────────────────────────────
     //  Step 6 — Ordina per stelline decrescenti e invia evento 'done'
     // ─────────────────────────────────────────────────────────────────────
-    // Ordinamento primario su V2 (roadmap sostituzione stelline); a parità
-    // di V2, il vecchio sistema resta come criterio secondario di stabilita.
+    // Ordinamento su V2 (Fase 4: vecchio sistema rimosso come tiebreaker).
+    // Riga precedente commentata per rollback rapido in caso di problemi:
+    // ($b['v2_stelle_totali'] <=> $a['v2_stelle_totali']) ?: ($b['stelline'] <=> $a['stelline'])
     usort($risultati, static fn(array $a, array $b): int =>
-        ($b['v2_stelle_totali'] <=> $a['v2_stelle_totali'])
-            ?: ($b['stelline'] <=> $a['stelline'])
+        $b['v2_stelle_totali'] <=> $a['v2_stelle_totali']
     );
 
     if ($tipoLocalita === 'localita') {
