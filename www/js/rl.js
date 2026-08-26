@@ -419,8 +419,9 @@ const RLModule = (function () {
          const v = data.valutazione;
          const valEl = document.getElementById('valutazione');
          if (valEl) valEl.style.display = 'block';
+         // Fase 4: rimosso fallback al vecchio sistema (era: (data.valutazione_v2 && data.valutazione_v2.html) || v.stelle_str || '')
          const _valStelleEl = document.getElementById('val-stelle');
-         if (_valStelleEl) _valStelleEl.innerHTML = (data.valutazione_v2 && data.valutazione_v2.html) || v.stelle_str || '';
+         if (_valStelleEl) _valStelleEl.innerHTML = (data.valutazione_v2 && data.valutazione_v2.html) || '';
          _setText('val-stringa',   v.val || '');
          _setText('val-condizione','☽ Condizione: ' + v.condizione);
          const vetiEl = document.getElementById('val-veti');
