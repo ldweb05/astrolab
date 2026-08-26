@@ -261,6 +261,7 @@ try {
     require_once '../includes/SweCalc.php';
     require_once '../includes/RuleEngine.php';
     require_once '../includes/FiltroEsclusione.php';
+    require_once '../includes/StellineV2Calculator.php';
     if (MYASTRAL_ALIGNMENT_MODE) {
         require_once '../includes/RuleEngineExtended.php';
     }
@@ -268,6 +269,9 @@ try {
     $tStart = microtime(true);
     $swe    = new SweCalc();
     $engine = new RuleEngine();
+    // Sistema V2 parallelo (roadmap sostituzione stelline) — calcolato in
+    // aggiunta al sistema attuale, non lo sostituisce ancora (Fase 2a additiva).
+    $v2Calc = new StellineV2Calculator();
     $engineExt = MYASTRAL_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
     $pdo = db_connect();
@@ -706,6 +710,15 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $totaleValutazioniRuleEngine++;
                 $val = $engine->valuta($temaNatale, $temaRS, $condizione, $astriInCasa);
 
+                // ── E-v2. Calcolo Stelline V2 parallelo (additivo, non influenza
+                // ordinamento/filtro stelline_min in questa sotto-fase) ─────────
+                $pianetiRS_v2 = [];
+                foreach ($temaRS['pianeti'] as $_pid => $_p) {
+                    $pianetiRS_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+                }
+                $caseRS_v2 = $temaRS['case'] ?? [];
+                $valV2 = $v2Calc->calcola($pianetiRS_v2, $caseRS_v2, $condizione, $temaNatale);
+
                 // Punteggio "Discepolo parziale" opzionale (roadmap MyAstral).
                 // Calcolato SOLO se il flag e attivo; non influenza $val ne i veti.
                 $punteggioMyAstral = null;
@@ -777,6 +790,16 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $denaroBeneficioTrovato,
                 $denaroAlertGiove
             );
+            // Campi V2 aggiunti al record risultato (additivo, Fase 2a)
+            $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
+            $ris['v2_stelle_verdi']    = $valV2['stelle_verdi'];
+            $ris['v2_stelle_gialle']   = $valV2['stelle_gialle'];
+            $ris['v2_stelle_arancio']  = $valV2['stelle_arancio'];
+            $ris['v2_stelle_rosse']    = $valV2['stelle_rosse'];
+            $ris['v2_malus']           = $valV2['malus'];
+            $ris['v2_html']            = $v2Calc->renderHTML($valV2);
+            $ris['v2_alert_stellium']  = $valV2['alert_stellium_misto'];
+            $ris['v2_delta']           = $valV2['stelle_totali'] - $val['stelline'];
 
             aggiungiRisultatoTopK(
                 $risultati,
