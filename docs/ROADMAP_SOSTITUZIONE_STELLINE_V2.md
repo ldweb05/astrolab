@@ -243,7 +243,11 @@ continua a funzionare esattamente come prima.
       script di test collegati — oppure, in alternativa, diagnosticare e
       correggere il bug di visibilità per far tornare la feature utilizzabile.
 
-- [ ] 4.2 Aggiornare `HANDOVER_OPERATIVO_astrolab.md`, `ROADMAP.md`, `START_HERE.md`
+- [x] 4.2 Documentazione principale aggiornata: nuova voce cronologica in
+      `HANDOVER_OPERATIVO_astrolab.md` (commit `7932b25`), puntatore aggiornato
+      in `ROADMAP.md` (commit `9edf514`). `START_HERE.md` non toccato: non
+      descrive il sistema stelline in modo specifico, nessuna informazione
+      diventata falsa.
 - [ ] 4.3 **Checkpoint finale:** commit + tag `checkpoint-fase4-sostituzione-completata`
 - [ ] 4.4 Merge di `feature/sostituzione-stelline-v2` verso `new_dashboard`, solo su tua
       conferma esplicita
