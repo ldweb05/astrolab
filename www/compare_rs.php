@@ -28,6 +28,10 @@ $soggettoNome = $auth->getSoggettoNome();
     margin-top: 24px;
 }
 
+.compare-rsm-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .compare-rsm-card {
     min-width: 0;
 }
@@ -114,7 +118,8 @@ $soggettoNome = $auth->getSoggettoNome();
 }
 
 @media (max-width: 900px) {
-    .compare-rsm-grid {
+    .compare-rsm-grid,
+    .compare-rsm-grid-3 {
         grid-template-columns: 1fr;
     }
 
@@ -197,7 +202,7 @@ if (!raw) {
             const nazione = r.nazione || '—';
 
             return `
-                <section class="compare-rsm-card ${i === 2 ? 'compare-rsm-card-wide' : ''}">
+                <section class="compare-rsm-card">
                     <h3>RSM ${localita}</h3>
                     <p>${nazione} · ${r.lat}, ${r.lon}</p>
 
@@ -231,7 +236,7 @@ if (!raw) {
                 <p><strong>Condizione:</strong> ${condizione}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
 
-                <div class="compare-rsm-grid">
+                <div class="compare-rsm-grid ${risultati.length === 3 ? 'compare-rsm-grid-3' : ''}">
                     ${schede}
                 </div>
             </div>

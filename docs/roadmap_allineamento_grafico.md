@@ -318,4 +318,51 @@ Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
   box `.card`/`.valutazione`/`#pannello-sensibilita` portati a
   colore pieno (rimossa trasparenza)
 
+---
+
+## Aggiornamento 27-08-2026 — correzione trasparenza .card/#pannello-sensibilita + fix overlap comparatore RS/RL
+
+### Decisioni prese
+20. **Correzione del punto 19 (24-08)**: dopo aver provato l'opacita
+    piena su `.card`/`.valutazione`/`#pannello-sensibilita`, l'utente
+    preferisce la versione semi-trasparente. `.valutazione` era gia
+    rimasta a `rgba(245, 242, 238, 0.65)`. Riportati alla stessa
+    trasparenza anche `.card` (`rgba(245, 242, 238, 0.65)`, GLOBALE —
+    stessa classe condivisa da rs.php, rl.php, tema.php, index.php,
+    stampa.php, admin_utenti.php, rilocazione.php, transiti.php,
+    compare_rs.php, compare_ril.php, coerente con la decisione del
+    24-08 di rendere l'aspetto uniforme in tutto il sito) e
+    `#pannello-sensibilita` (`rgba(255, 255, 255, 0.65)`). Le vecchie
+    righe opache lasciate commentate per riferimento, come da
+    convenzione gia' in uso. In rs.php questo allinea tutti e 4 i
+    pannelli della pagina (Note per questa sessione, Sessioni RS
+    salvate, Bonus e Veti, Analisi Sensibilita Oraria) alla stessa
+    trasparenza 0.65. Verificato visivamente anche su altre pagine
+    che usano `.card` (tema.php, index.php).
+21. **Comparatore RS/RL (`compare_rs.php`, `compare_ril.php`) — fix
+    sovrapposizione a 3 elementi**: con 3 RSM/rilocazioni selezionate
+    le schede si sovrapponevano. Aggiunta una classe dedicata
+    (`.compare-rsm-grid-3` / `.compare-ril-grid-3`,
+    `grid-template-columns: repeat(3, minmax(0, 1fr))`) applicata alla
+    griglia solo quando i risultati confrontati sono esattamente 3;
+    rimossa la vecchia logica "card larga" (`-card-wide` su i===2), non
+    piu' necessaria con la griglia dedicata. Testato funzionante con 2
+    e con 3 selezioni. Nello stesso lavoro, contestuale ma non
+    correlato all'overlap: titolo pagina rilocazioni allineato da
+    "Comparatore rilocazioni" a "Comparatore RL" (h3 incluso), e
+    fallback nome soggetto in JS ora usa `$soggettoNome` lato PHP
+    invece di una stringa statica.
+
+### File toccati
+- `www/css/style.css`: `.card` e `#pannello-sensibilita` tornati a
+  0.65 di opacita (righe opache precedenti commentate per riferimento)
+- `www/compare_rs.php`, `www/compare_ril.php`: classe griglia a 3
+  colonne dedicata, rimossa logica card-wide, titolo "Comparatore RL",
+  fallback nome soggetto da PHP
+
+### Stato Fasi (aggiornato)
+- [x] Fase L (nuova) — correzione trasparenza `.card`/
+  `#pannello-sensibilita` (tutti e 4 i pannelli di rs.php allineati) +
+  fix overlap comparatore RS/RL a 3 selezioni
+
 Restano da fare, invariate: Fase C (resto), Fase D, Fase E.
