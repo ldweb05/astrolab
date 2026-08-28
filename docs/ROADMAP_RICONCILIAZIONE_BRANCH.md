@@ -153,3 +153,25 @@ del funzionamento reale del sito:
   necessario)
 - File www/api/stelline_v2_api.php.bak in ~/astrolab (produzione) - gia
   verificato non referenziato, da eliminare solo su conferma esplicita
+
+
+## Test funzionale completato (2026-08-28)
+
+Stack Docker di test creato (astrolab-web-test:8190, astrolab-db-test:5441,
+rete/nome progetto separati - zero impatto su produzione). Database di test
+popolato con pg_dump reale della produzione (2216 MB, 17 tabelle, clone
+esatto) + migrazioni 006 mancante (dati quota esportazioni) applicata;
+002/003/004/005/007/008/009 confermate gia presenti in produzione.
+
+Test funzionale eseguito dal committente nel browser su consolidamento:
+CONFERMATO OK, incluso il caso piu delicato - correzione fuso orario/ora
+legale GMT su Sinner (16/08/2001 00:52, cambio giorno) - il fix GMT
+funziona correttamente anche in pratica, non solo a livello di codice.
+
+STATO FINALE: riconciliazione branch ASTROLAB completata e verificata.
+consolidamento pronto per essere promosso a riferimento definitivo.
+
+PROSSIMO PASSO: decidere con il committente come/quando promuovere
+consolidamento (es. merge in main, o farlo diventare il nuovo branch di
+produzione al posto di new_dashboard), poi eseguire la pulizia ambienti
+di test elencata sopra.
