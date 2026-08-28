@@ -424,6 +424,7 @@ try {
     $totaleEsclusiAmore    = 0; // contatore RS escluse dal filtro specifico Amore
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
     $totaleEsclusiDecima   = 0; // contatore RS escluse dal filtro specifico Decima
+    $totaleEsclusiDecimaVuota = 0; // UX-0015: RS escluse per X casa senza alcun segnale
     $totaleEsclusiLavoro   = 0; // contatore RS escluse dal filtro specifico Lavoro
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
@@ -571,36 +572,20 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     }
                 }
 
-                // ── C-quater-bis. FILTRO SPECIFICO PER DECIMA ────────────────
-                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-                // Verifica che almeno un benefico (SO/GI/VE) sia in X casa RS
-                // con pre-ingresso di 3°, che non ci siano malevoli (MA/SA/UR/NE/PLU)
-                // in X casa (con pre-ingresso), e che i benefici non siano
-                // troppo vicini all'uscita dalla X (cuspide XI).
-                if ($condizione === 'Decima') {
-                    $verificaDecima = verificaCondizioneDecima($pianetiConCase, $caseRS);
-                    if (!$verificaDecima['valida']) {
-                        $totaleEsclusiDecima++;
-                        // Le RS escluse dal filtro Decima NON vengono incluse nei risultati
-                        // (non c'è un checkbox "Mostra anche le RS escluse da Decima")
-                        $processed++;
-                        if ($processed % 50 === 0) {
-                            sse('progress', [
-                                'processed'        => $processed,
-                                'totale'           => $totaleCalc,
-                                'perc'             => round($processed / $totaleCalc * 100),
-                                'fase'             => 'calcolo',
-                                'esclusi_radicale' => $totaleEsclusiRadicale,
-                                'esclusi_filtro'   => $totaleEsclusiFiltro,
-                            'calcoli_placido'  => $totaleCalcoliPlacido,
-                                'esclusi_amore'    => $totaleEsclusiAmore,
-                                'esclusi_casa'     => $totaleEsclusiCasa,
-                                'esclusi_decima'   => $totaleEsclusiDecima,
-                            ]);
-                        }
-                        continue;
-                    }
-                }
+                // ── C-quater-bis. EX-FILTRO SPECIFICO PER DECIMA (rimosso) ───
+                // UX-0015 (revisione 2): l'esclusione automatica qui presente
+                // (nessun benefico o presenza di malevolo in X casa) è stata
+                // rimossa. La decisione su inclusione/esclusione/livello per
+                // Decima è ora interamente demandata a
+                // RuleEngineExtended::calcolaLivelloDecima() più avanti nel
+                // loop, coerente con la decisione del committente di NON
+                // escludere più le RSM con un malefico in X casa (il soggetto
+                // decide se affrontarle, segnalate dai veti esistenti).
+                // verificaCondizioneDecima() resta in RicercaRSFilters.php,
+                // ora come semplice rilevatore geometrico (pre-ingresso/
+                // uscita), riusato da RuleEngineExtended per la stessa logica
+                // di orbo. $totaleEsclusiDecima resta dichiarato (sempre 0)
+                // per non rompere le statistiche finali che lo referenziano.
 
                 // ── C-quater-ter. FILTRO SPECIFICO PER LAVORO ────────────────
                 // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
@@ -790,6 +775,25 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     );
                 }
 
+                // UX-0015: livello 1-7 per Decima (sostituisce il sistema
+                // stelline V2 nell'ordinamento finale, solo per questa
+                // condizione + flag; v2_stelle_totali resta come tie-break).
+                $livelloDecima = null;
+                if ($engineExt !== null && $condizione === 'Decima') {
+                    $livelloDecima = $engineExt->calcolaLivelloDecima(
+                        $temaNatale,
+                        $temaRS
+                    );
+                }
+
+                // UX-0015 (revisione 2): RSM esclusa se nessun ASC/pianeta
+                // cade nella X casa (nessun segnale utile per Decima).
+                if ($livelloDecima !== null && ($livelloDecima['escludi'] ?? false)) {
+                    $totaleEsclusiDecimaVuota++;
+                    $processed++;
+                    continue;
+                }
+
                 // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
                 // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
                 // stessa casa della condizione, la RSM/RL va tolta dai risultati -
@@ -849,7 +853,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $beneficoInI,
                 $denaroBeneficioTrovato,
                 $denaroAlertGiove,
-                $punteggioMyAstral
+                $punteggioMyAstral,
+                $livelloDecima
             );
             // Campi V2 aggiunti al record risultato (additivo, Fase 1a)
             $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
@@ -861,6 +866,13 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             $ris['v2_html']            = $v2Calc->renderHTML($valV2);
             $ris['v2_alert_stellium']  = $valV2['alert_stellium_misto'];
             $ris['v2_delta']           = $valV2['stelle_totali'] - $val['stelline'];
+
+            // UX-0015 (revisione 2): per Decima, la colonna VAL mostra ASC
+            // (se natale in X) + i pianeti effettivamente in X casa RS,
+            // al posto della stringa VAL generica di RuleEngine.
+            if ($engineExt !== null && $condizione === 'Decima') {
+                $ris['val'] = $engineExt->generaValDecima($temaNatale, $temaRS);
+            }
 
             aggiungiRisultatoTopK(
                 $risultati,
@@ -943,9 +955,24 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // Ordinamento su V2 (Fase 4: vecchio sistema rimosso come tiebreaker).
     // Riga precedente commentata per rollback rapido in caso di problemi:
     // ($b['v2_stelle_totali'] <=> $a['v2_stelle_totali']) ?: ($b['stelline'] <=> $a['stelline'])
-    usort($risultati, static fn(array $a, array $b): int =>
-        $b['v2_stelle_totali'] <=> $a['v2_stelle_totali']
-    );
+    //
+    // UX-0015: per Decima (con MYASTRAL_ALIGNMENT_MODE attivo) il livello 1-7
+    // sostituisce v2_stelle_totali come criterio primario di ordinamento; le
+    // stelle V2 restano visibili nel risultato e fanno da tie-break a parita'
+    // di livello. Tutte le altre condizioni: comportamento invariato.
+    usort($risultati, static function (array $a, array $b): int {
+        $livA = $a['livello_decima']['livello'] ?? null;
+        $livB = $b['livello_decima']['livello'] ?? null;
+
+        if ($livA !== null || $livB !== null) {
+            $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
+            if ($cmpLivello !== 0) {
+                return $cmpLivello;
+            }
+        }
+
+        return $b['v2_stelle_totali'] <=> $a['v2_stelle_totali'];
+    });
 
     if ($tipoLocalita === 'localita') {
         $risultati = arricchisciLocalitaConAeroporti(
@@ -954,8 +981,18 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
         );
     }
 
+    // UX-0015 (revisione 2): messaggio dedicato se la ricerca Decima non
+    // produce alcun risultato perche' tutte le RSM sono state escluse per
+    // assenza totale di segnali in X casa (non per motivi geografici).
+    $messaggioSpeciale = null;
+    if ($engineExt !== null && $condizione === 'Decima'
+        && count($risultati) === 0 && $totaleEsclusiDecimaVuota > 0) {
+        $messaggioSpeciale = 'Nessun Risultato Positivo o Neutro trovato per la condizione richiesta';
+    }
+
     sse('done', [
         'risultati'             => $risultati,
+        'messaggio_speciale'    => $messaggioSpeciale,
         'totale_risultati'      => count($risultati),
         'totale_calcolati'      => $totaleCalc,
         'totale_originale'      => $totaleAero,

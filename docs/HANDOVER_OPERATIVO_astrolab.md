@@ -3575,3 +3575,77 @@ Ogni singolo file modificato (>15 file complessivi) verificato con
 funzionale reale confermato dal committente prima di ogni commit — un
 checkpoint git (tag) per ogni singolo passaggio, elencati per intero in
 `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`.
+
+---
+
+## 2026-08-28 — Regola 14 (34 regole) + gerarchia Decima (UX-0015)
+
+Implementata la Regola 14 ufficiale delle 34 regole di Discepolo (ASC di RSM
+in X casa natale indebolito da un pianeta lento in aspetto dissonante ai
+punti natali) e una nuova gerarchia a priorità per l'ordinamento dei
+risultati Decima, sostituendo il sistema stelline V2 come criterio primario
+solo per questa condizione (V2 resta visibile e usato come tie-break).
+
+### Gerarchia a 8 livelli (RuleEngineExtended::calcolaLivelloDecima())
+1. ASC RS in X casa natale (Regola 14 non scattata)
+2. Giove RS in X casa, entro 2,5° dalla cuspide
+3. Giove RS in X casa, oltre l'orbo
+4. Venere RS in X casa
+5. Sole RS in X casa
+6. ASC RS in X casa natale, Regola 14 scattata (declassato, con nota)
+7. Solo malefico/i (Marte/Saturno/Urano/Nettuno/Plutone) in X — inclusa,
+   segnalata dai veti esistenti; il soggetto decide se affrontare l'anno
+8. Solo Luna e/o Mercurio in X, nessun altro segnale — neutra
+
+**Esclusione**: se la X casa RS è completamente vuota (nessun pianeta, per
+gli orbi applicati) e l'ASC natale non è in X, la RSM viene esclusa dai
+risultati — nessun segnale utile per la condizione Decima. Se tutte le RSM
+calcolate risultano escluse, il frontend mostra "Nessun Risultato Positivo o
+Neutro trovato per la condizione richiesta" al posto della tabella vuota.
+
+### Colonna VAL dedicata (solo Decima)
+`RuleEngineExtended::generaValDecima()` sostituisce la stringa VAL generica
+di `RuleEngine.php` (stelline + pianeti misti) con: ASC (se natale in X) +
+ogni pianeta effettivamente presente in X casa RS (qualunque esso sia, non
+solo i benefici) — decisione esplicita del committente per rendere la
+colonna immediatamente leggibile rispetto alla condizione cercata.
+
+### Refactoring necessario: verificaCondizioneDecima() (RicercaRSFilters.php)
+Questa funzione esisteva già in produzione come filtro di esclusione attivo
+(sempre, indipendentemente da MYASTRAL_ALIGNMENT_MODE): scartava la RSM se
+non c'era un benefico in X casa O se c'era un malevolo in X casa. Questo
+contraddiceva direttamente la decisione del committente di includere le RSM
+con un malefico in X (segnalate, non nascoste). Su decisione esplicita:
+trasformata da filtro-che-esclude a semplice rilevatore geometrico (stessi
+orbi di sempre — pre-ingresso 3°, sicurezza in uscita 2° solo per i
+benefici — ma restituisce solo l'elenco dei pianeti rilevati, nessuna
+esclusione al suo interno). Il blocco di esclusione in
+`ricerca_stream_api.php` che la usava è stato rimosso, sostituito
+interamente dalla logica UX-0015. `$totaleEsclusiDecima` (vecchio contatore)
+resta dichiarato per compatibilità con le statistiche finali ma sempre a 0.
+
+**Nota**: `api/ricerca_stream_v2_api.php` (usato solo da `test_stelline_v2.php`,
+pagina di test non di produzione) chiama la stessa `verificaCondizioneDecima()`
+e ha quindi ereditato lo stesso cambio di comportamento; non aggiornato con
+logica UX-0015 propria in questa sessione (fuori scope, file di test).
+
+### File toccati
+`includes/RuleEngineExtended.php`, `includes/RicercaRSFilters.php`,
+`includes/RicercaRSResultBuilder.php`, `api/ricerca_stream_api.php`,
+`ricerca.php`, `docs/ux-myastral/DECISION_LOG_ux.md` (UX-0015).
+`includes/RuleEngine.php` (FREEZE) non toccato.
+
+### Scope esplicitamente escluso
+Estensione della stessa logica (livelli/VAL dedicato/esclusione) alle altre
+6 condizioni (Lavoro, Salute, Amore, Denaro, Denaro Low, Casa) — con
+gerarchie di priorità diverse per ciascuna, già indicate dal committente
+(es. Salute: Giove poi Venere; Denaro: Venere poi alert Giove) — SENZA
+l'ASC, la cui funzione forte come livello 1 è specifica della sola
+condizione Decima. Da trattare in una sessione dedicata futura.
+
+### Test eseguiti
+Verifica sintattica (`php -l`) su ogni file dopo ogni singola modifica,
+`git diff`/`git status` per isolamento ad ogni step. Test funzionale reale
+nel browser confermato dal committente: condizione Decima con nuovo
+comportamento (VAL, ordinamento, esclusione) verificato OK; le altre 6
+condizioni verificate invariate rispetto a prima di questa sessione.

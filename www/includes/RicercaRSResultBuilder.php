@@ -15,7 +15,8 @@ function costruisciRisultatoRicercaRS(
     $beneficoInI,
     $denaroBeneficioTrovato,
     bool $denaroAlertGiove,
-    ?array $punteggioMyAstral = null
+    ?array $punteggioMyAstral = null,
+    ?array $livelloDecima = null
 ): array {
     return [
     'icao'           => $aero['icao_code'],
@@ -50,6 +51,9 @@ function costruisciRisultatoRicercaRS(
     // null se MYASTRAL_ALIGNMENT_MODE è disattivo o la condizione non è ancora
     // supportata dal punteggio parziale — non sostituisce mai 'stelline'.
     'punteggio_myastral' => $punteggioMyAstral,
+    // Livello 1-7 (UX-0015) per la condizione Decima. null per tutte
+    // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
+    'livello_decima'     => $livelloDecima,
              ];
 }
 

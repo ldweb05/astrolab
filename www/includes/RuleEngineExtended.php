@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/AstroUtils.php';
 require_once __DIR__ . '/RuleEngine.php';
+require_once __DIR__ . '/RicercaRSFilters.php';
 
 /**
  * RuleEngineExtended — Punteggio "Discepolo parziale" (allineamento MyAstral)
@@ -86,6 +87,30 @@ class RuleEngineExtended {
 
     const ID_SATURNO = 6;  // Regola 33: Saturno nella stessa casa esclude il risultato
 
+    // ── UX-0015: Regola 14 e gerarchia a 7 livelli per Decima ──────────────
+    const PIANETI_LENTI_REGOLA14 = [
+        6 => 'Saturno',
+        7 => 'Urano',
+        8 => 'Nettuno',
+        9 => 'Plutone',
+    ];
+    const ORBO_REGOLA14 = 2.5; // gradi, per congiunzione/quadratura/opposizione
+
+    // Livelli di priorita' per la condizione Decima (1 = migliore).
+    const LIVELLO_ASC_OK         = 1;
+    const LIVELLO_GIOVE_ORBO     = 2;
+    const LIVELLO_GIOVE          = 3;
+    const LIVELLO_VENERE         = 4;
+    const LIVELLO_SOLE           = 5;
+    const LIVELLO_ASC_DECLASSATO = 6;
+    const LIVELLO_MALEFICO       = 7;  // solo malefico/i in X, nessun benefico/ASC
+    const LIVELLO_NEUTRO         = 8;  // solo Luna/Mercurio in X, nessun altro segnale
+
+    // Pianeti malefici e neutri (id secondo RuleEngine::VAL_NOMI) per la
+    // logica di inclusione/esclusione Decima (UX-0015, revisione 2).
+    const MALEFICI_DECIMA = [4, 6, 7, 8, 9]; // Marte, Saturno, Urano, Nettuno, Plutone
+    const NEUTRI_DECIMA   = [1, 2];          // Luna, Mercurio
+
     /**
      * Calcola il punteggio parziale Sole/Venere/Giove nella casa tematica
      * della condizione, con bonus d'orbo per Giove angolare.
@@ -167,5 +192,183 @@ class RuleEngineExtended {
             'dettaglio'       => $dettaglio,
             'motivo_non_supportata' => null,
         ];
+    }
+
+    /**
+     * Duplicazione locale di RuleEngine::trovaCasaNatale() (privata, FREEZE).
+     * Puro calcolo geometrico, nessuna regola di business: sicuro da duplicare
+     * senza toccare il file frozen.
+     */
+    private function trovaCasaNatale(float $lon, array $caseNatale): int {
+        $lon = fmod($lon + 360, 360);
+        for ($c = 1; $c <= 12; $c++) {
+            if (!isset($caseNatale[$c])) continue;
+            $ini  = fmod($caseNatale[$c]['longitudine'] + 360, 360);
+            $fine = fmod($caseNatale[($c % 12) + 1]['longitudine'] + 360, 360);
+            if ($ini <= $fine) { if ($lon >= $ini && $lon < $fine) return $c; }
+            else               { if ($lon >= $ini || $lon < $fine) return $c; }
+        }
+        return 1;
+    }
+
+    /**
+     * Aspetto dissonante = congiunzione (0 gradi), quadratura (90) o
+     * opposizione (180), entro l'orbo ORBO_REGOLA14. Ritorna il nome
+     * dell'aspetto o null se nessuno rientra nell'orbo.
+     */
+    private function aspettoDissonante(float $diff): ?string {
+        foreach (['congiunzione' => 0, 'quadratura' => 90, 'opposizione' => 180] as $nome => $angoloEsatto) {
+            if (abs($diff - $angoloEsatto) <= self::ORBO_REGOLA14) {
+                return $nome;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Regola 14 (34 regole ufficiali, Discepolo): ASC di RSM in X casa natale
+     * indebolito da un pianeta lento (Saturno/Urano/Nettuno/Plutone, posizione
+     * RSM) in aspetto dissonante a uno dei 4 punti natali (Sole, Luna, ASC, MC).
+     *
+     * @return array{scattata: bool, nota: string|null, dettaglio: array}
+     */
+    private function verificaRegola14(array $temaNatale, array $temaRS): array {
+        $puntiNatali = [];
+        if (isset($temaNatale['pianeti'][0]['longitudine'])) {
+            $puntiNatali[] = ['nome' => 'Sole natale', 'lon' => (float)$temaNatale['pianeti'][0]['longitudine']];
+        }
+        if (isset($temaNatale['pianeti'][1]['longitudine'])) {
+            $puntiNatali[] = ['nome' => 'Luna natale', 'lon' => (float)$temaNatale['pianeti'][1]['longitudine']];
+        }
+        if (isset($temaNatale['case'][1]['longitudine'])) {
+            $puntiNatali[] = ['nome' => 'ASC natale', 'lon' => (float)$temaNatale['case'][1]['longitudine']];
+        }
+        if (isset($temaNatale['case'][10]['longitudine'])) {
+            $puntiNatali[] = ['nome' => 'MC natale', 'lon' => (float)$temaNatale['case'][10]['longitudine']];
+        }
+
+        foreach (self::PIANETI_LENTI_REGOLA14 as $idPianeta => $nomePianeta) {
+            if (!isset($temaRS['pianeti'][$idPianeta]['longitudine'])) continue;
+            $lonPianetaRS = (float)$temaRS['pianeti'][$idPianeta]['longitudine'];
+
+            foreach ($puntiNatali as $punto) {
+                $diff = abs(AstroUtils::diffAngolo($lonPianetaRS, $punto['lon']));
+                $aspetto = $this->aspettoDissonante($diff);
+                if ($aspetto !== null) {
+                    return [
+                        'scattata' => true,
+                        'nota' => "Regola 14: {$nomePianeta} (RSM) in {$aspetto} a {$punto['nome']} - ASC in Decima indebolito",
+                        'dettaglio' => [
+                            'pianeta'        => $nomePianeta,
+                            'punto_natale'   => $punto['nome'],
+                            'aspetto'        => $aspetto,
+                            'distanza_gradi' => round($diff, 2),
+                        ],
+                    ];
+                }
+            }
+        }
+
+        return ['scattata' => false, 'nota' => null, 'dettaglio' => []];
+    }
+
+    /**
+     * Gerarchia a 7 livelli per la condizione Decima (UX-0015), da usare per
+     * l'ordinamento dei risultati al posto del sistema stelline, solo quando
+     * MYASTRAL_ALIGNMENT_MODE e' attivo e la condizione e' Decima. Il sistema
+     * stelline (V2) resta invariato e visibile nel risultato, usato come
+     * tie-break a parita' di livello.
+     *
+     * @return array{livello:int, regola14_scattata:bool, nota:string|null, dettaglio_regola14:array}
+     */
+    public function calcolaLivelloDecima(array $temaNatale, array $temaRS): array {
+        $base = ['regola14_scattata' => false, 'nota' => null, 'dettaglio_regola14' => [], 'escludi' => false];
+
+        $ascRS = $temaRS['case'][1]['longitudine'] ?? null;
+
+        if ($ascRS !== null) {
+            $casaNataleAscRS = $this->trovaCasaNatale((float)$ascRS, $temaNatale['case']);
+
+            if ($casaNataleAscRS === 10) {
+                $regola14 = $this->verificaRegola14($temaNatale, $temaRS);
+
+                return array_merge($base, [
+                    'livello'            => $regola14['scattata'] ? self::LIVELLO_ASC_DECLASSATO : self::LIVELLO_ASC_OK,
+                    'regola14_scattata'  => $regola14['scattata'],
+                    'nota'               => $regola14['nota'],
+                    'dettaglio_regola14' => $regola14['dettaglio'],
+                ]);
+            }
+        }
+
+        // ASC non in X casa natale: gerarchia Giove/Venere/Sole nella X casa
+        // DELLA RS, usando gli stessi orbi di pre-ingresso (3°) e sicurezza in
+        // uscita (2°, solo benefici) di sempre, ora centralizzati in
+        // verificaCondizioneDecima() (RicercaRSFilters.php).
+        $rilevamento = verificaCondizioneDecima($temaRS['pianeti'], $temaRS['case']);
+        $pianetiInCasa = $rilevamento['pianeti_in_casa'];
+
+        if (in_array(5, $pianetiInCasa, true)) {
+            $entroOrbo = false;
+            if (isset($temaRS['case'][10]['longitudine'], $temaRS['pianeti'][5]['longitudine'])) {
+                $diff = abs(AstroUtils::diffAngolo(
+                    (float)$temaRS['pianeti'][5]['longitudine'],
+                    (float)$temaRS['case'][10]['longitudine']
+                ));
+                $entroOrbo = $diff <= self::ORBO_MAX_GRADI;
+            }
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_GIOVE_ORBO : self::LIVELLO_GIOVE,
+            ]);
+        }
+
+        if (in_array(3, $pianetiInCasa, true)) {
+            return array_merge($base, ['livello' => self::LIVELLO_VENERE]);
+        }
+
+        if (in_array(0, $pianetiInCasa, true)) {
+            return array_merge($base, ['livello' => self::LIVELLO_SOLE]);
+        }
+
+        // Nessun ASC natale in X, nessun benefico in X casa RS: verifica
+        // malefico (incluso comunque, segnalato dai veti) o neutro
+        // (Luna/Mercurio, nessun altro segnale) prima di escludere del tutto.
+        $haMalefico = !empty(array_intersect($pianetiInCasa, self::MALEFICI_DECIMA));
+        $haNeutro   = !empty(array_intersect($pianetiInCasa, self::NEUTRI_DECIMA));
+
+        if ($haMalefico) {
+            return array_merge($base, ['livello' => self::LIVELLO_MALEFICO]);
+        }
+        if ($haNeutro) {
+            return array_merge($base, ['livello' => self::LIVELLO_NEUTRO]);
+        }
+
+        // X casa RS completamente vuota (per gli orbi applicati) e ASC
+        // natale non in X: nessun segnale utile per Decima. RSM esclusa
+        // (UX-0015, revisione 2).
+        return array_merge($base, ['livello' => self::LIVELLO_NEUTRO, 'escludi' => true]);
+    }
+
+    /**
+     * Stringa VAL dedicata alla condizione Decima (UX-0015): mostra ASC (se
+     * l'Ascendente della RS cade nella X casa natale) e ogni pianeta la cui
+     * posizione nella RS cade nella X casa della RS stessa. Sostituisce, SOLO
+     * per Decima, la stringa VAL generica di RuleEngine::generaVAL() — non la
+     * modifica, non la duplica per le altre condizioni.
+     */
+    public function generaValDecima(array $temaNatale, array $temaRS): string {
+        $parti = [];
+
+        $ascRS = $temaRS['case'][1]['longitudine'] ?? null;
+        if ($ascRS !== null && $this->trovaCasaNatale((float)$ascRS, $temaNatale['case']) === 10) {
+            $parti[] = 'ASC';
+        }
+
+        $rilevamento = verificaCondizioneDecima($temaRS['pianeti'], $temaRS['case']);
+        foreach ($rilevamento['pianeti_in_casa'] as $idPianeta) {
+            $parti[] = RuleEngine::VAL_NOMI[$idPianeta] ?? (string)$idPianeta;
+        }
+
+        return empty($parti) ? '—' : implode('+', $parti);
     }
 }

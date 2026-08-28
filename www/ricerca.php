@@ -1382,7 +1382,14 @@ document.getElementById('info-rs-tempo').textContent =
 (d.elapsed_ms / 1000).toFixed(1) + 's';
 aggiornaInfoEsclusiFiltro(d);
 stato.pagina = 1;
+// UX-0015 (revisione 2): messaggio dedicato se Decima non trova nulla di
+// utile (X casa sempre vuota), al posto della tabella vuota generica.
+if (d.messaggio_speciale) {
+document.getElementById('risultati-area').innerHTML =
+'<div class="msg-error-box">' + d.messaggio_speciale + '</div>';
+} else {
 renderTabella();
+}
 if (params && !stato.ricercaCompletata) {
 mostraBottoneProseguiRicerca(params);
 }

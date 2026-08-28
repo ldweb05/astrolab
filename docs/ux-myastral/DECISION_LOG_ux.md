@@ -407,4 +407,61 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0015 - Gerarchia a 7 livelli per Decima + Regola 14 (declassamento ASC in X)
+
+- **Data:** 2026-08-28
+- **Area:** `includes/RuleEngineExtended.php` (nuovo), ordinamento in `api/ricerca_stream_api.php`
+- **Stato:** APPROVATA
+- **Problema osservato:** per la condizione Decima non esiste oggi una vera gerarchia con
+  priorita' tra ASC/Giove/Venere/Sole: `RuleEngineExtended::calcolaPunteggioParziale()` calcola
+  solo un punteggio additivo (Sole+Venere+Giove sommati), e l'ordinamento finale dei risultati
+  (`usort` in ricerca_stream_api.php) si basa esclusivamente sul sistema stelline V2
+  (`v2_stelle_totali`, sistema primario in produzione dopo la migrazione documentata in
+  ROADMAP_SOSTITUZIONE_STELLINE_V2.md). Manca inoltre l'implementazione della Regola 14
+  ufficiale (ASC in X + pianeta lento in aspetto dissonante ai punti natali = ASC indebolito).
+- **Decisione:**
+  1. Nuova gerarchia a 7 livelli per Decima, calcolata in RuleEngineExtended.php (fuori dal
+     punteggio additivo esistente, che resta invariato per la sola visualizzazione):
+     Livello 1 = ASC RS in X casa natale (Regola 14 non scattata)
+     Livello 2 = Giove RS in X casa, entro 2.5 gradi dalla cuspide (bonus orbo)
+     Livello 3 = Giove RS in X casa, oltre l'orbo
+     Livello 4 = Venere RS in X casa
+     Livello 5 = Sole RS in X casa
+     Livello 6 = ASC RS in X casa natale, ma Regola 14 scattata (declassato)
+     Livello 7 = nessun segnale Decima
+  2. Regola 14: prerequisito ASC RS in X casa natale (funzione trovaCasaNatale() duplicata
+     localmente in RuleEngineExtended.php, essendo private in RuleEngine.php/FREEZE). Per
+     Saturno/Urano/Nettuno/Plutone (posizione RS) verificare aspetto dissonante (congiunzione,
+     quadratura o opposizione, orbo 2.5 gradi) rispetto a Sole natale, Luna natale, ASC natale
+     (cuspide I), MC natale (cuspide X, coincidente con la Decima casa). Un solo aspetto tra i 4
+     pianeti lenti e i 4 punti natali fa scattare il declassamento (livello 1 -> 6), con nota che
+     indica pianeta e punto natale coinvolti.
+  3. Ordinamento: solo con MYASTRAL_ALIGNMENT_MODE attivo e solo per condizione Decima, l'usort
+     finale in ricerca_stream_api.php ordina per livello crescente (1 = migliore) al posto del
+     sistema stelline V2. Le stelle V2 (v2_stelle_totali) restano calcolate e visibili nel record
+     risultato, e fanno da tie-break a parita' di livello. Tutte le altre condizioni:
+     comportamento invariato (v2_stelle_totali come oggi). RuleEngine.php (FREEZE) e i veti/
+     esclusioni a monte (34 regole) restano applicati esattamente come oggi, a monte di questo
+     ordinamento.
+- **Motivazione:** allineamento letterale alla gerarchia Discepolo confermata dal committente
+  (ASC prevale su Giove/Venere/Sole quando non indebolito dalla Regola 14) e implementazione della
+  Regola 14 ufficiale, finora assente. Il committente ha esplicitamente richiesto che il risultato
+  migliore per la condizione prevalga sempre sul numero di stelle, a prescindere dal sistema di
+  stelle in uso (prima le stelline classiche, ora V2).
+- **Beneficio atteso:** ordinamento dei risultati Decima coerente con l'Astrologia Attiva di
+  Discepolo; copertura della Regola 14 ufficiale, finora mancante.
+- **Costo tecnico stimato:** MEDIO — nuovo metodo in RuleEngineExtended.php, piccola modifica
+  condizionale all'usort esistente in ricerca_stream_api.php (solo per Decima + flag attivo).
+- **Rischi:** nessuna modifica a RuleEngine.php ne' al sistema stelline V2; da testare con
+  attenzione il caso limite in cui piu' risultati abbiano lo stesso livello (tie-break gia'
+  definito su v2_stelle_totali).
+- **Scope esplicitamente escluso:** estensione della gerarchia ad altre condizioni (Salute,
+  Lavoro, Soldi/Denaro), gia' menzionate dal committente con priorita' diverse (es. Salute:
+  Giove poi Venere; Soldi: Venere poi alert Giove; Lavoro: Giove poi Venere) - da trattare in una
+  sessione dedicata futura, non in questa.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 14), `docs/PROMPT_OPERATIVO_ASTROLAB.md` par. 9,
+  `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`
+
+---
+
 Nessuna ulteriore decisione registrata.
