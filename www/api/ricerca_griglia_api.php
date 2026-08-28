@@ -14,6 +14,15 @@ if (!$auth->isLoggedIn()) {
     exit;
 }
 
+if (!$auth->hasFeature('grid_search')) {
+    header('Content-Type: text/event-stream');
+    echo "event: error\n";
+    echo "data: " . json_encode([
+        'message' => 'Questa funzione è riservata agli utenti del piano Supporter.',
+    ], JSON_UNESCAPED_UNICODE) . "\n\n";
+    exit;
+}
+
 require_once __DIR__ . '/../includes/RicercaRSFilters.php';
 require_once __DIR__ . '/../includes/CuspidiUtils.php';
 
@@ -201,10 +210,14 @@ try {
     require_once '../includes/SweCalc.php';
     require_once '../includes/RuleEngine.php';
     require_once '../includes/FiltroEsclusione.php';
+    require_once '../includes/StellineV2Calculator.php';
 
     $tStart = microtime(true);
     $swe    = new SweCalc();
     $engine = new RuleEngine();
+    // Sistema V2 (roadmap sostituzione stelline) — sistema primario per
+    // filtro, streaming e ordinamento (coerente con ricerca_stream_api.php)
+    $v2Calc = new StellineV2Calculator();
 
     // ── Parametri natali ────────────────────────────────────────────────
     $g      = intval($_GET['g']         ?? 1);
@@ -506,7 +519,14 @@ try {
 
                 $val = $engine->valuta($temaNatale, $temaRS, $condizioneValutazione);
 
-                if ($stellineMin > 0 && $val['stelline'] < $stellineMin) {
+                // Calcolo Stelline V2 (sistema primario)
+                $pianetiRS_v2 = [];
+                foreach ($pianetiConCase as $_pid => $_p) {
+                    $pianetiRS_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+                }
+                $valV2 = $v2Calc->calcola($pianetiRS_v2, $caseRS, $condizioneValutazione, $temaNatale);
+
+                if ($stellineMin > 0 && $valV2['stelle_totali'] < $stellineMin) {
                     $processed++;
                     if ($processed % $progressOgni === 0) $emitProgress();
                     continue;
@@ -533,6 +553,8 @@ try {
                     'vicinanza_gradi'   => $vicinanza ? round($vicinanza['distanza'], 2) : null,
                     'vicinanza_pianeta' => $vicinanza ? ggNomePianeta($vicinanza['pianeta']) : null,
                     'vicinanza_casa'    => $vicinanza ? $vicinanza['casa'] : null,
+                    'v2_stelle_totali'  => $valV2['stelle_totali'],
+                    'v2_html'           => $v2Calc->renderHTML($valV2),
                 ];
 
                 // Debug opt-in (?debug=1): espone la casa esatta di ogni pianeta
@@ -551,7 +573,7 @@ try {
 
                 $risultati[] = $ris;
 
-                if ($val['stelline'] >= $streamingMin) {
+                if ($valV2['stelle_totali'] >= $streamingMin) {
                     sseG('result', $ris);
                 }
 
@@ -571,9 +593,11 @@ try {
     if ($modalita === 'cuspidi') {
         usort($risultati, static fn(array $a, array $b): int => $a['distanza'] <=> $b['distanza']);
     } else {
+        // Fase 4: rimosso tiebreaker vecchio sistema. Riga commentata per
+        // rollback rapido: $cmpStelle = $b['stelline'] <=> $a['stelline']; if ($cmpStelle !== 0) return $cmpStelle;
         usort($risultati, static function (array $a, array $b): int {
-            $cmpStelle = $b['stelline'] <=> $a['stelline'];
-            if ($cmpStelle !== 0) return $cmpStelle;
+            $cmpV2 = $b['v2_stelle_totali'] <=> $a['v2_stelle_totali'];
+            if ($cmpV2 !== 0) return $cmpV2;
             $va = $a['vicinanza_gradi'] ?? PHP_FLOAT_MAX;
             $vb = $b['vicinanza_gradi'] ?? PHP_FLOAT_MAX;
             return $va <=> $vb;

@@ -2,13 +2,16 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 /**
  * login.php — Pagina di login
- * Astrologia Attiva — Ciro Discepolo
+ * Astrologia Attiva 
  */
 session_start();
 
-// Se già loggato, vai all'indice
+// Se già loggato, vai alla pagina di destinazione predefinita per il ruolo
 if (!empty($_SESSION['utente_id'])) {
-    header('Location: index.php');
+    $paginaDefault = ($_SESSION['utente_ruolo'] ?? '') === 'admin'
+        ? 'admin_utenti.php'
+        : 'index.php';
+    header('Location: ' . $paginaDefault);
     exit;
 }
 
@@ -18,7 +21,61 @@ $pdo = db_connect();
 $auth = new Auth($pdo);
 
 $errore = '';
-$next   = $_GET['next'] ?? 'index.php';
+$next   = $_GET['next'] ?? '';
+
+function loginClientIp(): string
+{
+    return substr((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 0, 64);
+}
+
+function loginRateLimit(string $ip): bool
+{
+    $windowSeconds = 900;
+    $maxAttempts = 10;
+    $path = sys_get_temp_dir() . '/astrolab-login-' . hash('sha256', $ip) . '.json';
+    $handle = fopen($path, 'c+');
+
+    if ($handle === false) {
+        return false;
+    }
+
+    try {
+        if (!flock($handle, LOCK_EX)) {
+            return false;
+        }
+
+        $raw = stream_get_contents($handle);
+        $data = is_string($raw) && $raw !== ''
+            ? json_decode($raw, true)
+            : [];
+
+        $now = time();
+        $attempts = [];
+
+        if (is_array($data)) {
+            foreach ($data as $timestamp) {
+                if (is_int($timestamp) && $timestamp > $now - $windowSeconds) {
+                    $attempts[] = $timestamp;
+                }
+            }
+        }
+
+        if (count($attempts) >= $maxAttempts) {
+            return false;
+        }
+
+        $attempts[] = $now;
+        rewind($handle);
+        ftruncate($handle, 0);
+        fwrite($handle, json_encode($attempts, JSON_THROW_ON_ERROR));
+        fflush($handle);
+
+        return true;
+    } finally {
+        flock($handle, LOCK_UN);
+        fclose($handle);
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
@@ -26,13 +83,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($username === '' || $password === '') {
         $errore = 'Inserisci username e password.';
+    } elseif (!loginRateLimit(loginClientIp())) {
+        $errore = 'Troppi tentativi di accesso. Riprova più tardi.';
     } else {
         $result = $auth->login($username, $password);
         if ($result['ok']) {
             // Sicurezza: next deve essere una path relativa, non un URL esterno
             $next = preg_replace('#[^a-zA-Z0-9/_\-\.\?=&]#', '', $next);
             if (empty($next) || str_starts_with($next, '//') || str_contains($next, ':')) {
-                $next = 'index.php';
+                // Nessuna destinazione esplicita: pagina predefinita in base al ruolo
+                $next = ($result['ruolo'] ?? '') === 'admin'
+                    ? 'admin_utenti.php'
+                    : 'index.php';
             }
             header('Location: ' . $next);
             exit;
@@ -49,13 +111,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accesso — AstroLab</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Eb+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <style>
         body {
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: #F2EDE4;
+            /* background: #F2EDE4; */
+            background-color: #FFFFFF;
         }
         .login-box {
             background: white;
@@ -70,10 +134,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 28px;
         }
         .login-logo h1 {
-            font-size: 22px;
+            font-family: 'Eb Garamond', Georgia, serif;
+            font-size: 48px;
+            line-height: 56px;
             color: #2C3E6B;
-            font-weight: normal;
-            letter-spacing: 0.08em;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
         .login-logo p {
             font-size: 12px;
@@ -135,12 +201,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #BBB;
             margin-top: 24px;
         }
+        .password-field-wrap {
+            position: relative;
+        }
+        .password-field-wrap input {
+            padding-right: 40px !important;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            top: 50%;
+            right: 6px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 6px;
+            color: #6b5c4f;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .password-toggle-btn:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
     <div class="login-box">
         <div class="login-logo">
-            <h1>☉ AstroLab</h1>
+            <h1>AstroLab</h1>
             <p>Rivoluzioni Solari Mirate — Astrologia Attiva</p>
         </div>
 
@@ -156,12 +246,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" autocomplete="current-password" required>
+                <div class="password-field-wrap">
+                    <input type="password" name="password" id="login-password" autocomplete="current-password" required>
+                    <button type="button" id="login-toggle-password" class="password-toggle-btn" tabindex="-1" aria-label="Mostra password" title="Mostra password">👁️</button>
+                </div>
             </div>
             <button type="submit" class="btn-login">Accedi →</button>
         </form>
 
+        <div class="login-link" style="text-align:center;font-size:13px;margin-top:22px">
+            Non hai un account? <a href="registrazione.php">Registrati</a>
+        </div>
+
         <div class="version-note">Uso personale — Swiss Ephemeris AGPL</div>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('login-toggle-password');
+    const input = document.getElementById('login-password');
+    if (!btn || !input) return;
+
+    btn.addEventListener('click', function () {
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.textContent = isHidden ? '🙈' : '👁️';
+        btn.setAttribute('aria-label', isHidden ? 'Nascondi password' : 'Mostra password');
+        btn.setAttribute('title', isHidden ? 'Nascondi password' : 'Mostra password');
+    });
+});
+</script>
 </body>
 </html>

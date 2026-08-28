@@ -19,12 +19,17 @@ $soggettoNome = $auth->getSoggettoNome();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Comparator RS</title>
 <link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Eb+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 .compare-rsm-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
     margin-top: 24px;
+}
+
+.compare-rsm-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .compare-rsm-card {
@@ -113,7 +118,8 @@ $soggettoNome = $auth->getSoggettoNome();
 }
 
 @media (max-width: 900px) {
-    .compare-rsm-grid {
+    .compare-rsm-grid,
+    .compare-rsm-grid-3 {
         grid-template-columns: 1fr;
     }
 
@@ -146,11 +152,33 @@ const raw = sessionStorage.getItem('astroDssConfrontoRs');
 if (!raw) {
     out.innerHTML = '<p><strong>Nessun dato di confronto disponibile.</strong></p>';
 } else {
+    (async () => {
     try {
         const payload = JSON.parse(raw);
         const risultati = Array.isArray(payload.risultati)
             ? payload.risultati
             : [];
+        const autorizzazione = await fetch('api/comparator_api.php', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo: 'rs',
+                totale: risultati.length
+            })
+        });
+
+        const esitoAutorizzazione = await autorizzazione.json();
+
+        if (!autorizzazione.ok || !esitoAutorizzazione.ok) {
+            throw new Error(
+                esitoAutorizzazione.errore
+                    || 'Confronto non autorizzato.'
+            );
+        }
+
         const soggetto = payload.soggetto;
         const nomeSoggetto = soggetto?.nome
             || <?= json_encode($soggettoNome ?: 'Non disponibile') ?>;
@@ -174,7 +202,7 @@ if (!raw) {
             const nazione = r.nazione || '—';
 
             return `
-                <section class="compare-rsm-card ${i === 2 ? 'compare-rsm-card-wide' : ''}">
+                <section class="compare-rsm-card">
                     <h3>RSM ${localita}</h3>
                     <p>${nazione} · ${r.lat}, ${r.lon}</p>
 
@@ -208,7 +236,7 @@ if (!raw) {
                 <p><strong>Condizione:</strong> ${condizione}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
 
-                <div class="compare-rsm-grid">
+                <div class="compare-rsm-grid ${risultati.length === 3 ? 'compare-rsm-grid-3' : ''}">
                     ${schede}
                 </div>
             </div>
@@ -324,8 +352,9 @@ if (!raw) {
             caricaRuotaRs(risultato, indice);
         });
     } catch (errore) {
-        out.innerHTML = '<p><strong>Dati di confronto non validi.</strong></p>';
+        out.innerHTML = `<p><strong>${errore.message || 'Dati di confronto non validi.'}</strong></p>`;
     }
+    })();
 }
 </script>
 

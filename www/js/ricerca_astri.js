@@ -5,10 +5,17 @@ function aggiungiRegola() {
     const casa    = parseInt(document.getElementById('nuova-casa-select').value);
     const vuole   = document.getElementById('nuova-condizione-select').value === 'deve';
 
-    const esiste = regoleAstri.some(r => String(r.pianeta) === String(pianeta));
+    const esiste = regoleAstri.some(r =>
+        String(r.pianeta) === String(pianeta) &&
+        (
+            vuole ||
+            r.vuole ||
+            r.casa === casa
+        )
+    );
 
     if (esiste) {
-        alert('Esiste già una regola per ' + ASTRO_NOMI[pianeta] + '. Rimuovila prima di aggiungerne una nuova.');
+        alert('Esiste già una regola incompatibile per ' + ASTRO_NOMI[pianeta] + '.');
         return;
     }
 

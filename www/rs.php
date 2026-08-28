@@ -45,6 +45,8 @@ $condizioni = [
  
 $annoCorrente = (int)date('Y');
  
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
+
 $jsData = null;
 if ($soggetto) {
     $defaultLat  = $latRS_Url  !== null ? $latRS_Url
@@ -56,15 +58,25 @@ if ($soggetto) {
                     ? $soggetto['residenza_luogo'] . ($soggetto['residenza_nazione'] ? ', '.$soggetto['residenza_nazione'] : '')
                     : ($soggetto['luogo_nascita'] ?? ''));
  
-    $date   = new DateTime($soggetto['data_nascita']);
-    $oraGmt = explode(':', $soggetto['ora_nascita_gmt']);
+    $date = new DateTime($soggetto['data_nascita']); // Data locale per visualizzazione
+
+    // Calcolo corretto data/ora GMT gestendo il cambio di giorno
+    $gmtData = calcolaDataOraGmtCorretta(
+        $soggetto['data_nascita'],
+        $soggetto['ora_nascita'],
+        (float)($soggetto['offset_gmt'] ?? 0)
+    );
+
+    $dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+    $oraGmtParts = explode(':', $gmtData['ora_gmt']);
+
     $jsData = [
         'id'         => $soggetto['id'],
         'nome'       => $soggetto['nome'],
-        'giorno'     => (int)$date->format('d'),
-        'mese'       => (int)$date->format('m'),
-        'anno'       => (int)$date->format('Y'),
-        'ora_gmt'    => (int)$oraGmt[0] + (int)$oraGmt[1]/60,
+        'giorno'     => (int)$dateGmt->format('d'),
+        'mese'       => (int)$dateGmt->format('m'),
+        'anno'       => (int)$dateGmt->format('Y'),
+        'ora_gmt'    => (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0))/60,
         'ora_loc'    => substr($soggetto['ora_nascita'], 0, 5),
         'lat'        => (float)$soggetto['latitudine'],
         'lon'        => (float)$soggetto['longitudine'],
@@ -89,7 +101,9 @@ if ($soggetto) {
     <title>Rivoluzione Solare</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Symbols+2&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
@@ -129,7 +143,7 @@ if ($soggetto) {
         <div class="form-group">
             <label>Anno RS</label>
             <select id="anno-rs">
-                <?php for($y = $annoCorrente - 67; $y <= $annoCorrente + 15; $y++): ?>
+                <?php for($y = 1960; $y <= $annoCorrente + 7; $y++): ?>
                 <option value="<?= $y ?>" <?= ($annoRS_Url ?? $annoCorrente) == $y ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
@@ -162,6 +176,8 @@ if ($soggetto) {
             <button class="btn-primary" onclick="calcolaRS()">↺ Calcola RS</button>
             <button class="btn-mappa is-hidden" id="btn-apri-mappa" onclick="toggleMappa()">🌍 Mappa</button>
             <button class="btn-mappa is-hidden" id="btn-previsione-annuale" onclick="togglePrevisioneAnnuale()">📖 Relazione Annuale</button>
+            <button class="btn-mappa is-hidden" id="btn-correzione-tempo" onclick="toggleCorrezioneTempo()">⏱️ Correzione tempo ed ora</button>
+            <button class="btn-stampa-diretta" onclick="prepareStampaRS()">🖨️ Stampa Rivoluzione Solare</button>
         </div>
     </div>
  
@@ -175,9 +191,6 @@ if ($soggetto) {
         <div id="rs-link-viaggio" class="rs-travel-links"></div>
     </div>
 
-    <div class="page-title page-title-compact">
-    <button class="btn-stampa-diretta" onclick="prepareStampaRS()">🖨️ Stampa Rivoluzione Solare</button>
-</div>
     <div id="rs-btn-report-wrap" class="rs-report-wrap is-hidden">
         <a id="rs-btn-report" href="#" target="_blank" class="rs-report-link">
             📄 Stampa / PDF Report
@@ -195,8 +208,13 @@ if ($soggetto) {
     </div>
  
     <div class="card is-hidden" id="card-sessioni-rs">
-        <h3>📂 Sessioni RS salvate per questo soggetto</h3>
-        <div id="lista-sessioni-rs"></div>
+        <h3 class="collapse-toggle" onclick="toggleCollapse('sessioni-rs')">
+            📂 Sessioni RS salvate per questo soggetto
+            <span class="sensib-chevron" id="collapse-chevron-sessioni-rs">▶</span>
+        </h3>
+        <div id="collapse-body-sessioni-rs" style="display:none">
+            <div id="lista-sessioni-rs"></div>
+        </div>
     </div>
 
     <div id="modifica-note-rs" class="annual-report-modal is-hidden">
@@ -242,10 +260,37 @@ if ($soggetto) {
         </div>
     </div>
  
+    <div id="correzione-tempo-modal" class="annual-report-modal is-hidden">
+        <div class="annual-report-window" style="width:min(480px,calc(100vw - 48px));min-height:180px;">
+            <div class="annual-report-header">
+                <div class="val-stringa">⏱️ Correzione tempo ed ora</div>
+                <button type="button"
+                        onclick="toggleCorrezioneTempo()"
+                        title="Chiudi"
+                        aria-label="Chiudi"
+                        class="annual-report-icon annual-report-close">×</button>
+            </div>
+            <div class="annual-report-content time-controls-modal-content">
+                <div class="time-controls time-controls-modal">
+                    <div class="time-btn-group">
+                        <button class="time-btn" onclick="modificaOraRS(1)">▲</button>
+                        <div class="time-label">ORA</div>
+                        <div class="time-display" id="ora-corrente-display">--:--</div>
+                        <button class="time-btn" onclick="modificaOraRS(-1)">▼</button>
+                    </div>
+                    <div class="time-btn-group">
+                        <button class="time-btn" onclick="modificaMinutiRS(1)">▲</button>
+                        <div class="time-label">MIN</div>
+                        <div class="time-display" id="min-corrente-display">--</div>
+                        <button class="time-btn" onclick="modificaMinutiRS(-1)">▼</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="rs-loading" class="is-hidden"><p>⟳ Calcolo in corso...</p></div>
  
-    <div id="rs-filtro-esclusione" class="val-item val-veto rs-filter-exclusion is-hidden"></div>
-
     <div id="rs-alert-stellium"></div>
 
     <div id="previsione-annuale" class="annual-report-modal is-hidden">
@@ -270,6 +315,12 @@ if ($soggetto) {
     </div>
  
     <div class="valutazione is-hidden" id="valutazione">
+        <h3 class="collapse-toggle" onclick="toggleCollapse('bonus-veti')">
+            Bonus e Veti
+            <span class="sensib-chevron" id="collapse-chevron-bonus-veti">▶</span>
+        </h3>
+        <div id="collapse-body-bonus-veti" style="display:none">
+        <div id="rs-filtro-esclusione" class="val-item val-veto rs-filter-exclusion is-hidden"></div>
         <div class="val-header">
             <div class="stelle-grandi" id="val-stelle"></div>
             <div class="val-stringa"   id="val-stringa"></div>
@@ -280,6 +331,7 @@ if ($soggetto) {
             <div class="val-section"><h4>⚠️ Penalità / Note</h4><div id="val-penali"></div></div>
         </div>
         <div id="val-veti"></div>
+        </div>
     </div>
         <div id="pannello-sensibilita" class="is-hidden">
         <div class="sensib-header" onclick="toggleSensibilita()">
@@ -357,10 +409,13 @@ if ($soggetto) {
             <div class="tema-box-header">
                 <button class="btn-toggle-gradi" id="btn-toggle-cuspidi" onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
                 <h3>Tema Natale</h3>
-                <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
             <svg id="wheel-natale" width="480" height="480" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-natale"></p>
+            <div class="tema-info-row">
+                <p class="tema-info" id="info-natale"></p>
+                <button class="btn-toggle-gradi" id="btn-toggle-dati-natale" onclick="toggleDatiTabella('natale')">▼ Mostra Dati</button>
+            </div>
+            <div id="dati-natale" class="is-hidden">
             <table class="tabella-pianeti" id="tab-natale"></table>
             <div class="aspetti-container">
                 <h4 class="rs-table-section-title">📐 Aspetti nella Rivoluzione Solare</h4>
@@ -370,28 +425,21 @@ if ($soggetto) {
                 </tbody>
             </table>
             </div>
-        </div>
- 
-        <div class="time-controls time-controls-top">
-            <div class="time-btn-group">
-                <button class="time-btn" onclick="modificaOraRS(1)">▲</button>
-                <div class="time-label">ORA</div>
-                <div class="time-display" id="ora-corrente-display">--:--</div>
-                <button class="time-btn" onclick="modificaOraRS(-1)">▼</button>
-            </div>
-            <div class="time-btn-group">
-                <button class="time-btn" onclick="modificaMinutiRS(1)">▲</button>
-                <div class="time-label">MIN</div>
-                <div class="time-display" id="min-corrente-display">--</div>
-                <button class="time-btn" onclick="modificaMinutiRS(-1)">▼</button>
             </div>
         </div>
  
         <div class="tema-box">
-            <h3 id="rs-titolo">Rivoluzione Solare</h3>
+            <div class="tema-box-header">
+                <h3 id="rs-titolo">Rivoluzione Solare</h3>
+                <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
+            </div>
             <div class="map-loading-overlay" id="rs-mappa-loading">⟳ Ricalcolo RS...</div>
             <svg id="wheel-rs" width="480" height="480" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-rs"></p>
+            <div class="tema-info-row">
+                <p class="tema-info" id="info-rs"></p>
+                <button class="btn-toggle-gradi" id="btn-toggle-dati-rs" onclick="toggleDatiTabella('rs')">▼ Mostra Dati</button>
+            </div>
+            <div id="dati-rs" class="is-hidden">
             <table class="tabella-pianeti" id="tab-rs"></table>
             <div class="cuspidi-container">
                 <h4 class="rs-table-section-title">🏠 Cuspidi Case RS</h4>
@@ -400,6 +448,7 @@ if ($soggetto) {
                     <tbody id="cuspidi-rs-body"><tr><td colspan="2" class="table-empty-cell">—</td></tr>
                 </tbody>
             </table>
+            </div>
             </div>
         </div>
     </div>
@@ -498,6 +547,81 @@ function togglePrevisioneAnnuale() {
     const nascosto = pannello.style.display === 'none' || !pannello.style.display;
     pannello.style.display = nascosto ? 'block' : 'none';
 }
+
+function toggleCorrezioneTempo() {
+    const pannello = document.getElementById('correzione-tempo-modal');
+    if (!pannello) return;
+
+    const nascosto = pannello.style.display === 'none' || !pannello.style.display;
+    pannello.style.display = nascosto ? 'block' : 'none';
+
+    if (!nascosto) {
+        // sto chiudendo: resetta la posizione trascinata, cosi' riapre sempre al centro
+        const win = pannello.querySelector('.annual-report-window');
+        if (win) {
+            win.style.position = '';
+            win.style.left = '';
+            win.style.top = '';
+            win.style.margin = '';
+        }
+    }
+}
+
+// ── Trascinamento pannello "Correzione tempo ed ora" ─────────────────────
+// Solo per #correzione-tempo-modal (scoped per id): non tocca dimensioni,
+// colori o altre finestre che eventualmente riusassero le stesse classi.
+(function initDragCorrezioneTempo() {
+    const header = document.querySelector('#correzione-tempo-modal .annual-report-header');
+    const win    = document.querySelector('#correzione-tempo-modal .annual-report-window');
+    if (!header || !win) return;
+
+    header.style.cursor = 'move';
+    header.style.userSelect = 'none';
+
+    let dragging = false, offsetX = 0, offsetY = 0;
+
+    function onPointerDown(e) {
+        if (e.target.closest('.annual-report-close')) return; // non trascinare cliccando su "chiudi"
+        dragging = true;
+        const rect  = win.getBoundingClientRect();
+        const point = e.touches ? e.touches[0] : e;
+        offsetX = point.clientX - rect.left;
+        offsetY = point.clientY - rect.top;
+        win.style.position = 'fixed';
+        win.style.margin   = '0';
+        win.style.left = rect.left + 'px';
+        win.style.top  = rect.top  + 'px';
+        document.addEventListener('mousemove', onPointerMove);
+        document.addEventListener('mouseup', onPointerUp);
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('touchend', onPointerUp);
+    }
+
+    function onPointerMove(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        const point = e.touches ? e.touches[0] : e;
+        let newLeft = point.clientX - offsetX;
+        let newTop  = point.clientY - offsetY;
+        const maxLeft = window.innerWidth  - win.offsetWidth;
+        const maxTop  = window.innerHeight - win.offsetHeight;
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop  = Math.max(0, Math.min(newTop, maxTop));
+        win.style.left = newLeft + 'px';
+        win.style.top  = newTop  + 'px';
+    }
+
+    function onPointerUp() {
+        dragging = false;
+        document.removeEventListener('mousemove', onPointerMove);
+        document.removeEventListener('mouseup', onPointerUp);
+        document.removeEventListener('touchmove', onPointerMove);
+        document.removeEventListener('touchend', onPointerUp);
+    }
+
+    header.addEventListener('mousedown', onPointerDown);
+    header.addEventListener('touchstart', onPointerDown, { passive: true });
+})();
 
 function stampaPrevisioneAnnuale() {
     const contenuto = document.getElementById('previsione-annuale-contenuto');
@@ -767,7 +891,8 @@ function ricalcolaTuttoConNuovaOra() {
                 if (btnPrevisione) btnPrevisione.style.display = 'none';
                 if (pannelloPrevisione) pannelloPrevisione.style.display = 'none';
             }
-            document.getElementById('val-stelle').textContent  = v.stelle_str;
+            // Fase 4: rimosso fallback al vecchio sistema (era: data.valutazione_v2 ? data.valutazione_v2.html : v.stelle_str)
+            document.getElementById('val-stelle').innerHTML = data.valutazione_v2.html;
             document.getElementById('val-stringa').textContent = v.val;
             aggiornaBannerEsclusione(data);
             
@@ -797,10 +922,23 @@ function chiudiMappa() {
  
 function usaPosizione() {
     if (!posMappa) return;
-    document.getElementById('rs-lat').value = posMappa.lat.toFixed(4);
-    document.getElementById('rs-lon').value = posMappa.lon.toFixed(4);
+    const latPos = posMappa.lat;
+    const lonPos = posMappa.lon;
+    document.getElementById('rs-lat').value = latPos.toFixed(4);
+    document.getElementById('rs-lon').value = lonPos.toFixed(4);
     chiudiMappa();
-    calcolaRS();
+    fetch('https://nominatim.openstreetmap.org/reverse?lat='+latPos+'&lon='+lonPos+'&format=json&addressdetails=1')
+        .then(r => r.json())
+        .then(r => {
+            const nome = (r && !r.error) ? _estraiNomeLuogoNominatim(r) : '';
+            document.getElementById('luogo-rs-input').value = nome || 'NaN';
+        })
+        .catch(() => {
+            document.getElementById('luogo-rs-input').value = 'NaN';
+        })
+        .finally(() => {
+            calcolaRS();
+        });
 }
  
 // ── Ora nascita con controlli ─────────────────────────────────────────────
@@ -845,7 +983,13 @@ function aggiornaFusoOrarioLocale(lat, lon, gmtString) {
     fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=position&lat=${lat}&lng=${lon}&time=${ts}`)
         .then(r => r.json())
         .then(data => {
-            if (data.status !== 'OK') return;
+            if (data.status !== 'OK') {
+                const elOra  = document.getElementById('rs-ora-locale-label');
+                const elFuso = document.getElementById('rs-fuso-label');
+                if (elOra)  { elOra.textContent  = 'N/D'; elOra.title  = 'Servizio fuso orario non disponibile'; }
+                if (elFuso) { elFuso.textContent = 'N/D'; elFuso.title = 'Servizio fuso orario non disponibile'; }
+                return;
+            }
             let oraLocaleStr = data.formatted;
             let partiLocale  = oraLocaleStr.split(' ');
             document.getElementById('rs-ora-locale-label').textContent = partiLocale[1];
@@ -858,7 +1002,12 @@ function aggiornaFusoOrarioLocale(lat, lon, gmtString) {
             else if (giornoLocale < giornoGmt)  { el.textContent = '-1 Giorno'; el.style.display = 'inline-block'; }
             else                                { el.style.display = 'none'; }
         })
-        .catch(() => {});
+        .catch(() => {
+            const elOra  = document.getElementById('rs-ora-locale-label');
+            const elFuso = document.getElementById('rs-fuso-label');
+            if (elOra)  { elOra.textContent  = 'N/D'; elOra.title  = 'Errore di rete verso servizio fuso orario'; }
+            if (elFuso) { elFuso.textContent = 'N/D'; elFuso.title = 'Errore di rete verso servizio fuso orario'; }
+        });
 }
  
 // ── Link viaggio ─────────────────────────────────────────────────────────
@@ -966,7 +1115,8 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
                 if (btnPrevisione) btnPrevisione.style.display = 'none';
                 if (pannelloPrevisione) pannelloPrevisione.style.display = 'none';
             }
-            document.getElementById('val-stelle').textContent    = v.stelle_str;
+            // Fase 4: rimosso fallback al vecchio sistema (era: data.valutazione_v2 ? data.valutazione_v2.html : v.stelle_str)
+            document.getElementById('val-stelle').innerHTML = data.valutazione_v2.html;
             document.getElementById('val-stringa').textContent   = v.val;
             document.getElementById('val-condizione').textContent= 'Condizione: '+v.condizione;
  
@@ -1025,6 +1175,7 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
  
             document.getElementById('temi-wrapper').style.display = 'flex';
             document.getElementById('btn-apri-mappa').style.display = 'inline-block';
+            document.getElementById('btn-correzione-tempo').style.display = 'inline-block';
             if (!soloGrafico) document.getElementById('temi-wrapper').scrollIntoView({behavior:'smooth'});
  
             if (!soloGrafico) {
@@ -1242,7 +1393,7 @@ function _renderSensibilita(data) {
             rigaCls = 'sensib-row-base';
         } else if (!p.is_valida || (base && p.casa_natale_asc !== base.casa_natale_asc)) {
             rigaCls = 'sensib-row-critica';
-        } else if (base && p.stelline !== base.stelline) {
+        } else if (base && p.v2_stelle_totali !== base.v2_stelle_totali) {
             rigaCls = 'sensib-row-stelle-cambiano';
         } else {
             rigaCls = 'sensib-row-ok';
@@ -1264,12 +1415,12 @@ function _renderSensibilita(data) {
             if (!p.is_valida && base.is_valida)        icona = '🔴';
             else if (p.is_valida && !base.is_valida)   icona = '🟢';
             else if (p.casa_natale_asc !== base.casa_natale_asc) icona = '🔴';
-            else if (p.stelline !== base.stelline)     icona = '🟡';
+            else if (p.v2_stelle_totali !== base.v2_stelle_totali) icona = '🟡';
             else                                       icona = '🟢';
         }
  
-        const stelle = p.stelline > 0
-            ? `<span class="stelle-sensib">${'★'.repeat(p.stelline)}${'☆'.repeat(5-p.stelline)}</span>`
+        const stelle = p.v2_html
+            ? `<span class="stelle-sensib">${p.v2_html}</span>`
             : `<span class="sensib-zero-stars">0 ⛔</span>`;
  
         const vetiHtml = p.veti && p.veti.length > 0
@@ -1301,6 +1452,20 @@ function _mostraErroreSensib(msg) {
 }
  
 // ── Geocoding luogo RS ────────────────────────────────────────────────────
+// Estrae un nome sintetico affidabile dai campi strutturati di Nominatim
+// (address.city/town/village/... + state), indipendente dal formato con cui
+// il singolo paese scrive gli indirizzi (a differenza dello split per virgola
+// sul display_name, che porta il numero civico in USA e altri formati altrove).
+function _estraiNomeLuogoNominatim(r) {
+    const a = (r && r.address) || {};
+    const loc = a.city || a.town || a.village || a.municipality || a.hamlet || a.county;
+    const stato = a.state || a.region;
+    if (loc && stato && loc !== stato) return loc + ', ' + stato;
+    if (loc) return loc;
+    if (stato) return stato;
+    if (a.country) return a.country;
+    return (r.display_name || '').split(',')[0].trim();
+}
 function cercaLuogoRS() {
     const q = document.getElementById('luogo-rs-input').value.trim();
     if (q.length < 3) return;
@@ -1308,19 +1473,20 @@ function cercaLuogoRS() {
         .then(r => r.json())
         .then(ris => {
             const div = document.getElementById('luogo-rs-risultati');
-            div.innerHTML = ris.map(r =>
-                `<div class="dropdown-item" onclick="selezionaLuogoRS(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
+            div.innerHTML = ris.map(r => {
+                const nomeBreve = _estraiNomeLuogoNominatim(r).replace(/'/g,"\\'");
+                return `<div class="dropdown-item" onclick="selezionaLuogoRS(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}','${nomeBreve}')">
                     ${r.display_name}
-                </div>`
-            ).join('');
+                </div>`;
+            }).join('');
             div.classList.add('visible');
         });
 }
  
-function selezionaLuogoRS(lat, lon, nome) {
+function selezionaLuogoRS(lat, lon, nome, nomeBreve) {
     document.getElementById('rs-lat').value = parseFloat(lat).toFixed(4);
     document.getElementById('rs-lon').value = parseFloat(lon).toFixed(4);
-    document.getElementById('luogo-rs-input').value = nome.split(',')[0].trim();
+    document.getElementById('luogo-rs-input').value = nomeBreve || nome.split(',')[0].trim();
     document.getElementById('luogo-rs-risultati').classList.remove('visible');
     if (leafletMap && mapMarker) {
         mapMarker.setLatLng([parseFloat(lat), parseFloat(lon)]);

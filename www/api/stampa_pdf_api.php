@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/NascitaGmtHelper.php';
 /**
  * api/stampa_pdf_api.php — Generazione PDF nativo lato server
  * Astrologia Attiva — Scuola Ciro Discepolo
@@ -29,7 +31,6 @@
  *   - I PNG vengono validati (devono iniziare con "data:image/png;base64,")
  */
 
-declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 
 session_start();
@@ -109,17 +110,28 @@ $condizioniValide = ['Decima','Lavoro','Amore','Salute','Denaro','Denaro Low','C
 if (!in_array($condizione, $condizioniValide, true)) $condizione = 'Decima';
 
 // ── Dati natali del soggetto ────────────────────────────────────────────
-$dateNascita = new DateTime($soggetto['data_nascita']);
-$g = (int)$dateNascita->format('d');
-$m = (int)$dateNascita->format('m');
-$a = (int)$dateNascita->format('Y');
-$oraGmtParts = explode(':', $soggetto['ora_nascita_gmt']);
+// Calcolo corretto data/ora GMT gestendo il cambio di giorno
+$gmtData = calcolaDataOraGmtCorretta(
+    $soggetto['data_nascita'],
+    $soggetto['ora_nascita'],
+    (float)$soggetto['offset_gmt']
+);
+
+$dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+$g = (int)$dateGmt->format('d');
+$m = (int)$dateGmt->format('m');
+$a = (int)$dateGmt->format('Y');
+$oraGmtParts = explode(':', $gmtData['ora_gmt']);
 $oraGmt = (int)$oraGmtParts[0] + ((isset($oraGmtParts[1]) ? (int)$oraGmtParts[1] : 0)) / 60.0;
 $latNasc = (float)$soggetto['latitudine'];
 $lonNasc = (float)$soggetto['longitudine'];
 
 $swe    = new SweCalc();
 $engine = new RuleEngine();
+require_once '../includes/StellineV2Calculator.php';
+// Sistema V2 (roadmap sostituzione stelline) — usato per il rendering delle
+// stelle nel PDF, coerente con quanto mostrato a video in rs.php/rl.php
+$v2Calc = new StellineV2Calculator();
 
 // ── Recupero dati per le tabelle (pianeti, case, valutazione) ───────────
 $temaNatale = null;
@@ -142,6 +154,12 @@ if (in_array('rs', $moduli)) {
     $rsGmt    = $rs['stringa'];
     $temaRS   = $swe->calcolaTema($rs['giorno'], $rs['mese'], $rs['anno'], $rs['ora_gmt'], $latRSeff, $lonRSeff);
     $valRS    = $engine->valuta($temaNatale, $temaRS, $condizione);
+    $pianetiRS_v2 = [];
+    foreach ($temaRS['pianeti'] as $_pid => $_p) {
+        $pianetiRS_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+    }
+    $valV2RS = $v2Calc->calcola($pianetiRS_v2, $temaRS['case'] ?? [], $condizione, $temaNatale);
+    $valRS['v2_html'] = $v2Calc->renderHTML($valV2RS);
 }
 
 if (in_array('rl', $moduli)) {
@@ -156,7 +174,15 @@ if (in_array('rl', $moduli)) {
                 $rlData['giorno'], $rlData['mese'], $rlData['anno'],
                 $rlData['ora_gmt'], $latRLeff, $lonRLeff
             );
-            if ($temaNatale) $valRL = $engine->valuta($temaNatale, $temaRL, $condizione);
+            if ($temaNatale) {
+                $valRL = $engine->valuta($temaNatale, $temaRL, $condizione);
+                $pianetiRL_v2 = [];
+                foreach ($temaRL['pianeti'] as $_pid => $_p) {
+                    $pianetiRL_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+                }
+                $valV2RL = $v2Calc->calcola($pianetiRL_v2, $temaRL['case'] ?? [], $condizione, $temaNatale);
+                $valRL['v2_html'] = $v2Calc->renderHTML($valV2RL);
+            }
         }
     } catch (Throwable $e) {
         // RL non disponibile — sezione sarà vuota
@@ -306,7 +332,7 @@ function _tabellaCase(?array $temaCase, string $title): string {
  */
 function _valutazioneHtml(?array $val): string {
     if (!$val) return '';
-    $stelle = str_repeat('&#9733;', $val['stelline']) . str_repeat('&#9734;', 5 - $val['stelline']);
+    $stelle = $val['v2_html'] ?? (str_repeat('&#9733;', $val['stelline']) . str_repeat('&#9734;', 5 - $val['stelline']));
     $valStr = isset($val['val']) ? htmlspecialchars($val['val']) : '';
     $cond   = isset($val['condizione']) ? htmlspecialchars($val['condizione']) : '';
 

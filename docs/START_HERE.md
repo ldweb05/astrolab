@@ -57,8 +57,9 @@ Verde.
 ASTROLAB è una piattaforma professionale dedicata
 all'astrologia previsionale.
 
-Integra in un unico progetto le funzionalità nate durante
-l'evoluzione di Astro-Val e Astro-DSS.
+ASTROLAB è il progetto unico e definitivo del sistema.
+La documentazione operativa, tecnica e progettuale deve fare riferimento
+ad ASTROLAB come unico progetto.
 
 L'applicazione comprende:
 
@@ -66,6 +67,7 @@ L'applicazione comprende:
 - Rivoluzione Solare;
 - Rivoluzione Lunare;
 - Rilocazioni;
+- Transiti Planetari;
 - Annual Report;
 - Comparator;
 - Decision Support System;
@@ -73,9 +75,6 @@ L'applicazione comprende:
 - Theme Engine;
 - Rule Engine;
 - Search API geografica.
-
-I precedenti riferimenti ad Astro-Val e Astro-DSS rimangono
-utili esclusivamente come documentazione storica.
 
 L'applicazione operativa è ASTROLAB.
 
@@ -107,6 +106,21 @@ Sono consolidati:
 
 Il Rule Engine contiene 120 Rule ed è considerato
 parte della baseline permanente.
+
+La macro-funzionalità di registrazione utenti, verifica email, recupero
+password, piani `free` e `supporter`, limiti, quote, restrizioni funzionali e
+sicurezza delle sessioni è completata.
+
+Il riferimento operativo dedicato è
+`docs/roadmap_registrazioneutenti.md`; la decisione architetturale corrispondente
+è ADR-016, con stato `Accettata`.
+
+La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org
+è mantenuta separatamente nel documento `docs/roadmap_comparazione_myastral.md`,
+che costituisce il riferimento ufficiale per le attività di allineamento con
+il software di Ciro Discepolo. Le attività sono subordinate all'acquisto di
+un account MyAstral.org e richiedono evidenze verificabili prima di qualsiasi
+modifica applicativa.
 
 Non deve essere modificato salvo:
 
@@ -187,6 +201,16 @@ Durante questa evoluzione il motore astrologico non è stato modificato.
 
 ---
 
+# Ricerca RL
+
+La Ricerca RL (Rivoluzioni Lunari, base mensile) estende alla Luna la stessa ricerca geografica per condizione già disponibile per le RSM.
+
+Riusa integralmente il motore di valutazione esistente (RuleEngine, Rule Map di esclusione radicale, FiltroEsclusione, deduplicazione geografica).
+
+È disponibile in una pagina dedicata (Ricerca Località RL), separata dalla ricerca RSM per non introdurre accoppiamento tra i due motori.
+
+---
+
 # Comparator
 
 Il Comparator Engine è operativo.
@@ -245,6 +269,7 @@ Alla data di questo documento risultano completati:
 - deduplicazione SQL;
 - regressione automatica;
 - documentazione tecnica.
+- codifica colore semantica dei pianeti sulla ruota;
 
 Il ciclo principale di sviluppo funzionale può essere considerato
 completato.
@@ -415,6 +440,12 @@ L'attività futura del progetto è orientata principalmente a:
 
 La baseline corrente costituisce il riferimento ufficiale per ogni
 sviluppo successivo.
+
+Dal momento del deployment su VPS, il diario operativo del progetto
+proseguirà in `docs/HANDOVER_OPERATIVO_VPS_v2.md`.
+
+`docs/HANDOVER_OPERATIVO_astrolab.md` rimarrà lo storico ufficiale della
+fase di sviluppo e consolidamento della baseline.
 
 ---
 

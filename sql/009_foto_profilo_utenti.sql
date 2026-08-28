@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE utenti
+    ADD COLUMN foto_profilo VARCHAR(255) DEFAULT NULL;
+
+COMMIT;

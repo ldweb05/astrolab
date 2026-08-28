@@ -3,9 +3,8 @@
 Piattaforma professionale per l'astrologia previsionale e il Decision
 Support System.
 
-ASTROLAB rappresenta l'unificazione dei progetti **Astro-Val** (baseline
-architetturale) e **Astro-DSS** (evoluzione del Comparator e del
-Decision Support System) in un'unica piattaforma.
+ASTROLAB è la piattaforma unica e definitiva per l'astrologia
+previsionale e il Decision Support System.
 
 ## Per iniziare
 
@@ -19,6 +18,18 @@ Leggere nell'ordine:
 Questi documenti costituiscono la documentazione ufficiale del progetto.
 
 ## Stato del progetto
+
+La macro-funzionalità di registrazione utenti, verifica email, recupero password,
+gestione dei piani `free` e `supporter`, limiti funzionali, quote, restrizioni
+lato server e interfaccia, Comparator, Annual Report e sicurezza delle sessioni
+è completata.
+
+La documentazione operativa di riferimento è:
+
+- `docs/roadmap_registrazioneutenti.md`;
+- `docs/HANDOVER_OPERATIVO_astrolab.md`;
+- `docs/ADR_INDEX_ASTROLAB.md` — ADR-016 accettata.
+
 
 -   Rule Engine: **120/120**
 -   Rule registrate: **120**
@@ -63,6 +74,7 @@ Sono completati:
 -   riepilogo soggetti;
 -   tabelle dei match astrologici;
 -   integrazione ruote astrologiche;
+-   codifica colore semantica dei pianeti sulla ruota;
 -   preservazione delle regole personalizzate;
 -   consolidamento Comparator RS;
 -   compatibilità completa con il Rule Engine congelato;
@@ -121,6 +133,12 @@ API / Browser / PDF
 La roadmap ufficiale è descritta in `docs/ROADMAP.md`.
 
 ## Punto di ripresa
+
+Dal momento del deployment su VPS, il diario operativo del progetto
+proseguirà in `docs/HANDOVER_OPERATIVO_VPS_v2.md`.
+
+`docs/HANDOVER_OPERATIVO_astrolab.md` resterà lo storico ufficiale della
+fase di sviluppo e consolidamento della baseline.
 
 Per la Ricerca RSM v3 risultano completate:
 

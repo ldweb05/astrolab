@@ -342,6 +342,88 @@ class RuleEngine {
         $note      = $risPunteggio['note'];
         $valParts  = $risPunteggio['valParts'];
 
+        // UX-0007: latitudine estrema (>60°) — avviso informativo non
+        // bloccante (non e' una delle 34 regole ufficiali). La RSM/RL viene
+        // comunque valutata normalmente con tutte le regole, punteggio e
+        // stelline come qualunque altra localita'.
+        if (abs($temaRS['lat'] ?? 0) > 60) {
+            $note[] = [
+                'codice' => 'LAT',
+                'tipo'   => 'AVV',
+                'nota'   => 'Latitudine ' . round($temaRS['lat'], 1) . '° — oltre 60°: a queste latitudini il sistema di case Placido può risultare meno affidabile, valuta con cautela',
+            ];
+        }
+
+        // UX-0008: Marte entro 2,5° dalla cuspide della X Casa (in qualunque
+        // direzione) o fisicamente assegnato alla X Casa — avviso informativo
+        // non bloccante (non e' una delle 34 regole ufficiali, ex veto
+        // "astrolab-angoli"). La RSM/RL viene valutata normalmente con tutte
+        // le regole, punteggio e stelline come qualunque altra localita'.
+        if (isset($pianeti[4])) {
+            $marteInCasaX = ((int)$pianeti[4]['casa'] === 10);
+            $diffMarteX = isset($case[10]['longitudine'])
+                ? abs($this->diffAngolo($pianeti[4]['longitudine'], $case[10]['longitudine']))
+                : null;
+            if ($marteInCasaX || ($diffMarteX !== null && $diffMarteX <= 2.5)) {
+                $note[] = [
+                    'codice' => 'MA10',
+                    'tipo'   => 'AVV',
+                    'nota'   => 'Marte ' . ($marteInCasaX ? 'in X Casa' : ('a ' . round($diffMarteX, 1) . '° dalla cuspide della X Casa')) . ' — conflitti con autorità o esposizione alla reputazione possibili, valuta con cautela',
+                ];
+            }
+        }
+
+        // UX-0013: Regola 33 (Saturno prevale su Giove/Venere/Sole) declassata
+        // da veto assoluto a nota informativa non bloccante — non è tra le
+        // regole a scarto automatico (solo 4, 5, 31, 32, 34 lo sono), è un
+        // principio interpretativo su cui l'astrologo deve dare un giudizio
+        // (revoca UX-0006). Caso (a) stessa casa, qualunque essa sia.
+        if (isset($pianeti[6])) {
+            $casaSaturno = $pianeti[6]['casa'];
+            $beneficiStessaCasa = [];
+            foreach ([0, 3, 5] as $idBenef) {
+                if (isset($pianeti[$idBenef]) && $pianeti[$idBenef]['casa'] === $casaSaturno) {
+                    $beneficiStessaCasa[] = $idBenef;
+                }
+            }
+            if (!empty($beneficiStessaCasa)) {
+                $nomiSat = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', $beneficiStessaCasa));
+                $note[] = [
+                    'codice' => 'SA33',
+                    'tipo'   => 'AVV',
+                    'nota'   => "Saturno prevale su {$nomiSat} in {$casaSaturno}a casa (Regola 33) — valuta con attenzione, l'anno può avere un andamento più saturnino che gioviano/venusino/solare",
+                ];
+            }
+        }
+
+        // UX-0013: Regola 33, caso (b) case adiacenti IX/X (Medio Cielo),
+        // entro 3° dalla stessa cuspide su lati opposti — stessa nota
+        // informativa, non blocca la RSM/RL.
+        if (isset($case[10]['longitudine'])) {
+            $cuspideMC33 = $case[10]['longitudine'];
+            $saturnoVicino33 = null;
+            if (isset($pianeti[6]) && (int)$pianeti[6]['casa'] === 9) {
+                $diffSat33 = $this->diffAngolo($pianeti[6]['longitudine'], $cuspideMC33);
+                if ($diffSat33 > -3.0 && $diffSat33 <= 0.0) {
+                    $saturnoVicino33 = round(abs($diffSat33), 1);
+                }
+            }
+            if ($saturnoVicino33 !== null) {
+                foreach ([0, 3, 5] as $idBenef) {
+                    if (!isset($pianeti[$idBenef]) || (int)$pianeti[$idBenef]['casa'] !== 10) continue;
+                    $diffBenef33 = $this->diffAngolo($pianeti[$idBenef]['longitudine'], $cuspideMC33);
+                    if ($diffBenef33 >= 0.0 && $diffBenef33 < 3.0) {
+                        $nome33 = self::VAL_NOMI[$idBenef] ?? '?';
+                        $note[] = [
+                            'codice' => 'SA33ADJ',
+                            'tipo'   => 'AVV',
+                            'nota'   => "Saturno a {$saturnoVicino33}° dal MC in IX e {$nome33} a " . round($diffBenef33,1) . "° dal MC in X (Regola 33) — Saturno prevale, valuta con attenzione",
+                        ];
+                    }
+                }
+            }
+        }
+
         // ── FASE 3: FILTRO ASTRI IN CASA ─────────────────────────────────
         $penalitaAstri = $this->filtraAstri($astriInCasa, $pianeti);
 
@@ -518,7 +600,7 @@ class RuleEngine {
 
         // ── FASE 1: VETI ASSOLUTI ─────────────────────────────────────────
 
-        // ── Regola 1: ASC RS in I, VI o XII casa natale ──────────────────
+        // ── Veto ASC RS in I, VI o XII casa natale (Regola 4 + Regola 6a) ─
         // v4.1: applicato anche il pre-ingresso di 3° sulle cuspidi natali
         // I, VI e XII. Se l'ASC RS è entro 3° PRIMA della cuspide di una
         // di queste case natali, è trattato come se vi fosse già entrato.
@@ -548,12 +630,13 @@ class RuleEngine {
         // VI o XII, è trattato come "già entrato" in quella casa).
         // Il controllo stellium usa le case assegnate da SweCalc (invariato).
 
-        // Pre-ingresso malevoli in I/VI/XII RS (Fail-safe 1 v4.1)
-        // MA=4, SA=6, UR=7, NE=8, PLU=9
+        // Pre-ingresso Sole + malevoli in I/VI/XII RS (Fail-safe 1 v4.1;
+        // Sole aggiunto con UX-0004 per completare la Regola 4)
+        // SO=0, MA=4, SA=6, UR=7, NE=8, PLU=9
         foreach ([1, 6, 12] as $casaVeto) {
             if (!isset($case[$casaVeto])) continue;
             $cuspideVeto = $case[$casaVeto]['longitudine'];
-            foreach (self::MALEVOLI as $idMal) {
+            foreach (array_merge([0], self::MALEVOLI) as $idMal) {
                 if (!isset($pianeti[$idMal])) continue;
                 $lonMal = $pianeti[$idMal]['longitudine'];
                 // Il pianeta è già assegnato a questa casa da SweCalc?
@@ -576,33 +659,69 @@ class RuleEngine {
                 $veti[] = "VETO: Marte in {$casaVeto}a casa RS";
             }
 
-            // Stellium (3+) senza protezione Sole/Giove
+            // Sole in I, VI, XII (casa assegnata da SweCalc) - UX-0004,
+            // completa la Regola 4 (Ascendente, stellium O Sole in I/VI/XII).
+            if ($casaVeto !== 8 && in_array(0, $inCasa)) {
+                $veti[] = "VETO (Regola 4): Sole in {$casaVeto}a casa RS";
+            }
+
+            // Stellium (3+) - REGOLA 4/16/26/31: nessuna eccezione per benefici
+            // presenti nello stellium (allineato a docs/status/34_regole_rsm.md,
+            // decisione UX-0002 in docs/ux-myastral/DECISION_LOG_ux.md).
             if (count($inCasa) >= 3) {
-                $hasBenefici = in_array(0, $inCasa) || in_array(5, $inCasa);
-                if (!$hasBenefici) {
-                    $nomi = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', $inCasa));
-                    $veti[] = "VETO: Stellium ({$nomi}) in {$casaVeto}a casa senza Sole/Giove";
-                }
+                $nomi = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', $inCasa));
+                $veti[] = "VETO: Stellium ({$nomi}) in {$casaVeto}a casa";
             }
         }
 
-        // Regola 33: Marte o Saturno entro 2° dagli angoli
+        // Regola 31 - UX-0005: stellium diviso tra XII e I casa (es. Giove in
+        // XII + Venere/Mercurio in I) vale come stellium pieno in XII. Solo
+        // la coppia XII/I e' prevista dal testo di Discepolo - non generalizzata
+        // ad altre case adiacenti. Scatta solo se nessuna delle due case da
+        // sola raggiunge gia' 3 (caso gia' coperto dal veto sopra).
+        $inCasa12 = $this->pianetaInCasa($pianeti, 12);
+        $inCasa1  = $this->pianetaInCasa($pianeti, 1);
+        if (count($inCasa12) < 3 && count($inCasa1) < 3
+            && count($inCasa12) >= 1 && count($inCasa1) >= 1
+            && (count($inCasa12) + count($inCasa1)) >= 3) {
+            $nomi = implode('+', array_map(fn($id) => self::VAL_NOMI[$id] ?? '?', array_merge($inCasa12, $inCasa1)));
+            $veti[] = "VETO (Regola 31): Stellium diviso XII/I ({$nomi}) — vale come stellium pieno in XII";
+        }
+
+        // Regola 34 — UX-0003: Marte e Saturno nella stessa casa RS/RL,
+        // eccetto III e IX (case-parcheggio neutre, self::CASE_PARCHEGGIO).
+        // Nessun pre-ingresso previsto: il testo di Discepolo non lo menziona
+        // per questa regola, a differenza delle Regole 4/5.
+        if (isset($pianeti[4], $pianeti[6])) {
+            $casaMarte   = $pianeti[4]['casa'];
+            $casaSaturno = $pianeti[6]['casa'];
+            if ($casaMarte === $casaSaturno && !in_array($casaMarte, self::CASE_PARCHEGGIO)) {
+                $veti[] = "VETO (Regola 34): Marte e Saturno entrambi in {$casaMarte}a casa — non ammesso tranne in III o IX";
+            }
+        }
+
+        // Veto astrolab-angoli (NON e' la Regola 33 ufficiale, vedi commento
+        // sul messaggio sotto): Marte o Saturno entro 2° dagli angoli.
+        // UX-0008: Marte sulla X Casa escluso da qui, gestito come avviso
+        // non bloccante dopo il calcolo del punteggio (vedi FASE 2 di valuta()).
         foreach ([4, 6] as $mal) {
             if (!isset($pianeti[$mal])) continue;
             $lonP = $pianeti[$mal]['longitudine'];
             foreach (self::ANGOLARI as $ang) {
+                if ($mal === 4 && $ang === 10) continue;
                 if (!isset($case[$ang])) continue;
                 $diff = abs($this->diffAngolo($lonP, $case[$ang]['longitudine']));
                 if ($diff <= 2.0) {
-                    $veti[] = "VETO (reg.33): " . self::VAL_NOMI[$mal] . " a " . round($diff,1) . "° dalla cuspide casa {$ang}";
+                    $veti[] = "VETO (astrolab-angoli): " . self::VAL_NOMI[$mal] . " a " . round($diff,1) . "° dalla cuspide casa {$ang} — regola proprietaria, non una delle 34 regole ufficiali";
                 }
             }
         }
 
-        // Regola 31: Latitudine estrema
-        if (abs($temaRS['lat'] ?? 0) > 60) {
-            $veti[] = "VETO (reg.31): Latitudine " . round($temaRS['lat'],1) . "° — oltre 60°";
-        }
+        // NOTA — UX-0007: il veto latitudine estrema (>60°) e' stato declassato
+        // da veto assoluto a nota informativa non bloccante (vedi FASE 2 dopo
+        // calcolaPunteggio()): non e' una delle 34 regole ufficiali, e scartava
+        // automaticamente configurazioni che potevano essere astrologicamente
+        // valide (confronto con myastral.org, sessione 2026-08-18).
 
         // ── FASE 1-BIS: CONTROLLO DECIMA (pre-ingresso e sicurezza-uscita) ──
         //

@@ -17,6 +17,17 @@ $userId       = $auth->getCurrentUserId();
 $username     = $auth->getCurrentUsername();
 $soggettoId   = $auth->getSoggettoAttivo();
 $soggettoNome = $auth->getSoggettoNome();
+
+// Modale impostazioni (stessa logica di dashboard.php): cambio password (tutti) + foto profilo (solo Supporter/admin)
+$idxHasFotoProfilo = $auth->hasFeature('foto_profilo');
+if (empty($_SESSION['dash_settings_csrf'])) {
+    $_SESSION['dash_settings_csrf'] = bin2hex(random_bytes(32));
+}
+$idxSettingsCsrf = $_SESSION['dash_settings_csrf'];
+
+$stmtIdxFoto = $pdo->prepare('SELECT foto_profilo FROM utenti WHERE id = ?');
+$stmtIdxFoto->execute([$userId]);
+$idxFotoProfilo = $stmtIdxFoto->fetchColumn() ?: null;
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -32,7 +43,7 @@ $soggettoNome = $auth->getSoggettoNome();
 <!-- ── Header ──────────────────────────────────────────────────── -->
 <header>
     <div class="header-inner">
-        <h1>☉ AstroLab</h1>
+        <h1><a href="<?= 'dashboard.php' . ($soggettoId > 0 ? '?id=' . (int)$soggettoId : '') ?>" class="header-logo">AstroLab</a></h1>
         <button class="nav-toggle"
                 type="button"
                 aria-expanded="false"
@@ -40,25 +51,16 @@ $soggettoNome = $auth->getSoggettoNome();
                 aria-label="Apri menu di navigazione">☰</button>
 
         <nav id="main-nav" class="main-nav">
-            <a href="index.php" class="active">Soggetti</a>
-            <a href="tema.php">Tema Natale</a>
-            <a href="rs.php">Rivoluzione Solare</a>
-            <a href="ricerca.php">Ricerca Località</a>
-            <?php if ($isAdmin): ?>
-            <a href="admin_utenti.php">⚙️ Utenti</a>
-            <?php endif; ?>
-        
-
-            <hr class="nav-separator">
-
 <div class="header-user">
             <span>👤 <?= htmlspecialchars($username) ?>
                 <?php if ($isAdmin): ?><span class="header-role header-role-admin"> (admin)</span><?php endif; ?>
             </span>
-            <?php if ($soggettoNome): ?>
-            <span class="soggetto-attivo">⭐ <?= htmlspecialchars($soggettoNome) ?></span>
-            <?php endif; ?>
-            <a href="cambia_password.php" class="header-link">🔑 Password</a>
+            <button type="button" id="idx-btn-settings" class="header-icon-btn" title="Impostazioni">⚙️</button>
+            <div id="idx-avatar-wrap" class="header-avatar">
+                <?php if ($idxFotoProfilo): ?>
+                <img id="idx-avatar-img" src="<?= htmlspecialchars($idxFotoProfilo) ?>" alt="Foto profilo"/>
+                <?php endif; ?>
+            </div>
             <a href="logout.php" class="header-link">Esci</a>
         </div>
 
@@ -143,6 +145,7 @@ $soggettoNome = $auth->getSoggettoNome();
                             <button type="button" class="btn-time" onclick="modificaMinutiGMT(1)">▲</button>
                             <button type="button" class="btn-time" onclick="modificaMinutiGMT(-1)">▼</button>
                         </div>
+                        <span id="gmt-giorno-label" class="rs-next-day-label is-hidden"></span>
                     </div>
                 </div>
                 <div class="form-group">
@@ -343,7 +346,7 @@ function caricaSoggettiConDropdown() {
 
                 html += `<tr class="${isAttivo ? 'riga-soggetto-attivo' : ''}">
                     <td>${s.codice || '—'}</td>
-                    <td><b>${s.nome}</b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
+                    <td><b><a onclick="apriDashboard(${s.id})" style="cursor:pointer;color:inherit;text-decoration:none;">${s.nome}</a></b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
                     <td>${formatData(s.data_nascita)}</td>
                     <td>${s.ora_nascita}</td>
                     <td>
@@ -353,8 +356,6 @@ function caricaSoggettiConDropdown() {
                     ${tdProp}
                     <td><div class="azioni">
                         <button class="btn-icon" title="Imposta attivo" onclick="impostaSoggettoAttivo(${s.id})">⭐</button>
-                        <button class="btn-icon" title="Tema Natale" onclick="apriTema(${s.id})">TN</button>
-                        <button class="btn-icon" title="Rivoluzione Solare" onclick="apriRS(${s.id})">RS</button>
                         <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${s.id})">✏️</button>
                         <button class="btn-icon" title="Elimina" onclick="eliminaSoggetto(${s.id}, '${s.nome.replace(/'/g, "\\'")}')">🗑️</button>
                     </div></td>
@@ -370,6 +371,121 @@ function caricaSoggettiConDropdown() {
 }
 
 document.addEventListener('DOMContentLoaded', caricaSoggettiConDropdown);
+</script>
+<!-- Modale Impostazioni: cambio password + foto profilo (stessa logica/API di dashboard.php) -->
+<div id="idx-modale-overlay" class="idx-modal-overlay">
+    <div class="idx-modal-box">
+        <div class="idx-modal-header">
+            <h2>Impostazioni</h2>
+            <button type="button" onclick="idxChiudiModaleImpostazioni()" class="idx-modal-close">&times;</button>
+        </div>
+
+        <div class="idx-modal-section">
+            <h3>🔑 Cambia Password</h3>
+            <div id="idx-pwd-msg" class="idx-modal-msg"></div>
+            <input id="idx-pwd-attuale" type="password" autocomplete="off" placeholder="Password attuale">
+            <input id="idx-pwd-nuova" type="password" autocomplete="off" placeholder="Nuova password (min. 8 caratteri)">
+            <input id="idx-pwd-conferma" type="password" autocomplete="off" placeholder="Conferma nuova password">
+            <button type="button" onclick="idxCambiaPassword()" class="idx-btn-primary">Aggiorna Password</button>
+        </div>
+
+        <div class="idx-modal-divider"></div>
+
+        <div class="idx-modal-section">
+            <h3>🖼️ Foto Profilo</h3>
+            <?php if ($idxHasFotoProfilo): ?>
+            <div id="idx-foto-msg" class="idx-modal-msg"></div>
+            <input id="idx-foto-input" type="file" accept="image/jpeg,image/png,image/webp">
+            <p class="idx-modal-hint">JPG, PNG o WEBP, max 2MB.</p>
+            <button type="button" onclick="idxCaricaFoto()" class="idx-btn-primary">Carica Foto</button>
+            <?php else: ?>
+            <p class="idx-modal-hint">Disponibile solo per il piano <strong>Supporter</strong>.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<script>
+const IDX_SETTINGS_CSRF = "<?= $idxSettingsCsrf ?>";
+
+function idxApriModaleImpostazioni() {
+    document.getElementById('idx-modale-overlay').classList.add('is-open');
+}
+function idxChiudiModaleImpostazioni() {
+    document.getElementById('idx-modale-overlay').classList.remove('is-open');
+}
+
+function idxCaricaFoto() {
+    const input = document.getElementById('idx-foto-input');
+    const msg = document.getElementById('idx-foto-msg');
+    if (!input.files || !input.files[0]) {
+        msg.className = 'idx-modal-msg err';
+        msg.textContent = 'Seleziona prima un file.';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('foto', input.files[0]);
+    formData.append('csrf_token', IDX_SETTINGS_CSRF);
+
+    fetch('api/foto_profilo_api.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                msg.className = 'idx-modal-msg ok';
+                msg.textContent = 'Foto aggiornata.';
+                const wrap = document.getElementById('idx-avatar-wrap');
+                wrap.innerHTML = '<img id="idx-avatar-img" src="' + data.url + '" alt="Foto profilo">';
+            } else {
+                msg.className = 'idx-modal-msg err';
+                msg.textContent = data.errore || 'Errore imprevisto.';
+            }
+        })
+        .catch(() => {
+            msg.className = 'idx-modal-msg err';
+            msg.textContent = 'Errore di connessione. Riprova.';
+        });
+}
+
+function idxCambiaPassword() {
+    const attuale  = document.getElementById('idx-pwd-attuale').value;
+    const nuova    = document.getElementById('idx-pwd-nuova').value;
+    const conferma = document.getElementById('idx-pwd-conferma').value;
+    const msg = document.getElementById('idx-pwd-msg');
+
+    fetch('api/cambia_password_api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            csrf_token: IDX_SETTINGS_CSRF,
+            password_attuale: attuale,
+            nuova_password: nuova,
+            conferma_password: conferma
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            msg.className = 'idx-modal-msg ok';
+            msg.textContent = 'Password aggiornata con successo.';
+            document.getElementById('idx-pwd-attuale').value = '';
+            document.getElementById('idx-pwd-nuova').value = '';
+            document.getElementById('idx-pwd-conferma').value = '';
+        } else {
+            msg.className = 'idx-modal-msg err';
+            msg.textContent = data.errore || 'Errore imprevisto.';
+        }
+    })
+    .catch(() => {
+        msg.className = 'idx-modal-msg err';
+        msg.textContent = 'Errore di connessione. Riprova.';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const btnSettings = document.getElementById('idx-btn-settings');
+    if (btnSettings) { btnSettings.addEventListener('click', idxApriModaleImpostazioni); }
+});
 </script>
 </body>
 </html>

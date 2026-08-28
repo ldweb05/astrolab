@@ -29,6 +29,11 @@ $lon    = floatval($_GET['lon']   ?? 14.1333);
 
 if ($tipo === 'natale') {
     $tema = $swe->calcolaTema($g, $m, $a, $oraGmt, $lat, $lon);
+} elseif ($tipo === 'transito') {
+    $tema = $swe->calcolaTema($g, $m, $a, $oraGmt, $lat, $lon);
+    $oreInt = (int)floor($oraGmt);
+    $minInt = (int)round(($oraGmt - $oreInt) * 60);
+    $tema['transito_gmt'] = sprintf('%02d/%02d/%04d %02d:%02d:00', $g, $m, $a, $oreInt, $minInt);
 } else {
     $annoRS = intval($_GET['anno'] ?? date('Y'));
     $latRS  = floatval($_GET['lat_rs'] ?? $lat);

@@ -38,6 +38,13 @@ if (!defined('ABSPATH')) {
 define('APP_ENV',   getenv('APP_ENV')   ?: 'production');
 define('APP_DEBUG', filter_var(getenv('APP_DEBUG') ?: 'false', FILTER_VALIDATE_BOOLEAN));
 
+// ── Feature flag: allineamento MyAstral (roadmap docs/ROADMAP_MYASTRAL_UX.md) ──
+// Attiva il punteggio "Discepolo parziale" calcolato da RuleEngineExtended.php,
+// IN AGGIUNTA alle stelline esistenti — non le sostituisce mai.
+// Default OFF: a flag disattivo il comportamento dell'app resta identico a
+// prima di questa feature. Decisione UX-0001 (docs/ux-myastral/DECISION_LOG_ux.md).
+define('MYASTRAL_ALIGNMENT_MODE', filter_var(getenv('MYASTRAL_ALIGNMENT_MODE') ?: 'false', FILTER_VALIDATE_BOOLEAN));
+
 // ── Configurazione database ───────────────────────────────────────────────
 // bootstrap.php — FASE DEFINITIVA
 // Fallback rimosso: la credenziale reale vive esclusivamente in .env

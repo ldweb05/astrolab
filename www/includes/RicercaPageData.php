@@ -2,12 +2,12 @@
 
 if ($isAdmin) {
     $soggetti = $pdo->query(
-        "SELECT id, nome, data_nascita, ora_nascita_gmt, latitudine, longitudine
+        "SELECT id, nome, data_nascita, ora_nascita, offset_gmt, ora_nascita_gmt, latitudine, longitudine
          FROM soggetti ORDER BY nome"
     )->fetchAll(PDO::FETCH_ASSOC);
 } else {
     $stmt = $pdo->prepare(
-        "SELECT id, nome, data_nascita, ora_nascita_gmt, latitudine, longitudine
+        "SELECT id, nome, data_nascita, ora_nascita, offset_gmt, ora_nascita_gmt, latitudine, longitudine
          FROM soggetti WHERE utente_id = ? ORDER BY nome"
     );
     $stmt->execute([$userId]);

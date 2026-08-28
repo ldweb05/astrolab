@@ -34,6 +34,8 @@ $defaultLat   = 0;
 $defaultLon   = 0;
 $defaultLuogo = '';
  
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
+
 $jsData = null;
 if ($soggetto) {
     $defaultLat  = $latRL_Url  !== null ? $latRL_Url
@@ -45,15 +47,25 @@ if ($soggetto) {
                     ? $soggetto['residenza_luogo'] . ($soggetto['residenza_nazione'] ? ', '.$soggetto['residenza_nazione'] : '')
                     : ($soggetto['luogo_nascita'] ?? ''));
  
-    $date   = new DateTime($soggetto['data_nascita']);
-    $oraGmt = explode(':', $soggetto['ora_nascita_gmt']);
+    $date = new DateTime($soggetto['data_nascita']); // Data locale per visualizzazione
+
+    // Calcolo corretto data/ora GMT gestendo il cambio di giorno
+    $gmtData = calcolaDataOraGmtCorretta(
+        $soggetto['data_nascita'],
+        $soggetto['ora_nascita'],
+        (float)($soggetto['offset_gmt'] ?? 0)
+    );
+
+    $dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+    $oraGmtParts = explode(':', $gmtData['ora_gmt']);
+
     $jsData = [
         'id'         => $soggetto['id'],
         'nome'       => $soggetto['nome'],
-        'giorno'     => (int)$date->format('d'),
-        'mese'       => (int)$date->format('m'),
-        'anno'       => (int)$date->format('Y'),
-        'ora_gmt'    => (int)$oraGmt[0] + (int)$oraGmt[1]/60,
+        'giorno'     => (int)$dateGmt->format('d'),
+        'mese'       => (int)$dateGmt->format('m'),
+        'anno'       => (int)$dateGmt->format('Y'),
+        'ora_gmt'    => (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0))/60,
         'ora_loc'    => substr($soggetto['ora_nascita'], 0, 5),
         'lat'        => (float)$soggetto['latitudine'],
         'lon'        => (float)$soggetto['longitudine'],
@@ -78,7 +90,9 @@ if ($soggetto) {
     <title>Rivoluzione Lunare — Astrologia Attiva</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Symbols+2&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
@@ -134,7 +148,7 @@ if ($soggetto) {
             <div class="luogo-wrap">
                 <input type="text" id="luogo-rl-input" placeholder="Cerca città..."
                        value="<?= htmlspecialchars($defaultLuogo) ?>" class="flex-1">
-                <button class="btn-search" onclick="cercaLuogoRL()">🔍 Cerca</button>
+                <button class="btn-search" onclick="RLModule.cercaLuogoRL()">🔍 Cerca</button>
             </div>
             <div id="luogo-rl-risultati" class="dropdown-risultati"></div>
         </div>
@@ -149,6 +163,7 @@ if ($soggetto) {
         <div class="rl-actions-row">
             <button class="btn-primary" id="btn-calcola-rl" onclick="RLModule.calcolaListaRL()">☽ Calcola RL</button>
             <button class="btn-mappa-rl is-hidden" id="btn-apri-mappa-rl" onclick="toggleMappaRL()">🌍 Mappa</button>
+            <button class="btn-stampa-diretta" onclick="prepareStampaRL()">🖨️ Stampa Rivoluzione Lunare</button>
         </div>
     </div>
  
@@ -161,10 +176,6 @@ if ($soggetto) {
         <div><span>MC: </span><b id="rl-mc-label">—</b></div>
     </div>
  
-    <div class="page-title page-title-compact">
-        <button class="btn-stampa-diretta" onclick="prepareStampaRL()">🖨️ Stampa Rivoluzione Lunare</button>
-    </div>
-
     <div class="card is-hidden" id="card-salva-rl">
         <div class="rs-save-row">
             <div class="form-group rl-link-rs-group is-hidden" id="wrap-collega-rs">
@@ -183,8 +194,13 @@ if ($soggetto) {
     </div>
  
     <div class="card is-hidden" id="card-sessioni-rl">
-        <h3>☽ Sessioni RL salvate per questo soggetto</h3>
-        <div id="lista-sessioni-rl"></div>
+        <h3 class="collapse-toggle" onclick="toggleCollapse('sessioni-rl')">
+            ☽ Sessioni RL salvate per questo soggetto
+            <span class="sensib-chevron" id="collapse-chevron-sessioni-rl">▶</span>
+        </h3>
+        <div id="collapse-body-sessioni-rl" style="display:none">
+            <div id="lista-sessioni-rl"></div>
+        </div>
     </div>
  
     <div class="rl-timeline" id="rl-timeline">
@@ -195,6 +211,11 @@ if ($soggetto) {
     <div id="rl-loading"><p>⟳ Calcolo in corso...</p></div>
  
     <div class="valutazione" id="valutazione">
+        <h3 class="collapse-toggle" onclick="toggleCollapse('bonus-veti')">
+            Bonus e Veti
+            <span class="sensib-chevron" id="collapse-chevron-bonus-veti">▶</span>
+        </h3>
+        <div id="collapse-body-bonus-veti" style="display:none">
         <div class="val-header">
             <div class="stelle-grandi" id="val-stelle"></div>
             <div class="val-stringa"   id="val-stringa"></div>
@@ -205,6 +226,7 @@ if ($soggetto) {
             <div class="val-section"><h4>⚠️ Penalità</h4> <div id="val-penali"></div></div>
         </div>
         <div id="val-veti"></div>
+        </div>
     </div>
  
     <div class="temi-wrapper is-hidden" id="temi-wrapper">
@@ -213,11 +235,13 @@ if ($soggetto) {
                 <button class="btn-toggle-gradi" id="btn-toggle-cuspidi"
                         onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
                 <h3>Tema Natale</h3>
-                <button class="btn-toggle-gradi" id="btn-toggle-gradi"
-                        onclick="toggleGradiPianeti()">Mostra Gradi</button>
             </div>
             <svg id="wheel-natale" width="480" height="480" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-natale">—</p>
+            <div class="tema-info-row">
+                <p class="tema-info" id="info-natale">—</p>
+                <button class="btn-toggle-gradi" id="btn-toggle-dati-natale" onclick="toggleDatiTabella('natale')">▼ Mostra Dati</button>
+            </div>
+            <div id="dati-natale" class="is-hidden">
             <table class="tabella-pianeti" id="tab-natale"></table>
             <div class="aspetti-container">
                 <h4 class="rl-table-section-title">📐 Aspetti nella Rivoluzione Lunare</h4>
@@ -228,12 +252,20 @@ if ($soggetto) {
                     </tbody>
                 </table>
             </div>
+            </div>
         </div>
         <div class="tema-box">
-            <h3 id="rl-titolo">Rivoluzione Lunare</h3>
+            <div class="tema-box-header">
+                <h3 id="rl-titolo">Rivoluzione Lunare</h3>
+                <button class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button>
+            </div>
             <div class="rl-loading-overlay" id="rl-overlay">⟳ Ricalcolo RL...</div>
             <svg id="wheel-rl" width="480" height="480" class="zodiac-wheel-responsive"></svg>
-            <p class="tema-info" id="info-rl">—</p>
+            <div class="tema-info-row">
+                <p class="tema-info" id="info-rl">—</p>
+                <button class="btn-toggle-gradi" id="btn-toggle-dati-rl" onclick="toggleDatiTabella('rl')">▼ Mostra Dati</button>
+            </div>
+            <div id="dati-rl" class="is-hidden">
             <table class="tabella-pianeti" id="tab-rl"></table>
             <div class="cuspidi-container">
                 <h4 class="rl-table-section-title">🏠 Cuspidi Case RL</h4>
@@ -242,6 +274,7 @@ if ($soggetto) {
                     <tbody id="cuspidi-rl-body"><tr><td colspan="2" class="table-empty-cell">—</td></tr>
                 </tbody>
             </table>
+            </div>
             </div>
         </div>
     </div>

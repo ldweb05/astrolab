@@ -23,6 +23,7 @@
 │   └── START_HERE.md.pre-final-docs
 ├── import/
 │   ├── data/
+│   │   ├── airports.csv
 │   │   ├── allCountries.zip
 │   │   ├── cities1000.txt
 │   │   ├── cities1000.zip
@@ -504,7 +505,6 @@
 │   ├── rs.php*
 │   ├── stampa.php
 │   └── tema.php*
-├── airports.csv
 ├── astro-dss-source.dump
 ├── docker-compose.production.yml
 ├── docker-compose.yml

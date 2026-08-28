@@ -30,12 +30,13 @@ function aggiungiRisultatoTopK(
         return;
     }
 
-    $stellineNuove = (int)($nuovoRisultato['stelline'] ?? 0);
+    // Punteggio V2 (unico sistema, vecchio 'stelline' rimosso - Fase 4)
+    $stellineNuove = (int)($nuovoRisultato['v2_stelle_totali'] ?? 0);
     $stellineMinime = PHP_INT_MAX;
     $ultimoIndiceMinimo = null;
 
     foreach ($risultati as $indice => $risultato) {
-        $stelline = (int)($risultato['stelline'] ?? 0);
+        $stelline = (int)($risultato['v2_stelle_totali'] ?? 0);
 
         if ($stelline < $stellineMinime) {
             $stellineMinime = $stelline;
