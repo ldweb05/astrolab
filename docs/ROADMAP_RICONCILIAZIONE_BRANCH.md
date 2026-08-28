@@ -138,3 +138,18 @@ STATO: riconciliazione codice completata. Prossimo passo: test funzionale
 visivo di consolidamento (secondo stack Docker su porta diversa, mai
 impostato finora), poi decisione su come/quando promuovere consolidamento
 a riferimento definitivo (es. merge in main).
+
+
+## PROMEMORIA PULIZIA FINALE (richiesto esplicitamente dallutente)
+
+Al termine della sessione di test, RIMUOVERE tutto cio che non fa parte
+del funzionamento reale del sito:
+- Stack Docker di test: docker-compose.yml in astrolab-consolidamento/,
+  container astrolab-web-test e astrolab-db-test (docker compose down -v)
+- Cartella dati: astrolab-consolidamento/postgres-data-test/
+- Worktree astrolab-consolidamento/ stesso, una volta che consolidamento
+  e stato promosso/mergiato nel branch definitivo (git worktree remove)
+- Worktree astrolab-lineab/ (usato per analisi Linea B, ormai non piu
+  necessario)
+- File www/api/stelline_v2_api.php.bak in ~/astrolab (produzione) - gia
+  verificato non referenziato, da eliminare solo su conferma esplicita
