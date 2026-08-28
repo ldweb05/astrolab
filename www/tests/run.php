@@ -8,6 +8,10 @@ require_once __DIR__ . '/../includes/RicercaRSPlanetHouseAssigner.php';
 require_once __DIR__ . '/../includes/RicercaRSThemeBuilder.php';
 require_once __DIR__ . '/../includes/SoggettoRepository.php';
 
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 echo "Astrologia Attiva — Test Runner\n";
 echo "================================\n\n";
 
@@ -298,6 +302,273 @@ foreach ($searchTests as $searchTest) {
         echo "✗ Test ricerca fallito: " . basename($searchTest) . "\n";
         exit(1);
     }
+}
+
+
+echo "\nValidazione registrazione pubblica\n";
+echo "----------------------\n";
+
+require_once __DIR__ . '/../includes/Auth.php';
+
+$auth = new Auth($pdo);
+$testSuffix = bin2hex(random_bytes(6));
+$testUsername = 'reg_' . $testSuffix;
+$testEmail = 'reg_' . $testSuffix . '@example.test';
+
+try {
+    $pdo->beginTransaction();
+
+    $invalid = $auth->registraUtentePubblico('x', 'email-non-valida', 'breve');
+    if ($invalid['ok'] !== false) {
+        throw new RuntimeException('Validazione input non applicata');
+    }
+
+    $created = $auth->registraUtentePubblico($testUsername, $testEmail, 'Password123!');
+    if (
+        $created['ok'] !== true
+        || empty($created['id'])
+        || !is_string($created['verification_token'] ?? null)
+        || strlen($created['verification_token']) !== 64
+    ) {
+        throw new RuntimeException('Creazione utente o token di verifica falliti');
+    }
+
+    $tokenStmt = $pdo->prepare(
+        "SELECT purpose, token_hash, expires_at, used_at
+         FROM token_sicurezza
+         WHERE user_id = ?"
+    );
+    $tokenStmt->execute([(int)$created['id']]);
+    $tokenRow = $tokenStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (
+        !is_array($tokenRow)
+        || $tokenRow['purpose'] !== 'email_verification'
+        || $tokenRow['used_at'] !== null
+        || !hash_equals(
+            hash('sha256', $created['verification_token']),
+            (string)$tokenRow['token_hash']
+        )
+        || (string)$tokenRow['token_hash'] === $created['verification_token']
+    ) {
+        throw new RuntimeException('Persistenza sicura del token non corretta');
+    }
+
+    $stmt = $pdo->prepare(
+        "SELECT u.ruolo, u.account_status, p.code AS plan_code
+         FROM utenti u
+         JOIN piani p ON p.id = u.plan_id
+         WHERE u.id = ?"
+    );
+    $stmt->execute([(int)$created['id']]);
+    $utente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (
+        !is_array($utente)
+        || $utente['ruolo'] !== 'user'
+        || $utente['account_status'] !== 'pending_email'
+        || $utente['plan_code'] !== 'free'
+    ) {
+        throw new RuntimeException('Privilegi o stato iniziale non corretti');
+    }
+
+    $_SESSION = [];
+
+    ob_start();
+    $loginPending = $auth->login($testUsername, 'Password123!');
+    ob_end_clean();
+
+    if (
+        ($loginPending['ok'] ?? true) !== false
+        || !str_contains(
+            (string)($loginPending['errore'] ?? ''),
+            'verificare'
+        )
+        || !empty($_SESSION['utente_id'])
+    ) {
+        throw new RuntimeException(
+            'Login consentito prima della verifica email'
+        );
+    }
+
+    $newTokenRequest = $auth->richiediNuovoTokenVerifica($testEmail);
+
+    if (
+        ($newTokenRequest['ok'] ?? false) !== true
+        || !is_string($newTokenRequest['verification_token'] ?? null)
+        || strlen($newTokenRequest['verification_token']) !== 64
+    ) {
+        throw new RuntimeException('Nuovo token di verifica non generato');
+    }
+
+    $oldTokenStmt = $pdo->prepare(
+        "SELECT COUNT(*)
+         FROM token_sicurezza
+         WHERE user_id = ?
+           AND purpose = 'email_verification'
+           AND used_at IS NULL"
+    );
+    $oldTokenStmt->execute([(int)$created['id']]);
+
+    if ((int)$oldTokenStmt->fetchColumn() !== 1) {
+        throw new RuntimeException('Numero token verifica attivi errato');
+    }
+
+    if (
+        hash_equals(
+            hash('sha256', $created['verification_token']),
+            hash('sha256', $newTokenRequest['verification_token'])
+        )
+    ) {
+        throw new RuntimeException('Nuovo token uguale al precedente');
+    }
+
+    $verified = $auth->verificaEmailToken(
+        $newTokenRequest['verification_token']
+    );
+
+    if (
+        ($verified['ok'] ?? false) !== true
+        || (int)($verified['user_id'] ?? 0) !== (int)$created['id']
+    ) {
+        throw new RuntimeException('Verifica email fallita');
+    }
+
+    $verifyStmt = $pdo->prepare(
+        "SELECT account_status, email_verified_at
+         FROM utenti
+         WHERE id = ?"
+    );
+    $verifyStmt->execute([(int)$created['id']]);
+    $verifiedUser = $verifyStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (
+        !is_array($verifiedUser)
+        || $verifiedUser['account_status'] !== 'active'
+        || $verifiedUser['email_verified_at'] === null
+    ) {
+        throw new RuntimeException('Attivazione account non corretta');
+    }
+
+    $_SESSION = [];
+
+    ob_start();
+    $loginActive = $auth->login($testUsername, 'Password123!');
+    ob_end_clean();
+
+    if (
+        ($loginActive['ok'] ?? false) !== true
+        || (int)($loginActive['id'] ?? 0) !== (int)$created['id']
+        || (int)($_SESSION['utente_id'] ?? 0) !== (int)$created['id']
+    ) {
+        throw new RuntimeException(
+            'Login non riuscito dopo la verifica email'
+        );
+    }
+
+    $_SESSION = [];
+
+    $secondVerification = $auth->verificaEmailToken(
+        $created['verification_token']
+    );
+
+    if (($secondVerification['ok'] ?? true) !== false) {
+        throw new RuntimeException('Token di verifica riutilizzabile');
+    }
+
+    $resetRequest = $auth->richiediResetPassword($testEmail);
+
+    if (
+        ($resetRequest['ok'] ?? false) !== true
+        || !is_string($resetRequest['reset_token'] ?? null)
+        || strlen($resetRequest['reset_token']) !== 64
+    ) {
+        throw new RuntimeException('Richiesta reset password fallita');
+    }
+
+    $resetResult = $auth->confermaResetPassword(
+        $resetRequest['reset_token'],
+        'NuovaPassword123!'
+    );
+
+    if (
+        ($resetResult['ok'] ?? false) !== true
+        || (int)($resetResult['user_id'] ?? 0) !== (int)$created['id']
+    ) {
+        throw new RuntimeException('Conferma reset password fallita');
+    }
+
+    $_SESSION = [];
+
+    ob_start();
+    $loginNewPassword = $auth->login(
+        $testUsername,
+        'NuovaPassword123!'
+    );
+    ob_end_clean();
+
+    if (($loginNewPassword['ok'] ?? false) !== true) {
+        throw new RuntimeException('Login con nuova password fallito');
+    }
+
+    $secondReset = $auth->confermaResetPassword(
+        $resetRequest['reset_token'],
+        'TerzaPassword123!'
+    );
+
+    if (($secondReset['ok'] ?? true) !== false) {
+        throw new RuntimeException('Token reset riutilizzabile');
+    }
+
+    $duplicate = $auth->registraUtentePubblico($testUsername, $testEmail, 'Password123!');
+    if ($duplicate['ok'] !== false) {
+        throw new RuntimeException('Duplicato accettato');
+    }
+
+    $pdo->rollBack();
+    echo "✓ Registrazione pubblica: login bloccato prima della verifica, attivazione, login attivo, token monouso, piano free e duplicati OK\n";
+} catch (Throwable $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    echo "✗ Registrazione pubblica fallita: " . $e->getMessage() . "\n";
+    exit(1);
+}
+
+echo "\nTest limite soggetti...\n";
+
+$subjectsLimitCommand = escapeshellarg(PHP_BINARY)
+    . ' '
+    . escapeshellarg(__DIR__ . '/test_subjects_limit.php');
+
+passthru($subjectsLimitCommand, $subjectsLimitExitCode);
+
+if ($subjectsLimitExitCode !== 0) {
+    exit(1);
+}
+
+echo "\nTest limite Comparator...\n";
+
+$comparatorLimitCommand = escapeshellarg(PHP_BINARY)
+    . ' '
+    . escapeshellarg(__DIR__ . '/test_comparator_limit.php');
+
+passthru($comparatorLimitCommand, $comparatorLimitExitCode);
+
+if ($comparatorLimitExitCode !== 0) {
+    exit(1);
+}
+
+echo "\nTest limite ricerche salvate...\n";
+
+$savedSearchesLimitCommand = escapeshellarg(PHP_BINARY)
+    . ' '
+    . escapeshellarg(__DIR__ . '/test_saved_searches_limit.php');
+
+passthru($savedSearchesLimitCommand, $savedSearchesLimitExitCode);
+
+if ($savedSearchesLimitExitCode !== 0) {
+    exit(1);
 }
 
 echo "\nTest completati.\n";

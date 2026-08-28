@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
 /**
  * stampa.php — Report Astrologico / Stampa e PDF
  * Astrologia Attiva — Scuola Ciro Discepolo
@@ -63,7 +64,9 @@ $annoCorrente = (int)date('Y');
     <title>Report Astrologico — Astrologia Attiva</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Symbols+2&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
 
     <style>
         /* ── Pannello controlli ────────────────────────────────────── */
@@ -468,16 +471,23 @@ $annoCorrente = (int)date('Y');
 'use strict';
 
 // ── Dati soggetto PHP → JS ──────────────────────────────────────────────
+// Calcolo corretto data/ora GMT gestendo il cambio di giorno (una sola volta,
+// riusato per giorno/mese/anno/ora_gmt cosi' che restino sempre coerenti tra loro)
+$gmtDataStampa = $soggetto ? calcolaDataOraGmtCorretta(
+    $soggetto['data_nascita'],
+    $soggetto['ora_nascita'],
+    (float)($soggetto['offset_gmt'] ?? 0)
+) : null;
+$dateGmtStampa = $gmtDataStampa ? new DateTime($gmtDataStampa['data_gmt'] . ' ' . $gmtDataStampa['ora_gmt']) : null;
+$oraGmtPartsStampa = $gmtDataStampa ? explode(':', $gmtDataStampa['ora_gmt']) : null;
+
 const DS_PRINT = <?= json_encode([
     'id'      => $soggetto ? (int)$soggetto['id'] : 0,
     'nome'    => $soggetto ? $soggetto['nome'] : '',
-    'giorno'  => $soggetto ? (int)(new DateTime($soggetto['data_nascita']))->format('d') : 0,
-    'mese'    => $soggetto ? (int)(new DateTime($soggetto['data_nascita']))->format('m') : 0,
-    'anno'    => $soggetto ? (int)(new DateTime($soggetto['data_nascita']))->format('Y') : 0,
-    'ora_gmt' => $soggetto ? (function($s) {
-        $p = explode(':', $s['ora_nascita_gmt']);
-        return (int)$p[0] + (int)($p[1] ?? 0) / 60;
-    })($soggetto) : 0,
+    'giorno'  => $soggetto ? (int)$dateGmtStampa->format('d') : 0,
+    'mese'    => $soggetto ? (int)$dateGmtStampa->format('m') : 0,
+    'anno'    => $soggetto ? (int)$dateGmtStampa->format('Y') : 0,
+    'ora_gmt' => $soggetto ? (int)$oraGmtPartsStampa[0] + (int)($oraGmtPartsStampa[1] ?? 0) / 60 : 0,
     'lat'     => $soggetto ? (float)$soggetto['latitudine']  : 0,
     'lon'     => $soggetto ? (float)$soggetto['longitudine'] : 0,
     'luogo'   => $soggetto ? $soggetto['luogo_nascita']      : '',

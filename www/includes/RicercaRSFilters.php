@@ -74,7 +74,12 @@ function escludiPerRuleMap(array $pianetiConCase, string $condizione): bool {
     return false;
 }
 
-function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa): array
+// UX-0014: orbo fisso di Regola 32 (2°30') per la modalita' "cuspide" del
+// filtro Astri nelle Case. Non configurabile dall'utente, non sostituisce
+// né duplica i veti 4/5/31/34 del RuleEngine, che restano invariati a valle.
+const ORBO_CUSPIDE_REGOLA32_GRADI = 2.5;
+
+function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa, array $caseRS = []): array
 {
     if (empty($astriInCasa)) {
         return [];
@@ -89,9 +94,10 @@ function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa):
     $violazioni = [];
 
     foreach ($astriInCasa as $filtro) {
-        $pid   = $filtro['pianeta'];
-        $casaV = (int)$filtro['casa'];
-        $vuole = (bool)$filtro['vuole'];
+        $pid      = $filtro['pianeta'];
+        $casaV    = (int)$filtro['casa'];
+        $vuole    = (bool)$filtro['vuole'];
+        $modalita = $filtro['modalita'] ?? 'in_casa';
 
         // ASC è sempre in casa 1 della RS per definizione di Placido.
         // Non è un pianeta indicizzato in $pianetiConCase → saltiamo.
@@ -108,8 +114,26 @@ function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa):
             continue;
         }
 
+        $nome = $NOMI[$idP] ?? 'P'.$idP;
+
+        if ($modalita === 'cuspide') {
+            if (!isset($caseRS[$casaV]['longitudine'])) {
+                continue; // cuspide non disponibile, nessuna verifica possibile
+            }
+            $lonPianeta = (float)$pianetiConCase[$idP]['longitudine'];
+            $lonCuspide = (float)$caseRS[$casaV]['longitudine'];
+            $distanza   = abs(diffAngolo($lonPianeta, $lonCuspide));
+            $inOrbo     = $distanza <= ORBO_CUSPIDE_REGOLA32_GRADI;
+
+            if ($vuole && !$inOrbo) {
+                $violazioni[] = $nome . ' non è entro l\'orbo di Regola 32 dalla cuspide ' . $casaV . ' (distanza ' . round($distanza, 2) . '°)';
+            } elseif (!$vuole && $inOrbo) {
+                $violazioni[] = $nome . ' è entro l\'orbo di Regola 32 dalla cuspide ' . $casaV . ' (indesiderato)';
+            }
+            continue;
+        }
+
         $casaEff = (int)$pianetiConCase[$idP]['casa'];
-        $nome    = $NOMI[$idP] ?? 'P'.$idP;
 
         if ($vuole && $casaEff !== $casaV) {
             $violazioni[] = $nome . ' è in casa ' . $casaEff . ' (richiesta casa ' . $casaV . ')';
@@ -127,11 +151,18 @@ function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa):
 
 
 /**
- * Verifica che la condizione "Decima" sia soddisfatta.
+ * Verifica che la condizione "Decima" sia soddisfatta secondo i criteri
+ * della scuola di Ciro Discepolo.
  *
- * Regola mirata:
- * almeno uno tra Sole (0), Giove (5) o Venere (3)
- * deve trovarsi in X casa RS.
+ * REGOLE:
+ * 1. Almeno uno tra Sole (0), Giove (5) o Venere (3) di RS deve trovarsi
+ *    in X casa RS (con pre-ingresso di 3°).
+ *
+ * 2. Sicurezza in uscita: se un benefico è a meno di 2° dalla cuspide
+ *    della casa successiva (XI), la località NON è valida.
+ *
+ * 3. Filtro di esclusione: se MA/SA/UR/NE/PLU è in X casa RS
+ *    (con pre-ingresso di 3°), la località DEVE essere scartata.
  *
  * @param array<int,array{casa:int,longitudine:float}> $pianetiConCase
  * @param array<int,array{longitudine:float}> $caseRS
@@ -139,20 +170,97 @@ function verificaAstriInCasaDirectly(array $pianetiConCase, array $astriInCasa):
  */
 function verificaCondizioneDecima(array $pianetiConCase, array $caseRS): array
 {
-    foreach ([0, 5, 3] as $idBenef) {
-        if (!isset($pianetiConCase[$idBenef])) {
+    // Casa target: X (Medio Cielo)
+    $casaTarget = 10;
+
+    // Benefici da verificare: Sole (0), Giove (5), Venere (3)
+    $benefici = [0, 5, 3];
+
+    // Malevoli da escludere: Marte (4), Saturno (6), Urano (7), Nettuno (8), Plutone (9)
+    $malevoli = [4, 6, 7, 8, 9];
+
+    // Verifica che la casa target esista
+    if (!isset($caseRS[$casaTarget])) {
+        return [
+            'valida' => false,
+            'motivo' => 'Casa X non trovata nel tema RS'
+        ];
+    }
+
+    $cuspideTarget = $caseRS[$casaTarget]['longitudine'];
+
+    // Determina la casa successiva (XI) per il vincolo di uscita
+    $casaSuccessiva = 11;
+    $cuspideSuccessiva = isset($caseRS[$casaSuccessiva])
+        ? $caseRS[$casaSuccessiva]['longitudine']
+        : null;
+
+    $beneficiTrovati = [];
+    $malevoliTrovati = [];
+
+    // Controlla tutti i pianeti
+    foreach ($pianetiConCase as $idPianeta => $dati) {
+        $casaAssegnata = (int)$dati['casa'];
+        $longitudine = (float)$dati['longitudine'];
+
+        // Pre-ingresso: il pianeta è nei 3° immediatamente precedenti la cuspide della X?
+        $diffCuspide = diffAngolo($longitudine, $cuspideTarget);
+        $inPreIngresso = ($diffCuspide > -3.0 && $diffCuspide < 0.0);
+
+        // Il pianeta è nella casa target (assegnata da SweCalc) o in pre-ingresso?
+        $inCasaTarget = ($casaAssegnata === $casaTarget) || $inPreIngresso;
+
+        if (!$inCasaTarget) {
             continue;
         }
 
-        if ((int)$pianetiConCase[$idBenef]['casa'] === 10) {
-            return ['valida' => true];
+        // === VINCOLO DI SICUREZZA IN USCITA (SOLO PER BENEFICI) ===
+        // Se il pianeta benefico è a meno di 2° dalla cuspide della XI casa
+        // (cioè ha appena lasciato la X), la località è scartata.
+        if ($cuspideSuccessiva !== null && in_array($idPianeta, $benefici, true)) {
+            $diffUscita = diffAngolo($longitudine, $cuspideSuccessiva);
+            // diffUscita ∈ [0°, 2°) → pianeta appena entrato nella XI casa
+            if ($diffUscita >= 0.0 && $diffUscita < 2.0) {
+                $nomeBenef = getNomePianeta($idPianeta);
+                return [
+                    'valida' => false,
+                    'motivo' => "Sicurezza in uscita: {$nomeBenef} a " .
+                                round($diffUscita, 1) . "° dalla cuspide della XI casa — " .
+                                "troppo vicino all'uscita dalla X casa, protezione carriera non coperta"
+                ];
+            }
+        }
+
+        // Classifica il pianeta come benefico o malevolo
+        if (in_array($idPianeta, $benefici, true)) {
+            $beneficiTrovati[] = $idPianeta;
+        } elseif (in_array($idPianeta, $malevoli, true)) {
+            $malevoliTrovati[] = $idPianeta;
         }
     }
 
-    return [
-        'valida' => false,
-        'motivo' => 'Nessun benefico (Sole, Giove o Venere) in X casa RS',
-    ];
+    // === FILTRO DI ESCLUSIONE: malevoli in X casa ===
+    // Anche se i benefici sono presenti, se c'è un malevolo in X casa
+    // (con pre-ingresso) la località deve essere scartata.
+    if (!empty($malevoliTrovati)) {
+        $nomiMalevoli = array_map('getNomePianeta', array_unique($malevoliTrovati));
+        return [
+            'valida' => false,
+            'motivo' => 'Malevoli in X casa RS: ' . implode(', ', $nomiMalevoli) .
+                        ' — danni a carriera/status garantiti'
+        ];
+    }
+
+    // === VERIFICA PRESENZA BENEFICI ===
+    if (empty($beneficiTrovati)) {
+        return [
+            'valida' => false,
+            'motivo' => 'Nessun benefico (Sole, Giove o Venere) in X casa RS'
+        ];
+    }
+
+    // Tutti i controlli superati
+    return ['valida' => true];
 }
 
 /**
@@ -259,6 +367,114 @@ function verificaCondizioneAmore(array $pianetiConCase, array $caseRS): array
         return [
             'valida' => false,
             'motivo' => 'Nessun benefico (Venere, Giove o Sole) in V o VII casa RS'
+        ];
+    }
+
+    // Tutti i controlli superati
+    return ['valida' => true];
+}
+
+
+/**
+ * Verifica che la condizione "Lavoro" sia soddisfatta.
+ *
+ * Case target: VI e X (gia' definite nella Rule Map di
+ * getRuleMapEsclusione() per l'esclusione dei malevoli).
+ * Coerente con la Regola 33 ("discorso lavoro/emancipazione/successo/
+ * prestigio" legato al Medio Cielo).
+ *
+ * Stessa struttura di verificaCondizioneAmore() (l'unico altro caso con
+ * due case target contemporanee): benefici Sole/Giove/Venere, malevoli
+ * Marte/Saturno/Urano/Nettuno/Plutone, pre-ingresso 3°, sicurezza-uscita 2°.
+ *
+ * @param array<int,array{casa:int,longitudine:float}> $pianetiConCase
+ * @param array<int,array{longitudine:float}> $caseRS
+ * @return array{valida:bool, motivo?:string}
+ */
+function verificaCondizioneLavoro(array $pianetiConCase, array $caseRS): array
+{
+    // Case target per il lavoro: VI e X
+    $caseTarget = [6, 10];
+
+    // Benefici da verificare: Sole (0), Giove (5), Venere (3)
+    $benefici = [0, 5, 3];
+
+    // Malevoli da escludere: Marte (4), Saturno (6), Urano (7), Nettuno (8), Plutone (9)
+    $malevoli = [4, 6, 7, 8, 9];
+
+    // Per ogni casa target, controlliamo la presenza di benefici e malevoli
+    $beneficiTrovati = [];
+    $malevoliTrovati = [];
+
+    foreach ($caseTarget as $casaTarget) {
+        if (!isset($caseRS[$casaTarget])) {
+            continue;
+        }
+
+        $cuspideTarget = $caseRS[$casaTarget]['longitudine'];
+
+        // Determina la casa successiva per il vincolo di uscita
+        $casaSuccessiva = ($casaTarget === 6) ? 7 : 11;
+        $cuspideSuccessiva = isset($caseRS[$casaSuccessiva])
+            ? $caseRS[$casaSuccessiva]['longitudine']
+            : null;
+
+        // Controlla tutti i pianeti
+        foreach ($pianetiConCase as $idPianeta => $dati) {
+            $casaAssegnata = (int)$dati['casa'];
+            $longitudine = (float)$dati['longitudine'];
+
+            // Pre-ingresso: il pianeta è nei 3° immediatamente precedenti la cuspide?
+            $diffCuspide = diffAngolo($longitudine, $cuspideTarget);
+            $inPreIngresso = ($diffCuspide > -3.0 && $diffCuspide < 0.0);
+
+            // Il pianeta è nella casa target (assegnata da SweCalc) o in pre-ingresso?
+            $inCasaTarget = ($casaAssegnata === $casaTarget) || $inPreIngresso;
+
+            if (!$inCasaTarget) {
+                continue;
+            }
+
+            // === VINCOLO DI SICUREZZA IN USCITA ===
+            // Se il pianeta benefico è a meno di 2° dalla cuspide della casa successiva
+            if ($cuspideSuccessiva !== null && in_array($idPianeta, $benefici, true)) {
+                $diffUscita = diffAngolo($longitudine, $cuspideSuccessiva);
+                // diffUscita ∈ [0°, 2°) → pianeta appena entrato nella casa successiva
+                if ($diffUscita >= 0.0 && $diffUscita < 2.0) {
+                    $nomeBenef = getNomePianeta($idPianeta);
+                    return [
+                        'valida' => false,
+                        'motivo' => "Sicurezza in uscita: {$nomeBenef} a " .
+                                    round($diffUscita, 1) . "° dalla cuspide della " .
+                                    $casaSuccessiva . "a casa — troppo vicino all'uscita dalla " .
+                                    $casaTarget . "a casa"
+                    ];
+                }
+            }
+
+            // Classifica il pianeta come benefico o malevolo
+            if (in_array($idPianeta, $benefici, true)) {
+                $beneficiTrovati[] = $idPianeta;
+            } elseif (in_array($idPianeta, $malevoli, true)) {
+                $malevoliTrovati[] = $idPianeta;
+            }
+        }
+    }
+
+    // === FILTRO DI ESCLUSIONE: malevoli in VI o X ===
+    if (!empty($malevoliTrovati)) {
+        $nomiMalevoli = array_map('getNomePianeta', array_unique($malevoliTrovati));
+        return [
+            'valida' => false,
+            'motivo' => 'Malevoli in VI/X casa RS: ' . implode(', ', $nomiMalevoli)
+        ];
+    }
+
+    // === VERIFICA PRESENZA BENEFICI ===
+    if (empty($beneficiTrovati)) {
+        return [
+            'valida' => false,
+            'motivo' => 'Nessun benefico (Sole, Giove o Venere) in VI o X casa RS'
         ];
     }
 
@@ -413,7 +629,7 @@ function verificaCondizioneSalute(
     ];
     
     // ================================================================
-    // REGOLA 1: TOLLERANZA PRE-INGRESSO AMPLIATA A 4° PER MALEFICI
+    // PASSO 1 (numerazione locale, non e' la Regola 1 ufficiale): TOLLERANZA PRE-INGRESSO AMPLIATA A 4° PER MALEFICI
     // ================================================================
     $malevoli = [4, 6, 7, 8, 9]; // MA, SA, UR, NE, PLU
     $caseVetoSalute = [1, 6, 12];
@@ -450,7 +666,7 @@ function verificaCondizioneSalute(
     }
     
     // ================================================================
-    // REGOLA 2: SCUDO BENEFICO IN I CASA (priorità massima)
+    // PASSO 2 (numerazione locale, non e' la Regola 2 ufficiale): SCUDO BENEFICO IN I CASA (priorità massima)
     // ================================================================
     $beneficiScudo = [3, 5]; // Venere, Giove
     $casaScudo = 1;
@@ -500,7 +716,7 @@ function verificaCondizioneSalute(
     }
     
     // ================================================================
-    // REGOLA 3: ESCLUSIONE SOLE IN XII
+    // PASSO 3 (numerazione locale, non e' la Regola 3 ufficiale): ESCLUSIONE SOLE IN XII
     // ================================================================
     $idSole = 0;
     $casaXII = 12;
@@ -524,7 +740,7 @@ function verificaCondizioneSalute(
     }
     
     // ================================================================
-    // REGOLA 4: RAFFORZAMENTO ASCENDENTE NATALE (tolleranza 3°)
+    // PASSO 4 (numerazione locale, non e' la Regola 4 ufficiale): RAFFORZAMENTO ASCENDENTE NATALE (tolleranza 3°)
     // ================================================================
     if (isset($caseRS['ASC'])) {
         $ascRS = $caseRS['ASC']['longitudine'];
@@ -548,7 +764,7 @@ function verificaCondizioneSalute(
     }
     
     // ================================================================
-    // REGOLA 5: PROTEZIONE UNIVERSALE (Giove o Venere in I/VI/XII)
+    // PASSO 5 (numerazione locale, non e' la Regola 5 ufficiale): PROTEZIONE UNIVERSALE (Giove o Venere in I/VI/XII)
     // ================================================================
     $caseProtezione = [1, 6, 12];
     $protezioneTrovata = false;
@@ -817,7 +1033,7 @@ function verificaCondizioneDenaroLow(array $pianetiConCase, array $caseRS): arra
             $longitudine = (float)$pianetiConCase[$idMal]['longitudine'];
             $nomeMal = getNomePianeta($idMal);
 
-            // --- REGOLA 1: RIGIDITÀ SULL'ESCLUSIONE ASSOLUTA ---
+            // --- PASSO 1 (numerazione locale, non e' la Regola 1 ufficiale): RIGIDITÀ SULL'ESCLUSIONE ASSOLUTA ---
             // Il malevolo è nella casa target (assegnata da SweCalc)?
             if ($casaAssegnata === $casaTarget) {
                 return [
@@ -836,7 +1052,7 @@ function verificaCondizioneDenaroLow(array $pianetiConCase, array $caseRS): arra
                 ];
             }
 
-            // --- REGOLA 2: TOLLERANZA IN USCITA SUI MALEFICI VICINI ---
+            // --- PASSO 2 (numerazione locale, non e' la Regola 2 ufficiale): TOLLERANZA IN USCITA SUI MALEFICI VICINI ---
             // Se il malevolo è nella casa precedente (I per II, VII per VIII)
             // ma a meno di 3° dalla cuspide della casa target, sconfina
             if ($casaAssegnata === $casaPrecedente) {

@@ -22,13 +22,13 @@ La presente roadmap non sostituisce l’HANDOVER principale e contiene soltanto 
 
 ## Stato attuale
 
-**Fase:** analisi funzionale aggiornata e modello iniziale dei piani definito.
+**Fase:** macro-funzionalità in corso. Le Fasi 1–4 e 6–13 risultano implementate nei limiti documentati. Sbloccata la registrazione pubblica: l'account viene attivato automaticamente in assenza di invio email reale (previsto ma non attivato fino al deployment su VPS), con azione amministrativa di verifica manuale per gli eventuali casi residui in pending_email. La Fase 5 — amministrazione utenti, gestione del piano Supporter e limiti personalizzati — deve essere completata.
 
-**Codice applicativo modificato:** nessuno.
+**Codice applicativo modificato:** aggiornati `www/includes/Auth.php` (registraUtentePubblico attiva subito l'account; nuovo metodo verificaManualmente), `www/registrazione.php` (messaggio di successo aggiornato), `www/login.php` (aggiunto link a registrazione.php), `www/admin_utenti.php` (azione e pulsante di verifica manuale, badge stato "Da verificare").
 
-**Documentazione modificata:** revisione della roadmap per sostituire il precedente modello “utente TEST” con un sistema di registrazione gratuita, piani e permessi.
+**Documentazione modificata:** roadmap aggiornata con lo sblocco della registrazione pubblica e la decisione di rimandare l'invio email reale al deployment su VPS.
 
-**Prossimo passo:** formalizzazione del modello dati e preparazione della migrazione PostgreSQL.
+**Prossimo passo:** completare la Fase 5 con modifica amministrativa del piano, gestione delle donazioni, validità annuale Supporter, scadenza e rinnovo, limiti soggetti personalizzati e relativi test.
 
 ---
 
@@ -40,7 +40,7 @@ Introdurre in ASTROLAB un sistema completo di registrazione e gestione degli ute
 - verifica dell’indirizzo email;
 - account personale;
 - piano gratuito iniziale;
-- piano sostenitore;
+- piano Supporter;
 - limiti quantitativi configurabili;
 - permessi funzionali centralizzati;
 - gestione amministrativa degli account;
@@ -144,8 +144,8 @@ Il piano gratuito deve consentire all’utente di comprendere realmente il valor
 | Aggiornamento RSM spostando il cursore | abilitato | È parte essenziale dell’esperienza di ricerca e non deve essere bloccato. |
 | Collegamento Rome2Rio | abilitato | È una funzione di servizio con basso valore come barriera commerciale. |
 | Ricerca aeroporti | abilitata | Mantiene disponibile la modalità storica e più semplice. |
-| Ricerca località per nazione | abilitata | Evita che il piano gratuito sembri una demo artificiale e consente l’uso reale della ricerca geografica. |
-| Ricerca a griglia | disabilitata | È una funzione avanzata e potenzialmente più onerosa; rappresenta un buon elemento distintivo del piano sostenitore. |
+| Ricerca località per nazione | disabilitata | Il piano gratuito può visualizzare l’elenco delle nazioni, ma la ricerca delle località è riservata agli utenti del piano Supporter. |
+| Ricerca a griglia | disabilitata | È una funzione avanzata e potenzialmente più onerosa; rappresenta un buon elemento distintivo del piano Supporter. |
 | Espansione dinamica dell’orbe | disabilitata | È una funzione avanzata che amplia automaticamente la ricerca e può aumentare il carico computazionale. |
 | Annual Report visualizzabile | abilitato | Il report annuale è una funzione centrale e deve poter essere provata integralmente. |
 | Stampa Annual Report | massimo 3 al mese | Consente un utilizzo concreto evitando esportazioni intensive o professionali nel piano gratuito. |
@@ -414,12 +414,16 @@ Il sistema deve:
 Il piano gratuito deve poter utilizzare:
 
 - ricerca aeroporti;
-- ricerca località per nazione;
+- visualizzazione dell’elenco delle nazioni, senza poterle utilizzare per avviare una ricerca delle località;
 - OpenStreetMap;
 - spostamento del cursore con aggiornamento della RSM;
 - collegamento Rome2Rio.
 
-La ricerca a griglia e l’espansione dinamica dell’orbe devono essere abilitate soltanto quando consentite dal piano o da un override.
+La ricerca delle località, la ricerca a griglia e l’espansione dinamica dell’orbe devono essere abilitate soltanto quando consentite dal piano o da un override.
+
+Quando un utente del piano gratuito tenta di selezionare o utilizzare una funzione non inclusa, l’interfaccia deve mostrare un alert con il messaggio «Questa funzione è riservata agli utenti del piano Supporter.»
+
+Il controllo lato server deve comunque impedire l’utilizzo delle funzioni non autorizzate anche tramite chiamate API dirette.
 
 ### Comparator
 
@@ -725,25 +729,179 @@ Documenti da aggiornare al completamento:
 - aggiungere protezione da registrazioni ripetute;
 - aggiungere test del flusso.
 
-### Fase 4 — Verifica email e recupero password
+### Fase 4 — Verifica email e recupero password ✅ completata
 
-- creare token sicuri e a scadenza;
-- memorizzare token in forma sicura;
-- attivare l’account dopo verifica;
-- implementare nuova richiesta del link;
-- implementare richiesta e conferma del reset password;
-- invalidare i token dopo l’uso;
-- aggiungere test dedicati.
+Implementato:
 
-### Fase 5 — Amministrazione utenti
+- token sicurezza crittograficamente casuali;
+- memorizzazione sicura tramite hash SHA-256;
+- scadenza automatica dei token;
+- verifica email con attivazione account;
+- nuova richiesta del link di verifica;
+- richiesta e conferma reset password;
+- invalidazione dei token dopo l’utilizzo;
+- test automatici del flusso completo.
 
-- mostrare ruolo, stato, piano e verifica email;
-- consentire sospensione e riattivazione;
-- consentire modifica del piano;
-- consentire override temporanei o permanenti;
-- mostrare limiti effettivi e utilizzi correnti;
-- validare tutti i valori lato server;
-- verificare creazione e modifica utenti.
+Restano attività infrastrutturali future:
+
+- integrazione del servizio SMTP/mail reale;
+- gestione template email e notifiche.
+
+### Fase 5 — Amministrazione utenti ⚠️ non completata
+
+#### Decisioni definitive
+
+La gestione amministrativa deve distinguere chiaramente:
+
+1. configurazione globale dei piani;
+2. piano corrente del singolo utente;
+3. eventuali eccezioni personali;
+4. accessi speciali gratuiti e permanenti.
+
+La configurazione globale deve consentire all'admin di definire:
+
+- importo minimo della donazione necessario per attivare o rinnovare il piano `supporter`;
+- durata standard del piano `supporter`, inizialmente prevista in un anno;
+- limite soggetti predefinito del piano `free`;
+- limite soggetti predefinito del piano `supporter`;
+- altri limiti commerciali già gestiti tramite `piano_limiti`;
+- attivazione o disattivazione dei singoli piani;
+- disponibilità dei piani per nuove assegnazioni;
+- eventuali nuovi piani futuri, senza distribuire controlli hardcoded negli endpoint.
+
+La disattivazione di un piano deve impedire nuove assegnazioni, ma non deve cancellare utenti, soggetti, ricerche o altri dati già esistenti. L'admin deve poter migrare gli utenti interessati verso un altro piano tramite un'operazione esplicita e controllata.
+
+L'importo della donazione e il limite soggetti sono dati indipendenti.
+
+L'importo versato non deve determinare automaticamente il numero di soggetti assegnato. L'admin decide separatamente:
+
+- se la donazione soddisfa il minimo richiesto;
+- il piano da assegnare;
+- la data di inizio;
+- la data di scadenza;
+- l'eventuale limite soggetti personalizzato.
+
+Il limite effettivo dell'utente deve essere determinato con la seguente precedenza:
+
+1. accesso speciale permanente, quando configurato;
+2. limite personalizzato del singolo utente;
+3. limite configurato per il piano corrente.
+
+Nessun limite commerciale deve essere hardcoded negli endpoint applicativi. I valori devono essere letti dalla configurazione del piano o dalle eccezioni amministrative del singolo utente.
+
+Le politiche commerciali di ASTROLAB devono essere completamente configurabili dall'interfaccia amministrativa. L'amministratore deve poter modificare importi minimi, durata dei piani, limiti standard, limiti personalizzati e disponibilità dei piani senza richiedere modifiche al codice o interventi manuali diretti sul database.
+
+L'interfaccia amministrativa deve separare chiaramente:
+
+1. configurazione globale dei piani e delle politiche commerciali;
+2. gestione del singolo utente;
+3. accessi speciali permanenti;
+4. consultazione dello storico delle operazioni amministrative rilevanti.
+
+Le modifiche globali non devono alterare retroattivamente o eliminare dati già creati. Quando un nuovo limite effettivo è inferiore all'utilizzo corrente, l'utente conserva l'accesso in lettura, modifica ed eliminazione dei dati esistenti, ma non può creare nuovi elementi fino al rientro nel limite.
+
+L'admin deve inoltre poter concedere ad alcuni utenti speciali un accesso:
+
+- completo;
+- gratuito;
+- permanente;
+- senza donazione obbligatoria;
+- senza scadenza annuale;
+- indipendente dal normale ciclo del piano `supporter`.
+
+Questo accesso speciale non deve trasformare l'utente in `admin` e non deve essere rappresentato tramite il ruolo. L'utente mantiene ruolo `user`, ma dispone delle funzionalità complete e dei limiti stabiliti dall'admin.
+
+L'accesso speciale permanente deve poter essere:
+
+- attivato manualmente;
+- revocato manualmente;
+- accompagnato da una motivazione o nota amministrativa;
+- escluso dal ritorno automatico al piano `free`;
+- distinto dai beta tester e dagli account tecnici;
+- verificato sempre lato server.
+
+Già implementato:
+
+- visualizzazione di ruolo, stato account, piano e verifica email;
+- sospensione e riattivazione coerente con `account_status`;
+- modifica del ruolo amministrativo;
+- validazione server-side dei ruoli;
+- creazione amministrativa degli utenti.
+
+Da completare per la chiusura definitiva:
+
+- consentire all'admin di modificare il piano tra `free` e `supporter`;
+- mantenere ruolo, stato account e piano come concetti separati;
+- registrare l'importo della donazione che abilita il piano Supporter;
+- consentire all'admin di definire la somma minima necessaria per ottenere o rinnovare il piano Supporter;
+- registrare data di inizio e data di scadenza del periodo Supporter;
+- prevedere validità annuale del piano Supporter;
+- consentire rinnovo anticipato o successivo alla scadenza;
+- riportare automaticamente l'utente al piano `free` alla scadenza, salvo rinnovo;
+- mantenere consultabili i dati già creati dopo il ritorno al piano `free`;
+- impedire nuove creazioni quando l'utente supera i nuovi limiti effettivi;
+- consentire all'admin di impostare un limite soggetti personalizzato per ogni utente;
+- consentire limiti personalizzati indipendenti dal piano standard;
+- consentire all'admin di configurare i limiti predefiniti dei piani `free` e `supporter`;
+- consentire all'admin di attivare o disattivare i piani;
+- impedire l'assegnazione di un piano disattivato;
+- preservare utenti e dati già esistenti quando un piano viene disattivato;
+- consentire la migrazione amministrativa degli utenti da un piano disattivato a un piano attivo;
+- predisporre il modello per eventuali nuovi piani futuri senza introdurre condizioni hardcoded negli endpoint;
+- impedire valori numerici hardcoded nella logica applicativa dei limiti;
+- mantenere indipendenti importo della donazione e limite soggetti;
+- consentire l'attivazione di un accesso speciale completo, gratuito e permanente;
+- consentire la revoca dell'accesso speciale permanente;
+- impedire che l'accesso speciale modifichi automaticamente il ruolo dell'utente;
+- escludere gli utenti con accesso speciale permanente dalla scadenza automatica Supporter;
+- supportare configurazioni amministrative differenti;
+- il limite soggetti deve poter essere deciso liberamente dall'amministratore indipendentemente dall'importo della donazione;
+- supportare, a titolo esemplificativo:
+  - utenti `free` con limiti differenti;
+  - utenti `supporter` con limiti differenti;
+  - utenti con limite personalizzato indipendente dal piano;
+- definire chiaramente la precedenza tra limite del piano e limite personalizzato dell'utente;
+- permettere la rimozione dell'override per ripristinare il limite standard del piano;
+- mostrare nell'amministrazione:
+  - piano corrente;
+  - importo dell'ultima donazione;
+  - inizio e scadenza Supporter;
+  - limite soggetti standard;
+  - limite soggetti personalizzato;
+  - limite soggetti effettivo;
+  - numero di soggetti attualmente creati;
+- consentire all'admin di riportare manualmente un utente a `free`;
+- consentire all'admin di rinnovare o modificare la scadenza Supporter;
+- validare lato server importi, date, piano e limiti numerici;
+- impedire l'attivazione ordinaria del piano `supporter` quando la donazione registrata è inferiore al minimo configurato;
+- consentire l'accesso speciale permanente senza donazione soltanto tramite azione amministrativa esplicita;
+- impedire valori negativi, date incoerenti, scadenze anteriori all'attivazione e piani non attivi;
+- definire un comportamento deterministico alla scadenza del Supporter, con ritorno a `free` salvo rinnovo o accesso speciale permanente;
+- aggiornare i permessi effettivi senza richiedere un nuovo login, oppure invalidare in modo controllato la sessione quando necessario;
+- registrare le modifiche amministrative rilevanti con amministratore, utente interessato, data, operazione e valori precedenti e successivi;
+- aggiungere test dedicati per:
+  - passaggio `free` → `supporter`;
+  - passaggio `supporter` → `free`;
+  - scadenza annuale;
+  - rinnovo;
+  - limite soggetti personalizzato;
+  - rimozione dell'override;
+  - preservazione dei soggetti già esistenti;
+  - separazione tra ruolo amministrativo e piano applicativo;
+  - modifica dei limiti predefiniti dei piani;
+  - indipendenza tra importo donato e limite soggetti;
+  - attivazione dell'accesso speciale permanente;
+  - revoca dell'accesso speciale permanente;
+  - assenza di scadenza per gli utenti speciali;
+  - mantenimento del ruolo `user` per gli utenti speciali;
+  - attivazione e disattivazione dei piani;
+  - blocco delle nuove assegnazioni verso piani disattivati;
+  - preservazione dei dati degli utenti appartenenti a un piano disattivato;
+  - migrazione amministrativa tra piani;
+  - rifiuto del Supporter ordinario sotto la soglia minima configurata;
+  - aggiornamento dei permessi dopo una modifica amministrativa;
+  - registrazione dello storico delle operazioni amministrative;
+  - assenza di valori commerciali hardcoded negli endpoint.
 
 ### Fase 6 — Limite soggetti
 
@@ -768,7 +926,10 @@ Documenti da aggiornare al completamento:
 ### Fase 8 — Restrizioni ricerca lato server
 
 - bloccare la ricerca a griglia quando non autorizzata;
-- mantenere aeroporti e località disponibili nel piano gratuito;
+- mantenere disponibile esclusivamente la ricerca aeroportuale nel piano gratuito;
+- consentire al piano gratuito la visualizzazione delle nazioni senza permetterne l’utilizzo per la ricerca delle località;
+- bloccare lato server la ricerca delle località quando non autorizzata;
+- mostrare un alert «Questa funzione è riservata agli utenti del piano Supporter.» quando un utente gratuito tenta di utilizzare una funzione non inclusa;
 - bloccare o normalizzare l’espansione dinamica dell’orbe;
 - restituire errori coerenti;
 - verificare chiamate API dirette;
@@ -777,7 +938,7 @@ Documenti da aggiornare al completamento:
 ### Fase 9 — Comparator
 
 - applicare massimo 2 risultati al piano gratuito;
-- applicare massimo 3 risultati al piano sostenitore;
+- applicare massimo 3 risultati al piano Supporter;
 - mantenere il server come fonte definitiva;
 - mostrare il limite residuo nell’interfaccia quando utile;
 - aggiungere test RS e Rilocazioni.
@@ -789,10 +950,10 @@ Documenti da aggiornare al completamento:
 - registrare gli utilizzi in modo transazionale;
 - evitare doppi conteggi;
 - mostrare la quota residua;
-- applicare uso corretto al piano sostenitore;
+- applicare uso corretto al piano Supporter;
 - aggiungere test dedicati.
 
-### Fase 11 — Restrizioni interfaccia
+### Fase 11 — Restrizioni interfaccia ✅ completata
 
 - nascondere o disabilitare i controlli non disponibili;
 - impedire l’avvio di operazioni non consentite;
@@ -800,27 +961,39 @@ Documenti da aggiornare al completamento:
 - indicare limiti e quota residua;
 - mantenere il server come fonte definitiva dell’autorizzazione.
 
-### Fase 12 — Sicurezza e sessioni
+### Fase 12 — Sicurezza e sessioni ✅ completata
 
-- verificare hashing password;
-- verificare protezione CSRF;
-- verificare cookie di sessione;
-- introdurre rate limiting dove necessario;
-- verificare logout e revoca sessione;
-- verificare enumerazione account;
-- verificare logging degli eventi rilevanti;
-- aggiungere test di sicurezza applicabili.
+Implementato e verificato:
 
-### Fase 13 — Regressione e documentazione
+- confermato l'utilizzo di `password_hash()` con bcrypt e `password_verify()`;
+- confermata la rigenerazione dell'identificativo di sessione dopo il login;
+- verificata la configurazione sicura dei cookie di sessione;
+- verificata la distruzione della sessione e del cookie durante il logout;
+- aggiunta la protezione CSRF alle operazioni amministrative;
+- aggiunta la protezione CSRF al cambio password;
+- confermata la protezione CSRF della registrazione pubblica;
+- introdotto rate limiting sul login;
+- confermato il rate limiting della registrazione;
+- verificati i messaggi del login contro l'enumerazione delle credenziali;
+- verificati token di verifica email e reset password monouso;
+- lint PHP, regressione completa e `git diff --check` superati.
 
-- eseguire lint PHP sui file modificati;
-- eseguire `git diff --check`;
-- eseguire i test specifici;
-- eseguire la regressione disponibile;
-- aggiornare questa roadmap;
-- registrare la sintesi nell’HANDOVER principale;
-- aggiornare ADR, README, START_HERE e ROADMAP;
-- eseguire commit Git.
+Attività future non bloccanti:
+
+- logging strutturato degli eventi di sicurezza;
+- ulteriori test HTTP dedicati a CSRF e rate limiting.
+
+### Fase 13 — Regressione e documentazione ✅ completata
+
+Implementato e verificato:
+
+- eseguito il lint PHP nel container `astrolab-web` sui file modificati nella Fase 12;
+- eseguito `git diff --check` con esito positivo;
+- eseguiti i test specifici inclusi nella suite di regressione;
+- eseguita la regressione completa `tests/run.php` con esito positivo;
+- avviato l’allineamento della documentazione ufficiale;
+- verificato lo stato del repository e il commit conclusivo della Fase 12;
+- nessuna modifica applicativa o refactoring introdotti.
 
 ---
 
@@ -846,11 +1019,11 @@ I messaggi relativi ai limiti devono spiegare chiaramente cosa è successo e cos
 
 Esempio per le ricerche salvate:
 
-> Hai raggiunto il limite di 10 ricerche salvate previsto dal piano gratuito. Le ricerche esistenti restano disponibili e possono essere modificate o eliminate. Il piano sostenitore consente di ampliare l’archivio e utilizzare le funzionalità avanzate.
+> Hai raggiunto il limite di 10 ricerche salvate previsto dal piano gratuito. Le ricerche esistenti restano disponibili e possono essere modificate o eliminate. Il piano Supporter consente di ampliare l’archivio e utilizzare le funzionalità avanzate.
 
 Esempio per il Comparator:
 
-> Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 RSM è necessario il piano sostenitore.
+> Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 RSM è necessario il piano Supporter.
 
 Esempio per stampa o PDF:
 
@@ -880,30 +1053,174 @@ Esempio per la ricerca a griglia:
 - definito il flusso registrazione, verifica email e attivazione;
 - definiti i piani iniziali `free` e `supporter`;
 - scelti i limiti iniziali del piano gratuito;
-- mantenute accessibili OpenStreetMap, ricerca aeroporti, ricerca località, Rome2Rio e visualizzazione Annual Report;
-- riservate al piano sostenitore ricerca a griglia, espansione dinamica dell’orbe e confronto completo fino a 3 risultati;
+- mantenute accessibili OpenStreetMap, ricerca aeroporti, visualizzazione delle nazioni, Rome2Rio e visualizzazione Annual Report; la ricerca delle località è riservata agli utenti del piano Supporter;
+- riservate al piano Supporter ricerca a griglia, espansione dinamica dell’orbe e confronto completo fino a 3 risultati;
 - definito il limite di 2 soggetti e 10 ricerche salvate per il piano gratuito;
 - definita una quota condivisa di 3 stampe o esportazioni PDF al mese;
 - introdotta la necessità di permessi centralizzati e override amministrativi;
 - creato ADR-016 con stato `Proposta` e registrato nell’indice ADR;
 - nessuna modifica applicativa eseguita.
 
+### 2026-07-29 — Completamento Fase 1 database
+
+- individuato `sql/schema_baseline.sql` come schema di riferimento;
+- preparata e corretta la migrazione `sql/002_registrazione_utenti.sql`;
+- aggiunte le tabelle `piani` e `piano_limiti`;
+- estesa la tabella `utenti` con stato account, piano, verifica email e campi amministrativi;
+- convertito il ruolo legacy `astrologo` in `user`;
+- assegnato il piano `supporter` agli utenti esistenti;
+- validata la migrazione su database temporaneo dedicato;
+- applicata la migrazione al database operativo;
+- verificati dati, vincoli, indici e chiavi esterne;
+- completata la verifica funzionale di login e accesso all’applicazione;
+- pubblicato il commit `b00c2bd` sul branch `feature/registrazione-utenti`.
+
+---
+
+### 2026-07-29 — Completamento Fase 2 modello utente, piani e permessi
+
+- aggiornato `www/includes/Auth.php`;
+- centralizzata la lettura del modello utente;
+- aggiunta la gestione coerente di ruolo, stato account e piano;
+- introdotti helper centralizzati per piani, limiti e permessi;
+- implementata la lettura dei limiti configurati nel database;
+- preservata la compatibilità con amministratori e utenti esistenti;
+- mantenuta la retrocompatibilità con il comportamento applicativo precedente;
+- verificata la sintassi PHP utilizzando il container Docker `astrolab-web`;
+- verificato il diff delle modifiche;
+- pubblicato il commit `7a9e275` sul branch `feature/registrazione-utenti`.
+
+
+### 2026-07-29 — Completamento Fase 3 registrazione pubblica
+
+- implementata `www/registrazione.php`;
+- aggiunto `Auth::registraUtentePubblico()`;
+- validazione server-side di username, email e password;
+- assegnazione forzata di ruolo `user`, piano `free` e stato `pending_email`;
+- impedita l'escalation dei privilegi dal client;
+- introdotta protezione CSRF e rate limiting della registrazione;
+- aggiunti test dedicati della registrazione pubblica;
+- eliminato l'avviso `session_start()` nei test CLI;
+- regressione completa superata;
+- fase 3 completata.
+
+### 2026-07-30 — Implementazione Fase 6 limite soggetti
+
+- creata la migrazione `sql/004_popola_piano_limiti.sql`;
+- configurato il limite `subjects_max` a 2 per il piano `free`;
+- configurato il piano `supporter` senza limite numerico;
+- aggiornato `www/api/soggetti_api.php`;
+- introdotto il conteggio dei soggetti prima dell'inserimento;
+- bloccato l'inserimento oltre soglia con errore JSON;
+- esclusi gli amministratori dal limite commerciale;
+- controllo sintassi PHP superato;
+- regressione completa con `www/tests/run.php` superata;
+- aggiunto il test funzionale dedicato `www/tests/test_subjects_limit.php`;
+- integrato il test nella regressione completa `www/tests/run.php`;
+- verificato il blocco del terzo soggetto per il piano `free`;
+- fase 6 completata.
+
+### 2026-07-30 — Implementazione Fase 7 limite ricerche salvate
+
+- creata la migrazione `sql/005_popola_limite_ricerche_salvate.sql`;
+- configurato il limite `saved_searches_max` a 10 per il piano `free`;
+- configurato il piano `supporter` senza limite numerico;
+- aggiornato `www/api/sessioni_api.php`;
+- introdotto il conteggio delle ricerche salvate prima del salvataggio;
+- bloccato l'undicesimo salvataggio con errore JSON;
+- esclusi gli amministratori dal limite commerciale;
+- controllo sintassi PHP superato;
+- aggiunto il test funzionale dedicato `www/tests/test_saved_searches_limit.php`;
+- integrato il test nella regressione completa `www/tests/run.php`;
+- verificato tramite HTTP il blocco dell'undicesima ricerca salvata;
+- regressione completa superata;
+- fase 7 completata.
+
+### 2026-07-30 — Avanzamento parziale Fase 5 amministrazione utenti
+
+- aggiornata l'amministrazione utenti al nuovo modello `user`;
+- visualizzati ruolo, stato account, piano e verifica email;
+- introdotta la sospensione e riattivazione coerente con `account_status`;
+- validata server-side la gestione dei ruoli amministrativi;
+- allineata parzialmente l'interfaccia amministrativa al nuovo modello utenti;
+- regressione completa superata per le funzioni implementate;
+- la fase non è completata: mancano modifica del piano, ciclo di vita annuale Supporter, gestione donazioni, scadenze, rinnovi e limiti personalizzati per singolo utente.
+
+### 2026-08-11 — Sblocco registrazione pubblica
+
+- deciso di rimandare l'attivazione reale dell'invio email (verifica account e reset password) al momento del deployment su VPS;
+- `Auth::registraUtentePubblico()` ora attiva subito l'account (`account_status = 'active'`) invece di lasciarlo in `pending_email`;
+- il meccanismo di token e verifica email via `verifica-email.php` resta nel codice, dormiente, pronto per l'attivazione futura;
+- aggiunto `Auth::verificaManualmente()` per attivare dall'amministrazione un eventuale utente residuo in `pending_email`;
+- aggiunta in `admin_utenti.php` l'azione e il pulsante di verifica manuale, con nuovo badge di stato "Da verificare";
+- aggiunto in `login.php` il link mancante alla pagina `registrazione.php` (pagina già esistente ma non raggiungibile dall'interfaccia);
+- verifica end-to-end eseguita manualmente: registrazione → account attivo in database → login riuscito;
+- controllo sintassi PHP superato su tutti i file modificati;
+- nessun test automatico dedicato esistente per il flusso di registrazione (`tests/run.php` fallisce per una funzione `passthru()` disabilitata, problema preesistente non legato a questa modifica).
+
+### 2026-08-11 bis — Fase 5, passo 1: modello dati amministrazione piano Supporter
+
+- creata la migrazione `sql/007_piano_supporter_amministrazione.sql`, applicata al database operativo;
+- aggiunti su `utenti`: `subjects_limit_override` (limite soggetti personalizzato per singolo utente), `donazione_importo`, `supporter_inizio`, `supporter_scadenza`, `accesso_speciale_permanente` (accesso completo, gratuito, permanente, senza intaccare il ruolo), `note_piano`;
+- aggiunti su `piani`: `donazione_minima` e `durata_giorni`, configurabili per piano (valorizzati inizialmente per `supporter`: 0 € minimo, 365 giorni);
+- vincoli CHECK applicati su valori non negativi e coerenza tra date inizio/scadenza;
+- verificato lo schema post-migrazione e la disponibilità dell'applicazione (login e index invariati);
+- prossimo passo: helper centralizzati in `Auth.php` per il limite effettivo (precedenza accesso speciale permanente → override utente → piano) e per lo stato Supporter (attivo/scaduto).
+
+### 2026-08-11 ter — Fase 5, passo 2: helper centralizzato limite soggetti
+
+- aggiunto `Auth::getLimiteSoggettiEffettivo()`: unico punto applicativo che calcola il limite soggetti di un utente, con precedenza accesso speciale permanente (illimitato) → override personalizzato → limite del piano (Supporter scaduto trattato come free);
+- refactorato `www/api/soggetti_api.php` (azione `inserisci`) per usare l'helper al posto della query inline su `piano_limiti`, eliminando la logica duplicata;
+- verificati con test funzionale diretto i tre scenari: piano free standard (2), override personalizzato (5), accesso speciale permanente (illimitato/null);
+- confermato nessun impatto sugli utenti reali esistenti (tutti piano supporter, nessuna scadenza, nessun override — comportamento invariato);
+- controllo sintassi PHP e `git diff --check` superati;
+- prossimo passo: estendere l'interfaccia amministrativa (`admin_utenti.php`) per assegnare/modificare piano, donazione, scadenza Supporter, override soggetti e accesso speciale permanente.
+
+### 2026-08-11 quater — Fase 5, passo 3: interfaccia admin gestione piano
+
+- aggiunto `Auth::aggiornaPianoUtente()` con validazione server-side completa: piano tra i codici attivi in `piani`, importi e limiti non negativi, coerenza tra data inizio e scadenza Supporter;
+- estesa `Auth::getListaUtenti()` con i nuovi campi (donazione, date Supporter, override, accesso speciale, note) per precompilare l'interfaccia;
+- aggiunto in `admin_utenti.php` il modale "Gestione Piano" (tre blocchi: Piano, Ciclo Supporter, Personalizzazioni), l'azione POST `aggiorna_piano` e il pulsante 💎 in tabella;
+- verificati con test funzionale diretto: rifiuto piano non valido, rifiuto scadenza precedente all'inizio, assegnazione Supporter con donazione/date/note salvata correttamente, passaggio a free con accesso speciale permanente attivato correttamente;
+- controllo sintassi PHP e `git diff --check` superati;
+- Fase 5 ora funzionalmente completa per i punti richiesti: piano, donazione, validità annuale Supporter, limite soggetti personalizzato per utente, accesso speciale permanente concesso dall'admin;
+- non implementato in questo passo (rimandato, fuori scope immediato): riporto automatico a free alla scadenza (oggi la scadenza è visibile e calcolata ai fini del limite soggetti in getLimiteSoggettiEffettivo, ma il campo piano resta quello assegnato finché l'admin non lo cambia manualmente), storico delle modifiche amministrative, attivazione/disattivazione piani dall'interfaccia.
+
+### 2026-08-11 quinquies — Bugfix username case-sensitive + vista soggetti in amministrazione
+
+- Bug reale riscontrato dall'utente: registrazione con username pippo salvato come Pippo (capitalizzazione automatica tastiera), login con pippo minuscolo rifiutato per confronto case-sensitive in Auth::login(). L'utente era comunque presente in database e visibile in amministrazione (falso allarme dovuto probabilmente a cache browser), ma il bug di login era reale.
+- Deciso: lo username non deve essere case-sensitive. Creata la migrazione sql/008_username_case_insensitive.sql (indice univoco su LOWER(TRIM(username)), verificato prima che non esistessero duplicati), applicata al database operativo.
+- Aggiornato Auth::login() per confrontare LOWER(TRIM(username)) invece di un confronto esatto. Verificato end-to-end: login con pippo minuscolo ora riuscito.
+- Introdotta la terminologia di prodotto: gli utenti (ruolo = user) sono "Astrologi"; le persone che l'astrologo gestisce sono "Soggetti di studio".
+- Aggiunta in admin_utenti.php (solo lato amministrazione, nessuna modifica a index.php - la vista dell'astrologo resta identica) una riga espandibile sotto ogni astrologo: click sul nome (con freccia e contatore soggetti tra parentesi) apre una mini-tabella con i soggetti di studio di quell'astrologo (Codice, Nome, Data Nascita, Ora, Luogo), con gli stessi campi gia' usati nella tabella soggetti standard.
+- Verificato con test funzionale diretto (query e raggruppamento PHP replicati in script temporaneo) sul caso reale roxy - 4 soggetti (Cristina De Brand, Lorenzo Diana, Manuel Raso, Rossella Fumai) correttamente raggruppati e ordinati.
+- Confermato che www/index.php non risulta tra i file modificati: la vista personale dell'astrologo resta inalterata.
+- Controllo sintassi PHP e git diff --check superati su tutti i file.
+
+### 2026-08-11 sexies — Redirect post-login differenziato per ruolo
+
+- richiesta dell'utente dopo aver verificato la riga espandibile soggetti: l'admin deve atterrare direttamente su admin_utenti.php dopo il login, non su index.php;
+- modificato login.php: se non e' presente un parametro next esplicito (link diretto), l'admin viene reindirizzato a admin_utenti.php, gli astrologi normali restano su index.php come prima; lo stesso criterio si applica anche al redirect "gia' loggato" in cima alla pagina;
+- un eventuale link diretto (next=...) resta rispettato per entrambi i ruoli, la modifica riguarda solo il comportamento di default;
+- verificato end-to-end via curl: login astrologo normale -> Location: index.php (invariato); login admin -> Location: admin_utenti.php (nuovo comportamento);
+- controllo sintassi PHP e git diff --check superati.
+
 ---
 
 ## Prossimo passo
 
-Approvare ADR-016 e avviare la verifica infrastrutturale:
+Fasi 7, 8, 9 e 10 — completate.
 
-1. individuare il file ufficiale che definisce lo schema PostgreSQL;
-2. individuare il meccanismo usato dal progetto per le migrazioni;
-3. verificare il sistema di invio email disponibile;
-4. definire lo schema SQL definitivo;
-5. preparare la prima migrazione senza modificare ancora gli endpoint funzionali.
+
+**Ultima fase completata: Fase 13 — Regressione e documentazione.**
+
+La macro-funzionalità di registrazione, piani, permessi, limiti e sicurezza non è ancora completata.
+
+Prossimo passo: completare la Fase 5 con gestione amministrativa del piano Supporter, validità annuale, donazioni, scadenze, rinnovi e limiti soggetti personalizzati per singolo utente.
 
 ---
 
 ## Commit
 
-Nessun commit applicativo ancora eseguito.
-
-Il prossimo commit previsto registra ADR-016 e il relativo aggiornamento documentale di roadmap e handover.
+- Fase 12: commit `85311db` — `Completata Fase 12: sicurezza e sessioni`.
+- Fase 13: commit documentale da eseguire esclusivamente dopo la verifica finale e la conferma dell’utente.

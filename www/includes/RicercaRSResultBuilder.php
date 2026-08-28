@@ -14,7 +14,8 @@ function costruisciRisultatoRicercaRS(
     bool $scudoBeneficoAttivo,
     $beneficoInI,
     $denaroBeneficioTrovato,
-    bool $denaroAlertGiove
+    bool $denaroAlertGiove,
+    ?array $punteggioMyAstral = null
 ): array {
     return [
     'icao'           => $aero['icao_code'],
@@ -45,6 +46,10 @@ function costruisciRisultatoRicercaRS(
     'denaro_beneficio'   => ($condizione === 'Denaro') ? $denaroBeneficioTrovato : null,
     'denaro_alert_giove' => ($condizione === 'Denaro') ? $denaroAlertGiove : null,
     'passed_denaro_low'  => ($condizione === 'Denaro Low'),
+    // Punteggio "Discepolo parziale" (roadmap MyAstral, RuleEngineExtended.php).
+    // null se MYASTRAL_ALIGNMENT_MODE è disattivo o la condizione non è ancora
+    // supportata dal punteggio parziale — non sostituisce mai 'stelline'.
+    'punteggio_myastral' => $punteggioMyAstral,
              ];
 }
 

@@ -17,14 +17,19 @@ $soggettoNome = $auth->getSoggettoNome();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comparatore rilocazioni</title>
+<title>Comparatore RL</title>
 <link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Eb+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 .compare-ril-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
     margin-top: 24px;
+}
+
+.compare-ril-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .compare-ril-card {
@@ -86,7 +91,8 @@ $soggettoNome = $auth->getSoggettoNome();
 }
 
 @media (max-width: 900px) {
-    .compare-ril-grid {
+    .compare-ril-grid,
+    .compare-ril-grid-3 {
         grid-template-columns: 1fr;
     }
 
@@ -102,7 +108,7 @@ $soggettoNome = $auth->getSoggettoNome();
 
 <main>
 <div class="page-title">
-<h2>Comparatore rilocazioni</h2>
+<h2>Comparatore RL</h2>
 </div>
 
 <div id="compare-output">
@@ -119,13 +125,36 @@ const raw = sessionStorage.getItem('astroDssConfrontoRiloc');
 if (!raw) {
     out.innerHTML = '<p><strong>Nessun dato di confronto disponibile.</strong></p>';
 } else {
+    (async () => {
     try {
         const payload = JSON.parse(raw);
         const risultati = Array.isArray(payload.risultati)
             ? payload.risultati
             : [];
+        const autorizzazione = await fetch('api/comparator_api.php', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tipo: 'rilocazioni',
+                totale: risultati.length
+            })
+        });
+
+        const esitoAutorizzazione = await autorizzazione.json();
+
+        if (!autorizzazione.ok || !esitoAutorizzazione.ok) {
+            throw new Error(
+                esitoAutorizzazione.errore
+                    || 'Confronto non autorizzato.'
+            );
+        }
+
         const soggetto = payload.soggetto;
-        const nomeSoggetto = soggetto?.nome || 'Non disponibile';
+        const nomeSoggetto = soggetto?.nome
+            || <?= json_encode($soggettoNome ?: 'Non disponibile') ?>;
         const datiSoggettoValidi = soggetto &&
             ['giorno', 'mese', 'anno', 'ora_gmt'].every(campo =>
                 soggetto[campo] !== undefined &&
@@ -160,7 +189,7 @@ if (!raw) {
             const nazione = r.nazione || '—';
 
             return `
-                <section class="compare-ril-card ${i === 2 ? 'compare-ril-card-wide' : ''}">
+                <section class="compare-ril-card">
                     <h3>${localita}</h3>
                     <p><strong>Aeroporto:</strong> ${aeroporto} (${codice})</p>
                     <p><strong>Nazione:</strong> ${nazione}</p>
@@ -201,10 +230,10 @@ if (!raw) {
 
         out.innerHTML = `
             <div class="card">
-                <h3>Comparatore rilocazioni</h3>
+                <h3>Comparatore RL</h3>
                 <p><strong>Soggetto:</strong> ${nomeSoggetto}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
-                <div class="compare-ril-grid">
+                <div class="compare-ril-grid ${risultati.length === 3 ? 'compare-ril-grid-3' : ''}">
                     ${schede}
                 </div>
             </div>
@@ -264,8 +293,9 @@ if (!raw) {
             caricaRuotaRilocata(risultato, indice);
         });
     } catch (errore) {
-        out.innerHTML = '<p><strong>Dati di confronto non validi.</strong></p>';
+        out.innerHTML = `<p><strong>${errore.message || 'Dati di confronto non validi.'}</strong></p>`;
     }
+    })();
 }
 </script>
 

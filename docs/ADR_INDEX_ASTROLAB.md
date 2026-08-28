@@ -33,7 +33,7 @@ Indice delle decisioni architetturali permanenti.
                     spaziale SQL
                     della Ricerca RS
 
-  ADR-016           Registrazione,     Proposta           Gestione utenti
+  ADR-016           Registrazione,     Accettata          Gestione utenti
                     piani e permessi
                     utente
   ------------------------------------------------------------------------
@@ -300,7 +300,7 @@ Verrà rimossa soltanto dopo la completa validazione della pipeline SQL.
 
 # ADR-016 --- Modello centralizzato di registrazione, piani e permessi utente
 
-**Stato:** Proposta
+**Stato:** Accettata
 
 **Versione:** Gestione utenti
 
@@ -321,9 +321,9 @@ abbandonato. Ogni nuovo account dovrà distinguere chiaramente:
 - eventuali override amministrativi;
 - quote periodiche e relativo utilizzo.
 
-Il modello dati definitivo non è ancora approvato. Tabelle, campi, relazioni e
-strategie di persistenza dovranno essere definiti dopo la verifica dello schema
-PostgreSQL esistente e del meccanismo ufficiale di migrazione del progetto.
+Il modello dati è stato implementato e validato sullo schema PostgreSQL
+ufficiale del progetto tramite le migrazioni dedicate alla gestione utenti,
+piani, limiti, quote e token di sicurezza.
 
 ## Decisione
 
@@ -392,15 +392,15 @@ senza distribuire nuove condizioni nei singoli endpoint.
 
 ## Conseguenze
 
-Prima dell'implementazione applicativa sarà necessario:
+L'implementazione applicativa ha confermato:
 
-- individuare lo schema PostgreSQL ufficiale;
-- individuare il meccanismo di migrazione o aggiornamento del database;
-- verificare il sistema di invio email;
-- formalizzare lo schema dati definitivo;
-- garantire compatibilità con gli utenti esistenti;
-- definire helper o servizi centralizzati per limiti e permessi;
-- aggiungere test server-side per ogni funzionalità soggetta a restrizione.
+- utilizzo dello schema PostgreSQL ufficiale;
+- migrazioni dedicate per utenti, piani, limiti, quote e token;
+- compatibilità con gli utenti esistenti;
+- helper centralizzati per piani, limiti e permessi;
+- controlli server-side per ogni funzionalità soggetta a restrizione;
+- separazione tra ruolo, stato account, piano, override e protezioni tecniche;
+- copertura mediante test specifici e regressione completa.
 
-La presente decisione definisce il contratto architetturale, ma non approva
-ancora nomi, numero o struttura definitiva delle tabelle.
+Restano fuori dal perimetro bloccante l'integrazione SMTP reale, il logging
+strutturato degli eventi di sicurezza e ulteriori test HTTP dedicati.

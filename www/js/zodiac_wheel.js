@@ -40,6 +40,38 @@ const ZodiacWheel = {
     _gradiVisibili: false,
     _cuspidiVisibili: true,
 
+    _coloreSemantico: function(p, houses) {
+        const rosso = '#CC0000'; // Diretto
+        const blu   = '#0000CC'; // Retrogrado
+        const verde = '#00AA00'; // In cuspide
+
+        // Orbite differenziate per pianeta e casa
+        const SOGLIA_BASE = 2.5;       // Tutti i pianeti, tutte le case
+        const SOGLIA_ANGOLI = 10.0;    // Saturno e Marte su I/ASC e X/MC
+        const PIANETI_ANGOLI = [4, 6]; // Marte (4), Saturno (6)
+        const CASE_ANGOLI = ['1', 'ASC', '10', 'MC']; // I=ASC, X=MC
+
+        if (houses) {
+            for (const k in houses) {
+                const cuspide = houses[k];
+                if (!cuspide || typeof cuspide.longitudine !== 'number') continue;
+
+                let diff = Math.abs(p.longitudine - cuspide.longitudine) % 360;
+                if (diff > 180) diff = 360 - diff;
+
+                // Determina la soglia applicabile
+                const isPianetaAngoli = PIANETI_ANGOLI.includes(p.id);
+                const isCasaAngolo = CASE_ANGOLI.includes(String(k));
+                const soglia = (isPianetaAngoli && isCasaAngolo) ? SOGLIA_ANGOLI : SOGLIA_BASE;
+
+                if (diff <= soglia) return verde;
+            }
+        }
+
+        if (p.retrogrado) return blu;
+        return rosso;
+    },
+
     disegna: function(svgId, tema, opzioni) {
         opzioni = opzioni || {};
         const svg = document.getElementById(svgId);
@@ -150,7 +182,7 @@ const ZodiacWheel = {
             const yP  = cy + rLinea * Math.sin(rad);
             const dot = this._createElement('circle');
             dot.setAttribute('cx', xP); dot.setAttribute('cy', yP); dot.setAttribute('r', 2.5);
-            dot.setAttribute('fill', this.PIANETI_COLORI[p.id] || '#555');
+            dot.setAttribute('fill', this._coloreSemantico(p, tema.case));
             dot.setAttribute('opacity', '0.9');
             svg.appendChild(dot);
         });
@@ -358,7 +390,7 @@ const ZodiacWheel = {
         const mcLon = (tema.case && tema.case.MC ? tema.case.MC.longitudine : 0);
 
         Object.values(tema.pianeti).forEach(p => {
-            const colore = this.PIANETI_COLORI[p.id] || '#555555';
+            const colore = this._coloreSemantico(p, tema.case);
             const radVero = this._lon2rad(p.longitudine, mcLon);
             const infoDisp = mappaDisplay[p.id];
             const radDisplay = infoDisp ? infoDisp.rad : radVero;
@@ -392,7 +424,7 @@ const ZodiacWheel = {
         const size  = cx * 2;
 
         Object.values(tema.pianeti).forEach(p => {
-            const colore     = this.PIANETI_COLORI[p.id] || '#555555';
+            const colore     = this._coloreSemantico(p, tema.case);
             const glifo      = this.PIANETI_GLIFI[p.id]  || '?';
             const radVero    = this._lon2rad(p.longitudine, mcLon);
             const infoDisp   = mappaDisplay[p.id];
@@ -413,7 +445,7 @@ const ZodiacWheel = {
                 fill:     colore,
                 anchor:   'middle',
                 baseline: 'central',
-                bold:     false,
+                bold:     colore === '#00AA00',
                 cls:      'simbolo-pianeta'
             }));
 
@@ -603,3 +635,25 @@ const ZodiacWheel = {
 
 window.toggleGradiPianeti = function() { ZodiacWheel.toggleGradi(); };
 window.toggleCuspidiCase = function() { ZodiacWheel.toggleCuspidi(); };
+
+window.toggleDatiTabella = function(suffix) {
+    const wrap = document.getElementById('dati-' + suffix);
+    const btn = document.getElementById('btn-toggle-dati-' + suffix);
+    if (!wrap || !btn) return;
+    const nascosto = wrap.classList.toggle('is-hidden');
+    btn.textContent = nascosto ? '▼ Mostra Dati' : '▲ Nascondi Dati';
+};
+
+window.toggleCollapse = function(suffix) {
+    const body = document.getElementById('collapse-body-' + suffix);
+    const chevron = document.getElementById('collapse-chevron-' + suffix);
+    if (!body || !chevron) return;
+    const aperto = body.style.display !== 'none';
+    if (aperto) {
+        body.style.display = 'none';
+        chevron.classList.remove('aperto');
+    } else {
+        body.style.display = 'block';
+        chevron.classList.add('aperto');
+    }
+};

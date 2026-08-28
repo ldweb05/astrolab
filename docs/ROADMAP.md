@@ -1,8 +1,19 @@
-# Astro-DSS Roadmap
+# Cronologia dello sviluppo Astro-DSS (progetto successivamente confluito in ASTROLAB)
 
-Documento di avanzamento del progetto Astro-DSS.
+Documento storico dello sviluppo del progetto Astro-DSS precedente alla fusione in ASTROLAB.
 
 Deve essere aggiornato al completamento di ogni milestone significativa.
+
+> **Nota**
+> La roadmap relativa alla registrazione utenti, autenticazione, gestione dei piani (`free`/`supporter`), permessi, quote, Comparator, Annual Report e relative fasi di implementazione è mantenuta separatamente nel documento `docs/roadmap_registrazioneutenti.md`, che costituisce il riferimento ufficiale per tale macro-funzionalità.
+>
+> La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org è mantenuta separatamente nel documento `docs/roadmap_comparazione_myastral.md`, che costituisce il riferimento ufficiale per le attività di allineamento con il software di Ciro Discepolo.
+>
+> La roadmap relativa alla ricerca RSM "Astri in Cuspide" (pianeti in cuspide di casa con orbo Regola 32, feature Supporter-gated) è mantenuta separatamente nel documento `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`, sul branch `feature/2-astri-in-cuspide`, che costituisce il riferimento ufficiale per tale funzionalità.
+>
+> Il sistema valutativo stelline "V2" (logica additiva per colore) è stato promosso a sistema PRIMARIO in produzione (branch `feature/sostituzione-stelline-v2`, da `new_dashboard`): sostituisce il vecchio punteggio di `RuleEngine::valuta()` per ordinamento/filtro/visualizzazione su RSM, RL, viste singole ed endpoint secondari. Documentazione ufficiale della migrazione: `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`. Lo studio/laboratorio originale resta in `docs/ROADMAP_STELLINE_V2.md` per riferimento storico.
+>
+> `docs/ROADMAP.md` continua invece a descrivere l'evoluzione generale di Astro-DSS e delle funzionalità principali del progetto.
 
 ---
 
@@ -29,6 +40,12 @@ criteri di priorità.
 # Stato attuale
 
 Data di avvio operativo: 2026-07-17
+
+Aggiornamento:
+- la macro-funzionalità di registrazione utenti, autenticazione, piani `free`/`supporter`, limiti, permessi, Comparator, Annual Report e sicurezza delle sessioni è completata;
+- il riferimento ufficiale resta `docs/roadmap_registrazioneutenti.md`;
+- la decisione architetturale associata è ADR-016 (stato: `Accettata`).
+
 
 Progetto:
 
@@ -167,6 +184,27 @@ narrativa, spiegazioni e visualizzazione completa del confronto.
 
 ---
 
+# HTTPS tramite Caddy
+
+⏳ Pianificata
+
+Obiettivo:
+
+abilitare la pubblicazione di ASTROLAB tramite Caddy come reverse proxy con
+terminazione HTTPS, utilizzando il dominio configurato e mantenendo invariata
+l'architettura Docker dell'applicazione.
+
+Attività previste:
+
+- introduzione del container Caddy;
+- configurazione del reverse proxy verso il container `astrolab-web`;
+- gestione automatica dei certificati TLS;
+- aggiornamento della configurazione Docker;
+- aggiornamento della documentazione operativa;
+- verifica del funzionamento tramite HTTPS.
+
+---
+
 # Direttiva operativa permanente
 
 L'architettura ereditata e il Rule Engine sono considerati componenti
@@ -219,6 +257,26 @@ Prossime attività:
 - solo manutenzione correttiva senza modifiche architetturali.
 
 
+# Manutenzione Ricerca — Astri nelle Case (2026-07-29)
+
+✅ Correzione funzionale completata
+
+- consentite più regole `NON VOGLIO` per lo stesso pianeta quando
+  riguardano case differenti;
+- mantenuto il vincolo di unicità per le regole `LO VOGLIO`;
+- mantenuto il blocco delle regole duplicate sulla stessa casa;
+- mantenuto il blocco delle combinazioni incompatibili `LO VOGLIO` /
+  `NON VOGLIO` per lo stesso pianeta;
+- modifica limitata al frontend
+  `www/js/ricerca_astri.js`, senza variazioni al backend, alle API o al
+  motore astrologico.
+
+Verifiche completate:
+
+- `node --check www/js/ricerca_astri.js`;
+- `git diff --check`.
+
+
 # Prossimo passo operativo
 
 Il Comparator Engine costituisce ora la baseline stabile del progetto.
@@ -236,6 +294,13 @@ Le nuove funzionalità dovranno utilizzare esclusivamente i risultati
 prodotti dal Comparator Engine senza alterare la logica astrologica
 ereditata da Astro-Val.
 
+
+---
+
+## Sezione Aiuto e Manuale d'Uso
+
+La progettazione e lo sviluppo del menu "Aiuto" e del manuale d'uso integrato nell'applicazione sono tracciati nella roadmap dedicata:
+- `docs/roadmap_aiuto.md`
 
 ---
 
@@ -452,7 +517,7 @@ Aggiornamenti realizzati:
 
 ------------------------------------------------------------
 
-### FASE 5A — PIANIFICATA
+### FASE 5A — COMPLETATA
 Ricerca nazionale delle località
 
 Motivazione
@@ -532,5 +597,109 @@ La Ricerca RSM v3 è completata secondo il modello a due modalità.
 Gli aeroporti e le località restano entrambi supportati, ma vengono ricercati
 separatamente e identificati esplicitamente tramite `origine_punto`.
 
+La pagina di ricerca mantiene inoltre lo stato dell'ultima ricerca (risultati,
+pagina corrente e principali filtri) quando si apre una RS e si ritorna con il
+pulsante Indietro del browser, evitando di dover ripetere la ricerca.
+
 La selezione obbligatoria della nazione e il limite 50/100/150/Tutte per
-`solo_localita` restano pianificati nella FASE 5A.
+`localita` sono stati implementati e completati nella FASE 5A.
+
+## 2026-08-07 — Codifica colore semantica dei pianeti sulla ruota
+
+✅ Completata
+
+- rosso = pianeta in moto diretto;
+- blu = pianeta retrogrado;
+- verde = pianeta esattamente in cuspide (tolleranza tecnica 0.01°);
+- componente modificato: `www/js/zodiac_wheel.js`;
+- riusato `ZodiacWheel.disegna()` senza duplicazioni;
+- nessuna modifica al motore astrologico, alle API o al Rule Engine.
+
+## BUG APERTO — Header sticky tabella risultati si sovrappone alla prima riga (ricerca.php, ricerca_rl.php)
+
+⚠️ Da correggere in una sessione dedicata futura
+
+- **Sintomo:** l'header sticky (`.tabella-risultati th`, `position: sticky; top: 56px`)
+  della tabella risultati copre/taglia parzialmente la prima riga di risultati quando
+  la finestra del browser è a larghezza naturale/ampia; il problema sparisce
+  ridimensionando la finestra a una larghezza minore (comportamento intermittente
+  legato alla larghezza della finestra, causa non ancora identificata con certezza).
+- **Tentativi già fatti, senza successo:** aggiunto `z-index: 5` alla regola
+  (nessun effetto); aggiunto `overflow-y: visible` esplicito al div
+  `overflow-x:auto` che avvolge la tabella, per escludere che il wrapper diventasse
+  un contenitore di scroll indipendente rompendo il calcolo dello sticky (nessun
+  effetto, confermato via ispezione DOM in console: `wrapper.getBoundingClientRect()`
+  e `getComputedStyle(wrapper).overflowY` restavano `auto` anche dopo il fix,
+  suggerendo che il problema non è (solo) lì).
+- **Escluso:** nessuna media query nota cambia l'altezza dell'header fisso (56px)
+  a larghezze di finestra >900px (dove il menu resta inline, non ad hamburger);
+  nessun `transform`/`will-change`/`contain`/`filter` sugli antenati della tabella
+  che potrebbe creare un containing block alternativo; nessun listener JS su
+  `resize` che ri-renderizzi la tabella (quindi il "fix" ottenuto ridimensionando
+  la finestra è un genuino effetto di ricalcolo layout del browser, non un
+  side-effect di codice JS).
+- **Soluzione tampone applicata (21-08-2026):** aggiunto uno spacer trasparente
+  di 8px (`<div style="height:8px" class="tabella-risultati-spacer"></div>`)
+  subito prima del div `overflow-x:auto` che avvolge ciascuna tabella risultati,
+  in tutti e 4 i punti di rendering di `ricerca.php` e `ricerca_rl.php`. Attenua
+  visivamente il problema ma non lo risolve alla radice.
+- **Da fare in una sessione dedicata:** diagnosi approfondita (probabilmente serve
+  ispezione live con DevTools a più larghezze di finestra, verificando il valore
+  calcolato di `top` sull'elemento sticky e la posizione esatta della prima riga
+  `tbody` rispetto ad esso ad ogni larghezza) e correzione definitiva, poi
+  rimuovere lo spacer temporaneo.
+
+---
+
+## BUG APERTO — Geocoding Nominatim impreciso per luogo di nascita/residenza (scoperto 23-08-2026)
+
+⚠️ Da correggere in una sessione dedicata futura — branch aperto:
+`fix/geocoding-nominatim-precisione` (base: `origin/main`), lavoro iniziato ma
+non completato (bloccato da un problema di login legato alla divergenza tra
+branch, vedi `docs/FREEZE.md` e `docs/HANDOVER_OPERATIVO_astrolab.md`)
+
+Documentazione completa: `docs/BUG_GEOCODING_NOMINATIM.md`
+
+- **Sintomo:** cercando una città (es. "Caserta", "Zurigo") nei campi di
+  ricerca località con geocoding automatico via Nominatim, le coordinate
+  salvate possono corrispondere a un'area amministrativa più ampia
+  (provincia/regione/cantone) invece che al centro città preciso — scostamento
+  di diversi km, verificato visivamente tramite la mappa aggiunta a
+  `dashboard.php` sul branch `new_dashboard`.
+- **Causa confermata:** la query a Nominatim
+  (`nominatim.openstreetmap.org/search?q=...`) non filtra per tipo di
+  risultato (`addresstype`). A volte il risultato più "importante" secondo
+  Nominatim (e quindi il primo in lista) è un'area amministrativa
+  (`addresstype: county/state`) invece del punto città (`addresstype:
+  city/town`); in altri casi il risultato corretto è primo ma il dropdown non
+  distingue visivamente i tipi, favorendo la scelta sbagliata per errore
+  umano (caso osservato con "Zurigo": scelto per errore il Canton Zurigo
+  invece della città).
+- **Superficie del bug:** `cercaLuogo()` e `cercaLuogoResidenza()` in
+  `www/js/app.js` (luogo di nascita e residenza); `cercaLuogoRS()` in
+  `rs.php`; `cercaLuogoRiloc()` in `rilocazione.php`; stesso pattern anche in
+  `rl.php` (via `app.js`) e in `transiti.php` (feature presente solo su
+  `fase9-comparator-quota`, non su `main` — da propagare separatamente).
+  **Confermato NON coinvolto:** `ricerca.php` (motore RSM per condizione),
+  che lavora su un database di località pre-caricato, non su geocoding live.
+- **Fix in corso (parziale, committato su `fix/geocoding-nominatim-precisione`):**
+  aggiunta in `www/js/app.js` di due helper (`_nominatimOrdinaRisultati`,
+  `_nominatimEtichetta`) che spostano i risultati troppo generici
+  (county/state/country/region/state_district) in fondo alla lista senza
+  eliminarli, ed etichettano il tipo di ciascun risultato nel dropdown.
+  Applicato a `cercaLuogo()` e `cercaLuogoResidenza()`. **Restano da fare:**
+  `cercaLuogoRS()` in `rs.php`, `cercaLuogoRiloc()` in `rilocazione.php`, e
+  valutare la propagazione a `transiti.php` su `fase9-comparator-quota`.
+- **Nota operativa importante:** passare a un branch diverso (es. da
+  `new_dashboard` a `main`) su un ambiente live cambia il codice servito ma
+  NON la sessione PHP attiva né lo schema del database — se il branch di
+  destinazione ha una versione più vecchia di `Auth.php`/`login.php`
+  incompatibile con l'utente corrente, il login può entrare in loop. Successo
+  qui: `main` confronta l'username in modo case-sensitive/esatto, mentre
+  `new_dashboard` lo fa case-insensitive con `TRIM()` — cambiare branch ha
+  temporaneamente impedito l'accesso, risolto tornando su `new_dashboard`.
+- **Da fare in una sessione dedicata:** completare `cercaLuogoRS()` e
+  `cercaLuogoRiloc()` sul branch `fix/geocoding-nominatim-precisione`,
+  verificare se propagare a `transiti.php`, poi decidere come/quando fondere
+  il fix sui branch `main`/`new_dashboard`/altri; valutare anche se soggetti
+  già esistenti hanno coordinate imprecise da ricorreggere manualmente.

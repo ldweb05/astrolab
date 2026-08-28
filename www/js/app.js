@@ -78,7 +78,6 @@ function caricaSoggetti() {
                     </td>
                     <td><div class="azioni">
                         <button class="btn-icon" title="Tema Natale" onclick="apriTema(${s.id})">☉</button>
-                        <button class="btn-icon" title="Rivoluzione Solare" onclick="apriRS(${s.id})">↺</button>
                         <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${s.id})">✏️</button>
                         <button class="btn-icon" title="Elimina" onclick="eliminaSoggetto(${s.id}, '${s.nome.replace(/'/g, "\\'")}')">🗑️</button>
                     </div></td>
@@ -225,6 +224,10 @@ function apriRS(id) {
     window.location.href = 'rs.php?id=' + id;
 }
 
+function apriDashboard(id) {
+    window.location.href = 'dashboard.php?id=' + id;
+}
+
 // ── GEOCODING OSM + TIMEZONE ──────────────────────────────────────────────
 
 let geocodeTimer = null;
@@ -300,34 +303,83 @@ function cercaLuogo() {
  * @param {string} dataNascita  - formato YYYY-MM-DD
  * @param {string} [oraLocale]  - formato HH:MM (opzionale, default "12:00")
  */
+/**
+ * Calcola l'offset GMT esatto (in ore) per un nome di fuso orario IANA
+ * (es. "Europe/Rome") in una data/ora locale specifica, usando il
+ * database dei fusi orari nativo del browser (Intl.DateTimeFormat) —
+ * nessuna approssimazione, gestisce correttamente i confini DST storici
+ * e futuri per qualunque anno.
+ *
+ * @param {string} nomeTimeZone  es. "Europe/Rome"
+ * @param {string} dataLocale    formato YYYY-MM-DD
+ * @param {string} oraLocale     formato HH:MM
+ * @returns {number|null} offset in ore (es. 2, -3.5) o null se non calcolabile
+ */
+function calcolaOffsetPreciso(nomeTimeZone, dataLocale, oraLocale) {
+    if (!nomeTimeZone || !dataLocale) return null;
+    const oraStr = (oraLocale && /^\d{2}:\d{2}$/.test(oraLocale)) ? oraLocale : '12:00';
+    const [anno, mese, giorno] = dataLocale.split('-').map(Number);
+    const [ore, minuti] = oraStr.split(':').map(Number);
+    if ([anno, mese, giorno, ore, minuti].some(isNaN)) return null;
+
+    try {
+        const fmt = new Intl.DateTimeFormat('en-US', {
+            timeZone: nomeTimeZone,
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hourCycle: 'h23'
+        });
+        // Legge, per un dato istante UTC (ms), quale ora mostrerebbe
+        // l'orologio nel fuso target — restituita come se fosse essa
+        // stessa un istante UTC (comodo per fare la sottrazione sotto).
+        const leggiComeUtc = (ms) => {
+            const parti = fmt.formatToParts(new Date(ms));
+            const get = (tipo) => parseInt(parti.find(p => p.type === tipo).value, 10);
+            return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
+        };
+
+        // Iterazione 1: approssimazione iniziale trattando l'ora locale
+        // come se fosse già UTC (stesso punto di partenza del vecchio bug).
+        let istanteUtc = Date.UTC(anno, mese - 1, giorno, ore, minuti, 0);
+        let offsetMs = leggiComeUtc(istanteUtc) - istanteUtc;
+
+        // Iterazione 2: ricalcola nel vero istante UTC stimato — corregge
+        // esattamente i casi in cui la prima approssimazione cade dal lato
+        // sbagliato di un cambio DST (il bug che stiamo risolvendo).
+        istanteUtc = Date.UTC(anno, mese - 1, giorno, ore, minuti, 0) - offsetMs;
+        offsetMs = leggiComeUtc(istanteUtc) - istanteUtc;
+
+        return offsetMs / 3600000;
+    } catch (e) {
+        console.warn('calcolaOffsetPreciso fallita:', e.message);
+        return null;
+    }
+}
+
 async function ottieniOffsetTimeZone(lat, lon, dataNascita, oraLocale) {
     try {
-        let timestamp = '';
-        if (dataNascita) {
-            // Usa l'ora locale se disponibile, altrimenti mezzogiorno
-            // Trattiamo l'ora locale come "approssimazione UTC" (errore max ±14h,
-            // ma per il DST è sufficiente: cambia di 1h e non a mezzanotte)
-            const oraStr = oraLocale && /^\d{2}:\d{2}$/.test(oraLocale)
-                ? oraLocale + ':00'
-                : '12:00:00';
-            const d = new Date(dataNascita + 'T' + oraStr + 'Z');
-            if (!isNaN(d.getTime())) {
-                timestamp = '&time=' + Math.floor(d.getTime() / 1000);
-            }
-        }
-
-        const url = `https://api.timezonedb.com/v2.1/get-time-zone?key=${TIMEZONE_API_KEY}&format=json&by=position&lat=${lat}&lng=${lon}${timestamp}`;
+        // Step 1: chiediamo solo il NOME del fuso (geografico, non dipende
+        // dall'ora specifica, quindi nessuna approssimazione temporale qui).
+        const url = `https://api.timezonedb.com/v2.1/get-time-zone?key=${TIMEZONE_API_KEY}&format=json&by=position&lat=${lat}&lng=${lon}`;
         const response = await fetch(url);
         const data = await response.json();
-        if (data.status === 'OK' && data.gmtOffset !== undefined) {
-            const offset = data.gmtOffset / 3600;
-            console.log(`TimeZoneDB OK: offset=${offset}h, dst=${data.dst}, tz=${data.zoneName}`);
-            return offset;
+        if (data.status !== 'OK' || !data.zoneName) {
+            throw new Error('TimeZoneDB: ' + (data.message || 'nome fuso non disponibile'));
         }
-        console.warn('TimeZoneDB risposta non valida:', data);
-        throw new Error('TimeZoneDB: ' + (data.message || 'risposta non valida'));
+
+        // Step 2: calcolo esatto via Intl, nessuna chiamata di rete aggiuntiva.
+        const offsetPreciso = calcolaOffsetPreciso(data.zoneName, dataNascita, oraLocale);
+        if (offsetPreciso !== null) {
+            console.log(`Offset preciso: ${offsetPreciso}h (tz=${data.zoneName})`);
+            return offsetPreciso;
+        }
+
+        // dataNascita mancante o non valida: nessun calcolo preciso possibile,
+        // usiamo l'offset "corrente" restituito dall'API come miglior stima.
+        console.warn('Offset preciso non calcolabile, uso offset corrente API');
+        return data.gmtOffset / 3600;
     } catch(e) {
-        console.warn('TimeZoneDB fallback (stima da longitudine):', e.message);
+        console.warn('TimeZoneDB fallback (stima da longitudine, DST non considerata):', e.message);
         let offset = Math.round(lon / 15 * 2) / 2;
         offset = Math.max(-12, Math.min(12, offset));
         return offset;
@@ -357,16 +409,62 @@ async function selezionaLuogo(lat, lon, displayName, paese) {
 
 function aggiornaOraGmt() {
     const oraN   = document.getElementById('ora-nascita').value;
+    const dataN  = document.getElementById('data-nascita').value;
     const offset = parseFloat(document.getElementById('offset-gmt').value) || 0;
     if (!oraN) return;
 
+    const badge = document.getElementById('gmt-giorno-label');
+
+    // Calcolo preciso al secondo: costruiamo l'istante locale come timestamp
+    // UTC "fittizio" (stesse cifre, senza fuso) e sottraiamo l'offset in
+    // secondi esatti (non ore/minuti arrotondati), cosi' Date gestisce da
+    // sola il cambio di giorno/mese/anno, senza reimplementare a mano la
+    // logica di wrap che ha causato il bug originale lato server.
     const [hh, mm] = oraN.split(':').map(Number);
-    let gmtMin = hh * 60 + mm - offset * 60;
-    gmtMin = ((gmtMin % 1440) + 1440) % 1440;
-    const hGmt = Math.floor(gmtMin / 60);
-    const mGmt = gmtMin % 60;
+    if (!dataN) {
+        // Nessuna data disponibile: fallback al solo wrap dell'orario,
+        // senza indicazione di giorno (comportamento precedente).
+        let gmtMin = hh * 60 + mm - offset * 60;
+        gmtMin = ((gmtMin % 1440) + 1440) % 1440;
+        const hGmt = Math.floor(gmtMin / 60);
+        const mGmt = gmtMin % 60;
+        document.getElementById('ora-gmt').value =
+            String(hGmt).padStart(2,'0') + ':' + String(mGmt).padStart(2,'0');
+        if (badge) badge.classList.add('is-hidden');
+        return;
+    }
+
+    const istanteLocaleComeUtc = new Date(dataN + 'T' + oraN + ':00Z');
+    const offsetSecondi = Math.round(offset * 3600);
+    const istanteGmt = new Date(istanteLocaleComeUtc.getTime() - offsetSecondi * 1000);
+
+    const hGmt = istanteGmt.getUTCHours();
+    const mGmt = istanteGmt.getUTCMinutes();
     document.getElementById('ora-gmt').value =
         String(hGmt).padStart(2,'0') + ':' + String(mGmt).padStart(2,'0');
+
+    // Confronto solo sul giorno (non sull'ora), per capire se la conversione
+    // GMT ha spostato la data rispetto al giorno locale di nascita.
+    const giornoLocale = istanteLocaleComeUtc.getUTCDate();
+    const giornoGmt     = istanteGmt.getUTCDate();
+    const meseLocale    = istanteLocaleComeUtc.getUTCMonth();
+    const meseGmt        = istanteGmt.getUTCMonth();
+    const annoLocale     = istanteLocaleComeUtc.getUTCFullYear();
+    const annoGmt        = istanteGmt.getUTCFullYear();
+
+    if (badge) {
+        const dataLocaleNum = annoLocale * 10000 + meseLocale * 100 + giornoLocale;
+        const dataGmtNum    = annoGmt * 10000 + meseGmt * 100 + giornoGmt;
+        if (dataGmtNum < dataLocaleNum) {
+            badge.textContent = '-1 Giorno';
+            badge.classList.remove('is-hidden');
+        } else if (dataGmtNum > dataLocaleNum) {
+            badge.textContent = '+1 Giorno';
+            badge.classList.remove('is-hidden');
+        } else {
+            badge.classList.add('is-hidden');
+        }
+    }
 }
 
 /**

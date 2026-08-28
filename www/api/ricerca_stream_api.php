@@ -127,6 +127,14 @@ function sse(string $event, array $data): void {
     flush();
 }
 
+
+if (isset($_GET['espansione_orbe']) && $_GET['espansione_orbe'] === '1' && !$auth->hasFeature('dynamic_orb')) {
+    sse('error', [
+        'message' => 'Questa funzione è riservata agli utenti del piano Supporter.',
+    ]);
+    exit;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 //  PARAMETRI GET
 // ═══════════════════════════════════════════════════════════════════════════
@@ -164,6 +172,13 @@ $tipoLocalita = trim($_GET['tipo_localita'] ?? '');
 $tipiLocalitaValidi = ['aeroporti', 'localita'];
 if ($tipoLocalita !== '' && !in_array($tipoLocalita, $tipiLocalitaValidi, true)) {
     $tipoLocalita = '';
+}
+
+if ($tipoLocalita === 'localita' && !$auth->hasFeature('locality_search')) {
+    sse('error', [
+        'message' => 'Questa funzione è riservata agli utenti del piano Supporter.',
+    ]);
+    exit;
 }
 
 // Ricerca progressiva delle località.
@@ -207,10 +222,15 @@ if (!empty($_GET['astri_in_casa'])) {
                 $pid = intval($pid);
                 if (!in_array($pid, [0,1,2,3,4,5,6,7,8,9,11], true)) continue;
             }
+            $modalitaF = ($f['modalita'] ?? 'in_casa') === 'cuspide' ? 'cuspide' : 'in_casa';
+            if ($modalitaF === 'cuspide' && !$auth->hasFeature('astri_in_cuspide')) {
+                $modalitaF = 'in_casa'; // UX-0014: senza piano Supporter, fallback forzato
+            }
             $astriInCasa[] = [
-                'pianeta' => $pid,
-                'casa'    => $casaF,
-                'vuole'   => (bool)$f['vuole'],
+                'pianeta'  => $pid,
+                'casa'     => $casaF,
+                'vuole'    => (bool)$f['vuole'],
+                'modalita' => $modalitaF,
             ];
         }
     }
@@ -240,10 +260,20 @@ try {
     require_once '../includes/SweCalc.php';
     require_once '../includes/RuleEngine.php';
     require_once '../includes/FiltroEsclusione.php';
+    require_once '../includes/StellineV2Calculator.php';
+    if (MYASTRAL_ALIGNMENT_MODE) {
+        require_once '../includes/RuleEngineExtended.php';
+    }
 
     $tStart = microtime(true);
     $swe    = new SweCalc();
     $engine = new RuleEngine();
+    // Sistema V2 parallelo (roadmap sostituzione stelline) — calcolato in
+    // aggiunta al sistema attuale, non lo sostituisce ancora (Fase 1a additiva).
+    $v2Calc = new StellineV2Calculator();
+    // Motore parallelo opzionale (roadmap MyAstral) — null se il flag è OFF,
+    // così il resto del file non deve controllare il flag a ogni iterazione.
+    $engineExt = MYASTRAL_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
     $pdo = db_connect();
 
@@ -393,6 +423,8 @@ try {
     $totaleEsclusiFiltro   = 0; // contatore RS escluse da FiltroEsclusione (checkbox)
     $totaleEsclusiAmore    = 0; // contatore RS escluse dal filtro specifico Amore
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
+    $totaleEsclusiDecima   = 0; // contatore RS escluse dal filtro specifico Decima
+    $totaleEsclusiLavoro   = 0; // contatore RS escluse dal filtro specifico Lavoro
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
     $totaleEsclusiDenaroLow = 0; // contatore RS escluse dal filtro specifico Denaro Low
@@ -539,6 +571,69 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     }
                 }
 
+                // ── C-quater-bis. FILTRO SPECIFICO PER DECIMA ────────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Verifica che almeno un benefico (SO/GI/VE) sia in X casa RS
+                // con pre-ingresso di 3°, che non ci siano malevoli (MA/SA/UR/NE/PLU)
+                // in X casa (con pre-ingresso), e che i benefici non siano
+                // troppo vicini all'uscita dalla X (cuspide XI).
+                if ($condizione === 'Decima') {
+                    $verificaDecima = verificaCondizioneDecima($pianetiConCase, $caseRS);
+                    if (!$verificaDecima['valida']) {
+                        $totaleEsclusiDecima++;
+                        // Le RS escluse dal filtro Decima NON vengono incluse nei risultati
+                        // (non c'è un checkbox "Mostra anche le RS escluse da Decima")
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                                'esclusi_amore'    => $totaleEsclusiAmore,
+                                'esclusi_casa'     => $totaleEsclusiCasa,
+                                'esclusi_decima'   => $totaleEsclusiDecima,
+                            ]);
+                        }
+                        continue;
+                    }
+                }
+
+                // ── C-quater-ter. FILTRO SPECIFICO PER LAVORO ────────────────
+                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
+                // Verifica che almeno un benefico (SO/GI/VE) sia in VI o X casa
+                // RS con pre-ingresso di 3°, che non ci siano malevoli
+                // (MA/SA/UR/NE/PLU) in VI o X casa (con pre-ingresso), e che i
+                // benefici non siano troppo vicini all'uscita dalla casa.
+                if ($condizione === 'Lavoro') {
+                    $verificaLavoro = verificaCondizioneLavoro($pianetiConCase, $caseRS);
+                    if (!$verificaLavoro['valida']) {
+                        $totaleEsclusiLavoro++;
+                        // Le RS escluse dal filtro Lavoro NON vengono incluse nei risultati
+                        // (non c'è un checkbox "Mostra anche le RS escluse da Lavoro")
+                        $processed++;
+                        if ($processed % 50 === 0) {
+                            sse('progress', [
+                                'processed'        => $processed,
+                                'totale'           => $totaleCalc,
+                                'perc'             => round($processed / $totaleCalc * 100),
+                                'fase'             => 'calcolo',
+                                'esclusi_radicale' => $totaleEsclusiRadicale,
+                                'esclusi_filtro'   => $totaleEsclusiFiltro,
+                            'calcoli_placido'  => $totaleCalcoliPlacido,
+                                'esclusi_amore'    => $totaleEsclusiAmore,
+                                'esclusi_casa'     => $totaleEsclusiCasa,
+                                'esclusi_decima'   => $totaleEsclusiDecima,
+                                'esclusi_lavoro'   => $totaleEsclusiLavoro,
+                            ]);
+                        }
+                        continue;
+                    }
+                }
+
                 // ── C-quinquies. FILTRO SPECIFICO PER SALUTE ────────────────────
                 // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
                 // Implementa i criteri di protezione massima della scuola di Ciro Discepolo:
@@ -655,7 +750,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
 
                 // ── E. Filtro Astri in Casa anticipato ─────────────────────────
                 if ($modalitaAstri && !empty($astriInCasa)) {
-                    $violazioniDirette = verificaAstriInCasaDirectly($pianetiConCase, $astriInCasa);
+                    $violazioniDirette = verificaAstriInCasaDirectly($pianetiConCase, $astriInCasa, $caseRS);
                     if (!empty($violazioniDirette)) {
                         $processed++;
                         continue;
@@ -674,8 +769,38 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $totaleValutazioniRuleEngine++;
                 $val = $engine->valuta($temaNatale, $temaRS, $condizione, $astriInCasa);
 
-                // ── F. Filtro stelline minime ──────────────────────────────────
-                if ($stellineMin > 0 && $val['stelline'] < $stellineMin) {
+                // ── E-v2. Calcolo Stelline V2 parallelo (additivo, non influenza
+                // ordinamento/filtro stelline_min in questa sotto-fase) ─────────
+                $pianetiRS_v2 = [];
+                foreach ($temaRS['pianeti'] as $_pid => $_p) {
+                    $pianetiRS_v2[$_pid] = ['casa' => $_p['casa'], 'longitudine' => $_p['longitudine']];
+                }
+                $caseRS_v2 = $temaRS['case'] ?? [];
+                $valV2 = $v2Calc->calcola($pianetiRS_v2, $caseRS_v2, $condizione, $temaNatale);
+
+                // ── E-bis. Punteggio "Discepolo parziale" opzionale (roadmap MyAstral) ──
+                // Calcolato SOLO se il flag è attivo; non influenza in alcun modo
+                // $val, i veti o il filtro stelline_min qui sotto.
+                $punteggioMyAstral = null;
+                if ($engineExt !== null) {
+                    $punteggioMyAstral = $engineExt->calcolaPunteggioParziale(
+                        $temaRS['pianeti'],
+                        $temaRS['case'],
+                        $condizione
+                    );
+                }
+
+                // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
+                // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
+                // stessa casa della condizione, la RSM/RL va tolta dai risultati -
+                // confermato esplicitamente dal committente, non solo punteggio a 0.
+                if ($punteggioMyAstral !== null && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
+                    $processed++;
+                    continue;
+                }
+
+                // ── F. Filtro stelline minime (ora su V2, sistema primario) ────
+                if ($stellineMin > 0 && $valV2['stelle_totali'] < $stellineMin) {
                     $processed++;
                     continue;
                 }
@@ -723,8 +848,19 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $scudoBeneficoAttivo,
                 $beneficoInI,
                 $denaroBeneficioTrovato,
-                $denaroAlertGiove
+                $denaroAlertGiove,
+                $punteggioMyAstral
             );
+            // Campi V2 aggiunti al record risultato (additivo, Fase 1a)
+            $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
+            $ris['v2_stelle_verdi']    = $valV2['stelle_verdi'];
+            $ris['v2_stelle_gialle']   = $valV2['stelle_gialle'];
+            $ris['v2_stelle_arancio']  = $valV2['stelle_arancio'];
+            $ris['v2_stelle_rosse']    = $valV2['stelle_rosse'];
+            $ris['v2_malus']           = $valV2['malus'];
+            $ris['v2_html']            = $v2Calc->renderHTML($valV2);
+            $ris['v2_alert_stellium']  = $valV2['alert_stellium_misto'];
+            $ris['v2_delta']           = $valV2['stelle_totali'] - $val['stelline'];
 
             aggiungiRisultatoTopK(
                 $risultati,
@@ -733,8 +869,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             );
                 // ── I. Streaming live dei risultati top ───────────────────────
                 // Inviamo subito al frontend i risultati sopra la soglia streaming
-                // (default 3 stelle) senza aspettare la fine del loop.
-                if ($val['stelline'] >= $streamingMin) {
+                // (default 3 stelle) senza aspettare la fine del loop. Ora su V2.
+                if ($valV2['stelle_totali'] >= $streamingMin) {
                     sse('result', $ris);
                 }
 
@@ -804,8 +940,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // ─────────────────────────────────────────────────────────────────────
     //  Step 6 — Ordina per stelline decrescenti e invia evento 'done'
     // ─────────────────────────────────────────────────────────────────────
+    // Ordinamento su V2 (Fase 4: vecchio sistema rimosso come tiebreaker).
+    // Riga precedente commentata per rollback rapido in caso di problemi:
+    // ($b['v2_stelle_totali'] <=> $a['v2_stelle_totali']) ?: ($b['stelline'] <=> $a['stelline'])
     usort($risultati, static fn(array $a, array $b): int =>
-        $b['stelline'] <=> $a['stelline']
+        $b['v2_stelle_totali'] <=> $a['v2_stelle_totali']
     );
 
     if ($tipoLocalita === 'localita') {
@@ -844,6 +983,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
         ], SweCalc::getProfilazione()),
         'totale_esclusi_amore'    => $totaleEsclusiAmore,
         'totale_esclusi_casa'     => $totaleEsclusiCasa,
+        'totale_esclusi_decima'   => $totaleEsclusiDecima,
+        'totale_esclusi_lavoro'   => $totaleEsclusiLavoro,
         'totale_esclusi_salute'   => $totaleEsclusiSalute,
         'totale_esclusi_denaro'   => $totaleEsclusiDenaro,
         'totale_esclusi_denaro_low' => $totaleEsclusiDenaroLow,

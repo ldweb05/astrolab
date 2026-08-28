@@ -1,20 +1,59 @@
+/* ── DESIGN SYSTEM SAHARA (token, non ancora in uso) ────────────────── */
+/* Estratti da dashboard.php (Tailwind config) per futuro allineamento   */
+/* grafico delle altre pagine. Nessuna regola esistente qui sotto usa    */
+/* ancora queste variabili: aggiunta senza effetti visivi.               */
+:root {
+    --sahara-primary: #c2652a;
+    --sahara-background: #faf5ee;
+    --sahara-surface: #faf5ee;
+    --sahara-surface-bright: #faf5ee;
+    --sahara-font-heading: 'Eb Garamond', Georgia, serif;
+    --sahara-font-body: 'Manrope', 'Montserrat', 'Verdana', sans-serif;
+}
+
 /* ── RESET & BASE ─────────────────────────────────────────────────── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: 'Montserrat', 'Verdana', sans-serif;
-    background: #F2EDE4;
     color: #2C2C2C;
     font-size: 14px;
     line-height: 1.5;
+    padding-top: 56px;
+    background-color: #FFFFFF;
+    /* originale: #F2EDE4 */
+    background-image:
+    /* 1. Scorpione / Vergine (in alto a sinistra) */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none' stroke='%23E4D9C0' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 60 60 L 60 260 Q 60 300 100 300 Q 140 300 140 260 L 140 60 M 140 260 Q 140 300 180 300 Q 220 300 220 260 L 220 60 M 220 260 Q 220 300 260 300 Q 300 300 300 260 L 300 100 Q 300 60 340 60 Q 370 60 370 90'/%3E%3C/svg%3E"),    
+    /* 2. Pesci (al centro a destra) */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='440' height='440' viewBox='0 0 440 440' fill='none' stroke='%23E4D9C0' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 90 60 Q 30 140 90 220 Q 30 300 90 380'/%3E%3Cpath d='M 350 60 Q 410 140 350 220 Q 410 300 350 380'/%3E%3Cline x1='90' y1='220' x2='350' y2='220'/%3E%3C/svg%3E"),   
+    /* 3. Simbolo 3 (in basso al centro/sinistra) */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420' fill='none' stroke='%23E4D9C0' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 60 60 L 60 260 Q 60 300 100 300 Q 140 300 140 260 L 140 60 M 140 260 Q 140 300 180 300 Q 220 300 220 260 L 220 60 M 220 260 Q 220 300 260 300 Q 300 300 300 260 L 300 100 Q 300 60 340 90 L 380 60 M 340 90 L 355 130'/%3E%3C/svg%3E"),
+    /* 4. TORO (in alto a destra) */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400' fill='none' stroke='%23E4D9C0' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 80 80 Q 80 180 200 180 Q 320 180 320 80'/%3E%3Ccircle cx='200' cy='260' r='90'/%3E%3C/svg%3E");
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+    background-position:
+    -60px 50px,             /* 1. In alto a sinistra (parzialmente nascosto) */
+    calc(100% + 70px) 75%,  /* 2. In basso a destra */
+    20% calc(100% + 60px),  /* 3. In basso a sinistra */
+    calc(100% + 40px) -30px;/* 4. Toro: In alto a destra (parzialmente fuori schermo) */
+    background-size: 300px, 320px, 300px, 280px;
+    background-attachment: fixed, fixed, fixed, fixed;
 }
 
 /* ── HEADER ───────────────────────────────────────────────────────── */
 header {
-    background: #2C3E6B;
-    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: #FFFFFF;
+    color: #2C3E6B;
     padding: 0 24px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border-bottom: 2px solid #2C3E6B;
+    box-shadow: 0 4px 10px rgba(44,62,107,0.15);
+    z-index: 1000;
 }
 .header-inner {
     display: flex;
@@ -28,11 +67,11 @@ header h1 {
     font-size: 18px;
     font-weight: normal;
     letter-spacing: 0.1em;
-    color: #D4C9A8;
+    color: #c2652a;
 }
 nav { display: flex; gap: 4px; }
 nav a {
-    color: #A8B8D8;
+    color: #6b5c4f;
     text-decoration: none;
     padding: 6px 14px;
     border-radius: 4px;
@@ -41,8 +80,8 @@ nav a {
     transition: all 0.2s;
 }
 nav a:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
 }
 /* 🔵 Voce attiva — sfondo #12A0D7 come nel dropdown Rivoluzioni */
 nav a.active {
@@ -56,10 +95,10 @@ nav a.active {
     justify-content: center;
     width: 42px;
     height: 38px;
-    border: 1px solid #5A6F9F;
+    border: 1px solid #2C3E6B;
     border-radius: 5px;
     background: transparent;
-    color: #D4C9A8;
+    color: #2C3E6B;
     font-size: 23px;
     line-height: 1;
     cursor: pointer;
@@ -67,8 +106,8 @@ nav a.active {
 
 .nav-toggle:hover,
 .nav-toggle[aria-expanded="true"] {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
 }
 
 @media (max-width: 900px) {
@@ -100,7 +139,7 @@ nav a.active {
         flex-direction: column;
         gap: 4px;
         padding: 8px 0;
-        border-top: 1px solid rgba(255,255,255,0.12);
+        border-top: 1px solid rgba(44,62,107,0.15);
     }
 
     .header-inner .main-nav.is-open {
@@ -139,7 +178,7 @@ nav a.active {
         padding: 0;
         border: 0;
         box-shadow: none;
-        background: rgba(0,0,0,0.12);
+        background: rgba(44,62,107,0.06);
     }
 
     .header-inner .nav-dropdown.is-open .nav-dropdown-menu {
@@ -164,7 +203,7 @@ nav a.active {
         align-items: stretch;
         gap: 4px;
         padding: 10px 0 2px;
-        border-top: 1px solid rgba(255,255,255,0.12);
+        border-top: 1px solid rgba(44,62,107,0.15);
     }
 
     .header-inner.menu-open .header-user {
@@ -174,7 +213,7 @@ nav a.active {
 
     .nav-separator {
         border: 0;
-        border-top: 1px solid rgba(255,255,255,.15);
+        border-top: 1px solid rgba(44,62,107,0.15);
         margin: 10px 0;
     }
 
@@ -530,6 +569,7 @@ main {
 .rl-location-group {
     flex: 1;
     min-width: 200px;
+    position: relative;
 }
 
 .rl-coordinate-input {
@@ -594,7 +634,8 @@ main {
 
 /* ── CARD ─────────────────────────────────────────────────────────── */
 .card {
-    background: white;
+    background: rgba(245, 242, 238, 0.65);
+    /*background: rgba(245, 242, 238);*/
     border-radius: 8px;
     padding: 20px 24px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -879,7 +920,7 @@ main {
     align-items: flex-start;
 }
 .tema-box {
-    background: white;
+    background: rgba(255, 255, 255, 0.60);
     border-radius: 8px;
     padding: 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -898,6 +939,14 @@ main {
     font-weight: normal;
 }
 .tema-info { font-size: 11px; color: #667; margin-top: 4px; }
+
+.tema-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.tema-info-row .tema-info { margin-top: 0; text-align: left; }
 
 /* ── Tabelle pianeti ─────────────────────────────────────────── */
 .tabella-pianeti {
@@ -1002,7 +1051,7 @@ main {
 
 /* ── Controlli ───────────────────────────────────────────────── */
 .controlli {
-    background: white;
+    background: rgba(255, 255, 255, 0.60);
     border-radius: 8px;
     padding: 14px 20px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -1016,7 +1065,7 @@ main {
 
 /* ── Valutazione ─────────────────────────────────────────────── */
 .valutazione {
-    background: white;
+    background: rgba(245, 242, 238, 0.65);
     border-radius: 8px;
     padding: 14px 20px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -1088,14 +1137,14 @@ main {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    background: white;
+    background: rgba(255, 255, 255, 0.60);
     border-radius: 12px;
     padding: 16px 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-left: 16px;
     align-self: center;
 }
-.time-btn-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.time-btn-group { display: flex; flex-direction: row; align-items: center; gap: 6px; }
 .time-btn {
     background: #2C3E6B;
     color: white;
@@ -1131,6 +1180,37 @@ main {
     text-align: center;
     margin-top: 4px;
 }
+
+/* Variante orizzontale usata dentro il modal "Correzione tempo ed ora" */
+.time-controls-modal-content {
+    display: flex;
+    justify-content: center;
+}
+.time-controls-modal {
+    flex-direction: row;
+    gap: 32px;
+    margin-left: 0;
+}
+
+/* Stili per il modal Correzione tempo ed ora - versione compatta */
+.time-controls-modal .time-btn {
+    font-size: 14px;
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+}
+.time-controls-modal .time-label {
+    font-size: 10px;
+}
+.time-controls-modal .time-display {
+    font-size: 14px;
+    padding: 2px 6px;
+    min-width: 40px;
+}
+.time-controls-modal .time-btn-group {
+    gap: 4px;
+}
+
 
 /* ── Finestra fluttuante mappa ───────────────────────────────── */
 .map-float-win {
@@ -1315,7 +1395,7 @@ main {
 
 /* ── Timeline chips ──────────────────────────────────────────── */
 .rl-timeline {
-    background: white;
+    background: rgba(255, 255, 255, 0.60);
     border-radius: 8px;
     padding: 12px 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -1437,7 +1517,7 @@ main {
 
 /* Contenitore principale */
 #pannello-sensibilita {
-    background: white;
+    background: rgba(255, 255, 255, 0.65);
     border-radius: 8px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.10);
     margin-bottom: 14px;
@@ -1475,6 +1555,23 @@ main {
     transition: transform 0.2s;
 }
 .sensib-chevron.aperto { transform: rotate(90deg); }
+
+.collapse-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+}
+.valutazione .collapse-toggle {
+    font-size: 15px;
+    color: #2C3E6B;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #E0D8CC;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+}
 
 /* Body collassabile */
 .sensib-body { padding: 14px 18px 16px; }
@@ -2019,10 +2116,12 @@ main {
 .totale-label { margin-left: auto; color: #666; font-size: 12px; align-self: center; }
 
 /* ── Tabella risultati ─────────────────────────────────────────── */
-.tabella-risultati { width: 100%; border-collapse: collapse; font-size: 12px; background: white; }
+.tabella-risultati-wrap { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 260px); }
+.tabella-risultati { width: 100%; max-width: 1250px; margin: 0 auto; border-collapse: collapse; font-size: 12px; background: rgba(255, 255, 255, 0.60); }
 .tabella-risultati th {
     background: #2C3E6B; color: #D4C9A8; padding: 9px 10px;
     text-align: left; position: sticky; top: 0;
+    z-index: 5;
 }
 .tabella-risultati td { padding: 7px 10px; border-bottom: 1px solid #EDE8E0; vertical-align: middle; }
 .tabella-risultati tr:hover td { background: #FAF7F3; }
@@ -2240,7 +2339,7 @@ tr.riga-corrente td:first-child::before {
 .stats-bar {
     display: flex;
     gap: 24px;
-    background: white;
+    background: rgba(255, 255, 255, 0.60);
     border-radius: 8px;
     padding: 14px 20px;
     margin-bottom: 16px;
@@ -2288,7 +2387,7 @@ tr.riga-corrente td:first-child::before {
    ════════════════════════════════════════════════════════════════════ */
 
 .pwd-box {
-    background: white;
+    background: rgba(255, 255, 255, 0.60);
     border-radius: 10px;
     box-shadow: 0 4px 24px rgba(44,62,107,0.12);
     padding: 32px 40px;
@@ -2378,33 +2477,33 @@ tr.riga-corrente td:first-child::before {
 /* ── Header esteso con info utente/soggetto ────────────────── */
 .header-user {
     font-size: 12px;
-    color: #A8B8D8;
+    color: #6b5c4f;
     display: flex;
     gap: 14px;
     align-items: center;
     flex-wrap: wrap;
 }
 .header-user .soggetto-attivo {
-    background: rgba(255,255,255,0.12);
+    background: rgba(44,62,107,0.08);
     border-radius: 4px;
     padding: 3px 10px;
-    color: #D4C9A8;
+    color: #2C3E6B;
 }
 .header-user a {
-    color: #A8B8D8;
+    color: #6b5c4f;
     text-decoration: none;
-    border: 1px solid #3A5090;
+    border: 1px solid #2C3E6B;
     border-radius: 3px;
     padding: 3px 10px;
     font-size: 11px;
     transition: all 0.2s;
 }
-.header-user a:hover { background: rgba(255,255,255,0.15); color: white; }
+.header-user a:hover { background: rgba(44,62,107,0.08); color: #2C3E6B; }
 
 .header-link {
-    color: #A8B8D8;
+    color: #6b5c4f;
     text-decoration: none;
-    border: 1px solid #3A5090;
+    border: 1px solid #2C3E6B;
     border-radius: 3px;
     padding: 3px 10px;
     font-size: 11px;
@@ -2412,12 +2511,15 @@ tr.riga-corrente td:first-child::before {
 }
 
 .header-link:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
 }
 
 .header-logo {
-    color: #D4C9A8;
+    color: #c2652a;
+    font-family: 'Eb Garamond', Georgia, serif;
+    font-size: 36px;
+    font-weight: bold;
     text-decoration: none;
 }
 
@@ -2426,11 +2528,11 @@ tr.riga-corrente td:first-child::before {
 }
 
 .header-role-admin {
-    color: #D4C9A8;
+    color: #c2652a;
 }
 
 .header-role-user {
-    color: #7A9ABB;
+    color: #6b5c4f;
 }
 
 .soggetto-attivo {
@@ -2735,3 +2837,211 @@ tr.riga-corrente td:first-child::before {
 #btn-confronta-selezioni:hover {
     background: #388E3C;
 }
+
+/* ── Modale Impostazioni index.php (equivalente CSS classico di dashboard.php) ── */
+.header-icon-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #6b5c4f;
+    padding: 4px 10px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    line-height: 1;
+}
+.header-icon-btn:hover {
+    background: rgba(44,62,107,0.08);
+    color: #2C3E6B;
+}
+.header-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(44,62,107,0.08);
+    border: 1px solid #2C3E6B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+.header-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.idx-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.idx-modal-overlay.is-open { display: flex; }
+.idx-modal-box {
+    background: #FFFFFF;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.idx-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.idx-modal-header h2 {
+    font-size: 18px;
+    color: #c2652a;
+    font-family: 'Eb Garamond', Georgia, serif;
+    margin: 0;
+    font-weight: 600;
+}
+.idx-modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #6b5c4f;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.idx-modal-close:hover { background: rgba(44,62,107,0.08); color: #2C3E6B; }
+.idx-modal-section h3 {
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: #2C2C2C;
+}
+.idx-modal-section input[type="password"],
+.idx-modal-section input[type="file"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #D0C8BC;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-family: inherit;
+}
+.idx-modal-divider {
+    border-top: 1px solid #E4D9C0;
+}
+.idx-modal-hint {
+    font-size: 12px;
+    color: #6b5c4f;
+    margin-bottom: 8px;
+}
+.idx-modal-msg {
+    display: none;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.idx-modal-msg.ok { display: block; background: #E7F5EA; color: #1E7B34; }
+.idx-modal-msg.err { display: block; background: #FBE7E7; color: #B3261E; }
+.idx-btn-primary {
+    background: #c2652a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.idx-btn-primary:hover { background: #a8551f; }
+
+/* ── Modale Impostazioni condiviso (header_nav.php) — CSS classico ── */
+.settings-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.settings-modal-overlay.is-open { display: flex; }
+.settings-modal-box {
+    background: #FFFFFF;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.settings-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.settings-modal-header h2 {
+    font-size: 18px;
+    color: #c2652a;
+    font-family: 'Eb Garamond', Georgia, serif;
+    margin: 0;
+    font-weight: 600;
+}
+.settings-modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #6b5c4f;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.settings-modal-close:hover { background: rgba(44,62,107,0.08); color: #2C3E6B; }
+.settings-modal-section h3 {
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: #2C2C2C;
+}
+.settings-modal-section input[type="password"],
+.settings-modal-section input[type="file"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #D0C8BC;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-family: inherit;
+}
+.settings-modal-divider { border-top: 1px solid #E4D9C0; }
+.settings-modal-hint { font-size: 12px; color: #6b5c4f; margin-bottom: 8px; }
+.settings-modal-msg {
+    display: none;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+.settings-modal-msg.ok { display: block; background: #E7F5EA; color: #1E7B34; }
+.settings-modal-msg.err { display: block; background: #FBE7E7; color: #B3261E; }
+.settings-btn-primary {
+    background: #c2652a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.settings-btn-primary:hover { background: #a8551f; }

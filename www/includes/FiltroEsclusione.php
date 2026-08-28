@@ -15,8 +15,11 @@
  *   2. Marte RS   in I, VI o XII casa della RS
  *   3. ASC RS     in I, VI o XII casa del TEMA NATALE
  *   4. Saturno RS in X casa della RS
- *   5. Stellium (3+ pianeti tra i 10 classici SO-PLU) in una qualsiasi
- *      delle 12 case della RS
+ *   5. Stellium (3+ pianeti tra i 10 classici SO-PLU) in I, VI, VIII o XII
+ *      casa della RS (Regole 4, 16, 26, 31 - vedi docs/status/34_regole_rsm.md).
+ *      Nessuna eccezione per benefici presenti nello stellium: la Regola 31
+ *      mostra esplicitamente un esempio con Giove nello stellium che resta
+ *      comunque pericoloso.
  *
  * Uso:
  *   require_once '../includes/FiltroEsclusione.php';
@@ -92,12 +95,16 @@ function verificaEsclusioneRS(array $pianetiRS, array $caseRS, array $temaNatale
         $motivi[] = "Saturno in X casa della RS";
     }
 
-    // ── 5. Stellium (3+ pianeti classici SO-PLU) in una qualsiasi casa ─────
+    // -- 5. Stellium (3+ pianeti classici SO-PLU) in I, VI, VIII o XII --------
+    // Scope allineato a RuleEngine.php e alle Regole 4/16/26/31: SOLO le case
+    // I, VI, VIII, XII, non tutte le 12 (era piu ampio di quanto dicano le
+    // 34 regole ufficiali - corretto qui).
+    $CASE_STELLIUM_PERICOLOSE = [1, 6, 8, 12];
     $conteggioCase = [];
     foreach ($pianetiRS as $id => $p) {
         if (!in_array($id, FILTRO_ESCLUSIONE_PIANETI_CLASSICI, true)) continue;
         $casa = $p['casa'];
-        if ($casa < 1 || $casa > 12) continue;
+        if (!in_array($casa, $CASE_STELLIUM_PERICOLOSE, true)) continue;
         $conteggioCase[$casa][] = $id;
     }
     foreach ($conteggioCase as $casa => $ids) {

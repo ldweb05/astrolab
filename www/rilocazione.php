@@ -33,17 +33,27 @@ $latRiloc_Url   = isset($_GET['lat_riloc'])   ? (float)$_GET['lat_riloc']  : nul
 $lonRiloc_Url   = isset($_GET['lon_riloc'])   ? (float)$_GET['lon_riloc']  : null;
 $luogoRiloc_Url = $_GET['luogo_riloc']        ?? null;
 
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
+
 $jsData = null;
 if ($soggetto) {
-    $date   = new DateTime($soggetto['data_nascita']);
-    $oraGmt = explode(':', $soggetto['ora_nascita_gmt']);
+    // Calcolo corretto data/ora GMT gestendo il cambio di giorno
+    $gmtData = calcolaDataOraGmtCorretta(
+        $soggetto['data_nascita'],
+        $soggetto['ora_nascita'],
+        (float)($soggetto['offset_gmt'] ?? 0)
+    );
+
+    $dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+    $oraGmtParts = explode(':', $gmtData['ora_gmt']);
+
     $jsData = [
         'id'          => $soggetto['id'],
         'nome'        => $soggetto['nome'],
-        'giorno'      => (int)$date->format('d'),
-        'mese'        => (int)$date->format('m'),
-        'anno'        => (int)$date->format('Y'),
-        'ora_gmt'     => (int)$oraGmt[0] + (int)$oraGmt[1] / 60,
+        'giorno'      => (int)$dateGmt->format('d'),
+        'mese'        => (int)$dateGmt->format('m'),
+        'anno'        => (int)$dateGmt->format('Y'),
+        'ora_gmt'     => (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0)) / 60,
         'lat'         => (float)$soggetto['latitudine'],
         'lon'         => (float)$soggetto['longitudine'],
         'luogo'       => $soggetto['luogo_nascita'],
@@ -65,7 +75,9 @@ if ($soggetto) {
     <title>Rilocazione — Astrologia Attiva</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Symbols+2&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="js/svg_zoom.js"></script>
     <style>
@@ -1488,10 +1500,16 @@ function selezionaLuogoRiloc(lat, lon, nome) {
 'use strict';
 
 // ── Stato interno ──────────────────────────────────────────────────────────
+const RILOC_COMPARATOR_LIMIT = <?= json_encode($auth->getComparatorLimit()) ?>;
+const RILOC_COMPARATOR_LIMIT_MESSAGE = RILOC_COMPARATOR_LIMIT < 3
+    ? 'Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 rilocazioni è necessario il piano Supporter.'
+    : `Puoi confrontare al massimo ${RILOC_COMPARATOR_LIMIT} rilocazioni.`;
+
 let _eventoAngolari = null;  // EventSource attivo
 let _tuttiRisultati = [];    // Cache dei risultati totali ricevuti
 let _paginaCorrente = 1;     // Stato della pagina corrente
-let _rilocConfronto = [];    // Max 3 rilocazioni selezionate
+let _rilocConfronto = [];    // Rilocazioni selezionate secondo il piano
+let _filtroAngolare = '';    // Filtro pianeta-casa attivo ('' = nessun filtro, mostra tutto)
 
 function _chiaveRilocConfronto(r) {
     return [
@@ -1588,6 +1606,41 @@ function _rigaTabella(r, idx) {
     </tr>`;
 }
 
+const CASE_ANGOLARI_FILTRO = {1: 'I (ASC)', 4: 'IV (FC)', 7: 'VII (DSC)', 10: 'X (MC)'};
+
+/** true se il risultato soddisfa il filtro pianeta-casa selezionato ('' = nessun filtro) */
+function _passaFiltroAngolare(r) {
+    if (!_filtroAngolare) return true;
+    const [pianeta, casaStr] = _filtroAngolare.split('-');
+    const casa = parseInt(casaStr, 10);
+    const match = pianeta === 'venere' ? r.match_venere : r.match_giove;
+    return !!(match && match.some(m => m.casa === casa));
+}
+
+/** Markup del dropdown filtro pianeta-casa, con la selezione corrente preservata */
+function _htmlSelectFiltroAngolare() {
+    let opzioni = `<option value="" ${_filtroAngolare === '' ? 'selected' : ''}>Tutte le località</option>`;
+    ['venere', 'giove'].forEach(pianeta => {
+        const simbolo = pianeta === 'venere' ? '♀ Venere' : '♃ Giove';
+        Object.keys(CASE_ANGOLARI_FILTRO).forEach(casa => {
+            const valore = `${pianeta}-${casa}`;
+            opzioni += `<option value="${valore}" ${_filtroAngolare === valore ? 'selected' : ''}>` +
+                `${simbolo} — ${CASE_ANGOLARI_FILTRO[casa]}</option>`;
+        });
+    });
+    return `<div class="form-group" style="margin-bottom:10px">
+        <label style="display:block;font-size:11px;color:#3a2c6b;margin-bottom:4px">Filtra risultati</label>
+        <select id="ang-filtro-combo" style="width:100%;max-width:260px">${opzioni}</select>
+    </div>`;
+}
+
+/** Gestisce il cambio del filtro pianeta-casa */
+function _onCambiaFiltroAngolare() {
+    _filtroAngolare = document.getElementById('ang-filtro-combo')?.value || '';
+    _paginaCorrente = 1;
+    _renderTabellaPaginata();
+}
+
 /** Gestisce il rendering e la paginazione interna dei risultati */
 function _renderTabellaPaginata() {
     const area = document.getElementById('angolari-risultati-area');
@@ -1598,8 +1651,17 @@ function _renderTabellaPaginata() {
         return;
     }
 
+    const risultatiFiltrati = _tuttiRisultati.filter(_passaFiltroAngolare);
+
+    if (risultatiFiltrati.length === 0) {
+        area.innerHTML = _htmlSelectFiltroAngolare() +
+            '<div class="angolari-empty">Nessuna località corrisponde al filtro selezionato.</div>';
+        document.getElementById('ang-filtro-combo')?.addEventListener('change', _onCambiaFiltroAngolare);
+        return;
+    }
+
     const limite = parseInt(document.getElementById('ang-pagine-limite')?.value || '50');
-    const totaleRecord = _tuttiRisultati.length;
+    const totaleRecord = risultatiFiltrati.length;
     const totalePagine = Math.ceil(totaleRecord / limite);
 
     if (_paginaCorrente > totalePagine) _paginaCorrente = totalePagine;
@@ -1607,11 +1669,11 @@ function _renderTabellaPaginata() {
 
     const inizio = (_paginaCorrente - 1) * limite;
     const fine = Math.min(inizio + limite, totaleRecord);
-    const risPaginati = _tuttiRisultati.slice(inizio, fine);
+    const risPaginati = risultatiFiltrati.slice(inizio, fine);
 
     const countStr = totaleRecord === 1 ? '1 luogo trovato' : totaleRecord + ' luoghi trovati';
 
-    let html = `
+    let html = _htmlSelectFiltroAngolare() + `
         <div style="font-size:12px;color:#3a2c6b;font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
             <span>✅ ${countStr} (ordinati per distanza minima)</span>
             <span style="display:flex;align-items:center;gap:10px">
@@ -1622,6 +1684,7 @@ function _renderTabellaPaginata() {
                     style="display:${_rilocConfronto.length > 0 ? 'inline-flex' : 'none'}">
                     Confronta (<span id="riloc-confronto-count">${_rilocConfronto.length}</span>)
                 </button>
+                <span>${_rilocConfronto.length}/${RILOC_COMPARATOR_LIMIT} selezionate</span>
                 <span>Mostrati ${inizio + 1}-${fine} di ${totaleRecord}</span>
             </span>
         </div>
@@ -1657,6 +1720,8 @@ function _renderTabellaPaginata() {
 
     area.innerHTML = html;
 
+    document.getElementById('ang-filtro-combo')?.addEventListener('change', _onCambiaFiltroAngolare);
+
     document.querySelectorAll('.compare-riloc-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', () => {
             const indice = Number(checkbox.dataset.index);
@@ -1670,9 +1735,9 @@ function _renderTabellaPaginata() {
             const chiave = _chiaveRilocConfronto(risultato);
 
             if (checkbox.checked) {
-                if (_rilocConfronto.length >= 3) {
+                if (_rilocConfronto.length >= RILOC_COMPARATOR_LIMIT) {
                     checkbox.checked = false;
-                    alert('Puoi confrontare al massimo 3 rilocazioni.');
+                    alert(RILOC_COMPARATOR_LIMIT_MESSAGE);
                     return;
                 }
 
@@ -1770,6 +1835,7 @@ window.avviaRicercaAngolari = function() {
     _tuttiRisultati = [];
     _paginaCorrente = 1;
     _rilocConfronto = [];
+    _filtroAngolare = '';
 
     // Costruisci URL SSE
     const params = new URLSearchParams({

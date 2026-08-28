@@ -2207,14 +2207,17 @@ la selezione tra sole località aeroportuali oppure sole località geografiche.
 - FASE 5: completata;
 - FASE 6: completata;
 - FASE 7: completata;
-- FASE 5A: pianificata.
+- FASE 5A: completata.
 
-Il modello attuale supporta esclusivamente `solo_aeroporti` e
-`solo_localita`, distinguendo i risultati tramite `origine_punto`.
+Il modello attuale supporta le modalità `aeroporti` e `localita`,
+distinguendo i risultati tramite `origine_punto`.
 
-La FASE 5A introdurrà, per `solo_localita`, la selezione obbligatoria
+La FASE 5A ha introdotto, per `localita`, la selezione obbligatoria
 della nazione e il limite 50/100/150/Tutte. La modalità
-`solo_aeroporti` manterrà la ricerca mondiale e il comportamento legacy.
+`aeroporti` mantiene la ricerca mondiale e il comportamento legacy.
+
+Implementazione principale: commit `50fd768`.
+Integrazione nel ramo di sviluppo: commit `21d5bb0`.
 
 
 ### 2026-07-26 — Ricerca RSM v3: rifinitura UX avanzamento
@@ -2345,23 +2348,1194 @@ della nazione e il limite 50/100/150/Tutte. La modalità
   - `docs/HANDOVER_OPERATIVO_astrolab.md`.
 
 - Obiettivo:
-  - formalizzare il modello centralizzato di registrazione, piani, limiti e permessi utente prima di modificare il codice applicativo.
+  - completare la Fase 1 del nuovo sistema utenti introducendo il modello dati e validando la migrazione PostgreSQL.
 
 - Risultato:
-  - creato `ADR-016 — Modello centralizzato di registrazione, piani e permessi utente`;
-  - registrato ADR-016 nell’indice con stato `Proposta`;
-  - definiti ruolo, stato account, piano, override e precedenza dei controlli;
-  - formalizzati i limiti iniziali dei piani `free` e `supporter`;
-  - confermato che il server è la fonte definitiva dell’autorizzazione;
-  - nessuna modifica applicativa o database eseguita.
+  - completata la migrazione `sql/002_registrazione_utenti.sql`;
+  - create le tabelle `piani` e `piano_limiti`;
+  - estesa la tabella `utenti` con ruolo aggiornato, stato account, piano e campi di verifica email;
+  - migrati gli utenti esistenti al ruolo `user` e al piano `supporter`;
+  - verificati vincoli, indici, chiavi esterne e login applicativo;
+  - roadmap aggiornata con il completamento della Fase 1.
 
 - Verifiche eseguite:
-  - controllo presenza ADR-016 nell’indice: OK;
-  - revisione diff documentale: OK.
+  - migrazione validata su database temporaneo: OK;
+  - migrazione applicata al database operativo: OK;
+  - verifica funzionale dell'applicazione: OK;
+  - `git diff --check`: OK.
 
 - Commit Git:
-  - da eseguire.
+  - `b00c2bd` — fix: correggi ordine vincolo ruolo nella migrazione utenti.
 
 - Passo successivo:
-  - approvare ADR-016;
-  - individuare schema PostgreSQL, sistema di migrazione e servizio email ufficiali.
+  - avviare la Fase 2 aggiornando `www/includes/Auth.php`;
+  - introdurre helper centralizzati per piani, limiti e permessi.
+
+
+## 2026-07-29 — Completamento Fase 3 registrazione pubblica
+
+- Componente modificato:
+  - `www/includes/Auth.php`;
+  - `www/registrazione.php`;
+  - `www/tests/run.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+- Obiettivo:
+  - implementare la registrazione pubblica degli utenti con validazioni e protezioni server-side.
+- Risultato:
+  - implementato `Auth::registraUtentePubblico()`;
+  - creata la pagina pubblica `www/registrazione.php`;
+  - validate username, email, password e conferma password;
+  - assegnati esclusivamente dal server ruolo `user`, piano `free` e stato `pending_email`;
+  - impedita l'escalation di ruolo, piano o permessi dal client;
+  - introdotte protezione CSRF e limitazione delle registrazioni ripetute;
+  - gestiti i duplicati di username ed email;
+  - evitato `session_start()` durante l'esecuzione CLI dei test.
+- Test eseguiti:
+  - controllo sintassi PHP su `www/includes/Auth.php`: OK;
+  - controllo sintassi PHP su `www/tests/run.php`: OK;
+  - test dedicati della registrazione pubblica: OK;
+  - regressione completa con `www/tests/run.php`: OK;
+  - nessun warning residuo.
+- Commit Git:
+  - da eseguire dopo la verifica finale della documentazione e del diff.
+- Fase successiva completata:
+  - verifica email;
+  - nuovo token verifica;
+  - reset password;
+  - token monouso;
+  - regressione completa superata.
+- Prossimo passo:
+  - integrazione servizio email reale e gestione template notifiche.
+
+## 2026-07-30 — Completamento Fase 5 amministrazione utenti
+
+- Componenti modificati:
+  - `www/includes/Auth.php`;
+  - `www/admin_utenti.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+- Obiettivo:
+  - allineare l'amministrazione utenti al modello definitivo basato su ruolo, stato account, piano e verifica email.
+- Risultato:
+  - sostituito il ruolo legacy `astrologo` con `user`;
+  - validati lato server i soli ruoli `admin` e `user`;
+  - estese lista e dettaglio utenti con `account_status`, `email_verified_at`, `plan_id` e piano;
+  - sincronizzati sospensione e riattivazione con `attivo`, `account_status`, `suspended_at` e `suspension_reason`;
+  - allineata l'interfaccia amministrativa al nuovo modello utenti;
+  - verificata la creazione degli utenti amministrativi con stato `active`, email verificata e piano `supporter`.
+- Verifiche eseguite:
+  - lint PHP di `www/includes/Auth.php`: OK;
+  - lint PHP di `www/admin_utenti.php`: OK;
+  - test funzionale sospensione e riattivazione: OK;
+  - test lettura lista utenti e piani: OK;
+  - regressione completa con `www/tests/run.php`: OK;
+  - `git diff --check`: OK.
+- Commit Git:
+  - da eseguire con la chiusura della Fase 5 e l'avvio della Fase 6.
+- Prossimo passo:
+  - avviare la Fase 6 — Limite soggetti;
+  - contare i soggetti dell'utente prima dell'inserimento;
+  - applicare il limite effettivo del piano;
+  - escludere gli amministratori dal limite commerciale;
+  - aggiungere test dedicati e regressione.
+
+## 2026-07-30 — Implementazione Fase 6 limite soggetti
+
+- Componenti modificati:
+  - `sql/004_popola_piano_limiti.sql`;
+  - `www/api/soggetti_api.php`;
+  - `www/tests/test_subjects_limit.php`;
+  - `www/tests/run.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+- Obiettivo:
+  - applicare lato server il numero massimo di soggetti previsto dal piano dell'utente.
+- Risultato:
+  - configurato `subjects_max = 2` per il piano `free`;
+  - configurato `subjects_max = NULL` per il piano `supporter`;
+  - conteggiati i soggetti dell'utente prima dell'inserimento;
+  - bloccato l'inserimento oltre soglia con errore JSON comprensibile;
+  - preservate consultazione, modifica ed eliminazione dei soggetti esistenti;
+  - esclusi gli amministratori dal limite commerciale.
+- Verifiche eseguite:
+  - lint PHP di `www/api/soggetti_api.php`: OK;
+  - lint PHP di `www/tests/test_subjects_limit.php`: OK;
+  - test funzionale HTTP del limite soggetti: OK;
+  - verificato che il terzo soggetto del piano `free` riceva HTTP 400;
+  - verificato che il numero dei soggetti resti pari a 2;
+  - test dedicato integrato in `www/tests/run.php`;
+  - regressione completa con `www/tests/run.php`: OK;
+  - verifica del diff applicativo: OK.
+- Stato:
+  - Fase 6 completata.
+- Commit Git:
+  - da eseguire con la chiusura formale della Fase 6.
+- Prossimo passo:
+  - avviare la Fase 7 — Limite ricerche salvate.
+
+
+## 2026-07-30 — Implementazione Fase 8 restrizioni ricerca lato server
+
+- Componenti modificati:
+  - `www/includes/Auth.php`;
+  - `www/api/ricerca_stream_api.php`;
+  - `www/api/cuspidi_search_api.php`;
+  - `www/api/ricerca_griglia_api.php`;
+  - `www/ricerca.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - applicare lato server le restrizioni delle funzionalità di ricerca previste dal piano utente;
+  - mantenere disponibili nel piano `free` gli aeroporti e la visualizzazione delle nazioni;
+  - riservare al piano `supporter` le funzioni avanzate.
+
+- Risultato:
+  - introdotto il controllo centralizzato delle feature tramite `Auth::hasFeature()`;
+  - bloccata lato server la ricerca delle località per utenti non Supporter;
+  - bloccata lato server la ricerca a griglia per utenti non Supporter;
+  - bloccata lato server l'espansione dinamica dell'orbe per utenti non Supporter;
+  - mantenuta disponibile la ricerca aeroporti nel piano gratuito;
+  - mantenuta visibile la lista nazioni senza consentire la ricerca località nel piano gratuito;
+  - aggiunto messaggio standard:
+    - `Questa funzione è riservata agli utenti del piano Supporter.`;
+  - sincronizzata la UI con i permessi disponibili dell'utente.
+
+- Verifiche eseguite:
+  - lint PHP di `www/includes/Auth.php`: OK;
+  - lint PHP di `www/api/ricerca_stream_api.php`: OK;
+  - lint PHP di `www/api/cuspidi_search_api.php`: OK;
+  - lint PHP di `www/api/ricerca_griglia_api.php`: OK;
+  - lint PHP di `www/ricerca.php`: OK;
+  - verifica presenza controlli `locality_search`, `grid_search`, `dynamic_orb`: OK.
+
+- Stato:
+  - Fase 8 completata.
+
+- Verifiche finali:
+  - test dedicato griglia Amore 2026: OK;
+  - regressione completa con `www/tests/run.php`: OK;
+  - ricerca API standard: OK;
+  - ricerca griglia: OK;
+  - registrazione utenti: OK;
+  - limiti piano free: OK.
+
+- Correzione aggiuntiva:
+  - aggiornato `www/tests/search_auth.php`;
+  - la sessione dei test ora usa il piano reale dal database;
+  - normalizzazione del piano in minuscolo per allineamento con `Auth::hasFeature()`.
+
+- Commit Git:
+  - da eseguire dopo verifica finale:
+    - `git diff --check`;
+    - `git status`.
+
+- Prossimo passo:
+  - chiusura formale Fase 8;
+  - commit delle modifiche.
+
+## 2026-07-31 — Completamento Fase 10 Annual Report, stampa e PDF
+
+- Componenti modificati:
+  - `sql/006_quota_esportazioni_report.sql`;
+  - `www/includes/AnnualReportExportQuota.php`;
+  - `www/tests/test_annual_report_export_quota.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - applicare al piano `free` una quota condivisa mensile di 3 stampe o esportazioni dell’Annual Report;
+  - mantenere disponibile la visualizzazione del report;
+  - evitare conteggi duplicati della stessa esportazione.
+
+- Risultato:
+  - introdotta la persistenza degli utilizzi mensili delle esportazioni;
+  - implementata la gestione centralizzata della quota tramite `AnnualReportExportQuota`;
+  - registrati gli utilizzi in modo transazionale;
+  - verificata l’idempotenza prima del controllo di esaurimento della quota;
+  - evitato il doppio conteggio della stessa operazione;
+  - mantenuto senza limite commerciale il piano `supporter`;
+  - resa disponibile la quota residua per il piano gratuito.
+
+- Verifiche eseguite:
+  - controllo sintassi PHP: OK;
+  - test `ANNUAL REPORT EXPORT QUOTA`: OK;
+  - test `ANNUAL REPORT BROWSER PRINT`: OK;
+  - test `ANNUAL REPORT DETERMINISM`: OK;
+  - `git diff --check`: OK.
+
+- Stato:
+  - Fase 10 completata.
+
+- Commit Git:
+  - da eseguire dopo la verifica finale del diff e dello stato del repository.
+
+- Prossimo passo:
+  - avviare la Fase 11 — Restrizioni interfaccia.
+
+## 2026-07-31 — Completamento Fase 11 Restrizioni interfaccia
+
+- Componenti modificati:
+  - `www/ricerca.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - disabilitare preventivamente nell'interfaccia i controlli non disponibili per il piano utente;
+  - mantenere il server come fonte definitiva dell'autorizzazione.
+
+- Risultato:
+  - aggiunta l'inizializzazione centralizzata delle restrizioni UI;
+  - disabilitate le opzioni Supporter per ricerca località, ricerca a griglia ed espansione automatica dell'orbe;
+  - mantenuti i controlli server-side e i messaggi già presenti.
+
+- Verifiche eseguite:
+  - lint PHP di `www/ricerca.php`: OK;
+  - regressione completa `tests/run.php`: OK;
+  - `git diff --check`: OK.
+
+- Stato:
+  - Fase 11 completata.
+
+- Commit Git:
+  - da eseguire dopo verifica finale di `git diff` e `git status`.
+
+- Prossimo passo:
+  - avviare la Fase 12 — Sicurezza e sessioni.
+
+## 2026-07-31 — Completamento Fase 12 Sicurezza e sessioni
+
+- Componenti modificati:
+  - `www/admin_utenti.php`;
+  - `www/cambia_password.php`;
+  - `www/login.php`;
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`.
+
+- Obiettivo:
+  - consolidare la sicurezza delle operazioni sensibili e delle sessioni.
+
+- Risultato:
+  - introdotta la protezione CSRF nelle principali operazioni amministrative;
+  - aggiunta la protezione CSRF al cambio password;
+  - confermata la protezione CSRF della registrazione;
+  - introdotto rate limiting del login;
+  - mantenuto il rate limiting della registrazione;
+  - verificato l'utilizzo dell'hashing password;
+  - verificati cookie di sessione, rigenerazione ID e logout;
+  - verificati i messaggi del login contro l'enumerazione delle credenziali;
+  - verificati i token monouso di verifica email e reset password;
+  - verificata la regressione completa;
+  - rinviati a futuro hardening il logging strutturato e ulteriori test HTTP dedicati.
+
+- Verifiche eseguite:
+  - lint PHP dei file modificati: OK;
+  - regressione completa `tests/run.php`: OK;
+  - `git diff --check`: OK.
+
+- Stato:
+  - Fase 12 completata.
+
+- Commit Git:
+  - da eseguire dopo verifica finale di `git diff` e `git status`.
+
+- Prossimo passo:
+  - avviare la Fase 13 — Regressione e documentazione.
+
+## 2026-08-01 — Completamento Fase 13 Regressione e documentazione
+
+- Componenti verificati:
+  - `www/admin_utenti.php`;
+  - `www/cambia_password.php`;
+  - `www/login.php`;
+  - suite `www/tests/run.php`.
+
+- Documentazione aggiornata:
+  - `docs/roadmap_registrazioneutenti.md`;
+  - `docs/HANDOVER_OPERATIVO_astrolab.md`;
+  - ulteriori documenti ufficiali da allineare nella stessa iterazione.
+
+- Obiettivo:
+  - completare la regressione finale della macro-funzionalità registrazione, piani, permessi, limiti e sicurezza;
+  - consolidare la documentazione ufficiale senza modifiche applicative.
+
+- Risultato:
+  - lint PHP eseguito nel container `astrolab-web` sui file modificati nella Fase 12;
+  - test specifici eseguiti tramite la suite di regressione;
+  - regressione completa `tests/run.php` superata;
+  - `git diff --check` superato;
+  - repository inizialmente pulito;
+  - confermato il commit `85311db` per la Fase 12;
+  - nessun refactoring e nessuna modifica fuori obiettivo.
+
+- Verifiche eseguite:
+  - `php -l admin_utenti.php`: OK;
+  - `php -l cambia_password.php`: OK;
+  - `php -l login.php`: OK;
+  - `php tests/run.php`: OK;
+  - `git diff --check`: OK.
+
+- Stato:
+  - Fase 13 completata;
+  - macro-funzionalità registrazione utenti completata.
+
+- Commit Git:
+  - da eseguire esclusivamente dopo verifica finale di documentazione, `git diff --check`, `git diff`, `git status` e conferma dell’utente.
+
+- Prossimo passo:
+  - completare l’allineamento di ADR, README, START_HERE e ROADMAP;
+  - eseguire le verifiche finali;
+  - richiedere conferma prima del commit.
+
+## 2026-08-07 — Codifica colore semantica dei pianeti nella ruota zodiacale
+
+- Componente modificato:
+  - `www/js/zodiac_wheel.js`
+
+- Obiettivo:
+  - implementare la codifica colore diretta sulla mappa/ruota:
+    - rosso (`#CC0000`) = pianeta in moto diretto;
+    - blu (`#0000CC`) = pianeta retrogrado;
+    - verde (`#00AA00`) = pianeta esattamente in cuspide;
+  - sovrascrivere i colori identitari dei pianeti in base al loro stato dinamico;
+  - mantenere invariata la logica astrologica ereditata da Astro-Val;
+  - non modificare il motore astronomico, il Rule Engine o il backend.
+
+- Risultato:
+  - aggiunto il metodo helper `_coloreSemantico(p, houses)` in `ZodiacWheel`;
+  - implementata la verifica di congiunzione stretta con le cuspidi (tolleranza 0.01°);
+  - sostituiti i colori statici `PIANETI_COLORI` con la codifica semantica in tre metodi di rendering:
+    - `_disegnaAspetti` (pallino sugli aspetti);
+    - `_disegnaLineePianetiModificato` (linea guida);
+    - `_disegnaPianetiModificato` (glifo principale e testo gradi);
+  - preservata la compatibilità con tutte le pagine che utilizzano `ZodiacWheel.disegna()`:
+    - `rilocazione.php`;
+    - `rs.php`;
+    - `compare_rs.php`;
+    - `compare_ril.php`;
+  - nessuna modifica al backend, alle API o al motore astrologico.
+
+- Verifiche eseguite:
+  - `node --check www/js/zodiac_wheel.js`: OK;
+  - `git diff --check`: OK;
+  - regressione backend `tests/run.php`: OK (sezione "Validazione casi JSON" superata);
+  - nota: il fatal error `passthru()` nella sezione "Validazione rivoluzioni lunari" è ambientale e preesistente, non collegato alla modifica JavaScript.
+
+- Stato:
+  - codifica colore semantica implementata e verificata;
+  - ready per test manuale nell'interfaccia web.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - testare la visualizzazione nella pagina `rilocazione.php` per verificare che i colori siano applicati correttamente;
+  - confermare che la codifica verde (cuspide) si attivi solo per congiunzioni estremamente strette (< 0.01°);
+  - procedere con il commit dopo verifica funzionale.
+
+## 2026-08-07 bis — Rifinitura codifica colore: tolleranza cuspide e grassetto
+
+- Componente modificato:
+  - `www/js/zodiac_wheel.js`
+
+- Obiettivo:
+  - allineare la soglia di rilevamento della congiunzione pianeta-cuspide
+    alla convenzione astrologica (orbite inferiori a 2° sono già congiunzioni);
+  - rendere immediatamente distinguibili i pianeti in cuspide aggiungendo
+    il grassetto al glifo quando il colore semantico è verde.
+
+- Risultato:
+  - soglia di congiunzione a cuspide portata da 0.01° a 0.5° (30 primi);
+  - glifo del pianeta reso in grassetto quando `colore === '#00AA00'`;
+  - mantenuta invariata la codifica rosso (diretto) / blu (retrogrado);
+  - nessuna modifica al backend, al motore astrologico o al Rule Engine;
+  - riutilizzata la logica esistente in `_coloreSemantico()` e `_disegnaPianetiModificato()`.
+
+- Verifiche eseguite:
+  - `node --check www/js/zodiac_wheel.js`: OK;
+  - `git diff --check`: OK;
+  - sintassi PHP non toccata (nessun file backend modificato).
+
+- Stato:
+  - rifinitura applicata e verificata;
+  - pronta per test manuale nell'interfaccia web.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - testare la visualizzazione in `rilocazione.php` e `rs.php`;
+  - verificare che Giove a 24°10'33" Sagittario con cuspide X casa a 24°10'00"
+    Sagittario venga ora correttamente renderizzato in verde e in grassetto.
+
+## 2026-08-07 ter — Orbite differenziate per codifica colore cuspide
+
+- Componente modificato:
+  - `www/js/zodiac_wheel.js`
+
+- Obiettivo:
+  - implementare orbite differenziate per la rilevazione della congiunzione
+    pianeta-cuspide nella codifica colore semantica della ruota zodiacale;
+  - applicare le soglie reali comunicate dall'utente:
+    - tutti i pianeti: orbita massima di 2.5° su qualsiasi cuspide;
+    - Marte (id=4) e Saturno (id=6): orbita di 10° solo su casa I/ASC e X/MC;
+    - Marte e Saturno su tutte le altre case: stessa orbita degli altri pianeti (2.5°).
+
+- Risultato:
+  - sostituita la soglia fissa di 0.5° con logica dinamica basata su pianeta e casa;
+  - definiti i parametri configurabili in `_coloreSemantico()`:
+    - `SOGLIA_BASE = 2.5` (tutti i pianeti, tutte le case);
+    - `SOGLIA_ANGOLI = 10.0` (Marte e Saturno su I/ASC e X/MC);
+    - `PIANETI_ANGOLI = [4, 6]` (Marte e Saturno);
+    - `CASE_ANGOLI = ['1', 'ASC', '10', 'MC']` (casa I=ASC, casa X=MC);
+  - mantenuta invariata la codifica rosso (diretto) / blu (retrogrado) / verde (cuspide);
+  - mantenuto il grassetto per i pianeti in cuspide (verde);
+  - nessuna modifica al backend, al motore astrologico o al Rule Engine.
+
+- Verifiche eseguite:
+  - `node --check www/js/zodiac_wheel.js`: OK;
+  - `git diff --check`: OK;
+  - sintassi PHP non toccata (nessun file backend modificato).
+
+- Stato:
+  - orbite differenziate applicate e verificate;
+  - pronta per test manuale nell'interfaccia web.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - testare la visualizzazione in `rilocazione.php` e `rs.php`;
+  - verificare che Marte e Saturno siano verdi entro 10° da ASC/MC;
+  - verificare che tutti gli altri pianeti siano verdi entro 2.5° da qualsiasi cuspide.
+
+2026-08-07 — Creazione roadmap comparazione Astrolab / MyAstral.org
+Componenti modificati:
+`docs/roadmap_comparazione_myastral.md`;
+`docs/ROADMAP.md`;
+`docs/START_HERE.md`;
+`docs/HANDOVER_OPERATIVO_astrolab.md`.
+Obiettivo:
+creare la roadmap ad-hoc dedicata alla comparazione funzionale tra
+Astrolab e MyAstral.org, collegandola alla roadmap principale e
+allineando tutta la documentazione di progetto.
+Risultato:
+creata `docs/roadmap_comparazione_myastral.md` con:
+scopo e principi guida;
+prerequisiti (account MyAstral.org);
+inventario completo dei 5 livelli di filtro Astrolab;
+4 macro-attività pianificate (M1 RSM, M2 RL, M3 Tema Natale, M4 Sinastria esclusa);
+relazione con la documentazione UX esistente;
+vincoli tecnici;
+condizioni di successo;
+registro decisioni iniziale;
+aggiornata `docs/ROADMAP.md` con riferimento alla nuova roadmap;
+aggiornata `docs/START_HERE.md` con riferimento alla nuova roadmap;
+aggiornato questo HANDOVER con la presente voce.
+Test eseguiti:
+nessun file PHP modificato;
+verifica contenuto documenti: OK;
+`git diff --check`: da eseguire.
+Commit Git:
+da eseguire dopo verifica finale.
+Prossimo passo:
+acquistare account MyAstral.org;
+definire soggetti e anni RS di test;
+avviare M1 — Comparazione ricerche RSM.
+
+## 2026-08-09 — Creazione roadmap Menu Aiuto e Manuale d'Uso
+
+- Componenti modificati:
+  - `docs/roadmap_aiuto.md` (creato);
+  - `docs/ROADMAP.md` (aggiornato).
+
+- Obiettivo:
+  - progettare l'organizzazione del menu "Aiuto" e del manuale d'uso dell'applicazione;
+  - definire le voci e le sezioni del manuale;
+  - creare una roadmap dedicata (`docs/roadmap_aiuto.md`) senza appesantire la roadmap principale.
+
+- Risultato:
+  - creata la struttura logica del manuale in 8 sezioni principali (Introduzione e Account, Gestione Soggetti, Calcoli e Analisi, Ricerca Geografica, Report, Comparatore, Interfaccia, FAQ);
+  - creato `docs/roadmap_aiuto.md` con fasi di sviluppo future;
+  - aggiornato `docs/ROADMAP.md` inserendo un breve rimando alla roadmap dedicata;
+  - nessuna modifica applicativa, architetturale o al Rule Engine.
+
+- Verifiche eseguite:
+  - `git status`: file tracciati correttamente;
+  - `git diff docs/ROADMAP.md`: diff minimale e corretto;
+  - `git diff --check`: nessun problema rilevato.
+
+- Stato:
+  - struttura del menu Aiuto definita e documentata;
+  - pronta per future iterazioni di sviluppo UX e stesura dei contenuti.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - analizzare le interfacce correnti per mappare i link del menu Aiuto alle pagine specifiche;
+  - avviare la stesura dei contenuti testuali per le prime sezioni.
+
+## 2026-08-09 bis — Analisi e mappatura Menu Aiuto sulle pagine esistenti
+
+- Componente modificato:
+  - `docs/roadmap_aiuto.md` (aggiornato).
+
+- Obiettivo:
+  - mappare le sezioni del manuale d'uso rispetto alle pagine PHP reali dell'applicazione;
+  - definire la strategia di implementazione dell'interfaccia per il menu Aiuto.
+
+- Risultato:
+  - completata la mappatura tra le 8 sezioni del manuale e i file PHP principali (`index.php`, `tema.php`, `rs.php`, `rl.php`, `rilocazione.php`, `ricerca.php`, `stampa.php`, `compare_rs.php`, `compare_ril.php`);
+  - scelta la strategia **Modale/Popup contestuale JS** per non interrompere il workflow dell'astrologo;
+  - nessuna modifica applicativa o al Rule Engine.
+
+- Verifiche eseguite:
+  - `git diff --check`: nessun problema rilevato;
+  - `git status`: file tracciato correttamente.
+
+- Stato:
+  - fase di analisi e progettazione completata;
+  - pronto per lo sviluppo dell'infrastruttura JS/PHP del modale Aiuto.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - creare il file JS per il modale contestuale (`www/js/help_modal.js`);
+  - creare il file CSS per lo styling (`www/css/help_modal.css`);
+  - integrare il trigger nel menu di navigazione (`header_nav.php`).
+
+## 2026-08-09 ter — Implementazione modale Aiuto nell'interfaccia
+
+- Componenti modificati:
+  - `www/includes/header_nav.php` (CSS inline, trigger menu, markup modale, script tag);
+  - `www/css/help_modal.css` (creato);
+  - `www/js/help_modal.js` (creato).
+
+- Obiettivo:
+  - integrare il trigger "Aiuto" nel menu di navigazione principale;
+  - implementare il modale contestuale con struttura HTML/CSS/JS;
+  - rendere il modale disponibile in tutte le pagine protette.
+
+- Risultato:
+  - aggiunto blocco CSS del modale nel `<style>` di `header_nav.php`;
+  - inserito trigger `❓ Aiuto` dopo "Ricerca Località" nel menu principale;
+  - aggiunto markup HTML del modale con overlay, header, corpo e pulsante di chiusura;
+  - creato `www/js/help_modal.js` con logica open/close (ESC, click esterno, pulsante X);
+  - nessuna modifica al backend, al motore astrologico o al Rule Engine.
+
+- Verifiche eseguite:
+  - `php -l www/includes/header_nav.php`: OK (nessun errore di sintassi);
+  - `git diff --check`: nessun problema rilevato;
+  - regressione: errore preesistente `passthru()` in `tests/run.php:278` non correlato alle modifiche attuali.
+
+- Stato:
+  - modale Aiuto integrato e visibile in tutte le pagine protette;
+  - contenuto attualmente placeholder (in attesa dei testi del manuale);
+  - pronto per test manuale nell'interfaccia web.
+
+- Commit Git:
+  - da eseguire dopo conferma dell'utente.
+
+- Prossimo passo:
+  - testare manualmente l'apertura/chiusura del modale nel browser;
+  - avviare la stesura dei contenuti testuali per le sezioni del manuale.
+
+## 2026-08-09 quater — Indagine errore passthru() e test search (fix rimandato)
+
+- Problema: `tests/run.php` usa `passthru()` per lanciare i sotto-test; la funzione è disabilitata dal 2 agosto in `php-config/php.ini` (indurimento sicurezza). Da qui il fatal error prima inesistente.
+- Soluzione operativa (sicura, senza toccare il php.ini montato):
+  `docker compose exec -T astrolab-web php -d disable_functions= tests/run.php`
+  L'override vale solo per il processo CLI effimero; il server web resta indurito.
+- Esito con override: backend, casi JSON, RL e rilocazione PASSANO; restano fallimenti nei test `search/`.
+- Causa test search (diagnosticata, fix RIMANDATO su richiesta): `search_auth.php` forza `session_name('PHPSESSID')` e un ID custom, ma il php.ini indurito usa `session.name = ASTROSESSID` e `session.use_strict_mode = 1`. L'ID custom viene rifiutato (file sessione non creato) e Apache attende il cookie ASTROSESSID, non PHPSESSID.
+- Fix da fare in futuro: leggere `ini_get('session.name')` invece di hardcodare PHPSESSID, inviare il cookie con quel nome e disattivare `use_strict_mode` solo nel processo di seeding CLI.
+- Stato: nessun file applicativo modificato in questa indagine; suite eseguibile con override tranne search.
+
+## 2026-08-09 quinquies — Sezione 1 Manuale Aiuto: Introduzione e Account
+
+- Creato `www/js/help_content_s1.json`: contenuti testuali per login, registrazione, cambio password e default.
+- Modificato `www/js/help_modal.js`: caricamento dinamico dei contenuti in base alla pagina corrente (rilevamento URL).
+- Contenuti redatti sulla base dell'analisi di `login.php`, `registrazione.php`, `cambia_password.php`.
+- Roadmap aggiornata: Fase 3 parzialmente completata (Sezione 1 fatta, Sezione 2 da fare).
+- Nessun cambiamento al backend o al motore astrologico.
+
+## 2026-08-09 sexies — Riprogettazione UX Menu Aiuto (dropdown + modale per sezione)
+
+- Modificato `header_nav.php`: trigger `? Aiuto` trasformato in dropdown con 8 voci della roadmap.
+- Riscritto `help_modal.js`: nuova funzione `openHelpSection(n)` che carica `help_content_sN.json` e apre il modale con il contenuto della sezione scelta.
+- Sezioni non ancora redatte mostrano placeholder "in fase di redazione".
+- Chiusura dropdown: click fuori, ESC, o apertura modale.
+- Roadmap aggiornata: Fase 2 completata con nuova UX.
+- Nessun cambiamento al backend o al motore astrologico.
+
+## 2026-08-09 septies — Cambio strategia Menu Aiuto: dropdown + pagine PHP dedicate
+
+- Abbandonato approccio modale JS (problemi CSS con dropdown).
+- Adottato dropdown navbar (classi nav-dropdown come Rivoluzioni) con 8 voci.
+- Ogni voce linka a pagina PHP dedicata (target=_blank): help_account.php, help_soggetti.php, help_calcoli.php, help_ricerca.php, help_report.php, help_comparatore.php, help_interfaccia.php, help_faq.php.
+- help_account.php: contenuti completi Sezione 1 (login, registrazione, cambio password, piani, sicurezza).
+- Sezioni 2-8: pagine placeholder "in fase di redazione".
+- Tasto destro disabilitato su tutte le pagine help (JS contextmenu + body oncontextmenu).
+- header_nav.php: dropdown aggiornato con link corretti.
+- Roadmap aggiornata con nuova strategia.
+- Nessun cambiamento al backend o al motore astrologico.
+
+## 2026-08-10 — Fix dropdown "? Aiuto" duplicato e ricostruzione pulita come "Help"
+
+- Problema segnalato: trigger "? Aiuto" ancora visibile in navbar nonostante rimozione da tutti i sorgenti (verificato: nessuna occorrenza in nessun file .php/.css/.js), persistente su più browser e dopo svuotamento cache.
+- Diagnosi: `header_nav.php` conteneva DUE blocchi dropdown "Aiuto" duplicati e mai ripuliti dopo il cambio strategia (voce "septies" sopra) — uno con link a pagine `help_*.php`, uno con `onclick` verso il modale mai adottato. La causa della persistenza visiva era però `opcache.validate_timestamps=Off` + `opcache.revalidate_freq=0` nel container `astrolab-web`: il bytecode compilato non veniva mai rivalidato contro il file sorgente, quindi ogni modifica ai .php restava invisibile finché il container non veniva riavviato.
+- Fix (commit `d4622e6`, pushato su `origin/fase9-comparator-quota`):
+  - rimossi entrambi i blocchi duplicati del dropdown, il CSS dedicato (`.help-trigger`, `.help-dropdown*`, `.help-modal*`), il modale HTML condiviso e l'include di `www/js/help_modal.js`;
+  - eliminati anche `www/css/help_modal.css` e `www/js/help_content_s1.json` (orfani, nessun riferimento residuo);
+  - riavviato `astrolab-web` per invalidare OPcache e confermare la scomparsa della voce.
+- Ricostruzione pulita del dropdown Help (in corso di commit):
+  - un solo blocco dropdown, classi `nav-dropdown` condivise con "Rivoluzioni" per uniformità grafica;
+  - trigger rinominato da "Aiuto" a **"Help"**, colore testo `#D4C9A8` (coerente con `.soggetto-attivo`), `background: none; border: none;` per evitare lo stile di default del `<button>` del browser quando non attivo/hover;
+  - 8 voci verso le pagine `help_*.php` esistenti (help_account.php con contenuto reale, le altre 7 placeholder), invariate.
+- Roadmap aggiornata: `docs/roadmap_aiuto.md`, Fase 2 e sezione "Strategia di Implementazione Interfaccia" allineate allo stato reale (pagine dedicate confermate come scelta definitiva, modale definitivamente rimosso).
+- Verifiche eseguite:
+  - `docker compose exec -T astrolab-web php -l www/includes/header_nav.php`: OK ad ogni step;
+  - `git diff --check`: OK (corrette anche 2 righe di trailing whitespace preesistenti);
+  - verifica manuale nel browser dopo riavvio container: voce "Aiuto" sparita, dropdown "Help" funzionante e graficamente uniforme a "Rivoluzioni".
+- Nessun cambiamento al backend o al motore astrologico.
+
+- Nota operativa permanente: la configurazione OPcache attuale (`validate_timestamps=Off`) è corretta per produzione ma in ambiente di sviluppo richiede il riavvio di `astrolab-web` dopo ogni modifica a file `.php` per vedere l'effetto — da tenere a mente per i prossimi cicli di sviluppo/debug su questo container.
+
+## 2026-08-11 — Rimozione airports.csv dal tracking git
+
+- Verificato che `airports.csv` (13 MB, al root del repo dal commit iniziale `af1716a`, ereditato dal progetto precedente `astro-dev`) non è referenziato da nessun file `.php`/`.py`/`.sh` del progetto: l'atlante geografico attuale (ricerca RSM per aeroporti e località) è alimentato dalla pipeline GeoNames (`import/convert_geonames.py`, `import/import_geonames.sh`) e legge dalla tabella Postgres `aeroporti` (84.616 righe, già popolata e persistita nel volume Docker), non dal CSV.
+- Il file resta comunque disponibile in chiaro nella storia git (commit `af1716a` e precedenti) in caso di necessità di riferimento futuro.
+- Azione: `git mv` → `git rm --cached`, file spostato fisicamente in `import/data/airports.csv` (cartella già esclusa da `.gitignore`, coerente con gli altri dataset non versionati tipo GeoNames), rimosso dal tracking.
+- Aggiornato `STRUTTURA_astrolab.md` (riga spostata da root a `import/data/`).
+- Nessun cambiamento a codice applicativo, schema DB o motore astrologico. Nessun rischio di perdita dati: il file resta recuperabile dalla storia git in qualunque momento.
+
+## 2026-08-11 bis — Sblocco registrazione pubblica utenti
+
+- Ripreso il lavoro sulla macro-feature "Registrazione, piani e gestione utenti" ([[docs/roadmap_registrazioneutenti.md]]), partendo dalla verifica dello stato reale via lettura diretta dei documenti e del codice su GitHub (branch `fase9-comparator-quota`).
+- Individuato un blocco critico: `Auth::registraUtentePubblico()` creava l'account con `account_status = 'pending_email'`, ma nessun invio email reale era mai stato implementato (`registrazione.php` generava il token di verifica e lo scartava). Risultato: qualunque utente si registrasse restava bloccato fuori dall'app, senza alcuna via di attivazione.
+- Decisione concordata: finché l'applicazione non sarà spostata online sul VPS, l'invio email (verifica account e "password dimenticata") resta previsto nel codice ma non attivato. La registrazione pubblica attiva quindi subito l'account (`account_status = 'active'`), e in aggiunta è stata introdotta un'azione amministrativa di verifica manuale per gli eventuali utenti residui in `pending_email`.
+- Modifiche applicative:
+  - `www/includes/Auth.php`: `registraUtentePubblico()` inserisce `account_status = 'active'` invece di `'pending_email'`; aggiunto il metodo `verificaManualmente(int $utenteId)`.
+  - `www/registrazione.php`: aggiornato il messaggio di successo (non più "controlla la tua email").
+  - `www/login.php`: aggiunto il link mancante alla pagina `registrazione.php` (pagina già esistente ma irraggiungibile dall'interfaccia).
+  - `www/admin_utenti.php`: nuova azione POST `verifica_manuale`, nuovo pulsante icona visibile solo per utenti `pending_email`, nuovo badge di stato "⏳ Da verificare" nella colonna Stato.
+- Il meccanismo di token/verifica email esistente (`creaTokenSicurezza`, `verificaEmailToken`, `verifica-email.php`, `richiediResetPassword`, `confermaResetPassword`) resta invariato nel codice, dormiente, pronto per l'attivazione quando l'invio email reale sarà collegato sul VPS.
+- Verifica: `php -l` superato su tutti i file modificati; `git diff --check` pulito; test end-to-end manuale via curl dentro il container (registrazione → utente creato con `account_status = active` in database → login riuscito), utente di test poi rimosso dal database.
+- `tests/run.php` (regressione completa) fallisce per un problema preesistente e non collegato a questa modifica: la funzione `passthru()` risulta disabilitata nel container `astrolab-web` (probabile `disable_functions` in `php.ini`), già notato in una sessione precedente (2026-08-09 quater) e mai risolto.
+- Nessun test automatico dedicato esisteva per il flusso di registrazione; non è stato creato in questo passaggio (fuori scope rispetto all'obiettivo puntuale di sblocco).
+- Prossimo passo: proseguire con la Fase 5 della roadmap dedicata (amministrazione del piano Supporter: donazioni, validità annuale, scadenza/rinnovo, limiti soggetti personalizzati, accesso speciale permanente).
+
+## 2026-08-11 ter — Fase 5, passo 1: modello dati amministrazione piano Supporter
+
+- Avviata la Fase 5 della roadmap [[docs/roadmap_registrazioneutenti.md]] partendo dal modello dati, come base necessaria sia per l'interfaccia admin sia per la logica dei limiti effettivi.
+- Decisione di prodotto confermata dall'utente: l'admin deve poter concedere un accesso completo, gratuito e permanente a chi ritiene opportuno (indipendente dal ciclo Supporter, senza toccare il ruolo); per tutti gli altri utenti valgono le regole già definite nella roadmap (piano, donazione, limiti).
+- Creata e applicata al database operativo la migrazione `sql/007_piano_supporter_amministrazione.sql`:
+  - su `utenti`: `subjects_limit_override`, `donazione_importo`, `supporter_inizio`, `supporter_scadenza`, `accesso_speciale_permanente` (default `FALSE`), `note_piano`;
+  - su `piani`: `donazione_minima`, `durata_giorni` (valorizzati per `supporter`: 0 € minimo, 365 giorni, poi modificabili dall'admin);
+  - vincoli CHECK su valori non negativi e coerenza date inizio/scadenza.
+- Verificato lo schema post-migrazione (`\d utenti`, `\d piani`) e la disponibilità dell'applicazione (login e index rispondono correttamente dopo l'alter table).
+- Il limite soggetti del piano Supporter resta configurabile in `piano_limiti` (già esistente da `sql/004_popola_piano_limiti.sql`); l'admin potrà modificarlo per adeguarlo alle fasce di donazione, oltre a impostare override per singolo utente.
+- Prossimo passo: helper centralizzati in `Auth.php` (limite soggetti effettivo con precedenza accesso speciale permanente → override utente → piano; stato Supporter attivo/scaduto), poi estensione dell'interfaccia admin.
+
+## 2026-08-11 quater — Fase 5, passo 2: helper centralizzato limite soggetti
+
+- Aggiunto `Auth::getLimiteSoggettiEffettivo()` in `www/includes/Auth.php`, unico punto applicativo per il calcolo del limite soggetti, con precedenza: accesso speciale permanente (illimitato) → override personalizzato per singolo utente → limite del piano effettivo (un Supporter con `supporter_scadenza` superata viene trattato come free ai fini del limite).
+- Refactorato `www/api/soggetti_api.php` (azione `inserisci`): rimossa la query inline duplicata su `piano_limiti`, ora richiama l'helper centralizzato.
+- Confermato con l'utente che la registrazione `free` è già completamente self-service (nessuna approvazione admin richiesta), coerente con lo sblocco fatto nel passo precedente; il pulsante "verifica manuale" resta per i soli casi residui `pending_email`. Valutate protezioni anti-abuso aggiuntive (rate limit più stretto, blacklist domini email); deciso di non aggiungerle ora, restando con CSRF + rate limit 5/ora/IP già presenti, da rivalutare se necessario in futuro.
+- Verifica funzionale diretta (script PHP temporaneo, poi rimosso) sui tre scenari: piano free standard → limite 2; override a 5 → limite 5; accesso speciale permanente → illimitato (null). Confermato nessun impatto sugli utenti reali esistenti (tutti piano supporter, nessuna scadenza, nessun override).
+- `php -l` e `git diff --check` superati su entrambi i file modificati.
+- Prossimo passo: estendere `admin_utenti.php` per assegnare/modificare piano, donazione, scadenza Supporter, override soggetti e accesso speciale permanente.
+
+## 2026-08-11 quinquies — Fase 5, passo 3: interfaccia admin gestione piano
+
+- Aggiunto `Auth::aggiornaPianoUtente()` in `www/includes/Auth.php`: validazione server-side completa (piano tra i codici attivi in `piani`, importi/limiti non negativi, coerenza tra data inizio e scadenza Supporter) prima di scrivere piano, donazione, date, override soggetti, accesso speciale permanente e note sull'utente.
+- Estesa `Auth::getListaUtenti()` con i nuovi campi per precompilare l'interfaccia.
+- Discussa con l'utente la scelta dell'interfaccia (modale vs altre soluzioni): confermato il modale, coerente con lo stile già usato in tutta la pagina per le altre azioni, organizzato in tre blocchi (Piano, Ciclo Supporter, Personalizzazioni) per restare leggibile nonostante i molti campi.
+- Aggiunto in `admin_utenti.php`: modale "Gestione Piano" (max-width 620px), azione POST `aggiorna_piano`, pulsante 💎 in tabella, funzione JS `apriModalePiano()` per precompilare i campi.
+- Verifica funzionale diretta (script PHP temporaneo su utente di test, poi rimosso): rifiuto piano non valido, rifiuto scadenza precedente all'inizio, assegnazione Supporter con donazione/date/note salvata correttamente in database, passaggio a free con accesso speciale permanente attivato correttamente.
+- `php -l` e `git diff --check` superati su entrambi i file modificati.
+- Fase 5 ora copre funzionalmente i punti richiesti dall'utente: piano assegnabile dall'admin, importo donazione registrato, validità annuale Supporter (inizio/scadenza), limite soggetti personalizzabile per singolo utente (in vista delle fasce di donazione che l'utente gestirà), accesso completo/gratuito/permanente concedibile a discrezione dell'admin senza intaccare il ruolo.
+- Rimandato a un passo successivo, se necessario: riporto automatico del campo piano a free alla scadenza (oggi la scadenza è già considerata ai fini del limite soggetti effettivo tramite `getLimiteSoggettiEffettivo()`, ma il valore di `plan_id` resta quello assegnato finché l'admin non lo cambia manualmente), storico delle modifiche amministrative (chi ha cambiato cosa e quando), attivazione/disattivazione dei piani dall'interfaccia.
+- Prossimo passo: da concordare con l'utente in una prossima sessione — se completare i punti rimandati della Fase 5 o passare ad altro.
+
+## 2026-08-11 sexies — Bugfix username case-sensitive + vista soggetti in amministrazione
+
+- Bug reale segnalato dall'utente durante un test: registrato username pippo, salvato come Pippo per capitalizzazione automatica della tastiera; login con pippo minuscolo rifiutato per confronto case-sensitive in Auth::login(). L'utente era comunque presente in database e visibile in amministrazione (probabile falso allarme da cache browser), ma il bug di login era reale e confermato.
+- Decisione dell'utente: lo username non deve mai essere case-sensitive. Verificata assenza di duplicati case-insensitive esistenti, creata e applicata la migrazione sql/008_username_case_insensitive.sql (indice univoco su LOWER(TRIM(username))).
+- Aggiornato Auth::login() per confrontare LOWER(TRIM(username)) invece dell'uguaglianza esatta. Verificato end-to-end: login con pippo minuscolo riuscito dopo la modifica.
+- Introdotta la terminologia di prodotto da usare d'ora in avanti: gli utenti con ruolo user sono "Astrologi"; le persone che l'astrologo gestisce (tabella soggetti) sono "Soggetti di studio".
+- Su richiesta dell'utente, aggiunta in admin_utenti.php una riga espandibile sotto ogni astrologo: click sul nome (con freccia toggle e contatore soggetti tra parentesi, es. roxy (4)) mostra una mini-tabella con i soggetti di studio di quell'astrologo, stessi campi della tabella soggetti standard (Codice, Nome, Data Nascita, Ora, Luogo). Vincolo esplicito rispettato: la modifica riguarda solo admin_utenti.php, nessun cambiamento a index.php — la vista personale dell'astrologo (es. roxy) resta identica a prima.
+- Verifica funzionale diretta (script PHP temporaneo, poi rimosso) sul caso reale roxy: 4 soggetti (Cristina De Brand, Lorenzo Diana, Manuel Raso, Rossella Fumai) correttamente raggruppati e ordinati alfabeticamente.
+- `php -l` e `git diff --check` superati su tutti i file; confermato tramite `git status` che index.php non compare tra i file modificati.
+- Prossimo passo: da concordare con l'utente.
+
+## 2026-08-11 septies — Redirect post-login differenziato per ruolo
+
+- Su richiesta dell'utente, dopo aver verificato la nuova riga espandibile soggetti nella pagina corretta (admin_utenti.php, non index.php dove stava guardando inizialmente): l'admin deve atterrare direttamente su admin_utenti.php dopo il login.
+- Modificato login.php in tre punti: redirect "gia' loggato" in cima alla pagina, valore di default di $next, e redirect post-login riuscito. In tutti e tre i casi, se non e' presente un parametro next esplicito, l'admin va su admin_utenti.php, gli astrologi normali restano su index.php come prima. Un eventuale link diretto (next=...) resta rispettato per entrambi i ruoli.
+- Verificato end-to-end via curl con utenti reali: login astrologo pippo -> Location: index.php (invariato); login admin -> Location: admin_utenti.php (nuovo comportamento).
+- php -l e git diff --check superati.
+
+## 2026-08-12 — Nuova feature: Transiti Planetari
+
+- Implementata la nuova feature "Transiti Planetari", estensione dell'applicazione senza refactoring: calcolo dei pianeti in transito confrontati con il tema natale del soggetto, con ruota grafica e tabella aspetti Transito → Natale.
+- Menu: in `www/includes/header_nav.php` la voce "Rivoluzioni" è stata rinominata "Ricerche" e aggiunta la voce "☌ Transiti Planetari" verso `transiti.php`.
+- Creata `www/transiti.php` clonando `www/rs.php` e adattandola: rimossi interamente i blocchi non pertinenti ai transiti (Mappa/Leaflet, rettifica ora di nascita, Relazione Annuale, Analisi Sensibilità Oraria, Sessioni RS salvate, pannello Valutazione/Rule Engine, alert Stellium, filtro esclusione, stampa PDF RS); mantenuti e riadattati form soggetto/luogo/coordinate, `datiSoggetto` (variabile `DS`), `ZodiacWheel.disegna()`, tabelle pianeti/cuspidi.
+- Estesa `www/api/tema_api.php` con un nuovo ramo `tipo=transito` che riusa `SweCalc::calcolaTema()` esistente (nessun nuovo endpoint necessario, nessuna duplicazione della logica Swiss Ephemeris); i rami `natale` ed `rs` esistenti restano invariati.
+- Aggiunta la funzione JS `calcolaAspettiTransitoNatale()` che riusa `ZodiacWheel.ASPETTI` e `ZodiacWheel._trovaAspetto()` già esistenti (differenza angolare circolare corretta), evitando di duplicare la configurazione degli aspetti; il risultato alimenta senza modifiche `popolaTabellaAspetti()` già esistente (esteso solo il `tipoMap` interno con i nomi italiani minuscoli usati da `ZodiacWheel.ASPETTI`).
+- UX: all'apertura della pagina il calcolo parte in automatico con la data odierna, ore 00:00 locali e il luogo di residenza del soggetto (fallback al luogo di nascita, già gestito dalla logica esistente di `$defaultLat/$defaultLon/$defaultLuogo`); pulsante "Oggi/Adesso" per precompilare data/ora corrente.
+- I campi Ore/Minuti sono in **ora locale**: la conversione a GMT (inclusa la gestione automatica dell'ora legale) avviene tramite lookup a TimeZoneDB (stesso servizio già usato altrove nel progetto per mostrare l'ora locale nella RSM), con fallback a interpretazione diretta come GMT se il servizio non risponde.
+- Corretta una discrepanza di spaziatura nel form: la classe condivisa `.controlli .form-group` in `css/style.css` (usata anche da RS/RL/Rilocazione) impone `min-width:150px`; risolto con `style` inline mirato solo sui nuovi campi di `transiti.php`, senza modificare il CSS condiviso (le altre pagine restano invariate).
+- Calcoli verificati dall'utente per confronto con sito esterno di riferimento (Swiss Ephemeris) sullo stesso soggetto/data/ora — validazione superata.
+- `php -l` superato su tutti i file modificati (`transiti.php`, `header_nav.php`, `api/tema_api.php`); `git diff --check` pulito.
+- Nota tecnica per sessioni future: durante lo sviluppo un'edit basata su marker ambiguo (`<?php endif; ?>` presente più volte nel file) ha causato la cancellazione accidentale di un endif strutturale, poi individuata e corretta ricostruendo il file con marker univoci — quando si rimuovono blocchi HTML/JS estesi in file con più `if/endif` PHP, verificare sempre che il numero di `<?php endif; ?>` resti invariato dopo la modifica.
+
+## 2026-08-14 — Nuova feature: Ricerca RL (Rivoluzioni Lunari mensili per condizione)
+
+- Estesa la ricerca geografica per CONDIZIONE, finora disponibile solo per le RSM (base annuale), anche alle RL (base mensile), riusando al 100% il motore di valutazione esistente (RuleEngine, Rule Map di esclusione radicale, FiltroEsclusione, ThemeBuilder, ResultBuilder, TopK, deduplicazione geografica), già agnostico rispetto a RS/RL.
+- Creato `www/api/ricerca_stream_rl_api.php` (copia mirata di `ricerca_stream_api.php`): unico punto realmente specifico-RS sostituito, lo Step 1 ora usa `SweCalc::calcolaTutteRLLibsweCompatibileLunaApi()` con selezione della RL tramite `anno_rs` + `rl_index` (stesso schema già in uso da `rl_api.php`), invece di `calcolaRS()`. Verificato con `php -l`, con script CLI di verifica funzionale (coincidenza esatta con `tests/rl_lorenzo_2026.php` e con dati reali del soggetto id=23) e con l'intera suite `tests/run.php` (nessuna regressione; unico fallimento è quello preesistente e già noto di `search_auth.php`, non collegato).
+- Creata pagina dedicata `www/ricerca_rl.php` (clone mirato di `ricerca.php`, non modificata): titolo, label e selettore RL propri; le modalità Griglia/Astri nelle Case/Cuspidi (specifiche RS) restano visibili ma disabilitate con nota "Non ancora disponibile per la ricerca RL"; tabella risultati identica alla RSM (stelline, veti, bonus, esclusioni). Scelta architetturale della pagina dedicata (invece di integrare RS/RL nella stessa `ricerca.php`) decisa dopo un primo tentativo di integrazione che aveva introdotto bug reali (titolo statico, label "RS GMT" fissa, fallback fragili) — evitare accoppiamento tra i due motori di ricerca.
+- Pulsante "☽ Usa" sui risultati RL punta a `rl.php` (non più a `rs.php`) con `lat_rl`/`lon_rl`/`luogo_rl`/`anno`/`rl_index`, per aprire direttamente il grafico della RL cercata nel luogo trovato. Aggiunto supporto opzionale e puramente additivo al parametro URL `rl_index` in `js/rl.js` (override di `_trovaIndiceCorrente()` solo se il parametro è presente e valido; comportamento invariato altrimenti) — nessuna modifica a `rl.php`.
+- Aggiunta voce "Ricerca Località RL" in `header_nav.php`, subito dopo "Ricerca Località" (RS), con evidenziazione attiva dedicata (`$paginaAttiva = 'ricerca_rl'`).
+- File nuovi: `www/api/ricerca_stream_rl_api.php`, `www/ricerca_rl.php`. File modificati: `www/includes/header_nav.php`, `www/js/rl.js`. Nessuna modifica a `www/ricerca.php`, `www/rs.php`, `www/rl.php`, RuleEngine o motore astrologico.
+- `php -l` superato su tutti i file PHP toccati; `git diff --check` pulito (uniche righe di trailing whitespace segnalate sono preesistenti nell'originale copiato, non introdotte oggi, non toccate per restare nello scope); test funzionali CLI e suite di regressione eseguiti con esito positivo; verifica manuale end-to-end in UI con l'utente, inclusi 2 bug reali trovati e corretti durante il test (campo soggetto non riconosciuto nel primo tentativo integrato, poi superato dalla pagina dedicata; preselezione mese mancante sul pulsante "Usa", risolta con l'override opzionale `rl_index`).
+- Nota per sessione futura (fuori scope): fix di `tests/search_auth.php` (mismatch `session.name` PHPSESSID vs ASTROSESSID indurito), non impatta l'applicazione reale.
+- roadmap_aiuto.md aggiornata (Sezione 4 e tabella di mappatura).
+
+## 2026-08-14 bis — Riorganizzazione navbar: Localita RS/RL spostate nel dropdown "Ricerche"
+
+- Su richiesta dell'utente: rinominate le voci "Ricerca Localita" -> "Localita RS" e "Ricerca Localita RL" -> "Localita RL", spostate dalla barra principale (link standalone) dentro il dropdown "Ricerche" in `header_nav.php`.
+- Ordine scelto (raggruppato per tipo di rivoluzione): Riv. Solare, Localita RS, Riv. Lunare, Localita RL, Rilocazione, Transiti Planetari.
+- Aggiornato `$_riviActive` per includere `ricerca` e `ricerca_rl`, cosi il trigger del dropdown si evidenzia correttamente anche su queste due pagine.
+- Nessuna modifica a `ricerca.php`, `ricerca_rl.php`, `ricerca_stream_rl_api.php` o al motore di ricerca: solo riposizionamento dei link e rinomina delle etichette in `header_nav.php`.
+- `php -l` superato; `git diff --check` pulito; verifica visuale in UI con l'utente.
+
+## 2026-08-14 ter — Fix geocoding indirizzo (RS/RL): nome luogo robusto + bug dropdown RL
+
+- Su segnalazione dell'utente: il campo "Luogo RS"/"Luogo RL", quando popolato tramite ricerca indirizzo (Nominatim/OpenStreetMap, gia esistente), mostrava il numero civico ("3314") invece del nome della citta per indirizzi USA con formato "numero, via, citta" — causa: `nome.split(',')[0].trim()` prendeva sempre il primo segmento del `display_name`, dipendente dal formato indirizzo del singolo paese.
+- Fix robusto e indipendente dal paese: nuova funzione `_estraiNomeLuogoNominatim(r)` (duplicata in `rs.php` inline e in `js/rl.js`, stessi scope separati) che usa i campi strutturati e standardizzati di Nominatim (`address.city/town/village/municipality/hamlet/county` + `address.state`), gia richiesti con `addressdetails=1` ma non ancora sfruttati. Il nome breve viene calcolato in `cercaLuogoRS()`/`cercaLuogoRL()` (dove `r.address` e disponibile) e passato come parametro aggiuntivo opzionale `nomeBreve` a `selezionaLuogoRS()`/`selezionaLuogo()`, con fallback al vecchio comportamento se assente (retrocompatibile).
+- Bug reale scoperto durante il test in UI su `rl.php`: il pulsante "Cerca" del Luogo RL chiamava `cercaLuogoRL()` senza il prefisso `RLModule.` (la funzione vive dentro l'IIFE del modulo, non e globale) — click silenziosamente inefficace. Fix: `onclick="RLModule.cercaLuogoRL()"`.
+- Secondo bug reale scoperto durante il test (diagnosi via DevTools Network + confronto CSS con rs.php): dopo il fix del pulsante, la richiesta a Nominatim arrivava correttamente (200 OK, dati validi) ma il menu a tendina dei risultati non era visibile — causa: `.rl-location-group` (contenitore del campo Luogo RL) non aveva `position: relative`, mentre l'equivalente `.luogo-group` di `rs.php` si; il dropdown (`position: absolute`) veniva quindi posizionato rispetto a un antenato sbagliato, fuori vista ma presente nel DOM. Fix: aggiunto `position: relative` a `.rl-location-group` in `css/style.css` (classe usata esclusivamente in `rl.php`, nessun impatto su altre pagine).
+- File modificati: `www/rs.php`, `www/js/rl.js`, `www/rl.php`, `www/css/style.css`. Nessuna modifica a `ricerca.php`, `ricerca_rl.php`, motore di ricerca RSM/RL o RuleEngine.
+- Verifica: `php -l` su `rs.php`/`rl.php`; bilanciamento graffe verificato su `js/rl.js`; `git diff --check` pulito; diagnosi con richiesta reale a Nominatim (indirizzo USA con numero civico) tramite DevTools Network dell'utente; test end-to-end in UI con l'utente su entrambe le pagine dopo ogni fix.
+
+## 2026-08-18 — Fase 1 allineamento 34 regole (branch feature/allineamento-myastral)
+
+- Corrette le 3 etichette storicamente sbagliate nei messaggi di veto di `RuleEngine.php`: "Regola 1" -> "Regola 4 + Regola 6a" (commento veto ASC RS in casa natale), "reg.33" -> "astrolab-angoli" (veto proprietario Marte/Saturno entro 2 gradi dagli angoli, non la vera Regola 33), "reg.31" -> "astrolab-latitudine" (veto proprietario latitudine estrema, non la vera Regola 31). Solo testo di commenti/messaggi, nessuna modifica di logica.
+- Implementata la Regola 34 (Marte e Saturno nella stessa casa RS/RL, eccetto III e IX) come veto assoluto in `calcolaVeti()`, riusando la costante esistente `CASE_PARCHEGGIO`. Decisione UX-0003 registrata prima del codice, come da protocollo FREEZE.
+- Verificate Regola 4 e Regola 5: Regola 5 (Marte in I/VI/XII) gia' corretta. Trovato un gap reale in Regola 4: il Sole in I/VI/XII aveva peso 0 in `MATRICE[0]` e tipo `'AVV'` in `TIPI[0]`, quindi produceva solo una nota informativa e non uno scarto automatico, in contraddizione con la fonte primaria. Corretto con decisione UX-0004 e nuovo veto assoluto "Sole in I/VI/XII casa RS/RL", incluso pre-ingresso di 3 gradi coerente con Ascendente/Marte.
+- Implementata la Regola 31 (stellium diviso tra XII e I casa, es. Giove in XII + Venere/Mercurio in I conta come stellium pieno in XII): nuovo controllo in `calcolaVeti()` che si attiva solo quando lo stellium e' effettivamente diviso tra le due case (nessuna delle due da sola raggiunge gia' 3, caso gia' coperto dal veto stellium esistente). Decisione UX-0005 registrata prima del codice. Il testo di Discepolo cita solo la coppia XII/I: non generalizzata ad altre case adiacenti.
+- Con questa sessione si chiude la **Fase 1** della roadmap (`docs/ROADMAP_34_REGOLE.md`): tutte e 4 le regole a scarto automatico (4, 5, 31, 34) sono ora implementate e verificate.
+- Per ogni modifica comportamentale: `php -l` superato nel container, test funzionale reale tramite script PHP temporanei in `tests/` (poi rimossi, non committati) con casi sintetici mirati a isolare ogni singolo veto, suite di regressione `tests/run.php` eseguita dopo ogni commit (i 3 casi RSM reali - New York, Roma, Tokyo - restano invariati; nessuna regressione). `git diff --check` pulito su ogni commit; commit separati per ogni decisione e per ogni implementazione, tutti confermati esplicitamente dal committente prima del push.
+- File toccati: solo `www/includes/RuleEngine.php` (codice) e `docs/ux-myastral/DECISION_LOG_ux.md` (decisioni UX-0003, UX-0004, UX-0005). Nessun altro file toccato.
+- Prossimo passo: Fase 2 della roadmap (confronto sistematico delle altre regole-veto: Regola 26 stellium in VIII gia' verosimilmente coperta, Regola 33 caso "case adiacenti stesso orbo" ancora mancante).
+
+## 2026-08-18 bis — Fase 2 allineamento 34 regole (branch feature/allineamento-myastral)
+
+- Verificata la Regola 26 (stellium in VIII casa): confermata gia' corretta senza modifiche. Il testo vieta solo lo stellium in VIII, non i singoli pianeti; il codice esistente rispetta esattamente questo (veto stellium include la casa 8, ma i veti individuali di Marte e Sole la escludono esplicitamente).
+- Completata la Regola 33 ("Saturno ha sempre la meglio su Giove, su Venere, sul Sole"), nei suoi due casi:
+  - Caso (a) "stessa casa": in precedenza esisteva solo come `saturno_prevale` in `RuleEngineExtended.php`, ristretto alla sola casa tematica della condizione cercata e attivo solo dietro il flag opzionale `MYASTRAL_ALIGNMENT_MODE` (usato finora come esperimento). Su indicazione esplicita del committente, implementato invece come veto assoluto incondizionato direttamente in `RuleEngine.php` (motore FREEZE): Saturno e almeno un benefico (Sole/Venere/Giove) nella stessa casa, qualunque essa sia, scartano la RSM/RL. `RuleEngineExtended.php` e il flag restano invariati come sistema separato (UX-0001 non revocata).
+  - Caso (b) "case adiacenti, stesso orbo": non era implementato affatto (gap noto). Implementato limitatamente alla coppia IX/X esplicitamente citata dal testo (Medio Cielo), con tolleranza di 3 gradi allineata all'orbo gia' stabilito dalla Regola 23 per i transiti di Giove/Saturno - non generalizzato ad altre coppie di case adiacenti, per coerenza con la scelta gia' fatta per la Regola 31.
+  - Decisione UX-0006 registrata prima del codice, come da protocollo FREEZE.
+- Corretto anche un commento residuo mal etichettato, rimasto dalla sessione precedente: "// Regola 33: Marte o Saturno entro 2 gradi dagli angoli" (il commento del veto proprietario astrolab-angoli, non la vera Regola 33) - solo testo, nessuna modifica di logica.
+- Su richiesta del committente, valutata e scartata per ora una modifica della tolleranza del veto proprietario astrolab-angoli (da 2 a 3 gradi): non prioritaria, nessuna modifica applicata.
+- Con questa sessione si chiude la **Fase 2** della roadmap (`docs/ROADMAP_34_REGOLE.md`): entrambi i punti identificati (Regola 26 e Regola 33) verificati e/o completati.
+- Test funzionale reale tramite script PHP temporaneo in `tests/` (poi rimosso, non committato) con 7 casi sintetici mirati a isolare entrambi i casi della Regola 33 e le relative esclusioni negative. Suite di regressione `tests/run.php` eseguita dopo il commit: i 3 casi RSM reali (New York, Roma, Tokyo) restano invariati, nessuna regressione. `git diff --check` pulito, `php -l` superato nel container.
+- File toccati: solo `www/includes/RuleEngine.php` (codice) e `docs/ux-myastral/DECISION_LOG_ux.md` (decisione UX-0006). Nessun altro file toccato.
+- Prossimo passo: Fase 3 della roadmap (confronto sistematico di tutte le regole/veti esistenti in `RuleEngine.php`, `FiltroEsclusione.php`, `RicercaRSFilters.php` contro le 34 regole ufficiali, per identificare ulteriori discrepanze non ancora note).
+
+## 2026-08-18 ter — Fase 3 allineamento 34 regole (branch feature/allineamento-myastral)
+
+- Completato il confronto sistematico richiesto dalla Fase 3 su tutti e tre i file indicati dalla roadmap:
+  - `RuleEngine.php` - già interamente auditato nelle Fasi 1 e 2 (UX-0001/UX-0006).
+  - `FiltroEsclusione.php` (121 righe, letto per intero) - nessuna discrepanza trovata. Il file e' gia' autodocumentato come filtro di visualizzazione proprietario, non una delle 34 regole, e non si applica alle RL; lo scope dello stellium era gia' stato allineato a I/VI/VIII/XII in una sessione precedente. Unico punto degno di nota (non un errore): il veto "Saturno RS in X casa" e' incondizionato e piu' severo della vera Regola 33 (che richiede un benefico in competizione), ma essendo gia' dichiarato esplicitamente proprietario non richiede correzione.
+  - `RicercaRSFilters.php` (862 righe, letto per intero) - tutta la logica di ricerca per le 7 condizioni tematiche (Decima, Lavoro, Amore, Casa, Salute, Denaro, Denaro Low) e' proprietaria di ASTROLAB, ispirata ai principi generali di Discepolo ma senza citare direttamente numeri di regole specifiche delle 34 ufficiali - nessuna regola mancante da aggiungere. Trovato un rischio di ambiguita' non un errore fattuale: dentro `verificaCondizioneSalute()` e `verificaCondizioneDenaroLow()` i passaggi interni erano etichettati "REGOLA 1/2/3/4/5", una numerazione puramente locale che pero' usa lo stesso formato delle vere regole di Discepolo. Corrette tutte e 7 le occorrenze, rinominate in "PASSO N" con nota esplicita "non e' la Regola N ufficiale" - solo commenti, nessuna modifica di logica (commit 29b239b).
+- Con questa sessione si chiude la **Fase 3** della roadmap (`docs/ROADMAP_34_REGOLE.md`): il confronto sistematico su tutti e tre i file e' completo, nessuna regola mancante trovata oltre a quelle gia' risolte in Fase 1/2.
+- Verifica: `php -l` superato nel container, `git diff --check` pulito, verifica funzionale in UI confermata dall'utente, suite di regressione `tests/run.php` eseguita dopo il commit (i 3 casi RSM reali restano invariati, nessuna regressione).
+- File toccati: solo `www/includes/RicercaRSFilters.php`. Nessun altro file toccato in questa sessione (nessuna nuova decisione UX necessaria, trattandosi di sole correzioni di commenti).
+- Prossimo passo: Fase 4 della roadmap (regole di metodo/peso - Regole 6, 22, 30 e simili, non veti ma criteri di importanza/peso da valutare se e come integrare in `RuleEngineExtended.php`) o Fase 5 (regole sui transiti - Regole 11, 12, 14, 15, 23, 24, 27, 28, da verificare se rilevanti per la ricerca RSM/RL o solo per `transiti.php`).
+
+## 2026-08-18 quater — Fase 4 allineamento 34 regole (branch feature/allineamento-myastral)
+
+- Verificate le Regole 6, 22 e 30 (regole di metodo/peso, non veti) sul motore RSM/RL (`RuleEngine.php` + `RuleEngineExtended.php`, lo scope indicato dalla roadmap): confermate gia' rispettate, nessuna modifica necessaria.
+  - Regola 30 ("importanza minima agli aspetti") e Regola 6 ("il pianeta retrogrado... valore bassissimo"): ne' aspetti (trigoni/quadrati/sestili) ne' retrogradazione sono mai calcolati nella valutazione RSM/RL - importanza zero, non solo minima.
+  - Regola 6, ordine di priorita' (ASC vs case natali, stellium, Sole, malefici soprattutto Marte, poi il resto): gia' esattamente l'ordine seguito in `calcolaVeti()` FASE 1, confermato durante l'audit delle Fasi 1-3.
+  - Regola 22 (conciliare transiti e RS in contrasto): non applicabile al motore di ricerca RSM/RL, che valuta solo il tema di Rivoluzione senza incrociare transiti in tempo reale (i transiti sono una feature separata, `transiti.php`).
+- Scoperto durante l'analisi un sottosistema separato e molto piu' ampio, `www/includes/forecast/` (~5000 righe, ~55 file: `AspectEngine.php`, `RetrogradeEngine.php`, `DignityEngine.php`, `PlanetStrengthEngine.php` ecc.), per la feature "Relazione Annuale" - mai menzionato nella roadmap delle 34 regole. Su indicazione esplicita del committente, questo sottosistema e' fuori scope per l'allineamento alle 34 regole: sono testi che interpretano narrativamente il risultato di una RSM gia' calcolata, non incidono su calcoli o regole di scarto/punteggio. Trattato come sistema separato, analogamente a `RuleEngineExtended.php`/`MYASTRAL_ALIGNMENT_MODE`.
+- Con questa sessione si chiude la **Fase 4** della roadmap (`docs/ROADMAP_34_REGOLE.md`): nessuna modifica di codice necessaria, motore RSM/RL gia' conforme.
+- Nessun file di codice toccato in questa sessione (solo verifica/analisi, nessuna decisione UX necessaria).
+- Prossimo passo: Fase 5 della roadmap (regole sui transiti - Regole 11, 12, 14, 15, 23, 24, 27, 28, da verificare se rilevanti per la ricerca RSM/RL o solo per `transiti.php`, area separata del progetto).
+
+## 2026-08-18 quinquies — Fase 5 allineamento 34 regole (branch feature/allineamento-myastral) - CHIUSURA PROGETTO
+
+- Verificate le Regole 11, 12, 14, 15, 23, 24, 27, 28 (regole sui transiti nel tempo): confermato che `ricerca.php`/`ricerca_rl.php` non elaborano mai transiti in tempo reale (lavorano solo sul tema di Rivoluzione statico) - queste regole non sono quindi rilevanti per la ricerca RSM/RL, coerentemente con quanto gia' confermato in Fase 4 per la Regola 22.
+- Verificato `transiti.php`: include `RuleEngine.php` ma non lo usa mai (nessuna chiamata a `valuta()` o simili) - residuo del clone da `rs.php` mai ripulito. La pagina mostra solo posizioni planetarie e aspetti Transito-Natale grezzi, senza alcuna logica di interpretazione o punteggio. Nessun codice non conforme da correggere: non esiste ancora nessuna logica che applichi le Regole 11/12/14/15/23/24/27/28 - costruirla sarebbe una funzionalita' nuova (interpretazione automatica dei transiti), non una correzione di qualcosa di esistente. Su indicazione del committente, chiusa cosi' com'e': nessuna azione, nessuna nuova funzionalita' richiesta in questa sessione.
+- Con questa sessione si chiude la **Fase 5**, ultima fase della roadmap (`docs/ROADMAP_34_REGOLE.md`).
+- Nessun file di codice toccato in questa sessione (solo verifica/analisi, nessuna decisione UX necessaria).
+
+### Riepilogo conclusivo del progetto "allineamento 34 regole" (Fasi 1-5, branch feature/allineamento-myastral)
+
+- **Fase 1** (regole a scarto automatico 4, 5, 31, 34): tutte allineate. Trovato e corretto un gap reale nella Regola 4 (il Sole in I/VI/XII non era un veto assoluto). Regola 34 implementata da zero. Regola 31 (stellium diviso XII/I) implementata. 3 etichette storiche sbagliate corrette.
+- **Fase 2** (Regola 26, Regola 33): Regola 26 verificata gia' corretta. Regola 33 completata in entrambi i casi (stessa casa incondizionata, spostata dal sistema opzionale `MYASTRAL_ALIGNMENT_MODE` al motore FREEZE; case adiacenti IX/X nuova).
+- **Fase 3** (audit sistematico `FiltroEsclusione.php` + `RicercaRSFilters.php`): nessuna regola ufficiale mancante, solo etichette interne ambigue corrette.
+- **Fase 4** (Regole di metodo/peso 6, 22, 30): gia' rispettate per costruzione (nessun uso di aspetti/retrogradazione, ordine di priorita' gia' conforme). Scoperto e dichiarato fuori scope il sottosistema `www/includes/forecast/` (interpretazione narrativa, non incide sui calcoli).
+- **Fase 5** (Regole sui transiti 11, 12, 14, 15, 23, 24, 27, 28): non rilevanti per la ricerca RSM/RL (che non usa mai transiti); `transiti.php` e' puramente descrittivo, nessuna interpretazione da correggere.
+- **Decisioni registrate:** UX-0001 (preesistente) - UX-0006 (questo lavoro), tutte in `docs/ux-myastral/DECISION_LOG_ux.md`.
+- **Conclusione:** per tutto cio' che riguarda scarto/ammissione di una RSM o RL nella ricerca (le regole a scarto automatico 4, 5, 31, 33, 34), il motore le applica ora in modo incondizionato e verificabile, indipendentemente dalla condizione cercata. Restano volutamente fuori da questo allineamento, su indicazione esplicita del committente: `RuleEngineExtended.php`/`MYASTRAL_ALIGNMENT_MODE` (punteggio sperimentale separato, UX-0001) e `www/includes/forecast/` (interpretazione narrativa della "Relazione Annuale", non incide sui calcoli).
+
+## 2026-08-18 sexies — Validazione post-progetto: confronto reale con myastral.org (branch feature/allineamento-myastral)
+
+- Caso reale usato per la validazione: Jannik Sinner (16/08/2001 00:52 locale, Sesto/Sexten BZ, lat 46.7019 lon 12.3504), RSM 2025, condizione Decima. astrolab restituiva 815 localita' valide, myastral.org ne raccomandava solo 8 (tutte nell'estremo nord del Canada, 56-66 gradi N).
+- Analizzate a fondo 5 delle 8 localita' di myastral (le uniche presenti nel database aeroporti di astrolab): **nessuna delle 34 regole ufficiali risultava violata** in nessun caso - il motore RuleEngine ha sempre restituito 0 veti dove applicabile.
+- Le 3 localita' restanti (Yathkyed Lake, Dubawnt Lake, Back River) sono risultate assenti dal database aeroporti di astrolab; una quarta (Ennadai Lake, IATA "YEI") ha il codice riassegnato nel DB astrolab a un aeroporto turco (Bursa Yenisehir) - gap di copertura dati, non di regole.
+- Nel corso della verifica e' stato trovato e confermato con precisione (0 gradi di scarto sul Sole di controllo) un **bug reale e sistematico preesistente**: il calcolo del tema natale usa il giorno locale (`data_nascita`) senza retrocederlo quando la conversione a GMT scavalca la mezzanotte all'indietro (es. nato a 00:52 locale UTC+2 -> vero istante UTC e' le 22:52 del giorno PRIMA, ma l'app usa comunque il giorno della nascita locale). Colpisce chiunque nasca con ora locale inferiore all'offset del fuso (es. 00-02 in Italia). Corrisponde al "bug noto sull'oscillazione dell'ora GMT" gia' documentato in `docs/ROADMAP_34_REGOLE.md` - confermato ma **lasciato fuori scope** su indicazione del committente, per una sessione dedicata futura.
+- Trovata la vera causa del divario 815 vs 8: **Baker Lake** (64.28 gradi N), pur non violando alcuna delle 34 regole, veniva scartata dal veto proprietario "astrolab-latitudine" (>60 gradi, non nel testo di Discepolo - gia' rietichettato in Fase 1). Su richiesta del committente, il veto e' stato declassato a nota informativa non bloccante (decisione UX-0007, vedi sotto): la localita' viene ora valutata normalmente con tutte le regole, punteggio e stelline, con in piu' l'avviso di cautela sulla latitudine estrema.
+- Verificato che i risultati sono ordinati solo per stelline decrescenti (`usort` in `ricerca_stream_api.php`), senza criterio secondario. Confermato dal committente che solo 2 localita' su 815 hanno 5 stelline (oltre 150 ne hanno 4): con il vecchio veto latitudine attivo, questo creava l'impressione di localita' valide "sepolte" tra le pagine, perche' il veto rimuoveva dai risultati le localita' artiche che altrimenti avrebbero completato correttamente la top-2. Dopo la correzione UX-0007, Lynn Lake e Baker Lake compaiono correttamente in cima alla prima pagina.
+- **UX-0007** (commit 034c116 docs, 82dc70e codice): veto proprietario "astrolab-latitudine" (>60 gradi) rimosso dai veti assoluti di `calcolaVeti()` e sostituito da una nota informativa nel canale `note` gia' esistente (stesso usato per altri avvisi non bloccanti). Testato su Baker Lake: passa da 1 veto/1 stellina a 0 veti/5 stelline, nota di cautela presente; controllo negativo (lat 45 gradi) conferma nessuna nota generata sotto soglia. Nessuna regressione sui 3 casi RSM reali.
+- Verifica: `php -l` superato nel container, `git diff --check` pulito, test funzionali con script PHP temporanei (poi rimossi, non committati) su piu' localita' reali (Kortrijk-Wevelgem, Lynn Lake, Baker Lake, XLB, YBT), suite di regressione `tests/run.php` eseguita dopo il commit.
+- File toccati: `www/includes/RuleEngine.php` (codice, UX-0007) e `docs/ux-myastral/DECISION_LOG_ux.md` (decisione UX-0007). Nessun altro file toccato.
+- **Conclusione della validazione:** il lavoro di allineamento alle 34 regole (Fasi 1-5) ha superato con successo un confronto reale contro il software di riferimento myastral.org - zero falsi positivi trovati sulle regole ufficiali. L'unico problema reale identificato e corretto era un'aggiunta proprietaria (veto latitudine), non una delle 34 regole. Resta aperto, volutamente fuori scope, il bug sistematico sul giorno di nascita in caso di conversione GMT a cavallo di mezzanotte.
+
+## 2026-08-19 — Toggle "Mostra Dati" su rs.php/rl.php e allineamento riga RL in ricerca_rl.php (branch feature/allineamento-myastral)
+
+- Aggiunto un toggle "Mostra Dati"/"Nascondi Dati" (freccia + testo, stile identico a "Nascondi Cuspidi"/"Mostra Gradi") per mostrare/nascondere le tabelle sotto ogni grafico. Tabelle nascoste di default al caricamento.
+  - CSS condiviso: nuova classe `.tema-info-row` in `css/style.css` (riga info ASC/MC + pulsante allineati orizzontalmente).
+  - JS condiviso: nuova funzione globale `toggleDatiTabella(suffix)` in `js/zodiac_wheel.js`, riusabile per ogni box.
+  - Applicato a `rs.php` (box Tema Natale + box Rivoluzione Solare) e `rl.php` (box Tema Natale + box Rivoluzione Lunare). Su indicazione del committente la feature resta scoped a queste due pagine: non estesa a `rilocazione.php`, `transiti.php`, `tema.php`.
+- Corretto disallineamento estetico in `ricerca_rl.php`: il pulsante "Aggiorna elenco RL" stava su una riga separata sotto la select, disallineando la barra filtri rispetto agli altri campi. Wrappati select+pulsante in un'unica riga flex (`.rl-index-row`), pulsante trasformato in icona-soltanto (rotondo, 🔄) con tooltip CSS custom via `data-tooltip`/`::after` (il `title` nativo del browser non risultava affidabile in hover) — modifica CSS page-scoped solo in `ricerca_rl.php`.
+- Verifica: `php -l` superato nel container per tutti i file PHP toccati, `node --check` superato su `zodiac_wheel.js`, `git diff --check` pulito, test funzionale confermato dal committente nel browser su entrambe le modifiche.
+- File toccati: `www/css/style.css`, `www/js/zodiac_wheel.js`, `www/rs.php`, `www/rl.php`, `www/ricerca_rl.php`. Nessuna decisione UX necessaria (RuleEngine.php non toccato).
+
+## 2026-08-19 bis — Sezioni collassabili "Sessioni Salvate" e "Bonus e Veti" in rs.php/rl.php (branch feature/allineamento-myastral)
+
+- Rese collassabili (chiuse di default, header cliccabile con freccina che ruota) due sezioni presenti identicamente in `rs.php` e `rl.php`:
+  - Card "Sessioni Salvate" (`#card-sessioni-rs` / `#card-sessioni-rl`).
+  - Intero box "Bonus e Veti" (`#valutazione`, comprese stelle/punteggio/condizione, non solo le liste sotto) — aggiunto anche un titolo "Bonus e Veti" che prima non esisteva.
+- Riuso del pattern grafico gia' esistente in `rs.php` per "Analisi Sensibilita' Oraria" (stessa classe `.sensib-chevron` per la freccina rotante). Aggiunte solo due nuove classi generiche condivise in `css/style.css` (`.collapse-toggle`, `.valutazione .collapse-toggle`) e una nuova funzione globale condivisa `toggleCollapse(suffix)` in `js/zodiac_wheel.js`, riusabile per entrambe le sezioni su entrambe le pagine — nessuna duplicazione di CSS/JS tra rs.php e rl.php.
+- Verifica: `php -l` superato nel container su entrambi i file PHP, `node --check` superato su `zodiac_wheel.js`, `git diff --check` pulito, test funzionale confermato dal committente nel browser su entrambe le pagine.
+- File toccati: `www/css/style.css`, `www/js/zodiac_wheel.js`, `www/rs.php`, `www/rl.php`. Nessuna decisione UX necessaria (RuleEngine.php non toccato).
+
+## 2026-08-19 — Fix bug giorno di nascita in conversione GMT (branch fix/giorno-nascita-gmt)
+
+- Risolto il bug sistematico gia' confermato in sessione 2026-08-18 (validazione 34 regole, caso Sinner): quando l'ora di nascita locale precede l'offset del fuso, il calcolo usava sempre `data_nascita` locale senza mai retrocederla al vero giorno UTC.
+- Creata funzione centralizzata `calcolaDataOraGmtCorretta()` in nuovo file `www/includes/NascitaGmtHelper.php`, basata su `DateTime` nativo di PHP. Durante l'implementazione trovato e corretto un bug aggiuntivo non previsto: `DateInterval` non gestiva offset frazionari (es. +5.5 India, -3.5 Terranova) se costruito in ore intere — corretto passando a secondi. Test unitari (`www/tests/test_gmt_helper.php`, 7 casi) tutti passati.
+- Migrati tutti gli 11 file lato server che abbinavano `data_nascita` a `ora_nascita_gmt`: `ricerca.php`, `ricerca_rl.php`, `rilocazione.php`, `rl.php`, `rs.php`, `stampa.php`, `tema.php`, `transiti.php`, `api/rl_api.php`, `api/stampa_pdf_api.php`, `includes/RicercaPageData.php`. Trovato e corretto un problema non previsto in `stampa.php` (giorno/mese/anno non allineati alla data GMT corretta, solo l'ora lo era).
+- Verifica: `php -l` superato su tutti i file nel container, `git diff --check` pulito (incluso un giro di pulizia trailing whitespace), container riavviato. Test funzionale reale confermato dal committente su 3 soggetti: Sinner 2 (16/08/2001 00:52 loc. +2 -> 15/08 22:52 GMT, cambio giorno confermato), Test Alice Springs (offset frazionario +9.5, nessun crash, giorno corretto), Lorenzo Diana (caso normale, nessuna regressione).
+- Commit `0bd5a3a`, pushato su `origin/fix/giorno-nascita-gmt`. PR non ancora aperta.
+- Fase 3 (coerenza lato client in `js/app.js`) e parte della Fase 4 (suite `tests/run.php`, query soggetti esistenti a rischio) restano aperte — vedi `docs/ROADMAP_BUG_GIORNO_GMT.md` per lo stato dettagliato fase per fase.
+- Durante l'allineamento della documentazione, diagnosticato (non risolto) un bug **distinto** gia' segnalato come fuori scope in `docs/ROADMAP_34_REGOLE.md`: oscillazione di un'ora esatta nell'offset GMT calcolato da `ottieniOffsetTimeZone()` (chiamata a timezonedb.com), causa diversa da quella corretta qui. Confermate con script diagnostico due cause concorrenti reali: fallback su longitudine che ignora il DST, e approssimazione "ora locale come UTC" che attraversa il confine DST per nascite vicine a un cambio d'ora. Dettagli in `docs/ROADMAP_BUG_GIORNO_GMT.md`. Richiede sessione dedicata separata.
+- File toccati: gli 11 file server-side sopra elencati + `www/includes/NascitaGmtHelper.php` e `www/tests/test_gmt_helper.php` (nuovi, codice); `docs/ROADMAP_BUG_GIORNO_GMT.md` e `docs/ROADMAP_34_REGOLE.md` (documentazione, in corso di allineamento in questa stessa sessione).
+
+## 2026-08-19 — Chiusura Fase 3 e Fase 4, fix bug giorno GMT (branch fix/giorno-nascita-gmt)
+
+- Fase 3 completata: badge visivo '+1/-1 Giorno' nel form soggetto (`index.php`), `aggiornaOraGmt()` riscritta in `js/app.js` con calcolo preciso al secondo (Date nativo, offset in secondi esatti). Verificato nel browser sui 3 casi. Commit `ed916f1`.
+- Fase 4 completata: suite `tests/run.php` eseguita (con `passthru` temporaneamente sbloccato nel container, poi ripristinato e verificato via md5sum identico) — RS, RL (13 rivoluzioni lunari), rilocazione tutte OK; sezione "Ricerca API" non eseguibile da CLI per limite pre-esistente della suite (richiede sessione HTTP/Apache), fuori scope.
+- Query soggetti a rischio: solo 4 trovati, tutti creati durante i test di questa sessione, nessun soggetto reale pre-esistente affetto; campo `ora_nascita_gmt` di questi 4 gia' corretto (creati dopo il fix), nessuna migrazione dati necessaria.
+- Lavoro fix/giorno-nascita-gmt considerato chiuso lato codice e verifica. PR da aprire su GitHub.
+- File toccati: `www/index.php`, `www/js/app.js` (codice); `docs/ROADMAP_BUG_GIORNO_GMT.md` (documentazione).
+
+## 2026-08-19 — Risolto bug oscillazione oraria DST da timezonedb.com (branch fix/oscillazione-dst-timezonedb)
+
+- Risolto il bug distinto diagnosticato in sessione precedente (2026-08-19, allineamento fix/giorno-nascita-gmt): oscillazione di un'ora nell'offset GMT calcolato da `ottieniOffsetTimeZone()` in `js/app.js`, causata da un'approssimazione strutturale (nessun istante UTC noto su cui basare la chiamata API).
+- Riscritta `ottieniOffsetTimeZone()` (app.js) e `calcolaTransiti()` (transiti.php, punto non previsto nella diagnosi originale, trovato durante la riverifica) con nuova funzione condivisa `calcolaOffsetPreciso()` basata su `Intl.DateTimeFormat` — nessuna chiamata API aggiuntiva, database IANA nativo del browser, algoritmo a due iterazioni per correggere i casi al confine DST.
+- Migliorati 3 punti "display-only" (`rl.js`, `rs.php`, `transiti.php::aggiornaFusoOrarioLocale()`) per mostrare "N/D" con tooltip invece di fallire silenziosamente quando l'API non risponde.
+- Verifica: test isolati con Node (6 casi, incluso confine DST primavera/autunno), stabilita' confermata (10 chiamate identiche = 10 risultati identici, zero oscillazione), test funzionali reali nel browser su form soggetto e pagina Transiti (offset corretto su entrambi i lati del confine DST 29/03/2026), nessuna regressione su RS/Transiti/RL in condizioni normali.
+- Suite `tests/run.php`: sezioni Backend e casi JSON RS passate; sezione RL non eseguibile per limite pre-esistente `passthru()` (non ri-sbloccato, non necessario per questo lavoro client-side).
+- File toccati: `www/js/app.js`, `www/js/rl.js`, `www/rs.php`, `www/transiti.php` (codice); `docs/ROADMAP_BUG_GIORNO_GMT.md`, `docs/ROADMAP_34_REGOLE.md` (documentazione, nota chiusa definitivamente).
+
+## 2026-08-19 — Header fisso, background zodiacale, pannello trascinabile
+
+- Header di navigazione reso fisso in cima (`position: fixed`), con compensazione `padding-top` sul body e riallineamento dell'intestazione sticky della tabella risultati ricerca (`.tabella-risultati th`, offset a 56px invece di 0) per non finire nascosta dietro la barra.
+- Aggiunto background al body con 3 simboli zodiacali (Vergine, Pesci, Scorpione) disegnati in SVG inline, tono su tono sul crema esistente (`#F2EDE4`), `background-attachment: fixed`. Dimensione ridotta su richiesta dopo prima verifica visiva.
+- Sfondo di 10 pannelli di contenuto (`.card`, `.tema-box`, `.controlli`, `.valutazione`, `.time-controls`, `.rl-timeline`, `#pannello-sensibilita`, `.tabella-risultati`, `.stats-bar`, `.pwd-box`) reso semi-trasparente (`rgba(255,255,255,0.88)`) per lasciar intravedere i simboli del background; dropdown, select, bottoni e modali lasciati bianco pieno per non compromettere la leggibilita'.
+- Pannello "Correzione tempo ed ora" (`#correzione-tempo-modal`, rs.php) reso trascinabile: drag scoped per id (non tocca altre eventuali finestre che riusassero le stesse classi `.annual-report-*`), maniglia sull'header esistente, limiti ai bordi della viewport, click sulla X di chiusura non attiva il trascinamento, posizione resettata alla chiusura. Nessuna modifica a dimensioni o colori.
+- Verifica: `php -l` su rs.php, `git diff --check` pulito, test funzionali reali confermati dal committente su tutti e 4 i punti (header fisso, background, trasparenza, drag).
+- File toccati: `www/css/style.css`, `www/rs.php`.
+
+## 2026-08-22 — Avvio idea "Astri in Cuspide" e creazione roadmap dedicata (branch feature/2-astri-in-cuspide)
+
+- Discussa con il committente l'idea di estendere il pannello "Astri nelle Case" per permettere la ricerca di piu' pianeti "in cuspide" di casa (entro l'orbo ufficiale di Regola 32), Supporter-gated, orbo fisso non configurabile dall'utente.
+- Creato branch `feature/2-astri-in-cuspide` a partire da `feature/allineamento-myastral`, per ereditare il lavoro gia' fatto sulle 34 regole e sul pannello "Astri nelle Case".
+- Confermato con il committente: le regole 4, 5, 31, 34 restano veti assoluti incondizionati del RuleEngine, applicati come oggi a prescindere dalla modalita' di ricerca che ha prodotto il candidato; l'orbo per la nuova modalita' segue quello gia' definito dalla Regola 32, senza reinventarlo.
+- Rilevata (analisi in sandbox di sola lettura) una divergenza reale e non ancora riconciliata tra `feature/allineamento-myastral` e `fase9-comparator-quota`, dal commit comune `a52c2e9`; il branch `chore/porta-feature-da-allineamento-myastral` porta manualmente alcune feature stabili verso l'altra linea. Il div `time-controls` di `rs.php` resta congelato per questo lavoro (nota gia' presente su quel branch, regressione gia' occorsa due volte).
+- Creato `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` con l'analisi completa e le 5 fasi di lavoro pianificate; aggiunta voce di rimando in `docs/ROADMAP.md`.
+- Nessuna modifica al codice applicativo in questa sessione: solo setup del branch e documentazione.
+- Registrata decisione **UX-0014** in `docs/ux-myastral/DECISION_LOG_ux.md` (nuova modalita'
+  'in cuspide' nel pannello Astri nelle Case), come richiesto dal FREEZE su
+  `RuleEngine.php`/`RicercaRSFilters.php` prima di toccare codice.
+- File toccati: `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` (nuovo), `docs/ROADMAP.md`,
+  `docs/ux-myastral/DECISION_LOG_ux.md`.
+
+## 2026-08-22 bis — Fase 1 (backend) completata: modalita' "cuspide" in Astri nelle Case (branch feature/2-astri-in-cuspide)
+
+- `verificaAstriInCasaDirectly()` (`RicercaRSFilters.php`) estesa con parametro opzionale `modalita`
+  per riga filtro ('in_casa', default invariato, oppure 'cuspide'). In modalita' 'cuspide' verifica
+  la distanza angolare pianeta-cuspide con `AstroUtils::diffAngolo()`, orbo fisso 2°30' (nuova
+  costante `ORBO_CUSPIDE_REGOLA32_GRADI`, Regola 32, non configurabile dall'utente).
+- `ricerca_stream_api.php` e `ricerca_stream_rl_api.php` aggiornati per passare `$caseRS` (gia' in
+  scope) alla funzione.
+- Nessuna modifica al `RuleEngine`: i veti 4/5/31/34 restano invariati a valle, la nuova modalita'
+  e' solo un criterio di selezione a monte.
+- Verifica: `php -l` superato nel container su tutti e 3 i file, `git diff --check` pulito, test
+  funzionale con script PHP temporaneo (non committato, rimosso dopo l'uso) eseguito nel container
+  - 5 casi verificati: pianeta entro orbo (0 violazioni), pianeta fuori orbo (1 violazione,
+  messaggio corretto), due pianeti combinati entrambi entro orbo nella stessa ricerca (0
+  violazioni, scenario centrale della feature), retro-compatibilita' con `modalita: 'in_casa'`
+  esplicita e con chiamata a 2 argomenti come prima della patch (0 violazioni in entrambi i casi,
+  nessuna rottura sulle ricerche esistenti).
+- Decisione UX-0014 gia' registrata in sessione precedente (stesso giorno) in
+  `docs/ux-myastral/DECISION_LOG_ux.md`.
+- Ancora non testabile da browser: la UI del pannello "Astri nelle Case" non espone ancora
+  l'opzione "cuspide" (Fase 2, non ancora fatta).
+- Commit `627379e`, pushato su `origin/feature/2-astri-in-cuspide`.
+- File toccati: `www/includes/RicercaRSFilters.php`, `www/api/ricerca_stream_api.php`,
+  `www/api/ricerca_stream_rl_api.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md` (Fase 1
+  marcata completata).
+
+## 2026-08-22 ter — Fase 2 (frontend) completata: UI modalita' "cuspide" in Astri nelle Case (branch feature/2-astri-in-cuspide)
+
+- `ricerca.php` e `ricerca_rl.php`: nuovo select "Vicinanza" per ogni riga regola del pannello
+  "Astri nelle Case" ('Ovunque nella casa' / 'In cuspide (Regola 32)'), stesso schema HTML/JS in
+  entrambi i file (clone gia' esistente).
+- Gating Supporter lato client: nuova chiave `USER_FEATURES.astri_in_cuspide`, opzione "cuspide"
+  disabilitata + suffisso "(Supporter)" via `applicaRestrizioniInterfaccia()`, nuova funzione
+  `onModalitaRegolaChange()` con `SUPPORTER_MESSAGE` — stesso pattern gia' in uso per
+  `dynamic_orb`/`grid_search`/`locality_search`.
+- `aggiungiRegola()`, `aggiornaListaRegole()`, `aggiornaSommarioAstri()`, `buildAstriInCasaParam()`
+  aggiornate per leggere, mostrare ("Cuspide N" invece di "Casa N" quando applicabile) e inviare
+  il campo `modalita` all'API.
+- Verificato prima della patch: nessuna sovrapposizione con le modifiche presenti su
+  `chore/porta-feature-da-allineamento-myastral` per questi due file (tooltip "Escluse dal
+  filtro", fix header sticky, dropdown condizioni RL) - divergenza reale ma confinata ad aree
+  diverse dal pannello Astri nelle Case.
+- Verifica: `php -l` superato nel container su entrambi i file, `git diff --check` pulito, test
+  funzionale reale nel browser confermato dal committente (accesso admin - bypassa `hasFeature()`
+  per definizione): select "Vicinanza" presente, opzione "In cuspide" correttamente bloccata per
+  utenti non-admin/non-Supporter (Fase 3 non ancora fatta), nessuna regressione sulla modalita'
+  "in casa" esistente.
+- Stato atteso e corretto: l'opzione "cuspide" resta bloccata per tutti gli utenti non-admin
+  (Supporter incluso) finche' la Fase 3 non registra la feature key in `Auth::hasFeature()`.
+- File toccati: `www/ricerca.php`, `www/ricerca_rl.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`
+  (Fase 2 marcata completata).
+
+## 2026-08-22 quater — Fase 3 (gating Supporter) completata + riportato fix "nome posizione mappa" (branch feature/2-astri-in-cuspide)
+
+- Fase 3 "Astri in Cuspide" completata: `Auth::hasFeature()` registra la chiave
+  `astri_in_cuspide` (Supporter-only, stesso pattern di `dynamic_orb`/`grid_search`/
+  `locality_search`). `ricerca_stream_api.php` e `ricerca_stream_rl_api.php` ora leggono
+  davvero il campo `modalita` dal parametro `astri_in_casa` (prima veniva silenziosamente
+  ignorato in parsing, nonostante il frontend lo inviasse gia' dalla Fase 2) e forzano
+  `'in_casa'` se l'utente non ha il piano Supporter — validazione server-side reale, non solo
+  lato client. Progetto "Astri in Cuspide" (Fasi 1-3) considerato completo lato codice.
+- Segnalata dal committente una regressione apparente sul fix "nome posizione dopo USA QUESTA
+  POSIZIONE su mappa" (rs.php) — verificato che NON e' una regressione introdotta da questo
+  lavoro: il fix (commit 3108ced) era stato applicato solo sul branch fix/nome-posizione-mappa
+  (creato da fase9-comparator-quota), mai su feature/allineamento-myastral/feature/2-astri-in-
+  cuspide, stessa divergenza di branch gia' documentata piu' volte in questa sessione.
+- Riportata la stessa identica patch (non cherry-pick, patch equivalente come da convenzione
+  gia' in uso su chore/porta-feature-da-allineamento-myastral) su `www/rs.php` in questo branch:
+  `usaPosizione()` ora fa reverse geocoding Nominatim al click su "USA QUESTA POSIZIONE" e
+  aggiorna `luogo-rs-input` (fallback "NaN" se la chiamata fallisce), riusando la funzione
+  `_estraiNomeLuogoNominatim()` gia' presente su questo branch.
+- Verifica: `php -l` superato nel container su tutti i file, `git diff --check` pulito, test
+  funzionale reale nel browser confermato dal committente su entrambi i punti (accesso admin per
+  la parte Supporter-gated, comportamento verificabile solo strutturalmente finche' non si
+  testa con un account Supporter/free reale).
+- File toccati: `www/includes/Auth.php`, `www/api/ricerca_stream_api.php`,
+  `www/api/ricerca_stream_rl_api.php`, `www/rs.php` (codice); `docs/ROADMAP_2_ASTRI_IN_CUSPIDE.md`
+  (Fase 3 marcata completata).
+
+## 2026-08-22 (sessione pomeridiana) — Creato FREEZE.md; riportato fix header sticky tabella risultati (branch feature/2-astri-in-cuspide)
+
+- Creato docs/FREEZE.md (nuovo documento): Sezione 1 chiarisce definitivamente che i due
+  sistemi "Rule Engine" del repository (le 120 Rule del forecast/Annual Report su main,
+  ADR-012, e le 34 regole di Discepolo in RuleEngine.php) sono completamente indipendenti;
+  Sezione 2 e' il registro dei fix noti che esistono solo su alcuni branch. Portato anche
+  su main (worktree dedicato, commit 3412d0c), con rimando aggiunto in START_HERE.md su
+  entrambi i branch.
+- Segnalata dal committente una seconda regressione nota (gia' in FREEZE.md): l'header
+  della tabella risultati copre la prima riga sia in RS che in RL. Confermato che e' lo
+  stesso caso della "versione superata" vs "versione buona" gia' documentato - la versione
+  buona esisteva solo su chore/porta-feature-da-allineamento-myastral (commit f914d2b).
+- Riportata la stessa identica soluzione CSS (nuovo contenitore .tabella-risultati-wrap con
+  scroll proprio, sticky th ancorato al contenitore invece che al viewport) su
+  www/css/style.css, www/ricerca.php, www/ricerca_rl.php - rimossi i 4+4 blocchi "spacer
+  temporaneo" (la versione superata), corretto anche un refuso di markup </td></td> presente
+  in entrambi i file. Non riportato il ripristino del pulsante icona "Aggiorna elenco RL"
+  incluso nel commit originale: non necessario su questo branch.
+- Verifica: php -l superato nel container su tutti e 3 i file, git diff --check pulito, test
+  funzionale reale nel browser confermato dal committente su ricerca.php e ricerca_rl.php.
+- File toccati: www/css/style.css, www/ricerca.php, www/ricerca_rl.php (codice);
+  docs/FREEZE.md (voce aggiornata).
+
+## 2026-08-22 (sera) — Aggiunta pagina statica 34_regole.html (branch feature/2-astri-in-cuspide)
+
+- Il committente ha aggiunto autonomamente (commit 89a0ee2, fuori dal workflow assistito)
+  www/34_regole.html: pagina statica standalone (Tailwind via CDN, nessuna logica server)
+  con le 34 regole di Morpurgo-Discepolo, e un nuovo link nel menu Help in
+  www/includes/header_nav.php.
+- Verificato a posteriori: contenuto coerente con lo stato reale del motore - 34 card, 5
+  con icona di avviso, esattamente le regole 4, 5, 31, 32, 34 (le uniche a scarto
+  automatico confermate in UX-0013/FREEZE.md); la Regola 33 correttamente senza avviso.
+  php -l superato su header_nav.php.
+- Corretto (commit 2b91ee6) un piccolo disallineamento: il tag <title> diceva ancora
+  "Morpurgo-Discepolo" mentre il titolo visibile in pagina era gia' "Le 34 Regole
+  dell'Astrologia Attiva (scuola Ciro Discepolo)".
+- File toccati: www/34_regole.html, www/includes/header_nav.php.
+
+## 23-08-2026 — Dashboard: mappa residenza, dropdown soggetti; scoperto bug geocoding Nominatim (branch new_dashboard + fix/geocoding-nominatim-precisione)
+
+- Proseguito lo sviluppo di `dashboard.php` (branch `new_dashboard`): dropdown soggetti
+  reale (nome auto-compilato se unico, "Seleziona Soggetto" se piu' d'uno), campi Data/Ora
+  di Nascita popolati dai dati reali (ora locale, non GMT, etichetta "(Local)" in
+  orangered), tab TEMA/RSM/LOCALITA'/AEROPORTI e bottoni Transiti/Rilocazione aggiornati
+  dinamicamente via JS in base al soggetto selezionato. I due pannelli grafico del mockup
+  originale (Cielo Natale / RS per residenza) sono stati eliminati su decisione esplicita:
+  `rs.php` mostra gia' entrambe le ruote insieme con pulsanti/collassabili/mappa,
+  duplicarli avrebbe richiesto iframe o duplicazione di logica - sostituiti dal tab RSM.
+- Aggiunta mappa interattiva (Leaflet 1.9.4, stessa versione gia' usata in rs.php/rl.php/
+  rilocazione.php) sotto i bottoni Transiti/Rilocazione: rapporto 3:1, marker circolare
+  color celeste centrato sulla residenza del soggetto selezionato (fallback a
+  latitudine/longitudine di nascita se la residenza non e' impostata, stessa logica gia'
+  in rs.php), completamente interattiva su richiesta esplicita del committente.
+- **Scoperto un bug reale** (non introdotto da questa sessione, solo reso visibile dalla
+  mappa): il geocoding via Nominatim per luogo di nascita/residenza puo' restituire le
+  coordinate di un'area amministrativa (provincia/regione/cantone) invece del centro
+  citta' preciso. Confermato con query dirette a Nominatim per "Caserta" (primo risultato
+  = provincia, secondo = citta') e "Zurigo" (primo risultato corretto, ma il secondo -
+  il Canton Zurigo - facilmente scambiato per errore). Non riguarda `ricerca.php` (motore
+  RSM per condizione, usa un database di localita' pre-caricato, non geocoding live).
+  Documentazione completa: `docs/BUG_GEOCODING_NOMINATIM.md`; voce anche in
+  `docs/ROADMAP.md` (sezione "BUG APERTO").
+- Aperto branch dedicato `fix/geocoding-nominatim-precisione` da `origin/main` (base scelta
+  perche' il codice del bug e' confermato presente li'). Fix parziale committato in
+  `www/js/app.js` (helper `_nominatimOrdinaRisultati`/`_nominatimEtichetta`, applicati a
+  `cercaLuogo()` e `cercaLuogoResidenza()`); restano da fare `cercaLuogoRS()` in `rs.php` e
+  `cercaLuogoRiloc()` in `rilocazione.php`. `transiti.php` non esiste su `main`, presente
+  solo su `fase9-comparator-quota` - fix da propagare separatamente li'.
+- **Incidente registrato**: passando dal branch `new_dashboard` a `fix/geocoding-nominatim-
+  precisione` (basato su `main`) sul Raspberry Pi live, il login e' entrato in loop.
+  Causa identificata: `main` ha una versione piu' vecchia di `Auth.php` con confronto
+  username case-sensitive/esatto, mentre `new_dashboard` usa `LOWER(TRIM())`
+  (case-insensitive) - cambiare branch cambia il codice servito ma non la sessione PHP ne'
+  lo schema DB. Risolto tornando su `new_dashboard` (login di nuovo funzionante). Lavoro
+  sul fix geocoding sospeso, da riprendere in una sessione dedicata sul branch
+  `fix/geocoding-nominatim-precisione`.
+- File toccati: `www/dashboard.php` (codice, branch new_dashboard); `www/js/app.js`
+  (codice, branch fix/geocoding-nominatim-precisione, WIP); `docs/roadmap_nuova_dashboard.md`,
+  `docs/BUG_GEOCODING_NOMINATIM.md`, `docs/ROADMAP.md` (documentazione).
+
+---
+
+## 2026-08-25 — Feature Stelline V2 (Sistema Valutativo Parallelo)
+
+**Branch:** `new_dashboard`
+**Stato:** IN CORSO (Fase 1 - Core Calculator)
+**Documentazione dedicata:** `docs/ROADMAP_STELLINE_V2.md`
+
+### Cosa si sta facendo
+Creazione di un sistema valutativo parallelo ("V2") per le stelline RSM/RL, basato su logica additiva per colore e allineato alla gerarchia delle 34 regole ufficiali di Astrologia Attiva. Il sistema V2 è completamente separato dal sistema attuale e serve come strumento di confronto per migliorare la qualità del ranking delle RS/RL valide.
+
+### Architettura decisa
+- **Zero modifiche a file esistenti** (RuleEngine.php e tutti gli altri restano intatti)
+- Nuovo file standalone: `www/includes/StellineV2Calculator.php`
+- Nuova API: `www/api/stelline_v2_api.php`
+- Nuova pagina admin-only: `www/test_stelline_v2.php` con link in navbar (solo admin)
+- Flusso: pagina admin → API → RuleEngine::valuta() (read-only) + StellineV2Calculator::calcola()
+
+### Decisioni tecniche chiave
+| Decisione | Motivazione |
+|-----------|-------------|
+| Logica additiva senza clamp | Visualizzazione "arcobaleno" di stelle colorate contigue richiesta esplicitamente |
+| Venere MAI bistabile | Solo Giove/Sole sono bistabili per Regola 8/9; Venere sempre verde anche in II/VII/VIII |
+| Stellium = entità unica | Trattato come singolo pianeta: benefico puro = 4-5★ verdi; misto = 1★/pianeta + ALERT ⚠️ |
+| Mercurio = 1★ gialla | Ricalibrazione accettata (era 2★ nel documento originale) |
+| Malefico in casa condizione = 1★ rossa | Contributo minimo ma non nullo |
+| Numeri celesti regole rispettate eliminati | Utente: "sovrappiù, lasciamo perdere" |
+| Legenda colori posticipata | Da implementare dopo il funzionamento base |
+| Veti assoluti immutati | Pre-filtro binario in calcolaVeti(), nessuna RS con veto entra in V2 |
+
+### Tabella pesi V2 definitiva
+ASC in X = 5★ verde | GI/VE cuspide angolare = 5★ verde | Stellium benefico cuspide = 5★ verde | VE casa cond = 4★ verde | GI casa cond (non II/VII/VIII) = 4★ verde | Stellium benefico casa cond = 4★ verde | Sole casa cond = 3★ verde | ASC casa cond = 3★ verde | Mercurio casa cond = 1★ gialla | Luna casa cond = 1★ gialla | Malefico casa cond = 1★ rossa | GI/SO in II/VII/VIII = 2★ arancio | VE in II/VII/VIII = 4★ verde | Stellium misto = 1★/pianeta + ALERT | Malefico III/IX = 0 | Malus: -2 ASC RS in VIII natale, -1 malefico in VII. Floor totale a 0.
+
+### File da creare (in ordine)
+1. `www/includes/StellineV2Calculator.php` — classe standalone (IN CORSO)
+2. `www/api/stelline_v2_api.php` — endpoint JSON
+3. `www/test_stelline_v2.php` — pagina confronto side-by-side
+4. Modifica minima `www/includes/header_nav.php` — link admin-only (solo dopo test funzionante)
+
+### File toccati in questa sessione
+- `docs/ROADMAP_STELLINE_V2.md` (creato)
+- `docs/HANDOVER_OPERATIVO_astrolab.md` (questa voce)
+- `docs/ROADMAP.md` (aggiornamento in corso)
+
+
+## 2026-08-26 — Sostituzione sistema stelline: V2 promosso a sistema primario in produzione (branch feature/sostituzione-stelline-v2)
+
+### Cosa è stato fatto
+Il sistema "Stelline V2" (nato come strumento di confronto parallelo, vedi voce
+del 2026-08-25) è stato promosso a sistema primario di valutazione a stelle in
+TUTTA l'interfaccia di produzione, sostituendo il vecchio punteggio di
+`RuleEngine::valuta()['stelline']` per ordinamento, filtro e visualizzazione.
+Documentazione dedicata completa: `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`.
+
+### Cosa NON è cambiato (scope esplicitamente limitato)
+`RuleEngine.php` resta congelato e invariato. Veti, `is_valida`,
+`passed_amore/casa/denaro`, la colonna "VAL" e tutti i filtri per condizione
+continuano a funzionare esattamente come prima — la migrazione ha toccato
+SOLO il punteggio a stelle mostrato/usato per ordinare e filtrare.
+
+### Bug scoperti e corretti in `StellineV2Calculator.php` durante l'analisi
+- Il bonus "ASC in X" e "ASC in casa condizione" controllavano una chiave
+  (`$case['ASC']['casa']`) mai presente nella struttura reale prodotta da
+  `SweCalc::calcolaCasePlacido()` — i due bonus non scattavano MAI. Corretto
+  mappando l'ASC di RS/RL sulle case del TEMA NATALE (non su quelle della
+  RS/RL stessa, che sarebbe concettualmente sbagliato). Valore ASC in X
+  confermato a 5★ (non 4).
+- `trovaCasaNatale()` usava chiavi `inizio`/`fine` inesistenti (la struttura
+  reale usa `longitudine` per cuspide) — riscritta riusando la stessa logica
+  di `SweCalc::trovaCasa()`.
+
+### Perimetro migrato (fasi 0-3, tutte completate e validate dal committente)
+- **RSM produzione**: `ricerca.php` / `api/ricerca_stream_api.php`
+- **RL produzione**: `ricerca_rl.php` / `api/ricerca_stream_rl_api.php`
+- **Vista singola**: `rs.php`/`api/rs_api.php`, `rl.php`/`api/rl_api.php`
+  (+ fix bug preesistente: valore alpha CSS non valido in `.valutazione`)
+- **Endpoint secondari**: `api/ricerca_griglia_api.php` (modalità
+  standard/astri), `api/sensibilita_api.php` (indice di stabilità)
+- **Verificati come NON applicabili** (non usano il sistema stelline):
+  `api/cuspidi_search_api.php`, `api/rs_alert_api.php`
+- Colonna "Stelle" (vecchio sistema) rimossa dall'interfaccia di ricerca,
+  "V2" rinominata in "Ranking" — unico punteggio visibile
+
+### Fase 4 (rimozione vecchio sistema) — parziale, per scelta esplicita
+Rete di sicurezza creata prima di iniziare: tag `safety-net-pre-rimozione-vecchio-sistema`.
+Rimosso il vecchio sistema come fallback/tiebreaker in 6 file su 7 (ogni
+rimozione commentata inline, non cancellata, per rollback puntuale immediato).
+**`api/stampa_pdf_api.php` lasciato volutamente in sospeso**: il report PDF
+combinato che questo endpoint alimenta (via `stampa.php`) risulta
+irraggiungibile in produzione — il link che dovrebbe attivarlo non compare
+mai in `rs.php` né in `rilocazione.php` (stesso bug di visibilità in
+entrambi i punti, causa non diagnosticata, preesistente a questa
+migrazione). Il committente ha confermato di non usare questa feature
+(usa le stampe dirette browser-print di RS/RL/Rilocazione, meccanismo
+separato e non toccato). Decisione: lasciare il file com'è, TODO annotato
+in `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md` per una sessione futura
+dedicata (eliminare la feature oppure correggerne la visibilità).
+
+### File NON committati, lasciati intenzionalmente fuori da questo lavoro
+- `www/compare_ril.php` / `www/compare_rs.php`: modifiche WIP del
+  committente su una feature di confronto separata, precedenti a questa
+  migrazione (checkpoint dedicato `checkpoint-wip-confronto-sospeso`)
+- `www/api/stelline_v2_api.php`: file non tracciato, probabile abbozzo
+  superato da `ricerca_stream_v2_api.php`, mai committato
+
+### Test eseguiti
+Ogni singolo file modificato (>15 file complessivi) verificato con
+`php -l`, `git status`/`git diff` per isolamento delle modifiche, e test
+funzionale reale confermato dal committente prima di ogni commit — un
+checkpoint git (tag) per ogni singolo passaggio, elencati per intero in
+`docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`.

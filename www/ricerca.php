@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
 // ===== INIZIO PATCH AUTH MULTI-ASTROLOGO =====
 session_start();
 require_once 'includes/Auth.php';
@@ -14,6 +15,9 @@ $soggettoNome   = $auth->getSoggettoNome();
 // ===== FINE PATCH AUTH MULTI-ASTROLOGO =====
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
+
+// Permette di preselezionare il tipo di ricerca via URL (es. da dashboard.php)
+$tipoLocalitaDefault = ($_GET['tipo'] ?? '') === 'localita' ? 'localita' : 'aeroporti';
 // ---- QUERY SOGGETTI CON FILTRO PER UTENTE ----
 
 require_once __DIR__ . '/includes/RicercaPageData.php';
@@ -26,6 +30,7 @@ require_once __DIR__ . '/includes/RicercaPageData.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ricerca Località — Astrologia Attiva</title>
 <link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Eb+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 </head>
 <body>
 <?php $paginaAttiva = 'ricerca'; include 'includes/header_nav.php'; ?>
@@ -53,7 +58,7 @@ BARRA CONTROLLI PRINCIPALE
 <div class="form-group">
 <label>Anno RS</label>
 <select id="anno-rs">
-<?php for ($y = 1960; $y <= $annoCorrente + 5; $y++): ?>
+<?php for ($y = 1960; $y <= $annoCorrente + 7; $y++): ?>
 <option value="<?= $y ?>" <?= $y == $annoCorrente ? 'selected' : '' ?>><?= $y ?></option>
 <?php endfor; ?>
 </select>
@@ -69,8 +74,8 @@ BARRA CONTROLLI PRINCIPALE
 <div class="form-group">
 <label>Tipo località</label>
 <select id="tipo-localita" onchange="onTipoLocalitaChange(this.value)">
-<option value="aeroporti">Aeroporti</option>
-<option value="localita">Località</option>
+<option value="aeroporti" <?= $tipoLocalitaDefault === 'aeroporti' ? 'selected' : '' ?>>Aeroporti</option>
+<option value="localita" <?= $tipoLocalitaDefault === 'localita' ? 'selected' : '' ?>>Località</option>
 </select>
 </div>
 <div class="form-group" id="wrap-nazione-localita" style="display:none">
@@ -184,6 +189,13 @@ SUB-PANNELLO: ASTRI NELLE CASE
 <select id="nuova-condizione-select">
 <option value="deve">✓ Lo VOGLIO in questa casa</option>
 <option value="evita">✗ NON lo voglio in questa casa</option>
+</select>
+</div>
+<div class="form-group">
+<label>Vicinanza</label>
+<select id="nuova-modalita-select" onchange="onModalitaRegolaChange(this)">
+<option value="in_casa">Ovunque nella casa</option>
+<option value="cuspide">In cuspide (Regola 32)</option>
 </select>
 </div>
 <button class="btn-aggiungi" onclick="aggiungiRegola()">+ Aggiungi regola</button>
@@ -379,8 +391,11 @@ Allargamento automatico orbe
 <div><span>Condizione: </span><b id="info-rs-cond">—</b></div>
 <div><span>Aeroporti calcolati: </span><b id="info-rs-calcolati">—</b></div>
 <div id="info-rs-esclusi-wrap" style="display:none">
-<span title="RS escluse perché presentano Sole/Marte in I/VI/XII RS, ASC RS in I/VI/XII natale, Saturno in X RS o uno stellium in qualsiasi casa RS">
-⚠️ Escluse dal filtro:
+<span>⚠️ Escluse dal filtro:
+<span class="tooltip-wrap">
+    <i class="tooltip-icon">i</i>
+    <span class="tooltip-box">RS escluse perché presentano Sole/Marte in I/VI/XII RS, ASC RS in I/VI/XII natale, Saturno in X RS o uno stellium in qualsiasi casa RS. Questo è un filtro aggiuntivo di Astrolab, non parte delle 34 regole ufficiali dell'Astrologia Attiva: alle latitudini estreme può escludere risultati che altri software di riferimento (es. MyAstral.org) mostrano comunque, perché lì gli stellium sono più frequenti per compressione delle case.</span>
+</span>
 </span> <b id="info-rs-esclusi">—</b>
 </div>
 <div><span>Tempo: </span><b id="info-rs-tempo">—</b></div>
@@ -410,14 +425,20 @@ JAVASCRIPT
 <script>
 // ── Dati soggetti dal PHP ──────────────────────────────────────────────────
 const soggettiData = <?= json_encode(array_map(function($s) {
-$oraGmt = explode(':', $s['ora_nascita_gmt'] ?? '12:00');
-$date   = new DateTime($s['data_nascita']);
+// Calcolo corretto data/ora GMT gestendo il cambio di giorno
+$gmtData = calcolaDataOraGmtCorretta(
+    $s['data_nascita'],
+    $s['ora_nascita'],
+    (float)($s['offset_gmt'] ?? 0)
+);
+$dateGmt = new DateTime($gmtData['data_gmt'] . ' ' . $gmtData['ora_gmt']);
+$oraGmtParts = explode(':', $gmtData['ora_gmt']);
 return [
 'id'     => (int)$s['id'],
-'giorno' => (int)$date->format('d'),
-'mese'   => (int)$date->format('m'),
-'anno'   => (int)$date->format('Y'),
-'ora_gmt'=> (int)$oraGmt[0] + ((int)($oraGmt[1] ?? 0) / 60),
+'giorno' => (int)$dateGmt->format('d'),
+'mese'   => (int)$dateGmt->format('m'),
+'anno'   => (int)$dateGmt->format('Y'),
+'ora_gmt'=> (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0) / 60),
 'lat'    => (float)$s['latitudine'],
 'lon'    => (float)$s['longitudine'],
 ];
@@ -437,6 +458,19 @@ const ASTRO_NOMI = {
 };
 const CONDIZIONE_CUSPIDI = '— Longitudine Cuspidi —';
 const CONDIZIONE_ASTRI   = '— Astri nelle Case —';
+
+const USER_FEATURES = {
+    locality_search: <?= json_encode($auth->hasFeature('locality_search')) ?>,
+    grid_search: <?= json_encode($auth->hasFeature('grid_search')) ?>,
+    dynamic_orb: <?= json_encode($auth->hasFeature('dynamic_orb')) ?>,
+    astri_in_cuspide: <?= json_encode($auth->hasFeature('astri_in_cuspide')) ?>
+};
+
+const SUPPORTER_MESSAGE = 'Questa funzione è riservata agli utenti del piano Supporter.';
+const COMPARATOR_LIMIT = <?= json_encode($auth->getComparatorLimit()) ?>;
+const COMPARATOR_LIMIT_MESSAGE = COMPARATOR_LIMIT < 3
+    ? 'Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 RSM è necessario il piano Supporter.'
+    : `Puoi confrontare al massimo ${COMPARATOR_LIMIT} RSM.`;
 // ── Stato ────────────────────────────────────────────────────────────────
 let stato = {
 tutti:        [],
@@ -453,6 +487,69 @@ analizzatiFinoA: 0,
 ricercaCompletata: true,
 };
 let eventoCorrente = null;
+
+const RICERCA_STORAGE_KEY = 'astrolabRicercaStato';
+
+function salvaStatoRicerca() {
+    if (!stato.tutti.length) return;
+
+    const payload = {
+        stato: {
+            tutti: stato.tutti,
+            modalita: stato.modalita,
+            filtroNaz: stato.filtroNaz,
+            filtroStelle: stato.filtroStelle,
+            pagina: stato.pagina,
+            perPagina: stato.perPagina,
+            confronto: stato.confronto,
+            offsetRicerca: stato.offsetRicerca,
+            analizzatiFinoA: stato.analizzatiFinoA,
+            ricercaCompletata: stato.ricercaCompletata
+        },
+        controlli: {
+            soggetto: document.getElementById('sel-soggetto').value,
+            anno: document.getElementById('anno-rs').value,
+            condizione: document.getElementById('condizione').value
+        },
+        scrollY: window.scrollY
+    };
+
+    try {
+        sessionStorage.setItem(RICERCA_STORAGE_KEY, JSON.stringify(payload));
+    } catch (errore) {
+        console.warn('Impossibile salvare lo stato della ricerca:', errore);
+    }
+}
+
+function ripristinaStatoRicerca() {
+    const json = sessionStorage.getItem(RICERCA_STORAGE_KEY);
+    if (!json) return;
+
+    try {
+        const payload = JSON.parse(json);
+        sessionStorage.removeItem(RICERCA_STORAGE_KEY);
+        if (!payload?.stato?.tutti?.length) return;
+
+        Object.assign(stato, payload.stato);
+
+        if (payload.controlli) {
+            document.getElementById('sel-soggetto').value = payload.controlli.soggetto || '';
+            document.getElementById('anno-rs').value = payload.controlli.anno || '';
+            document.getElementById('condizione').value = payload.controlli.condizione || '';
+            onCondizioneChange(document.getElementById('condizione').value);
+        }
+
+        renderTabella();
+
+        requestAnimationFrame(() => {
+            window.scrollTo(0, Number(payload.scrollY) || 0);
+        });
+    } catch (errore) {
+        console.warn('Stato della ricerca non valido:', errore);
+        sessionStorage.removeItem(RICERCA_STORAGE_KEY);
+    }
+}
+
 // ════════════════════════════════════════════════════════════════════════
 //  TOGGLE PANNELLI
 // ════════════════════════════════════════════════════════════════════════
@@ -463,9 +560,54 @@ const vis   = panel.classList.toggle('visibile');
 btn.classList.toggle('aperto', vis);
 }
 function onTipoLocalitaChange(val) {
+const select = document.getElementById('tipo-localita');
+
+if (val === 'localita' && !USER_FEATURES.locality_search) {
+alert(SUPPORTER_MESSAGE);
+select.value = 'aeroporti';
+val = 'aeroporti';
+}
+
 const ricercaLocalita = val === 'localita';
 document.getElementById('wrap-nazione-localita').style.display = ricercaLocalita ? '' : 'none';
 document.getElementById('wrap-numero-localita').style.display = ricercaLocalita ? '' : 'none';
+}
+
+function onModalitaRegolaChange(select) {
+if (select.value === 'cuspide' && !USER_FEATURES.astri_in_cuspide) {
+alert(SUPPORTER_MESSAGE);
+select.value = 'in_casa';
+}
+}
+
+function applicaRestrizioniInterfaccia() {
+const localitaOption = document.querySelector('#tipo-localita option[value="localita"]');
+if (localitaOption && !USER_FEATURES.locality_search) {
+localitaOption.disabled = true;
+localitaOption.textContent = 'Località (Supporter)';
+}
+
+const gridSelect = document.getElementById('filt-grid-search');
+if (gridSelect && !USER_FEATURES.grid_search) {
+Array.from(gridSelect.options).forEach(option => {
+if (option.value !== 'no') {
+option.disabled = true;
+option.textContent += ' (Supporter)';
+}
+});
+}
+
+const dynamicOrbOption = document.querySelector('#filt-espandi-orbe option[value="si"]');
+if (dynamicOrbOption && !USER_FEATURES.dynamic_orb) {
+dynamicOrbOption.disabled = true;
+dynamicOrbOption.textContent = 'Abilitato (Supporter)';
+}
+
+const modalitaCuspideOption = document.querySelector('#nuova-modalita-select option[value="cuspide"]');
+if (modalitaCuspideOption && !USER_FEATURES.astri_in_cuspide) {
+modalitaCuspideOption.disabled = true;
+modalitaCuspideOption.textContent += ' (Supporter)';
+}
 }
 
 function localizzaNomiNazioni() {
@@ -584,12 +726,19 @@ function aggiungiRegola() {
 const pianeta = document.getElementById('nuovo-astro-select').value;
 const casa    = parseInt(document.getElementById('nuova-casa-select').value);
 const vuole   = document.getElementById('nuova-condizione-select').value === 'deve';
+const modalitaSelect = document.getElementById('nuova-modalita-select');
+let modalita = modalitaSelect.value;
+if (modalita === 'cuspide' && !USER_FEATURES.astri_in_cuspide) {
+alert(SUPPORTER_MESSAGE);
+modalitaSelect.value = 'in_casa';
+modalita = 'in_casa';
+}
 const esiste = regoleAstri.some(r => String(r.pianeta) === String(pianeta));
 if (esiste) {
 alert('Esiste già una regola per ' + ASTRO_NOMI[pianeta] + '. Rimuovila prima di aggiungerne una nuova.');
 return;
 }
-regoleAstri.push({ pianeta: pianeta === 'ASC' ? 'ASC' : parseInt(pianeta), casa, vuole });
+regoleAstri.push({ pianeta: pianeta === 'ASC' ? 'ASC' : parseInt(pianeta), casa, vuole, modalita });
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 }
@@ -618,13 +767,14 @@ const sim    = ASTRO_SIMBOLI[pKey] || '★';
 const nome   = ASTRO_NOMI[pKey] || pKey;
 const azione = r.vuole ? '✓ VOGLIO in' : '✗ NON VOGLIO in';
 const cls    = r.vuole ? 'deve' : 'evita';
+const modalitaLabel = r.modalita === 'cuspide' ? 'Cuspide' : 'Casa';
 html += `<div class="regola-item ${cls}">
 <div class="regola-info">
 <span class="astro-simbolo">${sim}</span>
 <span class="astro-nome">${nome}</span>
 </div>
 <div class="regola-azione ${cls}">${azione}</div>
-<div class="casa-numero">Casa ${r.casa}</div>
+<div class="casa-numero">${modalitaLabel} ${r.casa}</div>
 <button class="btn-rimuovi" onclick="rimuoviRegola(${idx})">✕</button>
 </div>`;
 });
@@ -639,13 +789,14 @@ const pKey = String(r.pianeta);
 const sim  = ASTRO_SIMBOLI[pKey] || '★';
 const nome = ASTRO_NOMI[pKey] || pKey;
 const cls  = r.vuole ? 'tag-deve' : 'tag-evita';
-const txt  = r.vuole ? `→ Casa ${r.casa}` : `✗ Casa ${r.casa}`;
+const modalitaLabel = r.modalita === 'cuspide' ? 'Cuspide' : 'Casa';
+const txt  = r.vuole ? `→ ${modalitaLabel} ${r.casa}` : `✗ ${modalitaLabel} ${r.casa}`;
 return `<span class="tag-regola ${cls}">${sim} ${nome} ${txt}</span>`;
 }).join('');
 sommario.classList.add('visibile');
 }
 function buildAstriInCasaParam() {
-return regoleAstri.map(r => ({ pianeta: r.pianeta, casa: r.casa, vuole: r.vuole }));
+return regoleAstri.map(r => ({ pianeta: r.pianeta, casa: r.casa, vuole: r.vuole, modalita: r.modalita || 'in_casa' }));
 }
 // ════════════════════════════════════════════════════════════════════════
 //  HELPERS GENERALI
@@ -948,6 +1099,9 @@ function avviaRicercaGrigliaCuspidi(s, espansioneOrbe) {
         mostra_escluse:  getMostraEscluse(),
     });
     aggiungiParamsGeografici(params);
+    if (espansioneOrbe) {
+        params.set('espansione_orbe', '1');
+    }
     stato.ultimiParams = params;
 
     eventoCorrente = new EventSource('api/ricerca_griglia_api.php?' + params.toString());
@@ -1094,6 +1248,9 @@ escludi_militari:document.getElementById('escludi-militari').value,
 mostra_escluse: getMostraEscluse(),
 });
 aggiungiParamsGeografici(params);
+if (espansioneOrbe) {
+params.set('espansione_orbe', '1');
+}
 // Salva params per eventuale espansione
 stato.ultimiParams = params;
 eventoCorrente = new EventSource('api/cuspidi_search_api.php?' + params.toString());
@@ -1282,9 +1439,23 @@ collegaHandlerProgressEDone(ev, params, [...stato.tutti]);
 // ── Pulsante espandi orbe (fallback manuale) ──────────────────────────────
 function mostraBottoneEspandi() {
 const area = document.getElementById('risultati-area');
+const precedente = document.getElementById('btn-espandi-orbe-wrap');
+if (precedente) precedente.remove();
+
 const wrap = document.createElement('div');
 wrap.id = 'btn-espandi-orbe-wrap';
 wrap.className = 'espandi-wrap';
+
+if (!USER_FEATURES.dynamic_orb) {
+wrap.innerHTML = `
+<div style="color:#888;font-size:12px;margin-bottom:8px">
+Nessun risultato trovato con la tolleranza attuale.
+</div>
+<div class="msg-error-box">${SUPPORTER_MESSAGE}</div>`;
+area.prepend(wrap);
+return;
+}
+
 wrap.innerHTML = `
 <div style="color:#888;font-size:12px;margin-bottom:8px">
 Nessun risultato trovato con la tolleranza attuale.
@@ -1361,7 +1532,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
 
         return `<tr class="${rigaCls}">
             <td style="color:#999;font-size:11px">${offset+idx+1}</td>
-            <td>${stelleHtml(r.stelline)}</td>
+            <td>${r.v2_html||'—'}</td>
             <td><div class="td-val-wrap"><div><span class="val-badge">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${vicinanzaHtml}${pannelloVeti}</div></td>
             <td style="color:#888">${r.lat.toFixed(3)}</td>
             <td style="color:#888">${r.lon.toFixed(3)}</td>
@@ -1376,10 +1547,10 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </div>
             <div class="totale-label">${totale.toLocaleString()} punti validi · pag. ${pagina} / ${totPagine}</div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="tabella-risultati-wrap">
             <table class="tabella-risultati">
                 <thead><tr>
-                    <th>#</th><th>Stelle</th><th>VAL</th><th>Lat</th><th>Lon</th><th>RS</th>
+                    <th>#</th><th>Ranking</th><th>VAL</th><th>Lat</th><th>Lon</th><th>RS</th>
                 </tr></thead>
                 <tbody>${righe||'<tr><td colspan="6" class="empty-results">Nessun punto trovato.</td></tr>'}</tbody>
             </table>
@@ -1440,7 +1611,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </div>
             <div class="totale-label">${totale.toLocaleString()} punti trovati · pag. ${pagina} / ${totPagine}</div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="tabella-risultati-wrap">
             <table class="tabella-risultati">
                 <thead><tr>
                     <th>#</th><th>Casa ${casa} (cuspide RS)</th><th>Lat</th><th>Lon</th><th>RS</th>
@@ -1462,6 +1633,9 @@ const confrontoToolbar = stato.confronto.length >= 2
 <button type="button" id="btn-confronta-selezioni">
 Confronta le ${stato.confronto.length} selezioni
 </button>
+<span style="font-size:12px;color:#666">
+${stato.confronto.length}/${COMPARATOR_LIMIT} selezionate
+</span>
 </div>`
 : '';
 const totPagine = Math.max(1, Math.ceil(totale / stato.perPagina));
@@ -1534,7 +1708,7 @@ vetiRighe +
 : '';
 return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
-<td>${stelleHtml(r.stelline)}</td>
+<td>${r.v2_html||'—'}</td>
 <td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
 <td>${codicePunto}</td>
 <td style="max-width:200px"><strong>${nomePunto}</strong>${popolazione}</td>
@@ -1568,10 +1742,10 @@ document.getElementById('risultati-area').innerHTML = `
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
 ${confrontoToolbar}
-<div style="overflow-x:auto">
+<div class="tabella-risultati-wrap">
 <table class="tabella-risultati">
 <thead><tr>
-<th>#</th><th>Stelle</th><th>VAL</th>
+<th>#</th><th>Ranking</th><th>VAL</th>
 <th>Codice / Tipo</th><th>Punto geografico</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th><th>Confronta</th>
 </tr></thead>
@@ -1639,14 +1813,14 @@ document.getElementById('risultati-area').innerHTML = `
 </div>
 <div class="totale-label">${totale.toLocaleString()} risultati · pag. ${pagina} / ${totPagine}</div>
 </div>
-<div style="overflow-x:auto">
+<div class="tabella-risultati-wrap">
 <table class="tabella-risultati">
 <thead><tr>
 <th>#</th><th>Casa ${casa} (cuspide RS)</th>
 <th>IATA / ICAO</th><th>Aeroporto</th>
 <th>Città</th><th>Naz.</th><th>Lat</th><th>Lon</th><th>RS</th>
 </tr></thead>
-<tbody>${righe||'<tr><td colspan="9" class="empty-results">Nessun risultato. Prova ad aumentare la tolleranza.</td></td>'}</tbody>
+<tbody>${righe||'<tr><td colspan="9" class="empty-results">Nessun risultato. Prova ad aumentare la tolleranza.</td></tr>'}</tbody>
 </table>
 </div>
 ${buildPaginazione(pagina, totPagine)}`;
@@ -1659,7 +1833,8 @@ function getRisultatiConfronto() {
             r.lat,
             r.lon,
             r.iata || '',
-            r.icao || ''
+            r.icao || '',
+            r.nome || ''
         ].join('|') === key);
     }).filter(Boolean);
 }
@@ -1671,11 +1846,13 @@ function setFiltroStelle(v) { stato.filtroStelle = parseInt(v)||0; stato.pagina 
 
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
+applicaRestrizioniInterfaccia();
 aggiornaListaRegole();
 aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
 caricaNazioniLocalita();
 onTipoLocalitaChange(document.getElementById('tipo-localita').value);
+ripristinaStatoRicerca();
 
 document.getElementById('risultati-area').addEventListener('change', function(event) {
     const checkbox = event.target.closest('.confronto-checkbox');
@@ -1686,9 +1863,9 @@ document.getElementById('risultati-area').addEventListener('change', function(ev
     if (checkbox.checked) {
         if (stato.confronto.includes(key)) return;
 
-        if (stato.confronto.length >= 3) {
+        if (stato.confronto.length >= COMPARATOR_LIMIT) {
             checkbox.checked = false;
-            alert('Puoi confrontare al massimo 3 RS o rilocazioni.');
+            alert(COMPARATOR_LIMIT_MESSAGE);
             return;
         }
 
@@ -1701,6 +1878,12 @@ document.getElementById('risultati-area').addEventListener('change', function(ev
 });
 
 document.getElementById('risultati-area').addEventListener('click', function(event) {
+    const linkRs = event.target.closest('a.btn-usa');
+    if (linkRs) {
+        salvaStatoRicerca();
+        return;
+    }
+
     const button = event.target.closest('#btn-confronta-selezioni');
     if (!button) return;
 
@@ -1725,6 +1908,7 @@ document.getElementById('risultati-area').addEventListener('click', function(eve
         risultati
     };
 
+    salvaStatoRicerca();
     sessionStorage.setItem('astroDssConfrontoRs', JSON.stringify(payload));
     window.location.href = 'compare_rs.php';
 });
@@ -1736,8 +1920,20 @@ applicaOrbePreset(this.value);
 
 // Mostra/nasconde bbox lat quando si attiva la griglia
 document.getElementById('filt-grid-search').addEventListener('change', function() {
+    if (this.value !== 'no' && !USER_FEATURES.grid_search) {
+        alert(SUPPORTER_MESSAGE);
+        this.value = 'no';
+    }
+
     document.getElementById('wrap-griglia-bbox').style.display =
         this.value === 'no' ? 'none' : 'flex';
+});
+
+document.getElementById('filt-espandi-orbe').addEventListener('change', function() {
+    if (this.value === 'si' && !USER_FEATURES.dynamic_orb) {
+        alert(SUPPORTER_MESSAGE);
+        this.value = 'no';
+    }
 });
 });
 // ── Pannello veti inline ──────────────────────────────────────────────────

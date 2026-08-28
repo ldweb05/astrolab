@@ -72,6 +72,26 @@ switch ($action) {
         break;
 
     case 'inserisci':
+        if (!$isAdmin) {
+            $subjectsMax = $auth->getLimiteSoggettiEffettivo($userId);
+
+            $countStmt = $pdo->prepare("
+                SELECT COUNT(*)
+                FROM soggetti
+                WHERE utente_id = ?
+            ");
+            $countStmt->execute([$userId]);
+            $subjectsCount = (int)$countStmt->fetchColumn();
+
+            if ($subjectsMax !== null && $subjectsCount >= $subjectsMax) {
+                http_response_code(400);
+                echo json_encode([
+                    'errore' => 'Hai raggiunto il numero massimo di soggetti consentiti dal tuo piano.'
+                ]);
+                break;
+            }
+        }
+
         $stmt = $pdo->prepare("
             INSERT INTO soggetti
             (codice, nome, data_nascita, ora_nascita, ora_nascita_gmt,

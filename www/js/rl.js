@@ -149,7 +149,8 @@ const RLModule = (function () {
              if (loadingEl) loadingEl.style.display = 'none';
              if (!data.ok) { _mostraErrore(data.errore || 'Errore calcolo RL.'); return; }
              _rlList  = data.rl_list || [];
-             _rlIndex = _trovaIndiceCorrente(_rlList);
+             const _rlIndexUrl = new URLSearchParams(window.location.search).get('rl_index');
+            _rlIndex = (_rlIndexUrl !== null && _rlList[parseInt(_rlIndexUrl)]) ? parseInt(_rlIndexUrl) : _trovaIndiceCorrente(_rlList);
              _popolaSelect(data);
              _costruisciTimeline(data);
              _setSelectDisabled(false);
@@ -418,7 +419,9 @@ const RLModule = (function () {
          const v = data.valutazione;
          const valEl = document.getElementById('valutazione');
          if (valEl) valEl.style.display = 'block';
-         _setText('val-stelle',    v.stelle_str || '');
+         // Fase 4: rimosso fallback al vecchio sistema (era: (data.valutazione_v2 && data.valutazione_v2.html) || v.stelle_str || '')
+         const _valStelleEl = document.getElementById('val-stelle');
+         if (_valStelleEl) _valStelleEl.innerHTML = (data.valutazione_v2 && data.valutazione_v2.html) || '';
          _setText('val-stringa',   v.val || '');
          _setText('val-condizione','☽ Condizione: ' + v.condizione);
          const vetiEl = document.getElementById('val-veti');
@@ -531,17 +534,29 @@ const RLModule = (function () {
          .then(ris => {
              const div = document.getElementById('luogo-rl-risultati');
              if (!div) return;
-             div.innerHTML = ris.map(r =>
-                 `<div class="dropdown-item"
-                       onclick="RLModule.selezionaLuogo(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
+             div.innerHTML = ris.map(r => {
+                 const nomeBreve = _estraiNomeLuogoNominatim(r).replace(/'/g,"\\'");
+                 return `<div class="dropdown-item"
+                       onclick="RLModule.selezionaLuogo(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}','${nomeBreve}')">
                      ${r.display_name}
-                 </div>`
-             ).join('');
+                 </div>`;
+             }).join('');
              div.classList.add('visible');
          });
  }
- function selezionaLuogo(lat, lon, nome) {
-     const citta = nome.split(',')[0].trim();
+ function _estraiNomeLuogoNominatim(r) {
+     const a = (r && r.address) || {};
+     const loc = a.city || a.town || a.village || a.municipality || a.hamlet || a.county;
+     const stato = a.state || a.region;
+     if (loc && stato && loc !== stato) return loc + ', ' + stato;
+     if (loc) return loc;
+     if (stato) return stato;
+     if (a.country) return a.country;
+     return (r.display_name || '').split(',')[0].trim();
+ }
+
+ function selezionaLuogo(lat, lon, nome, nomeBreve) {
+     const citta = nomeBreve || nome.split(',')[0].trim();
      _luogoRL = citta;
      const inpLuogo = document.getElementById('luogo-rl-input');
      if (inpLuogo) inpLuogo.value = citta;
@@ -580,28 +595,48 @@ const RLModule = (function () {
          );
          const ts  = Math.floor(utcMs / 1000);
          const key = TIMEZONE_API_KEY; // definita in app.js, caricato prima di rl.js
+         const mostraElemento = (html, title) => {
+             const hrlEl = document.getElementById('header-rl');
+             if (!hrlEl) return;
+             let oraLocEl = document.getElementById('rl-ora-locale-wrap');
+             if (!oraLocEl) {
+                 oraLocEl = document.createElement('div');
+                 oraLocEl.id = 'rl-ora-locale-wrap';
+                 hrlEl.appendChild(oraLocEl);
+             }
+             if (title) oraLocEl.title = title;
+             oraLocEl.innerHTML = html;
+         };
+
          fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${key}&format=json&by=position&lat=${lat}&lng=${lon}&time=${ts}`)
              .then(r => r.json())
              .then(tz => {
-                 if (tz.status !== 'OK') return;
-                 const oraLocale    = tz.formatted.split(' ')[1] || '—';
-                 const hrlEl = document.getElementById('header-rl');
-                 if (!hrlEl) return;
-                 let oraLocEl = document.getElementById('rl-ora-locale-wrap');
-                 if (!oraLocEl) {
-                     oraLocEl = document.createElement('div');
-                     oraLocEl.id = 'rl-ora-locale-wrap';
-                     hrlEl.appendChild(oraLocEl);
+                 if (tz.status !== 'OK') {
+                     mostraElemento(
+                         `<span class="rl-time-label">Ora locale: </span><b class="rl-time-value">N/D</b>` +
+                         `<span class="rl-time-label rl-time-label-spaced">Fuso: </span><b class="rl-time-value">N/D</b>`,
+                         'Servizio fuso orario non disponibile'
+                     );
+                     return;
                  }
+                 const oraLocale = tz.formatted.split(' ')[1] || '—';
                  const offsetH  = Math.round(tz.gmtOffset / 3600 * 10) / 10;
                  const segno    = offsetH >= 0 ? '+' : '';
-                 oraLocEl.innerHTML =
+                 mostraElemento(
                      `<span class="rl-time-label">Ora locale: </span>` +
                      `<b class="rl-time-value">${oraLocale}</b>` +
                      `<span class="rl-time-label rl-time-label-spaced">Fuso: </span>` +
-                     `<b class="rl-time-value">GMT ${segno}${offsetH}</b>`;
+                     `<b class="rl-time-value">GMT ${segno}${offsetH}</b>`,
+                     null
+                 );
              })
-             .catch(() => {});
+             .catch(() => {
+                 mostraElemento(
+                     `<span class="rl-time-label">Ora locale: </span><b class="rl-time-value">N/D</b>` +
+                     `<span class="rl-time-label rl-time-label-spaced">Fuso: </span><b class="rl-time-value">N/D</b>`,
+                     'Errore di rete verso servizio fuso orario'
+                 );
+             });
      } catch(e) {}
  }
  // ════════════════════════════════════════════════════════════════════════
