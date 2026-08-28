@@ -66,3 +66,25 @@ Dati, sezioni collassabili, DST timezonedb, header fisso) NON sono un
 sottoinsieme di new_dashboard (merge-base torna al vecchio a52c2e9, non
 al tip di chore) - vanno valutati singolarmente, uno alla volta, prima di
 un merge in blocco.
+
+
+## Passo 2 concluso (2026-08-28)
+
+fix/nome-posizione-mappa: codice gia assorbito in new_dashboard (via
+feature/2-astri-in-cuspide, 2026-08-22). Il suo unico commit di punta e
+solo docs (HANDOVER+DECISION_LOG). Nessun codice da migrare.
+
+chore/porta-feature-da-allineamento-myastral: tentato cherry-pick isolato
+di 67b3c5a (commento protezione anti-regressione time-controls) su
+consolidamento -> conflitto (il modale che il commento descrive non esiste
+ancora su main/consolidamento, e stato costruito nei commit precedenti di
+chore, gia superati da new_dashboard). Cherry-pick abortito, nessun danno.
+
+DECISIONE: rimandare al Passo 3 (quando si unira new_dashboard) i seguenti
+4 elementi residui di chore, ancora assenti in new_dashboard, da applicare
+li sopra dove la base esiste gia:
+1. Commento protezione anti-regressione time-controls (67b3c5a) - zero rischio
+2. Fix header sticky tabella risultati (f914d2b) - gia noto da FREEZE.md
+3. Sezioni collassabili Sessioni Salvate/Bonus e Veti (dcb72b2)
+4. Header fisso/pannello trascinabile (4879e6d) - da verificare con cura,
+   tocca la zona del div time-controls gia oggetto di regressioni ricorrenti
