@@ -88,3 +88,21 @@ li sopra dove la base esiste gia:
 3. Sezioni collassabili Sessioni Salvate/Bonus e Veti (dcb72b2)
 4. Header fisso/pannello trascinabile (4879e6d) - da verificare con cura,
    tocca la zona del div time-controls gia oggetto di regressioni ricorrenti
+
+
+## Analisi Passo 3 - avviato (2026-08-28)
+
+diff consolidamento vs new_dashboard: 128 file, +24765/-86250 righe.
+Numero enorme atteso: consolidamento e ancora basato su main (molto
+indietro), non riflette la vera distanza tra le linee di lavoro reali.
+
+CONFLITTO usort() CITATO NEL PROMPT DI SESSIONE: verificato risolto.
+www/ricerca_stream_api.php e stato spostato/riorganizzato in
+www/api/ricerca_stream_api.php durante levoluzione di new_dashboard.
+Il suo usort() attuale ordina SOLO su v2_stelle_totali (stelline V2),
+nessuna menzione di livello Decima/Regola 14 - coerente con il fatto che
+quel lavoro (mai committato) e stato scartato a fine sessione precedente.
+CONCLUSIONE: nessun conflitto di logica applicativa reale da arbitrare
+per il Passo 3. Resta solo il problema strutturale di allineare due basi
+di codice molto distanti (riorganizzazione cartelle inclusa, es. www/*.php
+API spostate in www/api/*.php).
