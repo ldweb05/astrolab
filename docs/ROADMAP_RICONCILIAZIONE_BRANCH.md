@@ -106,3 +106,35 @@ CONCLUSIONE: nessun conflitto di logica applicativa reale da arbitrare
 per il Passo 3. Resta solo il problema strutturale di allineare due basi
 di codice molto distanti (riorganizzazione cartelle inclusa, es. www/*.php
 API spostate in www/api/*.php).
+
+
+## Passo 3 completato (2026-08-28)
+
+Merge di new_dashboard in consolidamento: eseguito, zero conflitti reali,
+sintassi PHP/JS verificata su tutti i file (61 PHP + JS modificati).
+
+4 elementi residui di chore/porta-feature-da-allineamento-myastral applicati
+via cherry-pick su consolidamento, ora che new_dashboard fornisce la base
+necessaria:
+1. Commento protezione time-controls (67b3c5a) - applicato, conflitto minore
+   nel log HANDOVER risolto per ordine cronologico
+2. Fix header sticky tabella (f914d2b) - applicato; conflitto reale in
+   style.css (max-width 1250px + trasparenza) risolto mantenendo la
+   versione piu recente/attuale (HEAD) su decisione esplicita dellutente;
+   stesso approccio per piccolo conflitto in ricerca_rl.php (link font)
+3. Sezioni collassabili (dcb72b2) - applicato, conflitto minimo in rs.php
+   risolto mantenendo HEAD
+4. Header fisso/pannello trascinabile (4879e6d) - applicato; 12 blocchi di
+   conflitto in style.css (design bianco attuale vs design crema superato)
+   risolti TUTTI mantenendo HEAD su decisione esplicita dellutente
+   (lasciare il design attualmente in uso)
+
+Esito: solo 2 file risultano effettivamente diversi da new_dashboard puro
+dopo tutti e 4 i cherry-pick (HANDOVER_OPERATIVO_astrolab.md, rs.php) -
+tutto il resto (style.css, ricerca_rl.php, ricerca.php, rl.php) era gia
+completamente coperto da new_dashboard.
+
+STATO: riconciliazione codice completata. Prossimo passo: test funzionale
+visivo di consolidamento (secondo stack Docker su porta diversa, mai
+impostato finora), poi decisione su come/quando promuovere consolidamento
+a riferimento definitivo (es. merge in main).
