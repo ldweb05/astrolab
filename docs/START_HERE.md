@@ -201,6 +201,22 @@ Durante questa evoluzione il motore astrologico non è stato modificato.
 
 ---
 
+# Ricerca RSM — condizione Decima (Regola 14, UX-0015)
+
+Per la sola condizione Decima, con `MYASTRAL_ALIGNMENT_MODE` attivo, la
+ricerca RSM applica una gerarchia dedicata a 8 livelli (ASC in X casa
+natale, Giove/Venere/Sole in X casa RS, malefico segnalato, neutro) al
+posto del sistema stelline V2 come criterio di ordinamento principale —
+V2 resta visibile e usato come tie-break. Implementa la Regola 14
+ufficiale delle 34 regole di Discepolo (ASC in X indebolito da un
+pianeta lento in aspetto dissonante ai punti natali). Le RSM prive di
+qualunque segnale in X casa vengono escluse dai risultati; se la ricerca
+non trova nulla, viene mostrato un messaggio dedicato invece della
+tabella vuota. Le altre 6 condizioni restano invariate. Dettagli
+completi in `docs/HANDOVER_OPERATIVO_astrolab.md`, voce 2026-08-28.
+
+---
+
 # Ricerca RL
 
 La Ricerca RL (Rivoluzioni Lunari, base mensile) estende alla Luna la stessa ricerca geografica per condizione già disponibile per le RSM.
