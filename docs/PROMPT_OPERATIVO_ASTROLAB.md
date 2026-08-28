@@ -37,7 +37,10 @@ codice reale o fare un commit: quelle decisioni restano sempre dell'utente.
 Prima di qualunque modifica al codice:
 1. Verificare `docs/START_HERE.md`, `docs/ROADMAP.md`, `docs/roadmap_aiuto.md`,
    `docs/HANDOVER_OPERATIVO_astrolab.md` (o l'equivalente aggiornato) per lo stato reale del
-   progetto — non fidarsi della sola memoria di sessioni precedenti.
+   progetto — non fidarsi della sola memoria di sessioni precedenti. Controllare anche
+   `docs/ux-myastral/BACKLOG_ux.md`: se una voce lì registrata è pertinente al lavoro di
+   oggi, va menzionata all'utente prima di iniziare, per non lasciarla sepolta a tempo
+   indefinito.
 2. Se la richiesta è collegata a una voce di roadmap esistente (es.
    `docs/ROADMAP_MYASTRAL_UX.md`), leggerla per intero prima di iniziare.
 3. Comunicare all'utente un piano sintetico e attendere conferma prima del primo comando che
