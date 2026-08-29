@@ -17,7 +17,8 @@ function costruisciRisultatoRicercaRS(
     bool $denaroAlertGiove,
     ?array $punteggioMyAstral = null,
     ?array $livelloDecima = null,
-    ?array $livelloAmore = null
+    ?array $livelloAmore = null,
+    ?array $livelloLavoro = null
 ): array {
     return [
     'icao'           => $aero['icao_code'],
@@ -58,6 +59,9 @@ function costruisciRisultatoRicercaRS(
     // Livello 1-7 (UX-0016) per la condizione Amore. null per tutte
     // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
     'livello_amore'      => $livelloAmore,
+    // Livello 1-7 (UX-0019) per la condizione Lavoro. null per tutte
+    // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
+    'livello_lavoro'     => $livelloLavoro,
              ];
 }
 
