@@ -111,6 +111,25 @@ class RuleEngineExtended {
     const MALEFICI_DECIMA = [4, 6, 7, 8, 9]; // Marte, Saturno, Urano, Nettuno, Plutone
     const NEUTRI_DECIMA   = [1, 2];          // Luna, Mercurio
 
+    // Livelli gerarchia Amore (UX-0016): niente ASC, priorita' Venere/Giove/Sole
+    // su V/VII casa (pari peso), bonus orbo piu' stretto di Decima.
+    const LIVELLO_VENERE_ORBO_AMORE = 1;
+    const LIVELLO_VENERE_AMORE      = 2;
+    const LIVELLO_GIOVE_ORBO_AMORE  = 3;
+    const LIVELLO_GIOVE_AMORE       = 4;
+    const LIVELLO_SOLE_AMORE        = 5;
+    const LIVELLO_MALEFICO_AMORE    = 6;  // solo malefico/i in V/VII, nessun benefico
+    const LIVELLO_NEUTRO_AMORE      = 7;  // solo Luna/Mercurio in V/VII, nessun altro segnale
+
+    // Orbo bonus Amore (UX-0016): piu' stretto di ORBO_MAX_GRADI (Decima, 2,5°),
+    // applicato solo a Venere e Giove, non al Sole.
+    const ORBO_BONUS_AMORE = 1.5;
+
+    // Pianeti malefici e neutri per la logica di inclusione/esclusione Amore
+    // (UX-0016) - stessi id di RuleEngine::VAL_NOMI usati per Decima.
+    const MALEFICI_AMORE = [4, 6, 7, 8, 9]; // Marte, Saturno, Urano, Nettuno, Plutone
+    const NEUTRI_AMORE   = [1, 2];          // Luna, Mercurio
+
     /**
      * Calcola il punteggio parziale Sole/Venere/Giove nella casa tematica
      * della condizione, con bonus d'orbo per Giove angolare.
@@ -347,6 +366,80 @@ class RuleEngineExtended {
         // natale non in X: nessun segnale utile per Decima. RSM esclusa
         // (UX-0015, revisione 2).
         return array_merge($base, ['livello' => self::LIVELLO_NEUTRO, 'escludi' => true]);
+    }
+
+    /**
+     * Calcola il livello di priorita' per la condizione Amore (UX-0016).
+     *
+     * A differenza di Decima, non esiste un elemento ASC da verificare: la
+     * gerarchia parte direttamente da Venere/Giove/Sole in V o VII casa RS
+     * (pari peso tra le due case), con bonus orbo (1,5°, piu' stretto dei
+     * 2,5° di Decima) applicato solo a Venere e Giove, non al Sole.
+     *
+     * @return array{livello:int, escludi:bool}
+     */
+    public function calcolaLivelloAmore(array $temaRS): array {
+        $base = ['escludi' => false];
+
+        $rilevamento = verificaCondizioneAmore($temaRS['pianeti'], $temaRS['case']);
+        $pianetiInCasa = $rilevamento['pianeti_in_casa'];
+
+        // Venere (id 3): priorita' massima
+        if (in_array(3, $pianetiInCasa, true)) {
+            $entroOrbo = $this->pianetaEntroOrboAmore(3, $temaRS);
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_VENERE_ORBO_AMORE : self::LIVELLO_VENERE_AMORE,
+            ]);
+        }
+
+        // Giove (id 5): seconda priorita'
+        if (in_array(5, $pianetiInCasa, true)) {
+            $entroOrbo = $this->pianetaEntroOrboAmore(5, $temaRS);
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_GIOVE_ORBO_AMORE : self::LIVELLO_GIOVE_AMORE,
+            ]);
+        }
+
+        // Sole (id 0): terza priorita', nessun bonus orbo
+        if (in_array(0, $pianetiInCasa, true)) {
+            return array_merge($base, ['livello' => self::LIVELLO_SOLE_AMORE]);
+        }
+
+        // Nessun benefico in V/VII: verifica malefico (incluso comunque,
+        // segnalato dai veti) o neutro (Luna/Mercurio) prima di escludere.
+        $haMalefico = !empty(array_intersect($pianetiInCasa, self::MALEFICI_AMORE));
+        $haNeutro   = !empty(array_intersect($pianetiInCasa, self::NEUTRI_AMORE));
+
+        if ($haMalefico) {
+            return array_merge($base, ['livello' => self::LIVELLO_MALEFICO_AMORE]);
+        }
+        if ($haNeutro) {
+            return array_merge($base, ['livello' => self::LIVELLO_NEUTRO_AMORE]);
+        }
+
+        // V e VII completamente vuote (per gli orbi applicati): nessun
+        // segnale utile per Amore. RSM esclusa (UX-0016).
+        return array_merge($base, ['livello' => self::LIVELLO_NEUTRO_AMORE, 'escludi' => true]);
+    }
+
+    /**
+     * Verifica se un pianeta (Venere o Giove) e' entro il bonus orbo Amore
+     * (1,5°) dalla cuspide di V o VII casa RS, qualunque delle due lo ospiti.
+     */
+    private function pianetaEntroOrboAmore(int $idPianeta, array $temaRS): bool {
+        foreach ([5, 7] as $casaTarget) {
+            if (!isset($temaRS['case'][$casaTarget]['longitudine'], $temaRS['pianeti'][$idPianeta]['longitudine'])) {
+                continue;
+            }
+            $diff = abs(AstroUtils::diffAngolo(
+                (float)$temaRS['pianeti'][$idPianeta]['longitudine'],
+                (float)$temaRS['case'][$casaTarget]['longitudine']
+            ));
+            if ($diff <= self::ORBO_BONUS_AMORE) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
