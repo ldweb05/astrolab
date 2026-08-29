@@ -603,6 +603,74 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 - **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0017 (principio
   generale applicato qui), UX-0015 (gerarchia Decima corretta da questa voce)
 
+### UX-0019 - Gerarchia a livelli per Lavoro (VI+X casa, pari peso) + vincolo Regola 33 specifico
+
+- **Data:** 2026-08-29
+- **Area:** `includes/RuleEngineExtended.php` (nuovo `calcolaLivelloLavoro()`), refactoring
+  `verificaCondizioneLavoro()` in `RicercaRSFilters.php`, ordinamento in `api/ricerca_stream_api.php`,
+  colmare gap in `api/ricerca_griglia_api.php` e `api/ricerca_stream_rl_api.php`
+- **Stato:** APPROVATA
+- **Problema osservato:** la condizione Lavoro era definita in modo incoerente in tre punti
+  (`RuleEngine::CASE_TEMATICHE['Lavoro']` bonus VI+V+X; `verificaCondizioneLavoro()` target VI+X
+  col vecchio contratto filtro-che-esclude; `RuleEngineExtended::CASA_CONDIZIONE['Lavoro']` solo
+  VI), mai armonizzate, e mai coperta in griglia (match() di validazione assente, cade nel default
+  ['valida'=>true]) ne' in RL (nessun blocco filtro).
+- **Decisione:**
+  1. Case target: VI e X, pari peso (nessuna prevale). La V casa (bonus presente nella vecchia
+     CASE_TEMATICHE) non rientra nel calcolo Lavoro - corretta come incoerenza tra commento e
+     codice.
+  2. Nuova gerarchia a livelli per Lavoro, calcolata in
+     `RuleEngineExtended.php::calcolaLivelloLavoro()`, sullo stesso schema di
+     calcolaLivelloAmore() (UX-0016) e gia' corretta secondo il principio UX-0017 fin
+     dall'inizio (nessuna sessione correttiva separata necessaria, a differenza di
+     Amore/Decima):
+     Livello 1 = Giove in VI o X, entro 2,5 gradi dalla cuspide (bonus orbo)
+     Livello 2 = Giove in VI o X, oltre l'orbo
+     Livello 3 = Venere in VI o X, entro 2,5 gradi dalla cuspide (bonus orbo)
+     Livello 4 = Venere in VI o X, oltre l'orbo
+     Livello 5 = Sole in VI o X
+     Esclusione totale (non livello visualizzato) = nessun benefico presente in VI o X, anche
+     se presente un malefico o solo un neutro (principio UX-0017 applicato fin da subito).
+  3. Bonus orbo 2,5 gradi (uguale a Decima, non 1,5 di Amore), applicato solo a Giove e Venere,
+     non al Sole.
+  4. Malefici (Marte/Saturno/Urano/Nettuno/Plutone) in VI o X: se coesistono con un benefico
+     valido nella stessa area, la RSM resta inclusa e il malefico e' segnalato dai veti
+     esistenti (comportamento UX-0017 standard) - eccetto il caso Regola 33 (punto 5).
+  5. Regola 33 - vincolo specifico e obbligatorio SOLO per Lavoro (non per Salute, pur
+     condividendo il settore VI): se Saturno e' nella stessa casa (VI o X) di un benefico
+     (Giove/Venere/Sole), quel benefico non conta come segnale valido per quella casa - viene
+     neutralizzato, non semplicemente segnalato. Il livello si calcola quindi sull'eventuale
+     altro segnale valido rimasto nell'altra casa target (non compromessa da Saturno). Se
+     nessun segnale valido residuo, la RSM va esclusa (coerente con UX-0017). Se Saturno e' in
+     una casa e il benefico nell'altra (nessun conflitto diretto nella stessa casa), non c'e'
+     neutralizzazione.
+  6. "Neutro" per Lavoro: Luna e/o Mercurio (stessa definizione di Amore/Decima).
+  7. Messaggio zero risultati: identico a Decima/Amore ("Nessun Risultato Positivo o Neutro
+     trovato per la condizione richiesta").
+  8. Scope: coperte da subito tutte e tre le modalita' di ricerca - standard, griglia/area
+     geografica/fascia oraria, RL - nella stessa sessione, per evitare le correzioni in corsa
+     avute con Amore/Decima (UX-0017/UX-0018).
+- **Architettura:**
+  1. `RuleEngineExtended::CASA_CONDIZIONE['Lavoro']` (casa singola, 6) non viene toccata - resta
+     a servizio esclusivo di calcolaPunteggioParziale() per Decima/Casa, condizioni mono-casa.
+     Lavoro (due case) segue il modello Amore: gestione interna dedicata in
+     calcolaLivelloLavoro(), mai inserita in CASA_CONDIZIONE.
+  2. `RuleEngine::CASE_TEMATICHE['Lavoro']` corretta: bonus solo [6, 10] (rimosso 5=V).
+  3. `verificaCondizioneLavoro()` in RicercaRSFilters.php rifattorizzata da filtro-che-esclude a
+     semplice rilevatore geometrico (stesso schema di verificaCondizioneAmore()/
+     verificaCondizioneDecima()), con eventuale wrapper di compatibilita'
+     verificaCondizioneLavoroLegacy() se serve un chiamante non ancora migrato.
+  4. `ricerca_griglia_api.php`: aggiunto caso 'Lavoro' al match() di validazione condizione
+     (oggi assente, cade nel default) + gestione calcolaLivelloLavoro() sullo stesso pattern
+     gia' usato per Decima.
+  5. `ricerca_stream_rl_api.php`: aggiunto blocco filtro Lavoro + chiamata
+     calcolaLivelloLavoro()/generaValLavoro(), oggi completamente assente.
+- **Motivazione:** allineamento al pattern Decima/Amore gia' approvato, applicazione fin
+  dall'inizio del principio UX-0017 e del vincolo specifico Regola 33 dichiarato dal
+  committente come obbligatorio per la sola condizione Lavoro.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 33), `DECISION_LOG_ux.md`
+  voci UX-0015/16/17/18
+
 ---
 
 Nessuna ulteriore decisione registrata.
