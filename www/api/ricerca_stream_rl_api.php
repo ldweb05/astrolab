@@ -429,6 +429,7 @@ try {
     $totaleEsclusiFiltro   = 0; // contatore RS escluse da FiltroEsclusione (checkbox)
     $totaleEsclusiAmore    = 0; // contatore RS escluse dal filtro specifico Amore
     $totaleEsclusiAmoreVuota = 0; // UX-0016: RS escluse per V/VII casa senza alcun segnale
+    $totaleEsclusiDecimaVuota = 0; // UX-0015/UX-0018: RS escluse per assenza di ASC/benefico in X casa
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
@@ -712,6 +713,22 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     );
                 }
 
+                // UX-0015/UX-0018: livello 1-6 per Decima (gerarchia ASC/
+                // Giove/Venere/Sole, esclusione se nessuno dei due presente),
+                // stesso schema di ricerca_stream_api.php, esteso qui alle RL.
+                $livelloDecima = null;
+                if ($engineExt !== null && $condizione === 'Decima') {
+                    $livelloDecima = $engineExt->calcolaLivelloDecima($temaNatale, $temaRS);
+                }
+
+                // UX-0015/UX-0018: RL esclusa se nessun ASC/Giove/Venere/Sole
+                // cade in X casa (nessun segnale utile per Decima).
+                if ($livelloDecima !== null && ($livelloDecima['escludi'] ?? false)) {
+                    $totaleEsclusiDecimaVuota++;
+                    $processed++;
+                    continue;
+                }
+
                 // UX-0016: livello 1-7 per Amore (stesso schema di
                 // ricerca_stream_api.php, esteso qui alle RL).
                 $livelloAmore = null;
@@ -786,6 +803,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $beneficoInI,
                 $denaroBeneficioTrovato,
                 $denaroAlertGiove,
+                livelloDecima: $livelloDecima,
                 livelloAmore: $livelloAmore
             );
             // Campi V2 aggiunti al record risultato (additivo, Fase 2a)
@@ -798,6 +816,12 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             $ris['v2_html']            = $v2Calc->renderHTML($valV2);
             $ris['v2_alert_stellium']  = $valV2['alert_stellium_misto'];
             $ris['v2_delta']           = $valV2['stelle_totali'] - $val['stelline'];
+
+            // UX-0015/UX-0018: per Decima, la colonna VAL mostra ASC (se
+            // natale in X) + i pianeti effettivamente in X casa RS/RL.
+            if ($engineExt !== null && $condizione === 'Decima') {
+                $ris['val'] = $engineExt->generaValDecima($temaNatale, $temaRS);
+            }
 
             // UX-0016: per Amore, la colonna VAL mostra i pianeti
             // effettivamente in V/VII casa RS/RL.
@@ -890,8 +914,10 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // primario di ordinamento solo per questa condizione + flag attivo;
     // le stelle V2 restano tie-break. Tutte le altre condizioni invariate.
     usort($risultati, static function (array $a, array $b): int {
-        $livA = $a['livello_amore']['livello'] ?? null;
-        $livB = $b['livello_amore']['livello'] ?? null;
+        // UX-0015/UX-0016: livello Decima e livello Amore sono mutuamente
+        // esclusivi (una sola condizione attiva per ricerca).
+        $livA = $a['livello_decima']['livello'] ?? $a['livello_amore']['livello'] ?? null;
+        $livB = $b['livello_decima']['livello'] ?? $b['livello_amore']['livello'] ?? null;
 
         if ($livA !== null || $livB !== null) {
             $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
