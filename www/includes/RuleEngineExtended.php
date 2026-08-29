@@ -405,20 +405,13 @@ class RuleEngineExtended {
             return array_merge($base, ['livello' => self::LIVELLO_SOLE_AMORE]);
         }
 
-        // Nessun benefico in V/VII: verifica malefico (incluso comunque,
-        // segnalato dai veti) o neutro (Luna/Mercurio) prima di escludere.
-        $haMalefico = !empty(array_intersect($pianetiInCasa, self::MALEFICI_AMORE));
-        $haNeutro   = !empty(array_intersect($pianetiInCasa, self::NEUTRI_AMORE));
-
-        if ($haMalefico) {
-            return array_merge($base, ['livello' => self::LIVELLO_MALEFICO_AMORE]);
-        }
-        if ($haNeutro) {
-            return array_merge($base, ['livello' => self::LIVELLO_NEUTRO_AMORE]);
-        }
-
-        // V e VII completamente vuote (per gli orbi applicati): nessun
-        // segnale utile per Amore. RSM esclusa (UX-0016).
+        // UX-0017: nessun benefico in V/VII significa che la condizione
+        // Amore NON e' soddisfatta, a prescindere da cosa altro sia presente
+        // (malefico, neutro, o nulla). La RSM va SEMPRE esclusa - non piu'
+        // inclusa come "malefico" o "neutro" (livelli rimossi da UX-0016).
+        // Il malefico continua a essere segnalato SOLO quando accompagna un
+        // benefico effettivo (gestito nei rami Venere/Giove/Sole sopra,
+        // tramite i veti esistenti a monte - comportamento invariato).
         return array_merge($base, ['livello' => self::LIVELLO_NEUTRO_AMORE, 'escludi' => true]);
     }
 
