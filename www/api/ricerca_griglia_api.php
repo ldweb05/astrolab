@@ -539,6 +539,21 @@ try {
                     }
                 }
 
+                // UX-0019: livello 1-7 per Lavoro (gerarchia Giove/Venere/
+                // Sole su VI/X, con vincolo Regola 33 specifico incluso
+                // internamente), estesa qui alla ricerca a griglia. Colma
+                // il gap preesistente: Lavoro non era mai stato validato
+                // in questa modalita' (cadeva nel default 'valida'=>true).
+                $livelloLavoro = null;
+                if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Lavoro') {
+                    $livelloLavoro = $engineExt->calcolaLivelloLavoro($temaRS);
+                    if ($livelloLavoro['escludi'] ?? false) {
+                        $processed++;
+                        if ($processed % $progressOgni === 0) $emitProgress();
+                        continue;
+                    }
+                }
+
                 // Calcolo Stelline V2 (sistema primario)
                 $pianetiRS_v2 = [];
                 foreach ($pianetiConCase as $_pid => $_p) {
@@ -576,12 +591,19 @@ try {
                     'v2_stelle_totali'  => $valV2['stelle_totali'],
                     'v2_html'           => $v2Calc->renderHTML($valV2),
                     'livello_decima'    => $livelloDecima,
+                    'livello_lavoro'    => $livelloLavoro,
                 ];
 
                 // UX-0015/UX-0018: per Decima, la colonna VAL mostra ASC (se
                 // natale in X) + i pianeti effettivamente in X casa RS.
                 if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Decima') {
                     $ris['val'] = $engineExt->generaValDecima($temaNatale, $temaRS);
+                }
+
+                // UX-0019: per Lavoro, la colonna VAL mostra i pianeti
+                // effettivamente in VI/X casa RS.
+                if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Lavoro') {
+                    $ris['val'] = $engineExt->generaValLavoro($temaRS);
                 }
 
                 // Debug opt-in (?debug=1): espone la casa esatta di ogni pianeta
@@ -623,11 +645,12 @@ try {
         // Fase 4: rimosso tiebreaker vecchio sistema. Riga commentata per
         // rollback rapido: $cmpStelle = $b['stelline'] <=> $a['stelline']; if ($cmpStelle !== 0) return $cmpStelle;
         usort($risultati, static function (array $a, array $b): int {
-            // UX-0015/UX-0018: livello Decima (1-6) come criterio primario
-            // quando presente, prima di V2/vicinanza. Tutte le altre
-            // condizioni: comportamento invariato (nessun livello_decima).
-            $livA = $a['livello_decima']['livello'] ?? null;
-            $livB = $b['livello_decima']['livello'] ?? null;
+            // UX-0015/UX-0018/UX-0019: livello Decima o Lavoro (mutuamente
+            // esclusivi, una sola condizione per ricerca) come criterio
+            // primario quando presente, prima di V2/vicinanza. Tutte le
+            // altre condizioni: comportamento invariato (nessun livello).
+            $livA = $a['livello_decima']['livello'] ?? $a['livello_lavoro']['livello'] ?? null;
+            $livB = $b['livello_decima']['livello'] ?? $b['livello_lavoro']['livello'] ?? null;
             if ($livA !== null || $livB !== null) {
                 $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
                 if ($cmpLivello !== 0) return $cmpLivello;
