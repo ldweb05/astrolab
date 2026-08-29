@@ -3772,3 +3772,46 @@ Verifica sintattica (`php -l`), `git diff`/`git status` per isolamento.
 Test funzionale reale nel browser confermato dal committente: RSM con
 ASC/Giove/Venere/Sole in X casa continuano a comparire normalmente; RSM
 con solo malefico o solo Luna/Mercurio in X casa non compaiono più.
+
+## 2026-08-29 (3) — Estensione gerarchia Decima a griglia/geografica/fascia oraria e RL
+
+Completato il "punto 2" rimandato dalla sessione precedente: la gerarchia
+Decima (UX-0015, corretta da UX-0018), finora attiva solo in
+ricerca_stream_api.php, è stata estesa anche a ricerca_griglia_api.php
+(modalità standard, che copre griglia/area geografica/fascia oraria) e a
+ricerca_stream_rl_api.php (ricerca RL) — stesso comportamento ovunque,
+come richiesto dal committente ("le 34 Regole sono la Bibbia, il punto di
+riferimento").
+
+### ricerca_griglia_api.php
+Non aveva mai avuto l'infrastruttura RuleEngineExtended per nessuna
+condizione. Aggiunta da zero: MYASTRAL_ALIGNMENT_MODE/require/$engineExt,
+calcolo calcolaLivelloDecima() con esclusione (solo modalita 'standard' e
+condizioneInput==='Decima'), campo livello_decima nell'array $ris
+(costruito qui manualmente, non tramite costruisciRisultatoRicercaRS()),
+VAL dedicato via generaValDecima(), livello Decima aggiunto come criterio
+primario nell'usort esistente (prima di v2_stelle_totali e vicinanza alla
+cuspide, che restano invariati per le altre condizioni). Le modalità
+'astri' e 'cuspidi' non toccate.
+
+### ricerca_stream_rl_api.php
+Aveva già l'infrastruttura (introdotta per Amore nella sessione
+precedente): aggiunto solo il cablaggio calcolaLivelloDecima()/
+generaValDecima(), stesso schema di ricerca_stream_api.php. Livello
+Decima e livello Amore sono mutuamente esclusivi nello stesso usort (una
+sola condizione attiva per ricerca).
+
+### File toccati
+`api/ricerca_griglia_api.php`, `api/ricerca_stream_rl_api.php`.
+
+### Scope esplicitamente escluso
+Estensione della stessa architettura (gerarchia/VAL/ordinamento) alle
+altre condizioni (Salute, Lavoro, Denaro, Denaro Low, Casa), su tutte le
+modalità di ricerca — da trattare in sessione dedicata futura.
+
+### Test eseguiti
+Verifica sintattica (`php -l`) su ogni file dopo ogni patch, `git diff`
+per isolamento ad ogni step. Test funzionale reale nel browser confermato
+dal committente: Decima verificata su griglia/area geografica/fascia
+oraria e su RL; nessuna regressione su Decima/Amore in ricerca standard
+né su Amore nelle altre modalità.
