@@ -563,6 +563,46 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
   parzialmente da questa voce), UX-0015 (da correggere in sessione futura con lo stesso
   principio)
 
+### UX-0018 - Applicazione del principio UX-0017 a Decima: nessun ASC/benefico = RSM sempre esclusa
+
+- **Data:** 2026-08-29
+- **Area:** `includes/RuleEngineExtended.php` (`calcolaLivelloDecima()`)
+- **Stato:** APPROVATA
+- **Problema osservato:** UX-0017 ha stabilito, come principio generale valido per tutte le
+  condizioni, che una RSM priva di un segnale positivo reale (per una condizione) non deve mai
+  comparire nei risultati solo perche' contiene un malefico o un pianeta neutro. Questo principio
+  non era ancora stato applicato a `calcolaLivelloDecima()`, che ancora include (Livello 7,
+  "solo malefico") o (Livello 8, "solo neutro") le RSM prive sia di ASC in X casa natale sia di
+  Giove/Venere/Sole in X casa RS.
+- **Decisione:**
+  1. Per Decima, il "segnale positivo" resta definito come: ASC RS in X casa natale (Livelli 1/6,
+     quest'ultimo solo declassato dalla Regola 14, MAI escluso in quanto l'ASC resta comunque
+     presente in X) OPPURE Giove/Venere/Sole in X casa RS (Livelli 2-5). Questi livelli sono
+     INVARIATI rispetto a UX-0015.
+  2. Se NESSUNO dei segnali sopra e' presente (niente ASC in X, niente Giove/Venere/Sole in X
+     casa RS), la RSM va SEMPRE esclusa (escludi=true) — indipendentemente dalla presenza di un
+     malefico (Marte/Saturno/Urano/Nettuno/Plutone) o di un pianeta neutro (Luna/Mercurio) in X
+     casa. I vecchi Livello 7 (malefico) e Livello 8 (neutro) vengono rimossi come esiti
+     visualizzabili, sullo stesso schema gia' applicato ad Amore in UX-0017.
+  3. Nessun altro punto di chiamata da aggiornare: `calcolaLivelloDecima()` e' usata solo in
+     `api/ricerca_stream_api.php` (a differenza di Amore, Decima non e' mai stata cablata in
+     griglia/RL — gap preesistente, esplicitamente FUORI SCOPE da questa voce, da trattare in
+     sessione dedicata futura).
+- **Motivazione:** stessa del principio UX-0017: un risultato che non rispecchia alcun segnale
+  positivo per la condizione richiesta e' fuorviante se mostrato comunque.
+- **Beneficio atteso:** coerenza tra Decima e Amore nello stesso comportamento di esclusione;
+  eliminato il rischio di mostrare RSM con solo un malefico/neutro in X casa quando non esistono
+  alternative migliori nell'area/periodo cercato.
+- **Costo tecnico stimato:** BASSO — stessa modifica mirata gia' applicata a
+  `calcolaLivelloAmore()` in UX-0017, un solo metodo, un solo file, nessun chiamante da toccare.
+- **Rischi:** riduzione del numero di risultati mostrati per Decima rispetto a UX-0015 (atteso e
+  voluto, stesso trade-off gia' accettato per Amore).
+- **Scope esplicitamente escluso:** allineamento del filtro Decima in griglia/RL (gap
+  preesistente, indipendente da questa correzione); estensione della gerarchia/principio alle
+  altre condizioni (Salute, Lavoro, Denaro, Denaro Low, Casa).
+- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0017 (principio
+  generale applicato qui), UX-0015 (gerarchia Decima corretta da questa voce)
+
 ---
 
 Nessuna ulteriore decisione registrata.
