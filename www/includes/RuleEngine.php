@@ -64,7 +64,9 @@ class RuleEngine {
         'Decima'     => ['bonus' => [10, 5],       'malus' => [1, 6, 12, 10]],
         // VI+X: lavoro quotidiano E avanzamento; Mercurio/Marte in VI/X = spinta operativa
         // Malus extra: VI (malevoli = disastro ambiente lavoro) E X (bloccano carriera)
-        'Lavoro'     => ['bonus' => [6, 5, 10],    'malus' => [1, 6, 12, 10]],
+        // UX-0019: rimossa V (5) dal bonus - non fa parte del calcolo Lavoro, era
+        // un'incoerenza tra commento (VI+X) e codice (includeva anche V)
+        'Lavoro'     => ['bonus' => [6, 10],        'malus' => [1, 6, 12, 10]],
         // V+VII: amore romantico (V) e legami stabili (VII)
         // Malus extra: V e VII (malevoli qui distruggono amore)
         'Amore'      => ['bonus' => [5, 7],        'malus' => [1, 6, 12, 5, 7]],
