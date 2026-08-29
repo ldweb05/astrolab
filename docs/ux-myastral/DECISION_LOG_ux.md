@@ -510,6 +510,59 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 - **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0015 (riferimento
   diretto), `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-28
 
+### UX-0017 - Correzione: nessun benefico = RSM sempre esclusa (principio generale, tutte le condizioni/filtri)
+
+- **Data:** 2026-08-29
+- **Area:** `includes/RuleEngineExtended.php` (`calcolaLivelloAmore()`, e futura correzione
+  analoga di `calcolaLivelloDecima()`), valida per tutte le modalita' di ricerca (standard,
+  griglia, RL) e per l'estensione futura alle altre condizioni (Salute, Lavoro, Denaro, Casa)
+- **Stato:** APPROVATA
+- **Problema osservato:** testando la condizione Amore con Filtri Avanzati (Area Geografica,
+  continente Americano) e' comparsa una RSM con Marte in VII e Saturno in V casa - nessun
+  benefico (Venere/Giove/Sole) presente - inclusa nei risultati come "Livello 6 - solo
+  malefico" secondo UX-0016. Il committente ha chiarito che questo non rispecchia l'intento
+  originale: un malefico da solo (senza alcun benefico) significa che la condizione Amore NON
+  e' soddisfatta, e la RSM non deve comparire affatto nei risultati - non solo essere
+  declassata in fondo alla lista.
+- **Decisione (corregge parzialmente UX-0016, e - da applicare in sessione dedicata - UX-0015):**
+  1. Una RSM e' valida per una condizione SOLO SE almeno un benefico proprio di quella
+     condizione (per Amore: Venere, Giove o Sole) e' presente nella/e casa/e target. In assenza
+     di un benefico, la RSM va SEMPRE esclusa dai risultati, indipendentemente da cosa altro
+     sia presente (malefico, neutro, o nulla).
+  2. Se un benefico E' presente insieme a un malefico nella stessa area (es. Venere + Marte
+     entrambi in VII), la condizione resta soddisfatta: la RSM va inclusa, posizionata dopo le
+     RSM senza malefico nello stesso ordinamento a livelli, con la segnalazione del malefico
+     dai veti esistenti (comportamento invariato rispetto a UX-0016/UX-0015 per questo caso).
+  3. Per Amore, i vecchi Livello 6 (solo malefico) e Livello 7 (solo Luna/Mercurio, neutro)
+     diventano entrambi casi di ESCLUSIONE (escludi=true), non piu' livelli visualizzati.
+     Restano 5 livelli effettivi (Venere/orbo, Venere, Giove/orbo, Giove, Sole) piu'
+     l'esclusione totale.
+  4. Se nessuna RSM nell'area/periodo cercato soddisfa la condizione (nessun benefico presente
+     in alcuna RSM), il messaggio dedicato ("Nessun Risultato Positivo o Neutro trovato per la
+     condizione richiesta") deve comparire, anche quando le uniche RSM disponibili avrebbero
+     mostrato solo malefici o pianeti neutri - MAI mostrare risultati solo per non lasciare la
+     lista vuota.
+  5. Questo principio e' dichiarato dal committente valido PER TUTTE LE CONDIZIONI (attuali e
+     future) e PER TUTTI I FILTRI/MODALITA' DI RICERCA (standard, griglia, geografica, fascia
+     oraria, RL) - non e' una particolarita' di Amore.
+- **Motivazione:** un risultato astrologico che non rispecchia alcun segnale positivo per la
+  condizione richiesta e' fuorviante se mostrato comunque; l'utente deve poter fidarsi che ogni
+  risultato in lista rispetti almeno il criterio minimo (un benefico presente), con i malefici
+  come segnalazione aggiuntiva e non come sostituto della condizione stessa.
+- **Beneficio atteso:** risultati Amore (e in futuro Decima e le altre condizioni) coerenti con
+  l'aspettativa dell'astrologo: mai un falso positivo per assenza di alternative migliori.
+- **Costo tecnico stimato:** BASSO per Amore (una modifica mirata in `calcolaLivelloAmore()`);
+  MEDIO per Decima (stessa correzione da applicare a `calcolaLivelloDecima()`, sessione futura
+  dedicata, dato che li' il caso ASC-declassato/malefico ha una struttura leggermente diversa).
+- **Rischi:** riduzione del numero di risultati mostrati per Amore rispetto a UX-0016 (atteso e
+  voluto); nessun impatto sulle altre condizioni non ancora migrate alla gerarchia a livelli.
+- **Scope esplicitamente escluso da questa voce:** la correzione concreta di
+  `calcolaLivelloDecima()` (il principio e' approvato per Decima, ma la patch tecnica e'
+  rimandata a sessione dedicata); l'estensione della gerarchia a Salute/Lavoro/Denaro/Casa.
+- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0016 (corretta
+  parzialmente da questa voce), UX-0015 (da correggere in sessione futura con lo stesso
+  principio)
+
 ---
 
 Nessuna ulteriore decisione registrata.
