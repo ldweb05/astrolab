@@ -425,6 +425,7 @@ try {
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
     $totaleEsclusiDecima   = 0; // contatore RS escluse dal filtro specifico Decima
     $totaleEsclusiDecimaVuota = 0; // UX-0015: RS escluse per X casa senza alcun segnale
+    $totaleEsclusiAmoreVuota = 0; // UX-0016: RS escluse per V/VII casa senza alcun segnale
     $totaleEsclusiLavoro   = 0; // contatore RS escluse dal filtro specifico Lavoro
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
@@ -781,6 +782,22 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     continue;
                 }
 
+                // UX-0016: livello 1-7 per Amore (sostituisce il sistema
+                // stelline V2 nell'ordinamento finale, solo per questa
+                // condizione + flag; v2_stelle_totali resta come tie-break).
+                $livelloAmore = null;
+                if ($engineExt !== null && $condizione === 'Amore') {
+                    $livelloAmore = $engineExt->calcolaLivelloAmore($temaRS);
+                }
+
+                // UX-0016: RSM esclusa se nessun pianeta cade in V/VII casa
+                // (nessun segnale utile per Amore).
+                if ($livelloAmore !== null && ($livelloAmore['escludi'] ?? false)) {
+                    $totaleEsclusiAmoreVuota++;
+                    $processed++;
+                    continue;
+                }
+
                 // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
                 // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
                 // stessa casa della condizione, la RSM/RL va tolta dai risultati -
@@ -841,7 +858,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $denaroBeneficioTrovato,
                 $denaroAlertGiove,
                 $punteggioMyAstral,
-                $livelloDecima
+                $livelloDecima,
+                $livelloAmore
             );
             // Campi V2 aggiunti al record risultato (additivo, Fase 1a)
             $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
@@ -859,6 +877,13 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             // al posto della stringa VAL generica di RuleEngine.
             if ($engineExt !== null && $condizione === 'Decima') {
                 $ris['val'] = $engineExt->generaValDecima($temaNatale, $temaRS);
+            }
+
+            // UX-0016: per Amore, la colonna VAL mostra i pianeti
+            // effettivamente in V/VII casa RS, al posto della stringa VAL
+            // generica di RuleEngine.
+            if ($engineExt !== null && $condizione === 'Amore') {
+                $ris['val'] = $engineExt->generaValAmore($temaRS);
             }
 
             aggiungiRisultatoTopK(
@@ -948,8 +973,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // stelle V2 restano visibili nel risultato e fanno da tie-break a parita'
     // di livello. Tutte le altre condizioni: comportamento invariato.
     usort($risultati, static function (array $a, array $b): int {
-        $livA = $a['livello_decima']['livello'] ?? null;
-        $livB = $b['livello_decima']['livello'] ?? null;
+        // UX-0016: livello Decima e livello Amore sono mutuamente esclusivi
+        // (ogni ricerca ha una sola condizione attiva), quindi al massimo
+        // uno dei due e' non-null per record - nessun conflitto di priorita'.
+        $livA = $a['livello_decima']['livello'] ?? $a['livello_amore']['livello'] ?? null;
+        $livB = $b['livello_decima']['livello'] ?? $b['livello_amore']['livello'] ?? null;
 
         if ($livA !== null || $livB !== null) {
             $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
@@ -974,6 +1002,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     $messaggioSpeciale = null;
     if ($engineExt !== null && $condizione === 'Decima'
         && count($risultati) === 0 && $totaleEsclusiDecimaVuota > 0) {
+        $messaggioSpeciale = 'Nessun Risultato Positivo o Neutro trovato per la condizione richiesta';
+    }
+    // UX-0016: stesso messaggio, identico a Decima, per Amore.
+    if ($engineExt !== null && $condizione === 'Amore'
+        && count($risultati) === 0 && $totaleEsclusiAmoreVuota > 0) {
         $messaggioSpeciale = 'Nessun Risultato Positivo o Neutro trovato per la condizione richiesta';
     }
 
