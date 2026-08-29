@@ -514,33 +514,20 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     }
                 }
 
-                // ── C-ter. FILTRO SPECIFICO PER AMORE ──────────────────────────
-                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-                // Verifica che almeno un benefico (VE/GI/SO) sia in V o VII casa RS,
-                // che non ci siano malevoli (MA/SA/UR/NE/PLU) in V o VII,
-                // e che i benefici non siano troppo vicini all'uscita dalla casa.
-                if ($condizione === 'Amore') {
-                    $verificaAmore = verificaCondizioneAmore($pianetiConCase, $caseRS);
-                    if (!$verificaAmore['valida']) {
-                        $totaleEsclusiAmore++;
-                        // Le RS escluse dal filtro Amore NON vengono incluse nei risultati
-                        // (non c'è un checkbox "Mostra anche le RS escluse da Amore")
-                        $processed++;
-                        if ($processed % 50 === 0) {
-                            sse('progress', [
-                                'processed'        => $processed,
-                                'totale'           => $totaleCalc,
-                                'perc'             => round($processed / $totaleCalc * 100),
-                                'fase'             => 'calcolo',
-                                'esclusi_radicale' => $totaleEsclusiRadicale,
-                                'esclusi_filtro'   => $totaleEsclusiFiltro,
-                            'calcoli_placido'  => $totaleCalcoliPlacido,
-                                'esclusi_amore'    => $totaleEsclusiAmore,
-                            ]);
-                        }
-                        continue;
-                    }
-                }
+                // ── C-ter. EX-FILTRO SPECIFICO PER AMORE (rimosso) ───────────
+                // UX-0016: l'esclusione automatica qui presente (nessun
+                // benefico o presenza di malevolo in V/VII casa) e' stata
+                // rimossa. La decisione su inclusione/esclusione/livello per
+                // Amore e' ora interamente demandata a
+                // RuleEngineExtended::calcolaLivelloAmore() piu' avanti nel
+                // loop, coerente con la decisione del committente di NON
+                // escludere piu' le RSM con un malefico in V/VII (il soggetto
+                // decide se affrontarle, segnalate dai veti esistenti).
+                // verificaCondizioneAmore() resta in RicercaRSFilters.php,
+                // ora come semplice rilevatore geometrico (pre-ingresso/
+                // uscita), riusato da RuleEngineExtended per la stessa logica
+                // di orbo. $totaleEsclusiAmore resta dichiarato (sempre 0)
+                // per non rompere le statistiche finali che lo referenziano.
 
                 // ── C-quater. FILTRO SPECIFICO PER CASA (IV Casa) ─────────────
                 // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
