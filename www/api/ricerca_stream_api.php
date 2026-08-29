@@ -582,7 +582,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 // (MA/SA/UR/NE/PLU) in VI o X casa (con pre-ingresso), e che i
                 // benefici non siano troppo vicini all'uscita dalla casa.
                 if ($condizione === 'Lavoro') {
-                    $verificaLavoro = verificaCondizioneLavoro($pianetiConCase, $caseRS);
+                    $verificaLavoro = verificaCondizioneLavoroLegacy($pianetiConCase, $caseRS);
                     if (!$verificaLavoro['valida']) {
                         $totaleEsclusiLavoro++;
                         // Le RS escluse dal filtro Lavoro NON vengono incluse nei risultati
