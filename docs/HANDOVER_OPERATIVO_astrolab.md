@@ -3649,3 +3649,91 @@ Verifica sintattica (`php -l`) su ogni file dopo ogni singola modifica,
 nel browser confermato dal committente: condizione Decima con nuovo
 comportamento (VAL, ordinamento, esclusione) verificato OK; le altre 6
 condizioni verificate invariate rispetto a prima di questa sessione.
+
+## 2026-08-29 — Gerarchia Amore (UX-0016) + correzione esclusione (UX-0017)
+
+Estesa alla condizione Amore la stessa logica di gerarchia a priorità già
+costruita per Decima (UX-0015), senza l'elemento ASC (funzione specifica
+della sola Decima). Successivamente corretta in corsa (UX-0017) dopo un
+test funzionale che ha mostrato un comportamento non voluto.
+
+### Gerarchia iniziale (UX-0016) e correzione (UX-0017)
+Priorità Venere > Giove > Sole in V o VII casa RS (pari peso tra le due
+case), con bonus orbo 1,5° (più stretto dei 2,5° di Decima) solo su Venere
+e Giove. La versione iniziale (UX-0016) prevedeva anche due livelli per
+"solo malefico" e "solo neutro" (Luna/Mercurio), inclusi comunque nei
+risultati sul modello di Decima. Un test in produzione (Filtri Avanzati,
+Area Geografica) ha mostrato una RSM con solo Marte in VII e Saturno in V
+(nessun benefico) inclusa nei risultati: il committente ha chiarito che
+senza un benefico la condizione Amore non è soddisfatta e la RSM non deve
+comparire affatto, non solo essere declassata. UX-0017 corregge questo:
+nessun benefico presente → RSM sempre esclusa, qualunque altra cosa sia
+presente. Il malefico resta segnalato SOLO quando accompagna un benefico
+effettivo. **Questo principio è dichiarato dal committente valido per
+tutte le condizioni e tutte le modalità di ricerca — la stessa correzione
+andrà applicata a calcolaLivelloDecima() (UX-0015) in una sessione
+dedicata futura.**
+
+### Refactoring necessario: verificaCondizioneAmore() (RicercaRSFilters.php)
+Come già fatto per Decima in UX-0015: trasformata da filtro-che-esclude
+(vecchio contratto `['valida'=>bool,'motivo'=>...]`) a semplice rilevatore
+geometrico (`['pianeti_in_casa'=>[...]]`), stessi orbi di sempre
+(pre-ingresso 3°, sicurezza uscita 2° solo benefici).
+
+### Regressioni scoperte e corrette in corsa
+Il refactoring di verificaCondizioneAmore() ha rotto TRE chiamanti che
+usavano ancora il vecchio contratto, non individuati nella pianificazione
+iniziale (a differenza di Decima, mai usata fuori da ricerca_stream_api.php):
+- `api/ricerca_stream_api.php` — vecchio filtro rimosso, sostituito dalla
+  gerarchia completa (stesso trattamento riservato a Decima in UX-0015).
+- `api/ricerca_stream_rl_api.php` (RL, produzione) — aveva già
+  l'infrastruttura RuleEngineExtended: portata la gerarchia completa
+  (livello, esclusione, VAL dedicato, ordinamento), stesso schema di
+  ricerca_stream_api.php.
+- `api/ricerca_griglia_api.php` (griglia/geografica/fascia oraria,
+  produzione) — NON ha mai avuto l'infrastruttura RuleEngineExtended (per
+  nessuna condizione). Aggiunto un wrapper di compatibilità
+  `verificaCondizioneAmoreLegacy()` in RicercaRSFilters.php che ricostruisce
+  il vecchio contratto dal nuovo rilevatore geometrico — fix minimo,
+  non porta la gerarchia completa qui (richiederebbe introdurre da zero
+  l'infrastruttura, fuori scope).
+- `api/ricerca_stream_v2_api.php` (pagina di test, non di produzione) —
+  stesso caso già accettato come fuori-scope per Decima in UX-0015, non
+  aggiornato.
+
+### Colonna VAL dedicata (solo Amore)
+`RuleEngineExtended::generaValAmore()` — stesso pattern di
+generaValDecima() ma senza componente ASC: elenca solo i pianeti
+effettivamente in V/VII casa RS.
+
+### Gap preesistente individuato (non causato da questa sessione)
+"Decima" è condizione di default sia in ricerca_griglia_api.php sia in
+ricerca_stream_rl_api.php, ma non ha mai avuto un blocco filtro/gerarchia
+attivo in nessuno dei due file — chi cerca per Decima lì non ha alcun
+filtro di condizione applicato. Da allineare in una sessione dedicata
+futura, insieme alla correzione UX-0017 per calcolaLivelloDecima() e
+all'eventuale estensione della stessa architettura alle altre condizioni
+(Salute, Lavoro, Denaro, Denaro Low, Casa) su tutte le modalità di ricerca.
+
+### File toccati
+`docs/ux-myastral/DECISION_LOG_ux.md` (UX-0016, UX-0017),
+`includes/RicercaRSFilters.php`, `includes/RuleEngineExtended.php`,
+`includes/RicercaRSResultBuilder.php`, `api/ricerca_stream_api.php`,
+`api/ricerca_stream_rl_api.php`, `api/ricerca_griglia_api.php`.
+`includes/RuleEngine.php` (FREEZE) non toccato.
+
+### Scope esplicitamente escluso
+Correzione di calcolaLivelloDecima() secondo il principio UX-0017;
+allineamento del filtro Decima in griglia/RL (gap preesistente);
+estensione della gerarchia a Salute/Lavoro/Denaro/Denaro Low/Casa, su
+tutte le modalità di ricerca. Spostamento/rinomina di
+docs/ux-myastral/DECISION_LOG_ux.md richiesto dal committente, rimandato
+a sessione dedicata.
+
+### Test eseguiti
+Verifica sintattica (`php -l`) su ogni file dopo ogni singola modifica,
+`git diff`/`git status` per isolamento ad ogni step. Test funzionale reale
+nel browser confermato dal committente: condizione Amore verificata su
+ricerca standard e Filtri Avanzati (Area Geografica) dopo la correzione
+UX-0017; condizione Decima riverificata invariata dopo le modifiche a
+ricerca_stream_api.php.
