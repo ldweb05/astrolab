@@ -349,22 +349,15 @@ class RuleEngineExtended {
             return array_merge($base, ['livello' => self::LIVELLO_SOLE]);
         }
 
-        // Nessun ASC natale in X, nessun benefico in X casa RS: verifica
-        // malefico (incluso comunque, segnalato dai veti) o neutro
-        // (Luna/Mercurio, nessun altro segnale) prima di escludere del tutto.
-        $haMalefico = !empty(array_intersect($pianetiInCasa, self::MALEFICI_DECIMA));
-        $haNeutro   = !empty(array_intersect($pianetiInCasa, self::NEUTRI_DECIMA));
-
-        if ($haMalefico) {
-            return array_merge($base, ['livello' => self::LIVELLO_MALEFICO]);
-        }
-        if ($haNeutro) {
-            return array_merge($base, ['livello' => self::LIVELLO_NEUTRO]);
-        }
-
-        // X casa RS completamente vuota (per gli orbi applicati) e ASC
-        // natale non in X: nessun segnale utile per Decima. RSM esclusa
-        // (UX-0015, revisione 2).
+        // UX-0018 (applica il principio UX-0017 a Decima): nessun ASC in X
+        // casa natale, nessun Giove/Venere/Sole in X casa RS - la condizione
+        // Decima NON e' soddisfatta, a prescindere da cosa altro sia
+        // presente (malefico, neutro, o nulla). La RSM va SEMPRE esclusa -
+        // non piu' inclusa come "malefico" o "neutro" (livelli rimossi).
+        // Il malefico continua a essere segnalato SOLO quando accompagna un
+        // segnale positivo effettivo (ASC in X o Giove/Venere/Sole in X,
+        // gestiti nei rami sopra tramite i veti esistenti a monte -
+        // comportamento invariato).
         return array_merge($base, ['livello' => self::LIVELLO_NEUTRO, 'escludi' => true]);
     }
 
