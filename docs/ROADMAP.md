@@ -703,3 +703,10 @@ Documentazione completa: `docs/BUG_GEOCODING_NOMINATIM.md`
   verificare se propagare a `transiti.php`, poi decidere come/quando fondere
   il fix sui branch `main`/`new_dashboard`/altri; valutare anche se soggetti
   già esistenti hanno coordinate imprecise da ricorreggere manualmente.
+
+---
+
+## Estensione architettura a gerarchia alle condizioni restanti (Casa, Salute, Denaro, Denaro Low)
+
+Al completamento di UX-0019 (condizione Lavoro), 3 delle 7 condizioni disponibili (Decima, Amore, Lavoro) sono ora sul modello a gerarchia a livelli; le altre 4 restano sul vecchio modello a filtro-che-esclude, da allineare in sessioni dedicate future. Tracciata nella roadmap dedicata:
+- `docs/ROADMAP_GERARCHIA_CONDIZIONI_RESTANTI.md`
