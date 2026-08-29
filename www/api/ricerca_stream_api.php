@@ -427,6 +427,7 @@ try {
     $totaleEsclusiDecimaVuota = 0; // UX-0015: RS escluse per X casa senza alcun segnale
     $totaleEsclusiAmoreVuota = 0; // UX-0016: RS escluse per V/VII casa senza alcun segnale
     $totaleEsclusiLavoro   = 0; // contatore RS escluse dal filtro specifico Lavoro
+    $totaleEsclusiLavoroVuota = 0; // UX-0019: RS escluse per VI/X casa senza alcun segnale valido
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
     $totaleEsclusiDenaroLow = 0; // contatore RS escluse dal filtro specifico Denaro Low
@@ -575,37 +576,18 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 // di orbo. $totaleEsclusiDecima resta dichiarato (sempre 0)
                 // per non rompere le statistiche finali che lo referenziano.
 
-                // ── C-quater-ter. FILTRO SPECIFICO PER LAVORO ────────────────
-                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-                // Verifica che almeno un benefico (SO/GI/VE) sia in VI o X casa
-                // RS con pre-ingresso di 3°, che non ci siano malevoli
-                // (MA/SA/UR/NE/PLU) in VI o X casa (con pre-ingresso), e che i
-                // benefici non siano troppo vicini all'uscita dalla casa.
-                if ($condizione === 'Lavoro') {
-                    $verificaLavoro = verificaCondizioneLavoroLegacy($pianetiConCase, $caseRS);
-                    if (!$verificaLavoro['valida']) {
-                        $totaleEsclusiLavoro++;
-                        // Le RS escluse dal filtro Lavoro NON vengono incluse nei risultati
-                        // (non c'è un checkbox "Mostra anche le RS escluse da Lavoro")
-                        $processed++;
-                        if ($processed % 50 === 0) {
-                            sse('progress', [
-                                'processed'        => $processed,
-                                'totale'           => $totaleCalc,
-                                'perc'             => round($processed / $totaleCalc * 100),
-                                'fase'             => 'calcolo',
-                                'esclusi_radicale' => $totaleEsclusiRadicale,
-                                'esclusi_filtro'   => $totaleEsclusiFiltro,
-                            'calcoli_placido'  => $totaleCalcoliPlacido,
-                                'esclusi_amore'    => $totaleEsclusiAmore,
-                                'esclusi_casa'     => $totaleEsclusiCasa,
-                                'esclusi_decima'   => $totaleEsclusiDecima,
-                                'esclusi_lavoro'   => $totaleEsclusiLavoro,
-                            ]);
-                        }
-                        continue;
-                    }
-                }
+                // ── C-quater-ter. EX-FILTRO SPECIFICO PER LAVORO (rimosso) ───
+                // UX-0019: l'esclusione automatica qui presente (nessun
+                // benefico o presenza di malevolo in VI/X casa, vecchio
+                // contratto) e' stata rimossa. La decisione su inclusione/
+                // esclusione/livello per Lavoro e' ora interamente demandata
+                // a RuleEngineExtended::calcolaLivelloLavoro() piu' avanti
+                // nel loop, stesso schema di Amore/Decima (UX-0016/UX-0015).
+                // verificaCondizioneLavoro() resta in RicercaRSFilters.php,
+                // come semplice rilevatore geometrico, riusato da
+                // RuleEngineExtended per la stessa logica di orbo.
+                // $totaleEsclusiLavoro resta dichiarato (sempre 0) per non
+                // rompere le statistiche finali che lo referenziano.
 
                 // ── C-quinquies. FILTRO SPECIFICO PER SALUTE ────────────────────
                 // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
@@ -798,11 +780,38 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     continue;
                 }
 
+                // UX-0019: livello 1-7 per Lavoro (sostituisce il sistema
+                // stelline V2 nell'ordinamento finale, solo per questa
+                // condizione + flag; v2_stelle_totali resta come tie-break).
+                // Include gia' internamente il vincolo Regola 33 specifico
+                // di Lavoro (benefico neutralizzato solo nella casa dove
+                // convive con Saturno, non nell'intera RSM).
+                $livelloLavoro = null;
+                if ($engineExt !== null && $condizione === 'Lavoro') {
+                    $livelloLavoro = $engineExt->calcolaLivelloLavoro($temaRS);
+                }
+
+                // UX-0019: RSM esclusa se nessun segnale valido residuo in
+                // VI/X casa (assente in origine, o neutralizzato da Saturno
+                // nella stessa casa - Regola 33).
+                if ($livelloLavoro !== null && ($livelloLavoro['escludi'] ?? false)) {
+                    $totaleEsclusiLavoroVuota++;
+                    $processed++;
+                    continue;
+                }
+
                 // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
                 // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
                 // stessa casa della condizione, la RSM/RL va tolta dai risultati -
                 // confermato esplicitamente dal committente, non solo punteggio a 0.
-                if ($punteggioMyAstral !== null && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
+                // UX-0019: ESCLUSA la condizione Lavoro da questo controllo
+                // generico - CASA_CONDIZIONE['Lavoro'] resta a VI soltanto
+                // (per non impattare calcolaPunteggioParziale()/Decima/Casa),
+                // quindi qui guarderebbe solo Saturno in VI, ignorando X e
+                // contraddicendo la logica per-casa gia' corretta implementata
+                // in calcolaLivelloLavoro() poco sopra.
+                if ($punteggioMyAstral !== null && $condizione !== 'Lavoro'
+                    && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
                     $processed++;
                     continue;
                 }
@@ -859,7 +868,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $denaroAlertGiove,
                 $punteggioMyAstral,
                 $livelloDecima,
-                $livelloAmore
+                $livelloAmore,
+                $livelloLavoro
             );
             // Campi V2 aggiunti al record risultato (additivo, Fase 1a)
             $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
@@ -884,6 +894,13 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             // generica di RuleEngine.
             if ($engineExt !== null && $condizione === 'Amore') {
                 $ris['val'] = $engineExt->generaValAmore($temaRS);
+            }
+
+            // UX-0019: per Lavoro, la colonna VAL mostra i pianeti
+            // effettivamente in VI/X casa RS, al posto della stringa VAL
+            // generica di RuleEngine.
+            if ($engineExt !== null && $condizione === 'Lavoro') {
+                $ris['val'] = $engineExt->generaValLavoro($temaRS);
             }
 
             aggiungiRisultatoTopK(
@@ -973,11 +990,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // stelle V2 restano visibili nel risultato e fanno da tie-break a parita'
     // di livello. Tutte le altre condizioni: comportamento invariato.
     usort($risultati, static function (array $a, array $b): int {
-        // UX-0016: livello Decima e livello Amore sono mutuamente esclusivi
+        // UX-0019: livello Decima, Amore e Lavoro sono mutuamente esclusivi
         // (ogni ricerca ha una sola condizione attiva), quindi al massimo
-        // uno dei due e' non-null per record - nessun conflitto di priorita'.
-        $livA = $a['livello_decima']['livello'] ?? $a['livello_amore']['livello'] ?? null;
-        $livB = $b['livello_decima']['livello'] ?? $b['livello_amore']['livello'] ?? null;
+        // uno dei tre e' non-null per record - nessun conflitto di priorita'.
+        $livA = $a['livello_decima']['livello'] ?? $a['livello_amore']['livello'] ?? $a['livello_lavoro']['livello'] ?? null;
+        $livB = $b['livello_decima']['livello'] ?? $b['livello_amore']['livello'] ?? $b['livello_lavoro']['livello'] ?? null;
 
         if ($livA !== null || $livB !== null) {
             $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
@@ -1007,6 +1024,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // UX-0016: stesso messaggio, identico a Decima, per Amore.
     if ($engineExt !== null && $condizione === 'Amore'
         && count($risultati) === 0 && $totaleEsclusiAmoreVuota > 0) {
+        $messaggioSpeciale = 'Nessun Risultato Positivo o Neutro trovato per la condizione richiesta';
+    }
+    // UX-0019: stesso messaggio, identico a Decima/Amore, per Lavoro.
+    if ($engineExt !== null && $condizione === 'Lavoro'
+        && count($risultati) === 0 && $totaleEsclusiLavoroVuota > 0) {
         $messaggioSpeciale = 'Nessun Risultato Positivo o Neutro trovato per la condizione richiesta';
     }
 
