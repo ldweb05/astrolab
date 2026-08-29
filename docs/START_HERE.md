@@ -201,19 +201,59 @@ Durante questa evoluzione il motore astrologico non è stato modificato.
 
 ---
 
-# Ricerca RSM — condizione Decima (Regola 14, UX-0015)
+# Ricerca RSM/RL — condizione Decima (Regola 14, UX-0015/UX-0018)
 
-Per la sola condizione Decima, con `MYASTRAL_ALIGNMENT_MODE` attivo, la
-ricerca RSM applica una gerarchia dedicata a 8 livelli (ASC in X casa
-natale, Giove/Venere/Sole in X casa RS, malefico segnalato, neutro) al
-posto del sistema stelline V2 come criterio di ordinamento principale —
-V2 resta visibile e usato come tie-break. Implementa la Regola 14
-ufficiale delle 34 regole di Discepolo (ASC in X indebolito da un
-pianeta lento in aspetto dissonante ai punti natali). Le RSM prive di
-qualunque segnale in X casa vengono escluse dai risultati; se la ricerca
-non trova nulla, viene mostrato un messaggio dedicato invece della
-tabella vuota. Le altre 6 condizioni restano invariate. Dettagli
-completi in `docs/HANDOVER_OPERATIVO_astrolab.md`, voce 2026-08-28.
+Per la condizione Decima, con `MYASTRAL_ALIGNMENT_MODE` attivo, la ricerca
+applica una gerarchia dedicata a 6 livelli (ASC in X casa natale come
+segnale primario, declassato dalla Regola 14 se un pianeta lento è in
+aspetto dissonante ai punti natali; Giove/Venere/Sole in X casa RS come
+segnali alternativi) al posto del sistema stelline V2 come criterio di
+ordinamento principale — V2 resta visibile e usato come tie-break. Le RSM/
+RL prive di qualunque segnale positivo in X casa vengono SEMPRE escluse
+(UX-0018: nessun esito "malefico segnalato" o "neutro" viene più
+mostrato); se la ricerca non trova nulla, viene mostrato un messaggio
+dedicato invece della tabella vuota. Attiva su tutte e tre le modalità di
+ricerca (standard, griglia/area geografica/fascia oraria, RL). Le altre
+condizioni non elencate in questa sezione restano invariate. Dettagli
+completi in `docs/HANDOVER_OPERATIVO_astrolab.md`, voci 2026-08-28 e
+2026-08-29 (2)/(3).
+
+---
+
+# Ricerca RSM/RL — condizione Amore (UX-0016/UX-0017)
+
+Per la condizione Amore, con `MYASTRAL_ALIGNMENT_MODE` attivo, la ricerca
+applica una gerarchia dedicata a 5 livelli (Venere, poi Giove — entrambi
+con bonus se entro 1,5° dalla cuspide — poi Sole, in V o VII casa RS, pari
+peso tra le due case) al posto del sistema stelline V2 come criterio di
+ordinamento principale — V2 resta visibile e usato come tie-break. Nessun
+elemento ASC (a differenza di Decima). Le RSM/RL prive di qualunque
+segnale positivo in V/VII casa vengono SEMPRE escluse (UX-0017); se la
+ricerca non trova nulla, viene mostrato un messaggio dedicato invece della
+tabella vuota. Attiva su tutte e tre le modalità di ricerca (standard,
+griglia/area geografica/fascia oraria, RL). Dettagli completi in
+`docs/HANDOVER_OPERATIVO_astrolab.md`, voce 2026-08-29 (1).
+
+---
+
+# Ricerca RSM/RL — condizione Lavoro (UX-0019)
+
+Per la condizione Lavoro, con `MYASTRAL_ALIGNMENT_MODE` attivo, la ricerca
+applica una gerarchia dedicata a 5 livelli (Giove, poi Venere — entrambi
+con bonus se entro 2,5° dalla cuspide, come Decima — poi Sole, in VI o X
+casa RS, pari peso tra le due case) al posto del sistema stelline V2 come
+criterio di ordinamento principale — V2 resta visibile e usato come tie-
+break. Vincolo aggiuntivo specifico di questa sola condizione (non
+condiviso con Amore/Decima né con Salute, pur condividendo il settore VI):
+la Regola 33 ufficiale (Saturno prevale sempre su Giove/Venere/Sole) qui
+si applica alla lettera — un benefico nella STESSA casa di Saturno viene
+neutralizzato come segnale per quella casa, non per l'intera RSM/RL, che
+resta valutata sull'eventuale segnale rimasto nell'altra casa. Le RSM/RL
+prive di qualunque segnale positivo residuo vengono SEMPRE escluse
+(stesso principio UX-0017 di Amore/Decima). Attiva fin da subito su tutte
+e tre le modalità di ricerca (standard, griglia/area geografica/fascia
+oraria, RL). Dettagli completi in `docs/HANDOVER_OPERATIVO_astrolab.md`,
+voce 2026-08-29 (4).
 
 ---
 
