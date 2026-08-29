@@ -3815,3 +3815,34 @@ per isolamento ad ogni step. Test funzionale reale nel browser confermato
 dal committente: Decima verificata su griglia/area geografica/fascia
 oraria e su RL; nessuna regressione su Decima/Amore in ricerca standard
 né su Amore nelle altre modalità.
+
+## 2026-08-29 (4) — Condizione Lavoro: gerarchia completa VI+X con Regola 33 specifica (UX-0019)
+
+Colmata l'incoerenza preesistente (Lavoro definita diversamente in tre
+punti mai armonizzati, mai coperta in griglia/RL) ed estesa a Lavoro la
+stessa architettura a gerarchia di Decima/Amore (UX-0015/16/17/18), su
+tutte e tre le modalità di ricerca fin da subito, come richiesto dal
+committente per evitare le sessioni correttive avute con Amore/Decima.
+Decisione completa in `DECISION_LOG_ux.md`, voce UX-0019 (case VI+X,
+gerarchia Giove/Venere/Sole, orbo 2,5°, e un vincolo specifico non
+condiviso con le altre condizioni: la Regola 33 qui neutralizza il
+benefico solo nella casa dove convive con Saturno, non l'intera RSM —
+vale solo per Lavoro, non per Salute pur condividendo il settore VI).
+
+### File toccati
+`RuleEngine.php` (corretto bonus CASE_TEMATICHE), `RicercaRSFilters.php`
+(verificaCondizioneLavoro → rilevatore geometrico puro),
+`RuleEngineExtended.php` (nuova calcolaLivelloLavoro() +
+generaValLavoro()), `RicercaRSResultBuilder.php`, `ricerca_stream_api.php`,
+`ricerca_griglia_api.php`, `ricerca_stream_rl_api.php`.
+
+### Problema incontrato
+Un trasferimento di patch testuale molto estesa (base64 su riga unica) si
+è troncato in fase di incolla da terminale, corrompendo temporaneamente un
+file — recuperato con `git checkout --`, nessun dato perso, proseguito a
+micro-patch.
+
+### Test eseguiti
+Verifica sintattica dopo ogni patch, `git diff`/`git status` per
+isolamento, test funzionale confermato dal committente su tutte e tre le
+modalità.
