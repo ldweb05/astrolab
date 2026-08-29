@@ -303,6 +303,47 @@ function verificaCondizioneAmore(array $pianetiConCase, array $caseRS): array
 }
 
 /**
+ * Wrapper di compatibilita' (UX-0016) per i chiamanti non ancora migrati
+ * alla gerarchia RuleEngineExtended::calcolaLivelloAmore() (es.
+ * ricerca_griglia_api.php, privo dell'infrastruttura RuleEngineExtended).
+ * Ricostruisce il vecchio contratto ['valida'=>bool,'motivo'=>...] dal
+ * rilevatore geometrico verificaCondizioneAmore(), riproducendo ESATTAMENTE
+ * il comportamento pre-UX-0016: esclusa se c'e' un malevolo in V/VII,
+ * esclusa se non c'e' alcun benefico.
+ *
+ * @param array<int,array{casa:int,longitudine:float}> $pianetiConCase
+ * @param array<int,array{longitudine:float}> $caseRS
+ * @return array{valida:bool, motivo?:string}
+ */
+function verificaCondizioneAmoreLegacy(array $pianetiConCase, array $caseRS): array
+{
+    $rilevamento = verificaCondizioneAmore($pianetiConCase, $caseRS);
+    $pianetiInCasa = $rilevamento['pianeti_in_casa'];
+
+    $benefici = [3, 5, 0];
+    $malevoli = [4, 6, 7, 8, 9];
+
+    $malevoliTrovati = array_values(array_intersect($pianetiInCasa, $malevoli));
+    if (!empty($malevoliTrovati)) {
+        $nomiMalevoli = array_map('getNomePianeta', $malevoliTrovati);
+        return [
+            'valida' => false,
+            'motivo' => 'Malevoli in V/VII casa RS: ' . implode(', ', $nomiMalevoli),
+        ];
+    }
+
+    $beneficiTrovati = array_intersect($pianetiInCasa, $benefici);
+    if (empty($beneficiTrovati)) {
+        return [
+            'valida' => false,
+            'motivo' => 'Nessun benefico (Venere, Giove o Sole) in V o VII casa RS',
+        ];
+    }
+
+    return ['valida' => true];
+}
+
+/**
  * Verifica che la condizione "Lavoro" sia soddisfatta.
  *
  * Case target: VI e X (gia' definite nella Rule Map di

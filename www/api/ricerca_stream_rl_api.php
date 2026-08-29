@@ -428,6 +428,7 @@ try {
     $totaleEsclusiRadicale = 0; // contatore diagnostico (Rule Map)
     $totaleEsclusiFiltro   = 0; // contatore RS escluse da FiltroEsclusione (checkbox)
     $totaleEsclusiAmore    = 0; // contatore RS escluse dal filtro specifico Amore
+    $totaleEsclusiAmoreVuota = 0; // UX-0016: RS escluse per V/VII casa senza alcun segnale
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
@@ -517,33 +518,14 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     }
                 }
 
-                // ── C-ter. FILTRO SPECIFICO PER AMORE ──────────────────────────
-                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-                // Verifica che almeno un benefico (VE/GI/SO) sia in V o VII casa RS,
-                // che non ci siano malevoli (MA/SA/UR/NE/PLU) in V o VII,
-                // e che i benefici non siano troppo vicini all'uscita dalla casa.
-                if ($condizione === 'Amore') {
-                    $verificaAmore = verificaCondizioneAmore($pianetiConCase, $caseRS);
-                    if (!$verificaAmore['valida']) {
-                        $totaleEsclusiAmore++;
-                        // Le RS escluse dal filtro Amore NON vengono incluse nei risultati
-                        // (non c'è un checkbox "Mostra anche le RS escluse da Amore")
-                        $processed++;
-                        if ($processed % 50 === 0) {
-                            sse('progress', [
-                                'processed'        => $processed,
-                                'totale'           => $totaleCalc,
-                                'perc'             => round($processed / $totaleCalc * 100),
-                                'fase'             => 'calcolo',
-                                'esclusi_radicale' => $totaleEsclusiRadicale,
-                                'esclusi_filtro'   => $totaleEsclusiFiltro,
-                            'calcoli_placido'  => $totaleCalcoliPlacido,
-                                'esclusi_amore'    => $totaleEsclusiAmore,
-                            ]);
-                        }
-                        continue;
-                    }
-                }
+                // ── C-ter. EX-FILTRO SPECIFICO PER AMORE (rimosso) ───────────
+                // UX-0016: l'esclusione automatica qui presente e' stata
+                // rimossa; il livello Amore (1-7) viene ora calcolato piu'
+                // avanti nel loop tramite RuleEngineExtended::calcolaLivelloAmore(),
+                // che gestisce inclusione/esclusione/ordinamento, coerente
+                // con lo stesso schema gia' applicato a ricerca_stream_api.php.
+                // $totaleEsclusiAmore resta dichiarato (sempre 0) per non
+                // rompere le statistiche finali che lo referenziano.
 
                 // ── C-quater. FILTRO SPECIFICO PER CASA (IV Casa) ─────────────
                 // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
@@ -730,6 +712,21 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     );
                 }
 
+                // UX-0016: livello 1-7 per Amore (stesso schema di
+                // ricerca_stream_api.php, esteso qui alle RL).
+                $livelloAmore = null;
+                if ($engineExt !== null && $condizione === 'Amore') {
+                    $livelloAmore = $engineExt->calcolaLivelloAmore($temaRS);
+                }
+
+                // UX-0016: RS/RL esclusa se nessun pianeta cade in V/VII
+                // (nessun segnale utile per Amore).
+                if ($livelloAmore !== null && ($livelloAmore['escludi'] ?? false)) {
+                    $totaleEsclusiAmoreVuota++;
+                    $processed++;
+                    continue;
+                }
+
                 // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
                 // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
                 // stessa casa della condizione, la RS/RL va tolta dai risultati -
@@ -788,7 +785,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $scudoBeneficoAttivo,
                 $beneficoInI,
                 $denaroBeneficioTrovato,
-                $denaroAlertGiove
+                $denaroAlertGiove,
+                livelloAmore: $livelloAmore
             );
             // Campi V2 aggiunti al record risultato (additivo, Fase 2a)
             $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
@@ -800,6 +798,12 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             $ris['v2_html']            = $v2Calc->renderHTML($valV2);
             $ris['v2_alert_stellium']  = $valV2['alert_stellium_misto'];
             $ris['v2_delta']           = $valV2['stelle_totali'] - $val['stelline'];
+
+            // UX-0016: per Amore, la colonna VAL mostra i pianeti
+            // effettivamente in V/VII casa RS/RL.
+            if ($engineExt !== null && $condizione === 'Amore') {
+                $ris['val'] = $engineExt->generaValAmore($temaRS);
+            }
 
             aggiungiRisultatoTopK(
                 $risultati,
@@ -882,9 +886,22 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // Ordinamento su V2 (Fase 4: vecchio sistema rimosso come tiebreaker).
     // Riga precedente commentata per rollback rapido in caso di problemi:
     // ($b['v2_stelle_totali'] <=> $a['v2_stelle_totali']) ?: ($b['stelline'] <=> $a['stelline'])
-    usort($risultati, static fn(array $a, array $b): int =>
-        $b['v2_stelle_totali'] <=> $a['v2_stelle_totali']
-    );
+    // UX-0016: livello Amore sostituisce v2_stelle_totali come criterio
+    // primario di ordinamento solo per questa condizione + flag attivo;
+    // le stelle V2 restano tie-break. Tutte le altre condizioni invariate.
+    usort($risultati, static function (array $a, array $b): int {
+        $livA = $a['livello_amore']['livello'] ?? null;
+        $livB = $b['livello_amore']['livello'] ?? null;
+
+        if ($livA !== null || $livB !== null) {
+            $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
+            if ($cmpLivello !== 0) {
+                return $cmpLivello;
+            }
+        }
+
+        return $b['v2_stelle_totali'] <=> $a['v2_stelle_totali'];
+    });
 
     if ($tipoLocalita === 'localita') {
         $risultati = arricchisciLocalitaConAeroporti(

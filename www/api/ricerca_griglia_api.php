@@ -481,7 +481,7 @@ try {
 
                 if ($modalita === 'standard') {
                     $verificaCond = match($condizioneInput) {
-                        'Amore'      => verificaCondizioneAmore($pianetiConCase, $caseRS),
+                        'Amore'      => verificaCondizioneAmoreLegacy($pianetiConCase, $caseRS), // UX-0016: wrapper compatibilita'
                         'Casa'       => verificaCondizioneCasa($pianetiConCase, $caseRS),
                         'Salute'     => verificaCondizioneSalute($pianetiConCase, $caseRS, $temaNatale['case'], $latPoint),
                         'Denaro'     => verificaCondizioneDenaro($pianetiConCase, $caseRS),
