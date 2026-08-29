@@ -230,39 +230,31 @@ function verificaCondizioneDecima(array $pianetiConCase, array $caseRS): array
 }
 
 /**
- * Verifica che la condizione "Amore" sia soddisfatta secondo le regole
- * della scuola di Ciro Discepolo.
+ * Verifica la presenza geometrica di Venere/Giove/Sole/malefici in V o VII
+ * casa RS (con pre-ingresso 3°, sicurezza in uscita 2° solo per i benefici).
  *
- * REGOLE:
- * 1. Almeno uno tra Venere (3), Giove (5) o Sole (0) di RS deve trovarsi
- *    in V o VII casa RS (con pre-ingresso di 3°).
- *
- * 2. Sicurezza in uscita: se un benefico è a meno di 2° dalla cuspide
- *    della casa successiva (VI se in V, VIII se in VII), la località
- *    NON è valida.
- *
- * 3. Filtro di esclusione: se MA/SA/UR/NE/PLU è in V o VII RS
- *    (con pre-ingresso di 3°), la località DEVE essere scartata.
+ * UX-0016: funzione trasformata da FILTRO DI ESCLUSIONE a semplice
+ * RILEVATORE GEOMETRICO, sullo stesso schema di verificaCondizioneDecima()
+ * (UX-0015). Non esclude più nulla: restituisce solo quali pianeti sono
+ * effettivamente in V o VII casa RS. La decisione su cosa fare con questa
+ * informazione (livello, esclusione per assenza totale di segnali, VAL)
+ * spetta ora interamente a RuleEngineExtended::calcolaLivelloAmore()/
+ * generaValAmore().
  *
  * @param array<int,array{casa:int,longitudine:float}> $pianetiConCase
  * @param array<int,array{longitudine:float}> $caseRS
- * @return array{valida:bool, motivo?:string}  valida=true se passa il filtro
+ * @return array{pianeti_in_casa: int[]}
  */
-
 function verificaCondizioneAmore(array $pianetiConCase, array $caseRS): array
 {
-    // Case target per l'amore: V e VII
+    // Case target per l'amore: V e VII (pari peso, nessuna prevale)
     $caseTarget = [5, 7];
 
-    // Benefici da verificare: Venere (3), Giove (5), Sole (0)
+    // Benefici (Venere, Giove, Sole) — usati solo per applicare il vincolo
+    // di sicurezza in uscita ai benefici, non per escludere nulla qui.
     $benefici = [3, 5, 0];
 
-    // Malevoli da escludere: Marte (4), Saturno (6), Urano (7), Nettuno (8), Plutone (9)
-    $malevoli = [4, 6, 7, 8, 9];
-
-    // Per ogni casa target, controlliamo la presenza di benefici e malevoli
-    $beneficiTrovati = [];
-    $malevoliTrovati = [];
+    $pianetiInCasa = [];
 
     foreach ($caseTarget as $casaTarget) {
         if (!isset($caseRS[$casaTarget])) {
@@ -277,7 +269,6 @@ function verificaCondizioneAmore(array $pianetiConCase, array $caseRS): array
             ? $caseRS[$casaSuccessiva]['longitudine']
             : null;
 
-        // Controlla tutti i pianeti
         foreach ($pianetiConCase as $idPianeta => $dati) {
             $casaAssegnata = (int)$dati['casa'];
             $longitudine = (float)$dati['longitudine'];
@@ -286,60 +277,30 @@ function verificaCondizioneAmore(array $pianetiConCase, array $caseRS): array
             $diffCuspide = diffAngolo($longitudine, $cuspideTarget);
             $inPreIngresso = ($diffCuspide > -3.0 && $diffCuspide < 0.0);
 
-            // Il pianeta è nella casa target (assegnata da SweCalc) o in pre-ingresso?
             $inCasaTarget = ($casaAssegnata === $casaTarget) || $inPreIngresso;
 
             if (!$inCasaTarget) {
                 continue;
             }
 
-            // === VINCOLO DI SICUREZZA IN USCITA ===
-            // Se il pianeta benefico è a meno di 2° dalla cuspide della casa successiva
+            // Sicurezza in uscita, SOLO per benefici: se a meno di 2° dalla
+            // cuspide della casa successiva, non conta come "in casa target"
+            // (comportamento geometrico invariato rispetto a prima).
             if ($cuspideSuccessiva !== null && in_array($idPianeta, $benefici, true)) {
                 $diffUscita = diffAngolo($longitudine, $cuspideSuccessiva);
-                // diffUscita ∈ [0°, 2°) → pianeta appena entrato nella casa successiva
                 if ($diffUscita >= 0.0 && $diffUscita < 2.0) {
-                    $nomeBenef = getNomePianeta($idPianeta);
-                    return [
-                        'valida' => false,
-                        'motivo' => "Sicurezza in uscita: {$nomeBenef} a " .
-                                    round($diffUscita, 1) . "° dalla cuspide della " .
-                                    $casaSuccessiva . "a casa — troppo vicino all'uscita dalla " .
-                                    $casaTarget . "a casa"
-                    ];
+                    continue;
                 }
             }
 
-            // Classifica il pianeta come benefico o malevolo
-            if (in_array($idPianeta, $benefici, true)) {
-                $beneficiTrovati[] = $idPianeta;
-            } elseif (in_array($idPianeta, $malevoli, true)) {
-                $malevoliTrovati[] = $idPianeta;
+            if (!in_array($idPianeta, $pianetiInCasa, true)) {
+                $pianetiInCasa[] = $idPianeta;
             }
         }
     }
 
-    // === FILTRO DI ESCLUSIONE: malevoli in V o VII ===
-    if (!empty($malevoliTrovati)) {
-        $nomiMalevoli = array_map('getNomePianeta', array_unique($malevoliTrovati));
-        return [
-            'valida' => false,
-            'motivo' => 'Malevoli in V/VII casa RS: ' . implode(', ', $nomiMalevoli)
-        ];
-    }
-
-    // === VERIFICA PRESENZA BENEFICI ===
-    if (empty($beneficiTrovati)) {
-        return [
-            'valida' => false,
-            'motivo' => 'Nessun benefico (Venere, Giove o Sole) in V o VII casa RS'
-        ];
-    }
-
-    // Tutti i controlli superati
-    return ['valida' => true];
+    return ['pianeti_in_casa' => $pianetiInCasa];
 }
-
 
 /**
  * Verifica che la condizione "Lavoro" sia soddisfatta.
@@ -349,9 +310,11 @@ function verificaCondizioneAmore(array $pianetiConCase, array $caseRS): array
  * Coerente con la Regola 33 ("discorso lavoro/emancipazione/successo/
  * prestigio" legato al Medio Cielo).
  *
- * Stessa struttura di verificaCondizioneAmore() (l'unico altro caso con
- * due case target contemporanee): benefici Sole/Giove/Venere, malevoli
- * Marte/Saturno/Urano/Nettuno/Plutone, pre-ingresso 3°, sicurezza-uscita 2°.
+ * Stessa struttura geometrica di verificaCondizioneAmore()/
+ * verificaCondizioneDecima() (due case target contemporanee): benefici
+ * Sole/Giove/Venere, pre-ingresso 3°, sicurezza-uscita 2° solo benefici.
+ * Questa funzione resta un FILTRO DI ESCLUSIONE (non rifattorizzata in
+ * questa sessione, fuori scope UX-0016).
  *
  * @param array<int,array{casa:int,longitudine:float}> $pianetiConCase
  * @param array<int,array{longitudine:float}> $caseRS
