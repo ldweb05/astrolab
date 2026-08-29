@@ -464,4 +464,24 @@ class RuleEngineExtended {
 
         return empty($parti) ? '—' : implode('+', $parti);
     }
+
+    /**
+     * Stringa VAL dedicata alla condizione Amore (UX-0016): mostra ogni
+     * pianeta la cui posizione nella RS cade in V o VII casa della RS
+     * stessa. Nessun elemento ASC (a differenza di Decima): la funzione
+     * forte dell'Ascendente come primo livello resta specifica della sola
+     * Decima. Sostituisce, SOLO per Amore, la stringa VAL generica di
+     * RuleEngine::generaVAL() — non la modifica, non la duplica per le
+     * altre condizioni.
+     */
+    public function generaValAmore(array $temaRS): string {
+        $parti = [];
+
+        $rilevamento = verificaCondizioneAmore($temaRS['pianeti'], $temaRS['case']);
+        foreach ($rilevamento['pianeti_in_casa'] as $idPianeta) {
+            $parti[] = RuleEngine::VAL_NOMI[$idPianeta] ?? (string)$idPianeta;
+        }
+
+        return empty($parti) ? '—' : implode('+', $parti);
+    }
 }
