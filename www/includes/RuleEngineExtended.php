@@ -130,6 +130,23 @@ class RuleEngineExtended {
     const MALEFICI_AMORE = [4, 6, 7, 8, 9]; // Marte, Saturno, Urano, Nettuno, Plutone
     const NEUTRI_AMORE   = [1, 2];          // Luna, Mercurio
 
+    // Livelli gerarchia Lavoro (UX-0019): niente ASC, priorita' Giove/Venere/Sole
+    // su VI/X casa (pari peso), bonus orbo = ORBO_MAX_GRADI (2,5 gradi, come Decima).
+    // Vincolo aggiuntivo specifico di Lavoro (non condiviso con Amore/Decima):
+    // Regola 33 - un benefico neutralizzato per casa se Saturno e' nella STESSA
+    // casa (VI o X), vedi calcolaLivelloLavoro().
+    const LIVELLO_GIOVE_ORBO_LAVORO  = 1;
+    const LIVELLO_GIOVE_LAVORO       = 2;
+    const LIVELLO_VENERE_ORBO_LAVORO = 3;
+    const LIVELLO_VENERE_LAVORO      = 4;
+    const LIVELLO_SOLE_LAVORO        = 5;
+    const LIVELLO_MALEFICO_LAVORO    = 6;  // solo malefico/i in VI/X, nessun benefico valido
+    const LIVELLO_NEUTRO_LAVORO      = 7;  // nessun segnale valido residuo (assente o neutralizzato)
+
+    // Pianeti malefici e neutri per Lavoro - stessi id di Amore/Decima.
+    const MALEFICI_LAVORO = [4, 6, 7, 8, 9]; // Marte, Saturno, Urano, Nettuno, Plutone
+    const NEUTRI_LAVORO   = [1, 2];          // Luna, Mercurio
+
     /**
      * Calcola il punteggio parziale Sole/Venere/Giove nella casa tematica
      * della condizione, con bonus d'orbo per Giove angolare.
@@ -429,6 +446,132 @@ class RuleEngineExtended {
     }
 
     /**
+     * Calcola il livello di priorita' per la condizione Lavoro (UX-0019).
+     *
+     * Case target: VI e X, pari peso. Gerarchia confermata dal committente:
+     * 1) Giove 2) Venere 3) Sole (bonus orbo 2,5 gradi solo su Giove/Venere).
+     *
+     * Regola 33 (vincolo SPECIFICO di Lavoro, non condiviso con Amore/Decima
+     * ne' con Salute pur condividendo il settore VI): se Saturno e' nella
+     * STESSA casa (VI o X) di un benefico, quel benefico non conta come
+     * segnale valido per QUELLA casa - viene neutralizzato, non solo
+     * segnalato. Si valuta l'eventuale segnale rimasto nell'ALTRA casa non
+     * compromessa da Saturno. Se nessun segnale valido residuo, la RSM va
+     * esclusa (coerente con UX-0017).
+     */
+    public function calcolaLivelloLavoro(array $temaRS): array {
+        $base = ['escludi' => false];
+
+        $perCasa = $this->pianetiPerCasaLavoro($temaRS);
+        $benefici = [0, 5, 3];
+
+        // Per ciascuna casa target, il benefico conta solo se Saturno NON
+        // e' anche lui in quella stessa casa (Regola 33).
+        $segnaliValidi = [];
+        foreach ([6, 10] as $casaTarget) {
+            $presenti = $perCasa[$casaTarget];
+            $saturnoQui = in_array(self::ID_SATURNO, $presenti, true);
+            if ($saturnoQui) {
+                continue; // benefici di questa casa neutralizzati, nessun segnale da qui
+            }
+            foreach (array_intersect($presenti, $benefici) as $idBenefico) {
+                $segnaliValidi[] = $idBenefico;
+            }
+        }
+        $segnaliValidi = array_unique($segnaliValidi);
+
+        // Gerarchia: 1) Giove 2) Venere 3) Sole
+        if (in_array(5, $segnaliValidi, true)) {
+            $entroOrbo = $this->pianetaEntroOrboLavoro(5, $temaRS);
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_GIOVE_ORBO_LAVORO : self::LIVELLO_GIOVE_LAVORO,
+            ]);
+        }
+        if (in_array(3, $segnaliValidi, true)) {
+            $entroOrbo = $this->pianetaEntroOrboLavoro(3, $temaRS);
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_VENERE_ORBO_LAVORO : self::LIVELLO_VENERE_LAVORO,
+            ]);
+        }
+        if (in_array(0, $segnaliValidi, true)) {
+            return array_merge($base, ['livello' => self::LIVELLO_SOLE_LAVORO]);
+        }
+
+        // UX-0017: nessun segnale valido residuo (assente in origine, oppure
+        // neutralizzato dalla Regola 33) - la RSM va SEMPRE esclusa.
+        return array_merge($base, ['livello' => self::LIVELLO_NEUTRO_LAVORO, 'escludi' => true]);
+    }
+
+    /**
+     * Breakdown per-casa (VI, X separatamente) dei pianeti geometricamente
+     * presenti, con le stesse regole di verificaCondizioneLavoro() (pre-
+     * ingresso 3 gradi, sicurezza in uscita 2 gradi solo per i benefici) ma
+     * senza fondere le due case: necessario alla Regola 33, che deve sapere
+     * IN QUALE delle due case si trova un eventuale Saturno.
+     *
+     * @return array{6: int[], 10: int[]}
+     */
+    private function pianetiPerCasaLavoro(array $temaRS): array {
+        $risultato = [6 => [], 10 => []];
+        $benefici = [0, 5, 3];
+
+        foreach ([6, 10] as $casaTarget) {
+            if (!isset($temaRS['case'][$casaTarget]['longitudine'])) {
+                continue;
+            }
+            $cuspideTarget = (float)$temaRS['case'][$casaTarget]['longitudine'];
+            $casaSuccessiva = ($casaTarget === 6) ? 7 : 11;
+            $cuspideSuccessiva = isset($temaRS['case'][$casaSuccessiva]['longitudine'])
+                ? (float)$temaRS['case'][$casaSuccessiva]['longitudine']
+                : null;
+
+            foreach ($temaRS['pianeti'] as $idPianeta => $dati) {
+                $casaAssegnata = (int)$dati['casa'];
+                $longitudine = (float)$dati['longitudine'];
+
+                $diffCuspide = AstroUtils::diffAngolo($longitudine, $cuspideTarget);
+                $inPreIngresso = ($diffCuspide > -3.0 && $diffCuspide < 0.0);
+                $inCasaTarget = ($casaAssegnata === $casaTarget) || $inPreIngresso;
+
+                if (!$inCasaTarget) {
+                    continue;
+                }
+
+                if ($cuspideSuccessiva !== null && in_array($idPianeta, $benefici, true)) {
+                    $diffUscita = AstroUtils::diffAngolo($longitudine, $cuspideSuccessiva);
+                    if ($diffUscita >= 0.0 && $diffUscita < 2.0) {
+                        continue;
+                    }
+                }
+
+                $risultato[$casaTarget][] = $idPianeta;
+            }
+        }
+
+        return $risultato;
+    }
+
+    /**
+     * Verifica se un pianeta (Giove o Venere) e' entro il bonus orbo Lavoro
+     * (ORBO_MAX_GRADI, 2,5 gradi) dalla cuspide di VI o X casa RS.
+     */
+    private function pianetaEntroOrboLavoro(int $idPianeta, array $temaRS): bool {
+        foreach ([6, 10] as $casaTarget) {
+            if (!isset($temaRS['case'][$casaTarget]['longitudine'], $temaRS['pianeti'][$idPianeta]['longitudine'])) {
+                continue;
+            }
+            $diff = abs(AstroUtils::diffAngolo(
+                (float)$temaRS['pianeti'][$idPianeta]['longitudine'],
+                (float)$temaRS['case'][$casaTarget]['longitudine']
+            ));
+            if ($diff <= self::ORBO_MAX_GRADI) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Stringa VAL dedicata alla condizione Decima (UX-0015): mostra ASC (se
      * l'Ascendente della RS cade nella X casa natale) e ogni pianeta la cui
      * posizione nella RS cade nella X casa della RS stessa. Sostituisce, SOLO
@@ -464,6 +607,25 @@ class RuleEngineExtended {
         $parti = [];
 
         $rilevamento = verificaCondizioneAmore($temaRS['pianeti'], $temaRS['case']);
+        foreach ($rilevamento['pianeti_in_casa'] as $idPianeta) {
+            $parti[] = RuleEngine::VAL_NOMI[$idPianeta] ?? (string)$idPianeta;
+        }
+
+        return empty($parti) ? '—' : implode('+', $parti);
+    }
+
+    /**
+     * Stringa VAL dedicata alla condizione Lavoro (UX-0019): mostra ogni
+     * pianeta la cui posizione nella RS cade in VI o X casa della RS
+     * stessa. Nessun elemento ASC (come Amore, a differenza di Decima).
+     * Sostituisce, SOLO per Lavoro, la stringa VAL generica di
+     * RuleEngine::generaVAL() - non la modifica, non la duplica per le
+     * altre condizioni.
+     */
+    public function generaValLavoro(array $temaRS): string {
+        $parti = [];
+
+        $rilevamento = verificaCondizioneLavoro($temaRS['pianeti'], $temaRS['case']);
         foreach ($rilevamento['pianeti_in_casa'] as $idPianeta) {
             $parti[] = RuleEngine::VAL_NOMI[$idPianeta] ?? (string)$idPianeta;
         }
