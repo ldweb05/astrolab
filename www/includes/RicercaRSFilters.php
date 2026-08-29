@@ -344,37 +344,23 @@ function verificaCondizioneAmoreLegacy(array $pianetiConCase, array $caseRS): ar
 }
 
 /**
- * Verifica che la condizione "Lavoro" sia soddisfatta.
- *
- * Case target: VI e X (gia' definite nella Rule Map di
- * getRuleMapEsclusione() per l'esclusione dei malevoli).
- * Coerente con la Regola 33 ("discorso lavoro/emancipazione/successo/
- * prestigio" legato al Medio Cielo).
- *
- * Stessa struttura geometrica di verificaCondizioneAmore()/
- * verificaCondizioneDecima() (due case target contemporanee): benefici
- * Sole/Giove/Venere, pre-ingresso 3°, sicurezza-uscita 2° solo benefici.
- * Questa funzione resta un FILTRO DI ESCLUSIONE (non rifattorizzata in
- * questa sessione, fuori scope UX-0016).
+ * Verifica la presenza geometrica di Sole/Giove/Venere/malefici in VI o X
+ * casa RS. UX-0019: funzione da rifattorizzare a rilevatore geometrico
+ * puro (schema Amore/Decima), nei prossimi passi di questa stessa sessione.
  *
  * @param array<int,array{casa:int,longitudine:float}> $pianetiConCase
  * @param array<int,array{longitudine:float}> $caseRS
- * @return array{valida:bool, motivo?:string}
+ * @return array{pianeti_in_casa: int[]}
  */
 function verificaCondizioneLavoro(array $pianetiConCase, array $caseRS): array
 {
-    // Case target per il lavoro: VI e X
+    // Case target per il lavoro: VI e X (pari peso - UX-0019)
     $caseTarget = [6, 10];
 
-    // Benefici da verificare: Sole (0), Giove (5), Venere (3)
+    // Benefici usati solo per il vincolo di sicurezza in uscita
     $benefici = [0, 5, 3];
 
-    // Malevoli da escludere: Marte (4), Saturno (6), Urano (7), Nettuno (8), Plutone (9)
-    $malevoli = [4, 6, 7, 8, 9];
-
-    // Per ogni casa target, controlliamo la presenza di benefici e malevoli
-    $beneficiTrovati = [];
-    $malevoliTrovati = [];
+    $pianetiInCasa = [];
 
     foreach ($caseTarget as $casaTarget) {
         if (!isset($caseRS[$casaTarget])) {
@@ -405,50 +391,60 @@ function verificaCondizioneLavoro(array $pianetiConCase, array $caseRS): array
                 continue;
             }
 
-            // === VINCOLO DI SICUREZZA IN USCITA ===
-            // Se il pianeta benefico è a meno di 2° dalla cuspide della casa successiva
+            // Sicurezza in uscita, SOLO per benefici: se a meno di 2° dalla
+            // cuspide della casa successiva, non conta come "in casa target"
             if ($cuspideSuccessiva !== null && in_array($idPianeta, $benefici, true)) {
                 $diffUscita = diffAngolo($longitudine, $cuspideSuccessiva);
-                // diffUscita ∈ [0°, 2°) → pianeta appena entrato nella casa successiva
                 if ($diffUscita >= 0.0 && $diffUscita < 2.0) {
-                    $nomeBenef = getNomePianeta($idPianeta);
-                    return [
-                        'valida' => false,
-                        'motivo' => "Sicurezza in uscita: {$nomeBenef} a " .
-                                    round($diffUscita, 1) . "° dalla cuspide della " .
-                                    $casaSuccessiva . "a casa — troppo vicino all'uscita dalla " .
-                                    $casaTarget . "a casa"
-                    ];
+                    continue;
                 }
             }
 
-            // Classifica il pianeta come benefico o malevolo
-            if (in_array($idPianeta, $benefici, true)) {
-                $beneficiTrovati[] = $idPianeta;
-            } elseif (in_array($idPianeta, $malevoli, true)) {
-                $malevoliTrovati[] = $idPianeta;
+            if (!in_array($idPianeta, $pianetiInCasa, true)) {
+                $pianetiInCasa[] = $idPianeta;
             }
         }
     }
 
-    // === FILTRO DI ESCLUSIONE: malevoli in VI o X ===
+    return ['pianeti_in_casa' => $pianetiInCasa];
+}
+
+/**
+ * Wrapper di compatibilita' (UX-0019) per il chiamante non ancora migrato
+ * a RuleEngineExtended::calcolaLivelloLavoro() (ricerca_stream_api.php).
+ * Riproduce ESATTAMENTE il comportamento pre-UX-0019: esclusa se c'e' un
+ * malevolo in VI/X, esclusa se non c'e' alcun benefico. NOTA: non applica
+ * ancora la Regola 33 specifica - sara' rimosso al passo successivo.
+ *
+ * @param array<int,array{casa:int,longitudine:float}> $pianetiConCase
+ * @param array<int,array{longitudine:float}> $caseRS
+ * @return array{valida:bool, motivo?:string}
+ */
+function verificaCondizioneLavoroLegacy(array $pianetiConCase, array $caseRS): array
+{
+    $rilevamento = verificaCondizioneLavoro($pianetiConCase, $caseRS);
+    $pianetiInCasa = $rilevamento['pianeti_in_casa'];
+
+    $benefici = [0, 5, 3];
+    $malevoli = [4, 6, 7, 8, 9];
+
+    $malevoliTrovati = array_values(array_intersect($pianetiInCasa, $malevoli));
     if (!empty($malevoliTrovati)) {
-        $nomiMalevoli = array_map('getNomePianeta', array_unique($malevoliTrovati));
+        $nomiMalevoli = array_map('getNomePianeta', $malevoliTrovati);
         return [
             'valida' => false,
-            'motivo' => 'Malevoli in VI/X casa RS: ' . implode(', ', $nomiMalevoli)
+            'motivo' => 'Malevoli in VI/X casa RS: ' . implode(', ', $nomiMalevoli),
         ];
     }
 
-    // === VERIFICA PRESENZA BENEFICI ===
+    $beneficiTrovati = array_intersect($pianetiInCasa, $benefici);
     if (empty($beneficiTrovati)) {
         return [
             'valida' => false,
-            'motivo' => 'Nessun benefico (Sole, Giove o Venere) in VI o X casa RS'
+            'motivo' => 'Nessun benefico (Sole, Giove o Venere) in VI o X casa RS',
         ];
     }
 
-    // Tutti i controlli superati
     return ['valida' => true];
 }
 
