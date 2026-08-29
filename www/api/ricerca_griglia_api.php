@@ -211,6 +211,9 @@ try {
     require_once '../includes/RuleEngine.php';
     require_once '../includes/FiltroEsclusione.php';
     require_once '../includes/StellineV2Calculator.php';
+    if (MYASTRAL_ALIGNMENT_MODE) {
+        require_once '../includes/RuleEngineExtended.php';
+    }
 
     $tStart = microtime(true);
     $swe    = new SweCalc();
@@ -218,6 +221,10 @@ try {
     // Sistema V2 (roadmap sostituzione stelline) — sistema primario per
     // filtro, streaming e ordinamento (coerente con ricerca_stream_api.php)
     $v2Calc = new StellineV2Calculator();
+    // Motore parallelo opzionale (roadmap MyAstral) — null se il flag è OFF.
+    // Usato per la gerarchia Decima (UX-0015/UX-0018), estesa qui alla
+    // ricerca a griglia/geografica/fascia oraria (modalita 'standard').
+    $engineExt = MYASTRAL_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
     // ── Parametri natali ────────────────────────────────────────────────
     $g      = intval($_GET['g']         ?? 1);
@@ -519,6 +526,19 @@ try {
 
                 $val = $engine->valuta($temaNatale, $temaRS, $condizioneValutazione);
 
+                // UX-0015/UX-0018: livello 1-6 per Decima (gerarchia ASC/
+                // Giove/Venere/Sole, esclusione se nessuno dei due presente),
+                // estesa qui alla ricerca a griglia (modalita 'standard').
+                $livelloDecima = null;
+                if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Decima') {
+                    $livelloDecima = $engineExt->calcolaLivelloDecima($temaNatale, $temaRS);
+                    if ($livelloDecima['escludi'] ?? false) {
+                        $processed++;
+                        if ($processed % $progressOgni === 0) $emitProgress();
+                        continue;
+                    }
+                }
+
                 // Calcolo Stelline V2 (sistema primario)
                 $pianetiRS_v2 = [];
                 foreach ($pianetiConCase as $_pid => $_p) {
@@ -555,7 +575,14 @@ try {
                     'vicinanza_casa'    => $vicinanza ? $vicinanza['casa'] : null,
                     'v2_stelle_totali'  => $valV2['stelle_totali'],
                     'v2_html'           => $v2Calc->renderHTML($valV2),
+                    'livello_decima'    => $livelloDecima,
                 ];
+
+                // UX-0015/UX-0018: per Decima, la colonna VAL mostra ASC (se
+                // natale in X) + i pianeti effettivamente in X casa RS.
+                if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Decima') {
+                    $ris['val'] = $engineExt->generaValDecima($temaNatale, $temaRS);
+                }
 
                 // Debug opt-in (?debug=1): espone la casa esatta di ogni pianeta
                 // per questo punto, cosi' un risultato sospetto puo' essere
@@ -596,6 +623,16 @@ try {
         // Fase 4: rimosso tiebreaker vecchio sistema. Riga commentata per
         // rollback rapido: $cmpStelle = $b['stelline'] <=> $a['stelline']; if ($cmpStelle !== 0) return $cmpStelle;
         usort($risultati, static function (array $a, array $b): int {
+            // UX-0015/UX-0018: livello Decima (1-6) come criterio primario
+            // quando presente, prima di V2/vicinanza. Tutte le altre
+            // condizioni: comportamento invariato (nessun livello_decima).
+            $livA = $a['livello_decima']['livello'] ?? null;
+            $livB = $b['livello_decima']['livello'] ?? null;
+            if ($livA !== null || $livB !== null) {
+                $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
+                if ($cmpLivello !== 0) return $cmpLivello;
+            }
+
             $cmpV2 = $b['v2_stelle_totali'] <=> $a['v2_stelle_totali'];
             if ($cmpV2 !== 0) return $cmpV2;
             $va = $a['vicinanza_gradi'] ?? PHP_FLOAT_MAX;
