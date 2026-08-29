@@ -3737,3 +3737,38 @@ nel browser confermato dal committente: condizione Amore verificata su
 ricerca standard e Filtri Avanzati (Area Geografica) dopo la correzione
 UX-0017; condizione Decima riverificata invariata dopo le modifiche a
 ricerca_stream_api.php.
+
+## 2026-08-29 (2) — Allineamento Decima al principio UX-0017 (UX-0018)
+
+Applicato a `calcolaLivelloDecima()` lo stesso principio già corretto per
+Amore in UX-0017: una RSM priva di un segnale positivo reale non deve mai
+comparire nei risultati solo perché contiene un malefico o un pianeta
+neutro.
+
+### Modifica
+Per Decima il segnale positivo resta ASC RS in X casa natale (Livelli 1/6,
+il secondo solo declassato dalla Regola 14 — MAI escluso, l'ASC resta
+comunque presente) oppure Giove/Venere/Sole in X casa RS (Livelli 2-5),
+invariati rispetto a UX-0015. Se nessuno dei due è presente, la RSM viene
+ora SEMPRE esclusa, indipendentemente da malefico o neutro in X casa. I
+vecchi Livello 7 (malefico) e Livello 8 (neutro) sono stati rimossi come
+esiti visualizzabili — stesso trattamento già riservato ad Amore.
+
+### Scope di questa sessione
+Solo la correzione del metodo in `RuleEngineExtended.php`.
+`calcolaLivelloDecima()` è usata esclusivamente in `ricerca_stream_api.php`
+(confermato con grep su tutto `www/`) — nessun altro chiamante da
+aggiornare, a differenza di Amore che ha richiesto interventi anche su
+griglia/RL. L'allineamento di Decima a griglia/geografica/fascia
+oraria/RL (gap preesistente, Decima non ha mai avuto lì alcun filtro di
+condizione) resta esplicitamente rimandato a una sessione futura dedicata
+— il committente ha confermato di volerlo trattare separatamente.
+
+### File toccati
+`docs/ux-myastral/DECISION_LOG_ux.md` (UX-0018), `includes/RuleEngineExtended.php`.
+
+### Test eseguiti
+Verifica sintattica (`php -l`), `git diff`/`git status` per isolamento.
+Test funzionale reale nel browser confermato dal committente: RSM con
+ASC/Giove/Venere/Sole in X casa continuano a comparire normalmente; RSM
+con solo malefico o solo Luna/Mercurio in X casa non compaiono più.
