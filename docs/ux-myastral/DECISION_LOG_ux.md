@@ -462,6 +462,54 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 - **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 14), `docs/PROMPT_OPERATIVO_ASTROLAB.md` par. 9,
   `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`
 
+### UX-0016 - Gerarchia a 8 livelli per Amore (V/VII casa, senza ASC)
+
+- **Data:** 2026-08-29
+- **Area:** `includes/RuleEngineExtended.php` (nuovo `calcolaLivelloAmore()`), refactoring
+  `verificaCondizioneAmore()` in `RicercaRSFilters.php`, ordinamento in `api/ricerca_stream_api.php`
+- **Stato:** APPROVATA
+- **Problema osservato:** per la condizione Amore non esiste oggi una vera gerarchia di priorita'
+  tra Venere/Giove/Sole in V/VII casa - `verificaCondizioneAmore()` e' ancora un filtro-che-esclude
+  (scarta se manca un benefico O se c'e' un malevolo), lo stesso pattern gia' corretto per Decima
+  con UX-0015. A differenza di Decima, non esiste per Amore una regola ufficiale delle 34 regole
+  equivalente alla Regola 14: nessun elemento ASC da declassare.
+- **Decisione:**
+  1. Nuova gerarchia a 8 livelli per Amore, calcolata in `RuleEngineExtended.php::calcolaLivelloAmore()`:
+     Livello 1 = Venere in V o VII, entro 1,5 gradi dalla cuspide (bonus orbo)
+     Livello 2 = Venere in V o VII, oltre l'orbo
+     Livello 3 = Giove in V o VII, entro 1,5 gradi dalla cuspide (bonus orbo)
+     Livello 4 = Giove in V o VII, oltre l'orbo
+     Livello 5 = Sole in V o VII
+     Livello 6 = solo malefico/i (Marte/Saturno/Urano/Nettuno/Plutone) in V o VII - inclusa,
+     segnalata dai veti esistenti (stesso trattamento di Decima)
+     Livello 7 = solo Luna e/o Mercurio in V o VII, nessun altro segnale - neutra
+     Livello 8 = nessun segnale utile - RSM esclusa dai risultati
+  2. V e VII casa hanno pari peso (nessuna prevale).
+  3. Bonus orbo 1,5 gradi (costante distinta da ORBO_MAX_GRADI di Decima, che resta 2,5 gradi)
+     applicato solo a Venere e Giove, non al Sole.
+  4. Refactoring `verificaCondizioneAmore()`: da filtro-che-esclude a semplice rilevatore
+     geometrico (stessi orbi pre-ingresso 3 gradi / sicurezza uscita 2 gradi solo benefici),
+     stesso schema gia' applicato a `verificaCondizioneDecima()` in UX-0015.
+  5. Ordinamento: solo con MYASTRAL_ALIGNMENT_MODE attivo e solo per condizione Amore, l'usort
+     finale ordina per livello crescente, come gia' fatto per Decima.
+  6. Messaggio zero risultati: identico a Decima ("Nessun Risultato Positivo o Neutro trovato per
+     la condizione richiesta").
+- **Motivazione:** estendere alla condizione Amore la stessa logica di gerarchia e priorita' gia'
+  costruita e approvata per Decima (UX-0015), su richiesta esplicita del committente, senza pero'
+  l'elemento ASC la cui funzione forte come primo livello resta specifica della sola Decima.
+- **Beneficio atteso:** ordinamento dei risultati Amore coerente con la priorita' Venere/Giove/
+  Sole gia' esistente nel punteggio additivo, ma ora con vera gerarchia invece di somma piatta.
+- **Costo tecnico stimato:** MEDIO - nuovo metodo in RuleEngineExtended.php, refactoring di una
+  funzione esistente in RicercaRSFilters.php, piccola modifica condizionale all'usort esistente
+  in ricerca_stream_api.php (solo per Amore + flag attivo).
+- **Rischi:** il refactoring di `verificaCondizioneAmore()` da filtro-che-esclude a rilevatore
+  cambia il comportamento di produzione attuale (oggi scarta i malevoli, dopo li include e
+  segnala) - da verificare con attenzione in fase di test.
+- **Scope esplicitamente escluso:** estensione della gerarchia ad altre condizioni (Salute,
+  Lavoro, Soldi/Denaro) - da trattare in sessioni dedicate future, non in questa.
+- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0015 (riferimento
+  diretto), `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-28
+
 ---
 
 Nessuna ulteriore decisione registrata.
