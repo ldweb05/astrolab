@@ -3846,3 +3846,45 @@ micro-patch.
 Verifica sintattica dopo ogni patch, `git diff`/`git status` per
 isolamento, test funzionale confermato dal committente su tutte e tre le
 modalità.
+
+## 2026-08-30 — Condizione Salute: gerarchia a livelli I/VI/XII, verificaCondizioneSalute() intenzionalmente invariata (UX-0020)
+
+Estesa a Salute la gerarchia a livelli già presente per Decima/Amore/Lavoro,
+con una differenza architetturale esplicita rispetto alle tre precedenti:
+`verificaCondizioneSalute()` in `RicercaRSFilters.php` NON è stata
+rifattorizzata a rilevatore geometrico puro — resta l'unico filtro di
+validità/esclusione, con tutti e 5 i suoi passaggi proprietari di veto
+invariati (tolleranza malefici 4° in I/VI/XII, scudo benefico in I,
+esclusione Sole in XII, rafforzamento ASC natale, protezione universale).
+I nuovi metodi (`calcolaLivelloSalute()`, `pianetiPerCasaSalute()`,
+`generaValSalute()`) sono indipendenti e ordinano solo le RSM già valide.
+Decisione completa in `DECISION_LOG_ux.md`, voce UX-0020: case target VI
+(principale) poi I/XII (pari peso), gerarchia Giove poi Venere (Sole
+escluso), orbo 1,5°. Verificato testualmente su
+`docs/status/34_regole_rsm.md` che la Regola 33 ufficiale è generale (non
+limitata al Medio Cielo) — non serve comunque un meccanismo dedicato per
+Salute perché il Passo 1 di `verificaCondizioneSalute()` è già più severo.
+Griglia e RL risultavano già avere il filtro Salute funzionante (a
+differenza di quanto indicato nel documento operativo di partenza);
+mancava solo l'aggancio della gerarchia, aggiunto su tutte e tre le
+modalità nella stessa sessione.
+
+### File toccati
+`RuleEngineExtended.php` (nuovi `calcolaLivelloSalute()`,
+`pianetiPerCasaSalute()`, `generaValSalute()`), `RicercaRSResultBuilder.php`,
+`ricerca_stream_api.php`, `ricerca_griglia_api.php`,
+`ricerca_stream_rl_api.php`. `RicercaRSFilters.php` e `RuleEngine.php` NON
+toccati.
+
+### Problema incontrato
+Stesso problema del trasferimento base64 già visto con Lavoro: un blob di
+82KB si è troncato/corrotto in fase di incolla da terminale, bloccato
+correttamente dalla verifica MD5 prima di scrivere nulla su disco.
+Recuperato passando a micro-patch mirate (stesso schema affidabile già
+usato per gli altri file), nessun dato perso.
+
+### Test eseguiti
+Verifica sintattica (`php -l`) dopo ogni patch, `git diff`/`git status`
+per isolamento ad ogni step, test funzionale confermato dal committente
+su ricerca standard (colonna VAL solo Giove/Venere, ordinamento VI prima
+di I/XII, Giove prima di Venere) e controllo rapido su griglia e RL.

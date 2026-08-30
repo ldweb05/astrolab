@@ -673,4 +673,82 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0020 - Gerarchia a livelli per Salute (I/VI/XII casa, VI principale, I/XII pari) - verificaCondizioneSalute() invariata
+
+- **Data:** 2026-08-30
+- **Area:** `includes/RuleEngineExtended.php` (nuovi `calcolaLivelloSalute()`,
+  `pianetiPerCasaSalute()`, `generaValSalute()`), `RicercaRSResultBuilder.php`,
+  `api/ricerca_stream_api.php`, `api/ricerca_griglia_api.php`,
+  `api/ricerca_stream_rl_api.php`. `RicercaRSFilters.php` NON toccato.
+- **Stato:** APPROVATA
+- **Problema osservato:** la condizione Salute era definita in modo incoerente
+  in tre punti (`RuleEngine::CASE_TEMATICHE['Salute']`, `verificaCondizioneSalute()`,
+  `RuleEngineExtended::CASA_CONDIZIONE`), mai armonizzati, e priva di una
+  gerarchia a livelli come già fatto per Decima/Amore/Lavoro.
+- **Decisione:**
+  1. Case target: VI è la casa principale; I e XII sono pari peso tra loro
+     ma subordinate a VI (prima tutta la gerarchia benefici viene valutata
+     su VI, solo se assente si passa a I/XII). Unica tra le condizioni a
+     gerarchia con una struttura di priorità sulla CASA, non solo sul
+     pianeta.
+  2. Gerarchia di priorità tra i benefici confermata dal committente:
+     1) Giove 2) Venere. Il Sole è escluso (a differenza di Decima/Amore/
+     Lavoro), come da annotazione preesistente "Salute: Giove poi Venere"
+     in UX-0015 (scope escluso).
+  3. Bonus orbo 1,5 gradi (come Amore, non 2,5 di Decima/Lavoro), applicato
+     sia a Giove sia a Venere.
+  4. **Eccezione architetturale esplicita**: a differenza di Decima/Amore/
+     Lavoro, `verificaCondizioneSalute()` in `RicercaRSFilters.php` NON
+     viene rifattorizzata a rilevatore geometrico puro - resta identica,
+     con tutti e 5 i suoi passaggi proprietari di veto invariati:
+     - Passo 1: malefici (Marte/Saturno/Urano/Nettuno/Plutone) in I/VI/XII,
+       tolleranza pre-ingresso 4°, fail assoluto anche se un benefico è
+       presente (più severo del principio generale UX-0017)
+     - Passo 2: scudo benefico in I casa (Giove/Venere, sicurezza uscita 3°)
+     - Passo 3: Sole in XII casa, fail assoluto
+     - Passo 4: ASC RS entro 3° da cuspide natale I/VI/XII, fail assoluto
+     - Passo 5: protezione universale, nessun Giove/Venere in I/VI/XII, fail
+     `verificaCondizioneSalute()` resta l'UNICO filtro di validità/esclusione
+     per Salute. I nuovi `calcolaLivelloSalute()`/`pianetiPerCasaSalute()`
+     sono metodi indipendenti che ordinano solo le RSM già valide - non
+     condividono alcun rilevatore con `RicercaRSFilters.php`. Il ramo
+     `escludi` di `calcolaLivelloSalute()` è un fallback difensivo, mai
+     raggiunto in pratica (il Passo 5 garantisce già un benefico presente).
+  5. Regola 33 ufficiale (verificata testualmente in
+     `docs/status/34_regole_rsm.md`: "Saturno ha sempre la meglio su
+     Giove/Venere/Sole", principio generale non limitato al Medio Cielo)
+     non richiede un meccanismo dedicato per Salute come quello di UX-0019
+     per Lavoro: il Passo 1 di `verificaCondizioneSalute()` esclude già
+     Saturno da I/VI/XII in modo assoluto e incondizionato, più severo di
+     quanto la Regola 33 richiederebbe (che si applica solo quando Saturno
+     coesiste con un benefico nella stessa casa).
+  6. Il controllo generico "Regola 33" del punteggio-parziale additivo
+     (`$punteggioMyAstral['saturno_prevale']` in `ricerca_stream_api.php`/
+     `ricerca_stream_rl_api.php`) viene esplicitamente escluso anche per
+     Salute (oltre che per Lavoro, UX-0019): quel meccanismo a casa singola
+     (`CASA_CONDIZIONE`) non potrebbe comunque rappresentare correttamente
+     le tre case I/VI/XII, se in futuro vi venisse aggiunta una voce Salute.
+  7. "Neutro": Luna e/o Mercurio, confermato (stessa definizione di
+     Amore/Decima/Lavoro), pur essendo irrilevante ai fini pratici dato
+     il veto secco del Passo 5.
+  8. Messaggio zero risultati: identico a Decima/Amore/Lavoro, ma basato
+     sul contatore preesistente `$totaleEsclusiSalute` (il filtro
+     `verificaCondizioneSalute()` a monte) e non su una variante "Vuota":
+     per Salute l'esclusione avviene sempre lì, mai nel ramo difensivo di
+     `calcolaLivelloSalute()`.
+  9. Scope: coperte da subito tutte e tre le modalità di ricerca - standard,
+     griglia/area geografica/fascia oraria, RL - nella stessa sessione,
+     come già fatto per Lavoro (UX-0019). Griglia e RL avevano già il
+     filtro Salute funzionante (gap del documento operativo originale
+     risultato non più presente); mancava solo l'aggancio della gerarchia.
+- **Motivazione:** estendere la gerarchia a livelli a Salute mantenendo
+  intatte le 5 regole di protezione proprietarie già in produzione,
+  giudicate dal committente più importanti della coerenza architetturale
+  con le altre tre condizioni - nessun refactoring non richiesto.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 33),
+  `docs/ux-myastral/DECISION_LOG_ux.md` voci UX-0015/16/17/18/19,
+  `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-30
+
+---
+
 Nessuna ulteriore decisione registrata.

@@ -554,6 +554,16 @@ try {
                     }
                 }
 
+                $livelloSalute = null;
+                if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Salute') {
+                    $livelloSalute = $engineExt->calcolaLivelloSalute($temaRS);
+                    if ($livelloSalute['escludi'] ?? false) {
+                        $processed++;
+                        if ($processed % $progressOgni === 0) $emitProgress();
+                        continue;
+                    }
+                }
+
                 // Calcolo Stelline V2 (sistema primario)
                 $pianetiRS_v2 = [];
                 foreach ($pianetiConCase as $_pid => $_p) {
@@ -592,6 +602,7 @@ try {
                     'v2_html'           => $v2Calc->renderHTML($valV2),
                     'livello_decima'    => $livelloDecima,
                     'livello_lavoro'    => $livelloLavoro,
+                    'livello_salute'    => $livelloSalute,
                 ];
 
                 // UX-0015/UX-0018: per Decima, la colonna VAL mostra ASC (se
@@ -604,6 +615,10 @@ try {
                 // effettivamente in VI/X casa RS.
                 if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Lavoro') {
                     $ris['val'] = $engineExt->generaValLavoro($temaRS);
+                }
+
+                if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Salute') {
+                    $ris['val'] = $engineExt->generaValSalute($temaRS);
                 }
 
                 // Debug opt-in (?debug=1): espone la casa esatta di ogni pianeta
@@ -649,8 +664,8 @@ try {
             // esclusivi, una sola condizione per ricerca) come criterio
             // primario quando presente, prima di V2/vicinanza. Tutte le
             // altre condizioni: comportamento invariato (nessun livello).
-            $livA = $a['livello_decima']['livello'] ?? $a['livello_lavoro']['livello'] ?? null;
-            $livB = $b['livello_decima']['livello'] ?? $b['livello_lavoro']['livello'] ?? null;
+            $livA = $a['livello_decima']['livello'] ?? $a['livello_lavoro']['livello'] ?? $a['livello_salute']['livello'] ?? null;
+            $livB = $b['livello_decima']['livello'] ?? $b['livello_lavoro']['livello'] ?? $b['livello_salute']['livello'] ?? null;
             if ($livA !== null || $livB !== null) {
                 $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
                 if ($cmpLivello !== 0) return $cmpLivello;
