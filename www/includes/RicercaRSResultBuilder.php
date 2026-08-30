@@ -18,7 +18,8 @@ function costruisciRisultatoRicercaRS(
     ?array $punteggioMyAstral = null,
     ?array $livelloDecima = null,
     ?array $livelloAmore = null,
-    ?array $livelloLavoro = null
+    ?array $livelloLavoro = null,
+    ?array $livelloSalute = null
 ): array {
     return [
     'icao'           => $aero['icao_code'],
@@ -62,6 +63,9 @@ function costruisciRisultatoRicercaRS(
     // Livello 1-7 (UX-0019) per la condizione Lavoro. null per tutte
     // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
     'livello_lavoro'     => $livelloLavoro,
+    // Livello 1-9 (UX-0020) per la condizione Salute. null per tutte
+    // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
+    'livello_salute'     => $livelloSalute,
              ];
 }
 

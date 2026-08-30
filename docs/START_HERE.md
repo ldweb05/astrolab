@@ -257,6 +257,32 @@ voce 2026-08-29 (4).
 
 ---
 
+# Ricerca RSM/RL — condizione Salute (UX-0020)
+
+Per la condizione Salute, con `MYASTRAL_ALIGNMENT_MODE` attivo, la ricerca
+applica una gerarchia dedicata a 8 livelli (Giove, poi Venere — Sole
+escluso, a differenza di Amore/Decima/Lavoro — entrambi con bonus se entro
+1,5° dalla cuspide, come Amore) al posto del sistema stelline V2 come
+criterio di ordinamento principale — V2 resta visibile e usato come
+tie-break. Priorità di CASA (non di solo pianeta, unica tra le quattro
+condizioni con gerarchia): VI è la casa principale, I e XII sono pari peso
+tra loro ma subordinate a VI. A differenza di Decima/Amore/Lavoro,
+`verificaCondizioneSalute()` NON è stata trasformata in un rilevatore
+geometrico puro: resta invariata, con i suoi 5 passaggi proprietari di
+veto (tolleranza pre-ingresso ampliata a 4° per malefici in I/VI/XII,
+scudo benefico in I casa, esclusione assoluta del Sole in XII, rafforzamento
+ASC natale, protezione universale Giove/Venere) — è l'unico filtro di
+validità/esclusione per Salute; la gerarchia a livelli ordina solo le RSM
+che l'hanno già superata. La Regola 33 ufficiale (Saturno prevale sempre)
+non richiede un meccanismo dedicato qui: il Passo 1 di
+`verificaCondizioneSalute()` esclude già Saturno da I/VI/XII in modo
+assoluto, più severo di quanto richiederebbe la Regola 33 stessa. Attiva
+fin da subito su tutte e tre le modalità di ricerca (standard,
+griglia/area geografica/fascia oraria, RL). Dettagli completi in
+`docs/HANDOVER_OPERATIVO_astrolab.md`, voce 2026-08-30.
+
+---
+
 # Ricerca RL
 
 La Ricerca RL (Rivoluzioni Lunari, base mensile) estende alla Luna la stessa ricerca geografica per condizione già disponibile per le RSM.

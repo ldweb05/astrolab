@@ -431,6 +431,7 @@ try {
     $totaleEsclusiAmoreVuota = 0; // UX-0016: RS escluse per V/VII casa senza alcun segnale
     $totaleEsclusiDecimaVuota = 0; // UX-0015/UX-0018: RS escluse per assenza di ASC/benefico in X casa
     $totaleEsclusiLavoroVuota = 0; // UX-0019: RS/RL escluse per VI/X casa senza alcun segnale valido
+    $totaleEsclusiSaluteVuota = 0; // UX-0020: fallback difensivo, in pratica sempre 0
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
@@ -766,6 +767,22 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     continue;
                 }
 
+                // UX-0020: livello 1-9 per Salute (stesso schema di
+                // ricerca_stream_api.php/ricerca_griglia_api.php, esteso qui
+                // alle RL). verificaCondizioneSalute() (chiamata piu' sopra)
+                // resta l'UNICO filtro di validita': il ramo 'escludi' qui e'
+                // un fallback difensivo mai raggiunto in pratica.
+                $livelloSalute = null;
+                if ($engineExt !== null && $condizione === 'Salute') {
+                    $livelloSalute = $engineExt->calcolaLivelloSalute($temaRS);
+                }
+
+                if ($livelloSalute !== null && ($livelloSalute['escludi'] ?? false)) {
+                    $totaleEsclusiSaluteVuota++;
+                    $processed++;
+                    continue;
+                }
+
                 // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
                 // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
                 // stessa casa della condizione, la RS/RL va tolta dai risultati -
@@ -775,7 +792,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 // quindi qui guarderebbe solo Saturno in VI, ignorando X e
                 // contraddicendo la logica per-casa gia' corretta implementata
                 // in calcolaLivelloLavoro() poco sopra.
-                if ($punteggioMyAstral !== null && $condizione !== 'Lavoro'
+                // UX-0020: ESCLUSA anche Salute, stesso motivo di
+                // ricerca_stream_api.php - il meccanismo a casa singola non
+                // rappresenta le tre case I/VI/XII, gia' gestite dal Passo 1
+                // di verificaCondizioneSalute().
+                if ($punteggioMyAstral !== null && $condizione !== 'Lavoro' && $condizione !== 'Salute'
                     && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
                     $processed++;
                     continue;
@@ -833,7 +854,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $denaroAlertGiove,
                 livelloDecima: $livelloDecima,
                 livelloAmore: $livelloAmore,
-                livelloLavoro: $livelloLavoro
+                livelloLavoro: $livelloLavoro,
+                livelloSalute: $livelloSalute
             );
             // Campi V2 aggiunti al record risultato (additivo, Fase 2a)
             $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
@@ -862,6 +884,10 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
             // effettivamente in VI/X casa RS/RL.
             if ($engineExt !== null && $condizione === 'Lavoro') {
                 $ris['val'] = $engineExt->generaValLavoro($temaRS);
+            }
+
+            if ($engineExt !== null && $condizione === 'Salute') {
+                $ris['val'] = $engineExt->generaValSalute($temaRS);
             }
 
             aggiungiRisultatoTopK(
@@ -951,8 +977,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     usort($risultati, static function (array $a, array $b): int {
         // UX-0015/UX-0016/UX-0019: livello Decima, Amore e Lavoro sono
         // mutuamente esclusivi (una sola condizione attiva per ricerca).
-        $livA = $a['livello_decima']['livello'] ?? $a['livello_amore']['livello'] ?? $a['livello_lavoro']['livello'] ?? null;
-        $livB = $b['livello_decima']['livello'] ?? $b['livello_amore']['livello'] ?? $b['livello_lavoro']['livello'] ?? null;
+        $livA = $a['livello_decima']['livello'] ?? $a['livello_amore']['livello'] ?? $a['livello_lavoro']['livello'] ?? $a['livello_salute']['livello'] ?? null;
+        $livB = $b['livello_decima']['livello'] ?? $b['livello_amore']['livello'] ?? $b['livello_lavoro']['livello'] ?? $b['livello_salute']['livello'] ?? null;
 
         if ($livA !== null || $livB !== null) {
             $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);

@@ -147,6 +147,26 @@ class RuleEngineExtended {
     const MALEFICI_LAVORO = [4, 6, 7, 8, 9]; // Marte, Saturno, Urano, Nettuno, Plutone
     const NEUTRI_LAVORO   = [1, 2];          // Luna, Mercurio
 
+    // Livelli gerarchia Salute (UX-0020): niente ASC, niente Sole. Priorita'
+    // di CASA: VI (principale) poi I e/o XII (pari peso tra loro, sotto VI).
+    // Dentro ciascuna fascia di casa, priorita' di PIANETA: Giove poi Venere.
+    // Bonus orbo 1,5 gradi (come Amore), su entrambi i pianeti.
+    // verificaCondizioneSalute() in RicercaRSFilters.php resta INVARIATA
+    // (i suoi 5 passaggi proprietari restano l'unico filtro di
+    // validita'/esclusione): questo livello serve solo per ordinare le RSM
+    // che l'hanno gia' superata.
+    const LIVELLO_GIOVE_ORBO_VI_SALUTE     = 1;
+    const LIVELLO_GIOVE_VI_SALUTE          = 2;
+    const LIVELLO_VENERE_ORBO_VI_SALUTE    = 3;
+    const LIVELLO_VENERE_VI_SALUTE         = 4;
+    const LIVELLO_GIOVE_ORBO_I_XII_SALUTE  = 5;
+    const LIVELLO_GIOVE_I_XII_SALUTE       = 6;
+    const LIVELLO_VENERE_ORBO_I_XII_SALUTE = 7;
+    const LIVELLO_VENERE_I_XII_SALUTE      = 8;
+    const LIVELLO_NEUTRO_SALUTE            = 9; // fallback difensivo, mai raggiunto in pratica
+
+    const ORBO_BONUS_SALUTE = 1.5;
+
     /**
      * Calcola il punteggio parziale Sole/Venere/Giove nella casa tematica
      * della condizione, con bonus d'orbo per Giove angolare.
@@ -627,6 +647,143 @@ class RuleEngineExtended {
 
         $rilevamento = verificaCondizioneLavoro($temaRS['pianeti'], $temaRS['case']);
         foreach ($rilevamento['pianeti_in_casa'] as $idPianeta) {
+            $parti[] = RuleEngine::VAL_NOMI[$idPianeta] ?? (string)$idPianeta;
+        }
+
+        return empty($parti) ? '—' : implode('+', $parti);
+    }
+
+    /**
+     * Calcola il livello di priorita' per la condizione Salute (UX-0020).
+     *
+     * Case target: VI (principale), poi I e/o XII (pari peso tra loro).
+     * Gerarchia: 1) Giove 2) Venere (Sole escluso). Bonus orbo 1,5 gradi.
+     *
+     * Non gestisce malefici ne' esclusione: verificaCondizioneSalute() in
+     * RicercaRSFilters.php resta invariata e applicata A MONTE come veto
+     * assoluto (tolleranza malefici 4°, scudo benefico in I, esclusione
+     * Sole in XII, rafforzamento ASC natale, protezione universale). Il
+     * ramo 'escludi' qui sotto e' un fallback difensivo mai raggiunto in
+     * pratica, perche' il Passo 5 di verificaCondizioneSalute() garantisce
+     * gia' un benefico presente in I/VI/XII prima che questo metodo venga
+     * chiamato.
+     */
+    public function calcolaLivelloSalute(array $temaRS): array {
+        $base = ['escludi' => false];
+
+        $perCasa = $this->pianetiPerCasaSalute($temaRS);
+        $inVI    = $perCasa[6];
+        $inIXII  = array_unique(array_merge($perCasa[1], $perCasa[12]));
+
+        if (in_array(5, $inVI, true)) {
+            $entroOrbo = $this->pianetaEntroOrboSalute(5, $temaRS, [6]);
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_GIOVE_ORBO_VI_SALUTE : self::LIVELLO_GIOVE_VI_SALUTE,
+            ]);
+        }
+        if (in_array(3, $inVI, true)) {
+            $entroOrbo = $this->pianetaEntroOrboSalute(3, $temaRS, [6]);
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_VENERE_ORBO_VI_SALUTE : self::LIVELLO_VENERE_VI_SALUTE,
+            ]);
+        }
+        if (in_array(5, $inIXII, true)) {
+            $entroOrbo = $this->pianetaEntroOrboSalute(5, $temaRS, [1, 12]);
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_GIOVE_ORBO_I_XII_SALUTE : self::LIVELLO_GIOVE_I_XII_SALUTE,
+            ]);
+        }
+        if (in_array(3, $inIXII, true)) {
+            $entroOrbo = $this->pianetaEntroOrboSalute(3, $temaRS, [1, 12]);
+            return array_merge($base, [
+                'livello' => $entroOrbo ? self::LIVELLO_VENERE_ORBO_I_XII_SALUTE : self::LIVELLO_VENERE_I_XII_SALUTE,
+            ]);
+        }
+
+        return array_merge($base, ['livello' => self::LIVELLO_NEUTRO_SALUTE, 'escludi' => true]);
+    }
+
+    /**
+     * Breakdown per-casa (I, VI, XII separatamente) dei pianeti
+     * geometricamente presenti (pre-ingresso 3 gradi, sicurezza in uscita 2
+     * gradi solo per i benefici Giove/Venere), sullo stesso schema di
+     * pianetiPerCasaLavoro(). Non condivide nulla con verificaCondizioneSalute()
+     * in RicercaRSFilters.php, che resta interamente separata e invariata.
+     *
+     * @return array{1: int[], 6: int[], 12: int[]}
+     */
+    private function pianetiPerCasaSalute(array $temaRS): array {
+        $risultato = [1 => [], 6 => [], 12 => []];
+        $benefici = [5, 3]; // Giove, Venere (Sole escluso per Salute)
+
+        foreach ([1, 6, 12] as $casaTarget) {
+            if (!isset($temaRS['case'][$casaTarget]['longitudine'])) {
+                continue;
+            }
+            $cuspideTarget = (float)$temaRS['case'][$casaTarget]['longitudine'];
+            $casaSuccessiva = ($casaTarget === 12) ? 1 : $casaTarget + 1;
+            $cuspideSuccessiva = isset($temaRS['case'][$casaSuccessiva]['longitudine'])
+                ? (float)$temaRS['case'][$casaSuccessiva]['longitudine']
+                : null;
+
+            foreach ($temaRS['pianeti'] as $idPianeta => $dati) {
+                $casaAssegnata = (int)$dati['casa'];
+                $longitudine = (float)$dati['longitudine'];
+
+                $diffCuspide = AstroUtils::diffAngolo($longitudine, $cuspideTarget);
+                $inPreIngresso = ($diffCuspide > -3.0 && $diffCuspide < 0.0);
+                $inCasaTarget = ($casaAssegnata === $casaTarget) || $inPreIngresso;
+
+                if (!$inCasaTarget) {
+                    continue;
+                }
+
+                if ($cuspideSuccessiva !== null && in_array($idPianeta, $benefici, true)) {
+                    $diffUscita = AstroUtils::diffAngolo($longitudine, $cuspideSuccessiva);
+                    if ($diffUscita >= 0.0 && $diffUscita < 2.0) {
+                        continue;
+                    }
+                }
+
+                $risultato[$casaTarget][] = $idPianeta;
+            }
+        }
+
+        return $risultato;
+    }
+
+    /**
+     * Verifica se un pianeta (Giove o Venere) e' entro il bonus orbo Salute
+     * (1,5°) dalla cuspide di una delle case indicate.
+     */
+    private function pianetaEntroOrboSalute(int $idPianeta, array $temaRS, array $case): bool {
+        foreach ($case as $casaTarget) {
+            if (!isset($temaRS['case'][$casaTarget]['longitudine'], $temaRS['pianeti'][$idPianeta]['longitudine'])) {
+                continue;
+            }
+            $diff = abs(AstroUtils::diffAngolo(
+                (float)$temaRS['pianeti'][$idPianeta]['longitudine'],
+                (float)$temaRS['case'][$casaTarget]['longitudine']
+            ));
+            if ($diff <= self::ORBO_BONUS_SALUTE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Stringa VAL dedicata alla condizione Salute (UX-0020): mostra ogni
+     * pianeta (Giove/Venere) la cui posizione nella RS cade in VI, I o XII
+     * casa della RS stessa. Sostituisce, SOLO per Salute, la stringa VAL
+     * generica di RuleEngine::generaVAL().
+     */
+    public function generaValSalute(array $temaRS): string {
+        $perCasa = $this->pianetiPerCasaSalute($temaRS);
+        $tutti = array_unique(array_merge($perCasa[6], $perCasa[1], $perCasa[12]));
+
+        $parti = [];
+        foreach ($tutti as $idPianeta) {
             $parti[] = RuleEngine::VAL_NOMI[$idPianeta] ?? (string)$idPianeta;
         }
 
