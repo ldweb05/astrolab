@@ -751,4 +751,53 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0021 - Gerarchia a livelli per Casa (sola IV casa, Giove poi Venere poi Sole)
+
+- **Data:** 2026-08-31 (voce retroattiva - implementata in sessioni precedenti, mai registrata qui ne' committata prima di oggi)
+- **Area:** `includes/RicercaRSFilters.php` (`verificaCondizioneCasa()` rifattorizzata a rilevatore geometrico puro), `includes/RuleEngineExtended.php` (nuovi `calcolaLivelloCasa()`, `generaValCasa()`), `RicercaRSResultBuilder.php`, `api/ricerca_stream_api.php`, `api/ricerca_griglia_api.php`, `api/ricerca_stream_rl_api.php`.
+- **Stato:** APPROVATA
+- **Decisione:**
+  1. Casa target: solo IV (Fondo Cielo) - nessuna casa secondaria a differenza di Salute/Lavoro.
+  2. Gerarchia di priorita' confermata dal committente: 1) Giove 2) Venere 3) Sole.
+  3. Bonus orbo 2,5 gradi (come Decima/Lavoro), applicato solo a Giove/Venere.
+  4. `verificaCondizioneCasa()` rifattorizzata a rilevatore geometrico puro (stesso schema di Amore/Decima/Lavoro, non di Salute): nessuna esclusione al suo interno, demandata interamente a `calcolaLivelloCasa()` secondo il principio UX-0017 (nessun benefico in IV = esclusione sempre).
+  5. Fasce malefici (UX-0022): 0 malefici in IV = livello invariato; esattamente 1 malefico = livello + `OFFSET_FASCIA_MALEFICO_SINGOLO` (100); 2+ malefici = esclusione totale.
+  6. Scope: tutte e tre le modalita' di ricerca (standard, griglia, RL) coperte fin da subito.
+- **Motivazione:** estendere alla condizione Casa la stessa architettura a gerarchia gia' costruita per Decima/Amore/Lavoro.
+- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voci UX-0015/16/17/18/19, `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-31.
+
+---
+
+### UX-0023 - Casa: esclusione veti ufficiali delle 34 regole, retrocessione (non esclusione) per veto proprietario e alert stellium misto
+
+- **Data:** 2026-08-31
+- **Area:** `api/ricerca_stream_api.php`, `api/ricerca_griglia_api.php`, `api/ricerca_stream_rl_api.php`, `includes/RuleEngineExtended.php` (nuova costante `OFFSET_FASCIA_VETO_MINORE`, rinominata da `OFFSET_FASCIA_VETO_ANGOLI_CASA` in UX-0024).
+- **Stato:** APPROVATA
+- **Problema osservato dal committente:** in una ricerca Casa, risultati con Giove in IV ma con un veto GENERALE delle 34 regole (es. Regola 4 - Ascendente RS in I/VI/XII casa natale) salivano comunque in cima alla classifica, sopra risultati completamente puliti con solo Venere/Sole in IV (es. Honiara). La gerarchia Giove>Venere>Sole (UX-0021) non teneva conto dei veti generali prodotti da `RuleEngine::valuta()` (Fase 1), calcolati e mostrati nell'interfaccia come badge "N VETO"/triangolo, ma mai controllati da `calcolaLivelloCasa()`.
+- **Decisione:**
+  1. I veti generati da `RuleEngine::calcolaVeti()` si dividono in due categorie: UFFICIALI (Regola 4, 5, 31, 34 - citano esplicitamente la regola o descrivono ASC/Sole/Marte/stellium in I/VI/XII, Marte+Saturno stessa casa) e il veto proprietario "astrolab-angoli" (Marte/Saturno entro 2 gradi dagli angoli, esplicitamente commentato nel codice come "non una delle 34 regole ufficiali").
+  2. Un veto UFFICIALE esclude sempre la RSM/RL dalla condizione Casa, anche con un benefico valido in IV - stessa severita' del Passo 4 di `verificaCondizioneSalute()`.
+  3. Il veto "astrolab-angoli" NON esclude, ma retrocede il livello Casa sotto qualunque risultato del tutto pulito (offset +10, costante `OFFSET_FASCIA_VETO_MINORE`), indipendentemente dalla gerarchia Giove/Venere/Sole.
+  4. Lo stesso offset (+10) si applica anche in presenza dell'alert "stellium misto" del sistema Stelline V2 (`StellineV2Calculator::calcola()['alert_stellium_misto']`) - un terzo segnale, indipendente sia dai veti di `RuleEngine::valuta()` sia dal veto astrolab-angoli, che segnala uno stellium (3+ pianeti in una casa) con almeno un malefico presente.
+  5. Verificato sull'intero dataset reale (4620 aeroporti, non un campione) prima del reinserimento in produzione, dopo un primo tentativo fallito per motivi di cache/OPcache non del tutto chiariti e correttamente revertato.
+- **Motivazione:** un risultato "tutto pulito" deve sempre precedere un risultato con un avviso, qualunque sia la sua origine (veto ufficiale escluso a monte, veto minore o alert V2 retrocesso), a prescindere da quanti risultati totali produce la ricerca.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regole 4/5/31/34), `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-31.
+
+---
+
+### UX-0024 - Estensione a Decima/Amore/Lavoro/Salute della correzione veti/stellium misto (UX-0023)
+
+- **Data:** 2026-08-31
+- **Area:** `api/ricerca_stream_api.php`, `api/ricerca_griglia_api.php` (Decima/Lavoro/Salute/Casa; Amore non supportata in questa modalita'), `api/ricerca_stream_rl_api.php`, `includes/RuleEngineExtended.php` (costante rinominata `OFFSET_FASCIA_VETO_ANGOLI_CASA` -> `OFFSET_FASCIA_VETO_MINORE`).
+- **Stato:** APPROVATA
+- **Problema osservato:** lo stesso gap di UX-0023 (nessun controllo dei veti ufficiali ne' dell'alert stellium misto prima di assegnare il livello di ordinamento) era presente identico nelle funzioni `calcolaLivelloDecima()`, `calcolaLivelloAmore()`, `calcolaLivelloLavoro()`, `calcolaLivelloSalute()` - nessuna di esse controllava `$val['veti']` o `$valV2['alert_stellium_misto']`.
+- **Decisione:** applicato lo stesso identico principio di UX-0023 a tutte e quattro le condizioni: un veto UFFICIALE (Regola 4/5/31/34) non gia' coperto dalla logica propria della condizione esclude comunque la RSM/RL; il veto "astrolab-angoli" e l'alert stellium misto retrocedono soltanto (stesso offset condiviso).
+  - Amore: applicata solo in `ricerca_stream_api.php` e `ricerca_stream_rl_api.php` (non esiste in modalita' griglia).
+  - Salute: si aggiunge, senza sostituire, ai 5 passaggi proprietari gia' esistenti di `verificaCondizioneSalute()` (UX-0020) - intercetta veti ufficiali non gia' coperti (es. Regola 31/34, non verificati esplicitamente dai 5 passaggi) e gestisce l'offset che Salute non aveva affatto.
+- **Motivazione:** coerenza trasversale - un bug di ordinamento identificato e corretto su una condizione va verificato e corretto su tutte le condizioni strutturalmente identiche, non lasciato latente altrove.
+- **Ancora da fare:** Denaro e Denaro Low (le uniche due condizioni a gerarchia non ancora implementate) andranno costruite fin dall'inizio con questo controllo incluso (veti ufficiali + astrolab-angoli/stellium misto), non aggiunto come correzione successiva.
+- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0023, `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-31.
+
+---
+
 Nessuna ulteriore decisione registrata.
