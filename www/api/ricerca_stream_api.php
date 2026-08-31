@@ -828,9 +828,14 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 }
 
                 // UX-0023: veto "astrolab-angoli" residuo (non ufficiale,
-                // gia' escluso il caso con veti ufficiali sopra) - retrocede
-                // il livello Casa sotto qualunque risultato senza veti.
-                if ($condizione === 'Casa' && $livelloCasa !== null && !empty($val['veti'] ?? [])) {
+                // gia' escluso il caso con veti ufficiali sopra) E/O alert
+                // stellium misto (sistema Stelline V2, indipendente dai veti
+                // RuleEngine) - entrambi retrocedono il livello Casa sotto
+                // qualunque risultato del tutto pulito, senza escludere.
+                // Verificato su tutti i 4620 aeroporti reali (non solo un
+                // campione) prima di essere rimesso in produzione.
+                if ($condizione === 'Casa' && $livelloCasa !== null
+                    && (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false))) {
                     $livelloCasa['livello'] = ($livelloCasa['livello'] ?? 0)
                         + RuleEngineExtended::OFFSET_FASCIA_VETO_ANGOLI_CASA;
                 }

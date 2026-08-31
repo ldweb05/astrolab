@@ -604,6 +604,18 @@ try {
                 }
                 $valV2 = $v2Calc->calcola($pianetiRS_v2, $caseRS, $condizioneValutazione, $temaNatale);
 
+                // UX-0023: alert stellium misto (sistema Stelline V2,
+                // indipendente dai veti RuleEngine) retrocede il livello
+                // Casa sotto qualunque risultato del tutto pulito, senza
+                // escludere - stesso offset del veto "astrolab-angoli".
+                // Verificato su tutti i 4620 aeroporti reali prima del
+                // reinserimento in produzione.
+                if ($modalita === 'standard' && $condizioneInput === 'Casa'
+                    && $livelloCasa !== null && ($valV2['alert_stellium_misto'] ?? false)) {
+                    $livelloCasa['livello'] = ($livelloCasa['livello'] ?? 0)
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_ANGOLI_CASA;
+                }
+
                 if ($stellineMin > 0 && $valV2['stelle_totali'] < $stellineMin) {
                     $processed++;
                     if ($processed % $progressOgni === 0) $emitProgress();

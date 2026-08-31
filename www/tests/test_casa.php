@@ -94,7 +94,7 @@ $stmtAero = $pdo->query(
      WHERE attivo = true AND militare = false
        AND tipo IN ('large_airport','medium_airport')
      ORDER BY icao_code
-     LIMIT 300"
+    "
 );
 $aeroporti = $stmtAero->fetchAll(PDO::FETCH_ASSOC);
 echo "Aeroporti recuperati per il test: " . count($aeroporti) . "\n\n";
