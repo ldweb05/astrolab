@@ -107,13 +107,15 @@ class RuleEngineExtended {
     //   2 o piu' malefici -> esclusione totale (mai mostrata, non fa numero)
     const OFFSET_FASCIA_MALEFICO_SINGOLO = 100;
 
-    // UX-0023: per la condizione Casa, un veto "astrolab-angoli" (Marte/
+    // UX-0023/UX-0024: per le condizioni a gerarchia (Casa, Decima e a
+    // seguire Amore/Lavoro/Salute), un veto "astrolab-angoli" (Marte/
     // Saturno entro 2 gradi dagli angoli - NON una delle 34 regole
-    // ufficiali) non esclude la RSM, ma la retrocede rispetto a qualunque
-    // risultato senza alcun veto, indipendentemente dalla gerarchia
-    // Giove/Venere/Sole. Offset piu' piccolo del malefico (100) cosi' che
-    // un veto-angoli senza malefico resti comunque sopra un malefico vero.
-    const OFFSET_FASCIA_VETO_ANGOLI_CASA = 10;
+    // ufficiali) o un alert stellium misto (Stelline V2) non escludono la
+    // RSM, ma la retrocedono rispetto a qualunque risultato senza alcun
+    // avviso, indipendentemente dalla gerarchia dei pianeti. Offset piu'
+    // piccolo del malefico (100) cosi' che un avviso minore senza malefico
+    // resti comunque sopra un malefico vero.
+    const OFFSET_FASCIA_VETO_MINORE = 10;
 
     // Livelli di priorita' per la condizione Decima (1 = migliore).
     const LIVELLO_ASC_OK         = 1;

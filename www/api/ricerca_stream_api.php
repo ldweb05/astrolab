@@ -746,6 +746,28 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     continue;
                 }
 
+                // UX-0024: stesso principio di UX-0023 (Casa) esteso a
+                // Decima - un veto UFFICIALE delle 34 regole (Regola
+                // 4/5/31/34) esclude comunque la RSM. Il veto "astrolab-
+                // angoli" e l'alert stellium misto (Stelline V2) non
+                // escludono, ma retrocedono il livello sotto qualunque
+                // risultato del tutto pulito.
+                if ($condizione === 'Decima' && $livelloDecima !== null) {
+                    $vetiUfficialiDecima = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiDecima)) {
+                        $totaleEsclusiDecimaVuota++;
+                        $processed++;
+                        continue;
+                    }
+                    if (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false)) {
+                        $livelloDecima['livello'] = ($livelloDecima['livello'] ?? 0)
+                            + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
+                    }
+                }
+
                 // UX-0016: livello 1-7 per Amore (sostituisce il sistema
                 // stelline V2 nell'ordinamento finale, solo per questa
                 // condizione + flag; v2_stelle_totali resta come tie-break).
@@ -760,6 +782,25 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     $totaleEsclusiAmoreVuota++;
                     $processed++;
                     continue;
+                }
+
+                // UX-0024: stesso principio di UX-0023 (Casa) esteso ad
+                // Amore - veto UFFICIALE (Regola 4/5/31/34) esclude,
+                // "astrolab-angoli"/stellium misto retrocedono soltanto.
+                if ($condizione === 'Amore' && $livelloAmore !== null) {
+                    $vetiUfficialiAmore = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiAmore)) {
+                        $totaleEsclusiAmoreVuota++;
+                        $processed++;
+                        continue;
+                    }
+                    if (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false)) {
+                        $livelloAmore['livello'] = ($livelloAmore['livello'] ?? 0)
+                            + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
+                    }
                 }
 
                 // UX-0019: livello 1-7 per Lavoro (sostituisce il sistema
@@ -782,6 +823,25 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     continue;
                 }
 
+                // UX-0024: stesso principio di UX-0023 (Casa) esteso a
+                // Lavoro - veto UFFICIALE (Regola 4/5/31/34) esclude,
+                // "astrolab-angoli"/stellium misto retrocedono soltanto.
+                if ($condizione === 'Lavoro' && $livelloLavoro !== null) {
+                    $vetiUfficialiLavoro = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiLavoro)) {
+                        $totaleEsclusiLavoroVuota++;
+                        $processed++;
+                        continue;
+                    }
+                    if (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false)) {
+                        $livelloLavoro['livello'] = ($livelloLavoro['livello'] ?? 0)
+                            + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
+                    }
+                }
+
                 $livelloSalute = null;
                 if ($engineExt !== null && $condizione === 'Salute') {
                     $livelloSalute = $engineExt->calcolaLivelloSalute($temaRS);
@@ -791,6 +851,27 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     $totaleEsclusiSaluteVuota++;
                     $processed++;
                     continue;
+                }
+
+                // UX-0024: stesso principio di UX-0023 (Casa) esteso a
+                // Salute - veto UFFICIALE (Regola 4/5/31/34) non gia'
+                // coperto dai 5 passaggi proprietari di
+                // verificaCondizioneSalute() esclude comunque; "astrolab-
+                // angoli"/stellium misto retrocedono soltanto.
+                if ($condizione === 'Salute' && $livelloSalute !== null) {
+                    $vetiUfficialiSalute = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiSalute)) {
+                        $totaleEsclusiSaluteVuota++;
+                        $processed++;
+                        continue;
+                    }
+                    if (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false)) {
+                        $livelloSalute['livello'] = ($livelloSalute['livello'] ?? 0)
+                            + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
+                    }
                 }
 
                 // UX-0021: livello 1-6 per Casa (gerarchia Giove poi Venere
@@ -837,7 +918,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 if ($condizione === 'Casa' && $livelloCasa !== null
                     && (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false))) {
                     $livelloCasa['livello'] = ($livelloCasa['livello'] ?? 0)
-                        + RuleEngineExtended::OFFSET_FASCIA_VETO_ANGOLI_CASA;
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
                 }
 
                 // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
