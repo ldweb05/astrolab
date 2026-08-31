@@ -449,23 +449,29 @@ function verificaCondizioneLavoroLegacy(array $pianetiConCase, array $caseRS): a
 }
 
 
+/**
+ * Verifica la presenza geometrica di Sole/Giove/Venere in IV casa RS.
+ * UX-0021: rifattorizzata da filtro-che-esclude a semplice rilevatore
+ * geometrico (stesso schema di verificaCondizioneAmore()/Decima/Lavoro),
+ * nessuna esclusione al suo interno - demandata interamente a
+ * RuleEngineExtended::calcolaLivelloCasa() secondo il principio UX-0017.
+ *
+ * @param array<int,array{casa:int,longitudine:float}> $pianetiConCase
+ * @param array<int,array{longitudine:float}> $caseRS
+ * @return array{pianeti_in_casa: int[]}
+ */
 function verificaCondizioneCasa(array $pianetiConCase, array $caseRS): array
 {
-    // Casa target: IV (Fondo Cielo)
+    // Casa target: solo IV (Fondo Cielo)
     $casaTarget = 4;
 
-    // Benefici da verificare: Sole (0), Giove (5), Venere (3)
+    // Benefici usati solo per il vincolo di sicurezza in uscita
     $benefici = [0, 5, 3];
 
-    // Malevoli da escludere: Marte (4), Saturno (6), Urano (7), Nettuno (8), Plutone (9)
-    $malevoli = [4, 6, 7, 8, 9];
+    $pianetiInCasa = [];
 
-    // Verifica che la casa target esista
     if (!isset($caseRS[$casaTarget])) {
-        return [
-            'valida' => false,
-            'motivo' => 'Casa IV non trovata nel tema RS'
-        ];
+        return ['pianeti_in_casa' => $pianetiInCasa];
     }
 
     $cuspideTarget = $caseRS[$casaTarget]['longitudine'];
@@ -476,72 +482,36 @@ function verificaCondizioneCasa(array $pianetiConCase, array $caseRS): array
         ? $caseRS[$casaSuccessiva]['longitudine']
         : null;
 
-    $beneficiTrovati = [];
-    $malevoliTrovati = [];
-
-    // Controlla tutti i pianeti
     foreach ($pianetiConCase as $idPianeta => $dati) {
         $casaAssegnata = (int)$dati['casa'];
         $longitudine = (float)$dati['longitudine'];
 
-        // Pre-ingresso: il pianeta è nei 3° immediatamente precedenti la cuspide della IV?
+        // Pre-ingresso: il pianeta è nei 3° immediatamente precedenti la cuspide?
         $diffCuspide = diffAngolo($longitudine, $cuspideTarget);
         $inPreIngresso = ($diffCuspide > -3.0 && $diffCuspide < 0.0);
 
-        // Il pianeta è nella casa target (assegnata da SweCalc) o in pre-ingresso?
         $inCasaTarget = ($casaAssegnata === $casaTarget) || $inPreIngresso;
 
         if (!$inCasaTarget) {
             continue;
         }
 
-        // === VINCOLO DI SICUREZZA IN USCITA (SOLO PER BENEFICI) ===
-        // Se il pianeta benefico è a meno di 2° dalla cuspide della V casa
-        // (cioè ha appena lasciato la IV), la località è scartata.
+        // Sicurezza in uscita, SOLO per benefici: se a meno di 2° dalla
+        // cuspide della V casa, non conta come "in casa target"
+        // (comportamento geometrico invariato rispetto a prima).
         if ($cuspideSuccessiva !== null && in_array($idPianeta, $benefici, true)) {
             $diffUscita = diffAngolo($longitudine, $cuspideSuccessiva);
-            // diffUscita ∈ [0°, 2°) → pianeta appena entrato nella V casa
             if ($diffUscita >= 0.0 && $diffUscita < 2.0) {
-                $nomeBenef = getNomePianeta($idPianeta);
-                return [
-                    'valida' => false,
-                    'motivo' => "Sicurezza in uscita: {$nomeBenef} a " .
-                                round($diffUscita, 1) . "° dalla cuspide della V casa — " .
-                                "troppo vicino all'uscita dalla IV casa, protezione immobiliare non coperta"
-                ];
+                continue;
             }
         }
 
-        // Classifica il pianeta come benefico o malevolo
-        if (in_array($idPianeta, $benefici, true)) {
-            $beneficiTrovati[] = $idPianeta;
-        } elseif (in_array($idPianeta, $malevoli, true)) {
-            $malevoliTrovati[] = $idPianeta;
+        if (!in_array($idPianeta, $pianetiInCasa, true)) {
+            $pianetiInCasa[] = $idPianeta;
         }
     }
 
-    // === FILTRO DI ESCLUSIONE: malevoli in IV casa ===
-    // Anche se i benefici sono presenti, se c'è un malevolo in IV casa
-    // (con pre-ingresso) la località deve essere scartata.
-    if (!empty($malevoliTrovati)) {
-        $nomiMalevoli = array_map('getNomePianeta', array_unique($malevoliTrovati));
-        return [
-            'valida' => false,
-            'motivo' => 'Malevoli in IV casa RS: ' . implode(', ', $nomiMalevoli) .
-                        ' — danni immobiliari/familiari garantiti'
-        ];
-    }
-
-    // === VERIFICA PRESENZA BENEFICI ===
-    if (empty($beneficiTrovati)) {
-        return [
-            'valida' => false,
-            'motivo' => 'Nessun benefico (Sole, Giove o Venere) in IV casa RS'
-        ];
-    }
-
-    // Tutti i controlli superati
-    return ['valida' => true];
+    return ['pianeti_in_casa' => $pianetiInCasa];
 }
 
 

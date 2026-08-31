@@ -96,6 +96,25 @@ class RuleEngineExtended {
     ];
     const ORBO_REGOLA14 = 2.5; // gradi, per congiunzione/quadratura/opposizione
 
+    // UX-0022: schema a fasce del committente, sopra il livello benevolo
+    // gia' calcolato da ciascun calcolaLivello*() - vale per Amore, Lavoro,
+    // Casa (per Salute il Passo 1 di verificaCondizioneSalute() esclude gia'
+    // qualunque malefico prima di arrivare qui; Decima esplicitamente
+    // esclusa da questa correzione su richiesta del committente):
+    //   0 malefici nell'area rilevata -> livello invariato (fascia 1)
+    //   esattamente 1 malefico -> livello + OFFSET_FASCIA_MALEFICO_SINGOLO
+    //     (fascia 2, sempre sotto TUTTA la fascia 1 della stessa condizione)
+    //   2 o piu' malefici -> esclusione totale (mai mostrata, non fa numero)
+    const OFFSET_FASCIA_MALEFICO_SINGOLO = 100;
+
+    // UX-0023: per la condizione Casa, un veto "astrolab-angoli" (Marte/
+    // Saturno entro 2 gradi dagli angoli - NON una delle 34 regole
+    // ufficiali) non esclude la RSM, ma la retrocede rispetto a qualunque
+    // risultato senza alcun veto, indipendentemente dalla gerarchia
+    // Giove/Venere/Sole. Offset piu' piccolo del malefico (100) cosi' che
+    // un veto-angoli senza malefico resti comunque sopra un malefico vero.
+    const OFFSET_FASCIA_VETO_ANGOLI_CASA = 10;
+
     // Livelli di priorita' per la condizione Decima (1 = migliore).
     const LIVELLO_ASC_OK         = 1;
     const LIVELLO_GIOVE_ORBO     = 2;
@@ -166,6 +185,23 @@ class RuleEngineExtended {
     const LIVELLO_NEUTRO_SALUTE            = 9; // fallback difensivo, mai raggiunto in pratica
 
     const ORBO_BONUS_SALUTE = 1.5;
+
+    // Livelli gerarchia Casa (UX-0021): niente ASC, priorita' Giove/Venere/
+    // Sole su IV casa (unica casa target). Bonus orbo = ORBO_MAX_GRADI
+    // (2,5 gradi, come Decima/Lavoro), applicato solo a Giove e Venere.
+    // A differenza di Salute, verificaCondizioneCasa() E' stata
+    // rifattorizzata a rilevatore geometrico puro (stesso schema di
+    // Amore/Decima/Lavoro) - nessun vincolo Regola 33 qui.
+    const LIVELLO_GIOVE_ORBO_CASA  = 1;
+    const LIVELLO_GIOVE_CASA       = 2;
+    const LIVELLO_VENERE_ORBO_CASA = 3;
+    const LIVELLO_VENERE_CASA      = 4;
+    const LIVELLO_SOLE_CASA        = 5;
+    const LIVELLO_NEUTRO_CASA      = 6; // nessun benefico in IV (UX-0017)
+
+    // Pianeti malefici e neutri per Casa - stessi id di Amore/Decima/Lavoro.
+    const MALEFICI_CASA = [4, 6, 7, 8, 9]; // Marte, Saturno, Urano, Nettuno, Plutone
+    const NEUTRI_CASA   = [1, 2];          // Luna, Mercurio
 
     /**
      * Calcola il punteggio parziale Sole/Venere/Giove nella casa tematica
@@ -417,31 +453,26 @@ class RuleEngineExtended {
         // Venere (id 3): priorita' massima
         if (in_array(3, $pianetiInCasa, true)) {
             $entroOrbo = $this->pianetaEntroOrboAmore(3, $temaRS);
-            return array_merge($base, [
-                'livello' => $entroOrbo ? self::LIVELLO_VENERE_ORBO_AMORE : self::LIVELLO_VENERE_AMORE,
-            ]);
+            $livello = $entroOrbo ? self::LIVELLO_VENERE_ORBO_AMORE : self::LIVELLO_VENERE_AMORE;
+            return $this->applicaFasciaMalefici($livello, $pianetiInCasa, self::MALEFICI_AMORE, $base);
         }
 
         // Giove (id 5): seconda priorita'
         if (in_array(5, $pianetiInCasa, true)) {
             $entroOrbo = $this->pianetaEntroOrboAmore(5, $temaRS);
-            return array_merge($base, [
-                'livello' => $entroOrbo ? self::LIVELLO_GIOVE_ORBO_AMORE : self::LIVELLO_GIOVE_AMORE,
-            ]);
+            $livello = $entroOrbo ? self::LIVELLO_GIOVE_ORBO_AMORE : self::LIVELLO_GIOVE_AMORE;
+            return $this->applicaFasciaMalefici($livello, $pianetiInCasa, self::MALEFICI_AMORE, $base);
         }
 
         // Sole (id 0): terza priorita', nessun bonus orbo
         if (in_array(0, $pianetiInCasa, true)) {
-            return array_merge($base, ['livello' => self::LIVELLO_SOLE_AMORE]);
+            return $this->applicaFasciaMalefici(self::LIVELLO_SOLE_AMORE, $pianetiInCasa, self::MALEFICI_AMORE, $base);
         }
 
         // UX-0017: nessun benefico in V/VII significa che la condizione
         // Amore NON e' soddisfatta, a prescindere da cosa altro sia presente
         // (malefico, neutro, o nulla). La RSM va SEMPRE esclusa - non piu'
         // inclusa come "malefico" o "neutro" (livelli rimossi da UX-0016).
-        // Il malefico continua a essere segnalato SOLO quando accompagna un
-        // benefico effettivo (gestito nei rami Venere/Giove/Sole sopra,
-        // tramite i veti esistenti a monte - comportamento invariato).
         return array_merge($base, ['livello' => self::LIVELLO_NEUTRO_AMORE, 'escludi' => true]);
     }
 
@@ -466,6 +497,23 @@ class RuleEngineExtended {
     }
 
     /**
+     * UX-0022: applica lo schema a fasce del committente sopra un livello
+     * benevolo gia' calcolato. Vedi la costante OFFSET_FASCIA_MALEFICO_SINGOLO
+     * per la spiegazione completa dello schema (0/1/2+ malefici).
+     */
+    private function applicaFasciaMalefici(int $livelloBase, array $pianetiInArea, array $malefici, array $base): array {
+        $numMalefici = count(array_intersect($pianetiInArea, $malefici));
+
+        if ($numMalefici >= 2) {
+            return array_merge($base, ['livello' => $livelloBase, 'escludi' => true]);
+        }
+        if ($numMalefici === 1) {
+            return array_merge($base, ['livello' => $livelloBase + self::OFFSET_FASCIA_MALEFICO_SINGOLO]);
+        }
+        return array_merge($base, ['livello' => $livelloBase]);
+    }
+
+    /**
      * Calcola il livello di priorita' per la condizione Lavoro (UX-0019).
      *
      * Case target: VI e X, pari peso. Gerarchia confermata dal committente:
@@ -484,6 +532,7 @@ class RuleEngineExtended {
 
         $perCasa = $this->pianetiPerCasaLavoro($temaRS);
         $benefici = [0, 5, 3];
+        $tuttiPianeti = array_merge($perCasa[6], $perCasa[10]);
 
         // Per ciascuna casa target, il benefico conta solo se Saturno NON
         // e' anche lui in quella stessa casa (Regola 33).
@@ -503,18 +552,16 @@ class RuleEngineExtended {
         // Gerarchia: 1) Giove 2) Venere 3) Sole
         if (in_array(5, $segnaliValidi, true)) {
             $entroOrbo = $this->pianetaEntroOrboLavoro(5, $temaRS);
-            return array_merge($base, [
-                'livello' => $entroOrbo ? self::LIVELLO_GIOVE_ORBO_LAVORO : self::LIVELLO_GIOVE_LAVORO,
-            ]);
+            $livello = $entroOrbo ? self::LIVELLO_GIOVE_ORBO_LAVORO : self::LIVELLO_GIOVE_LAVORO;
+            return $this->applicaFasciaMalefici($livello, $tuttiPianeti, self::MALEFICI_LAVORO, $base);
         }
         if (in_array(3, $segnaliValidi, true)) {
             $entroOrbo = $this->pianetaEntroOrboLavoro(3, $temaRS);
-            return array_merge($base, [
-                'livello' => $entroOrbo ? self::LIVELLO_VENERE_ORBO_LAVORO : self::LIVELLO_VENERE_LAVORO,
-            ]);
+            $livello = $entroOrbo ? self::LIVELLO_VENERE_ORBO_LAVORO : self::LIVELLO_VENERE_LAVORO;
+            return $this->applicaFasciaMalefici($livello, $tuttiPianeti, self::MALEFICI_LAVORO, $base);
         }
         if (in_array(0, $segnaliValidi, true)) {
-            return array_merge($base, ['livello' => self::LIVELLO_SOLE_LAVORO]);
+            return $this->applicaFasciaMalefici(self::LIVELLO_SOLE_LAVORO, $tuttiPianeti, self::MALEFICI_LAVORO, $base);
         }
 
         // UX-0017: nessun segnale valido residuo (assente in origine, oppure
@@ -784,6 +831,72 @@ class RuleEngineExtended {
 
         $parti = [];
         foreach ($tutti as $idPianeta) {
+            $parti[] = RuleEngine::VAL_NOMI[$idPianeta] ?? (string)$idPianeta;
+        }
+
+        return empty($parti) ? '—' : implode('+', $parti);
+    }
+
+    /**
+     * Calcola il livello di priorita' per la condizione Casa (UX-0021).
+     *
+     * Case target: solo IV. Gerarchia: 1) Giove 2) Venere 3) Sole. Bonus
+     * orbo 2,5 gradi (ORBO_MAX_GRADI, come Decima/Lavoro), solo su
+     * Giove/Venere. verificaCondizioneCasa() e' stata rifattorizzata a
+     * rilevatore geometrico puro (stesso schema di Amore/Decima/Lavoro):
+     * gestisce qui, non piu' li', inclusione/esclusione secondo UX-0017.
+     */
+    public function calcolaLivelloCasa(array $temaRS): array {
+        $base = ['escludi' => false];
+
+        $rilevamento = verificaCondizioneCasa($temaRS['pianeti'], $temaRS['case']);
+        $pianetiInCasa = $rilevamento['pianeti_in_casa'];
+
+        if (in_array(5, $pianetiInCasa, true)) {
+            $entroOrbo = $this->pianetaEntroOrboCasa(5, $temaRS);
+            $livello = $entroOrbo ? self::LIVELLO_GIOVE_ORBO_CASA : self::LIVELLO_GIOVE_CASA;
+            return $this->applicaFasciaMalefici($livello, $pianetiInCasa, self::MALEFICI_CASA, $base);
+        }
+        if (in_array(3, $pianetiInCasa, true)) {
+            $entroOrbo = $this->pianetaEntroOrboCasa(3, $temaRS);
+            $livello = $entroOrbo ? self::LIVELLO_VENERE_ORBO_CASA : self::LIVELLO_VENERE_CASA;
+            return $this->applicaFasciaMalefici($livello, $pianetiInCasa, self::MALEFICI_CASA, $base);
+        }
+        if (in_array(0, $pianetiInCasa, true)) {
+            return $this->applicaFasciaMalefici(self::LIVELLO_SOLE_CASA, $pianetiInCasa, self::MALEFICI_CASA, $base);
+        }
+
+        // UX-0017: nessun benefico in IV significa che la condizione Casa
+        // NON e' soddisfatta - la RSM va SEMPRE esclusa, a prescindere da
+        // cosa altro sia presente (malefico, neutro, o nulla).
+        return array_merge($base, ['livello' => self::LIVELLO_NEUTRO_CASA, 'escludi' => true]);
+    }
+
+    /**
+     * Verifica se un pianeta (Giove o Venere) e' entro il bonus orbo Casa
+     * (2,5°, ORBO_MAX_GRADI) dalla cuspide della IV casa RS.
+     */
+    private function pianetaEntroOrboCasa(int $idPianeta, array $temaRS): bool {
+        if (!isset($temaRS['case'][4]['longitudine'], $temaRS['pianeti'][$idPianeta]['longitudine'])) {
+            return false;
+        }
+        $diff = abs(AstroUtils::diffAngolo(
+            (float)$temaRS['pianeti'][$idPianeta]['longitudine'],
+            (float)$temaRS['case'][4]['longitudine']
+        ));
+        return $diff <= self::ORBO_MAX_GRADI;
+    }
+
+    /**
+     * Stringa VAL dedicata alla condizione Casa (UX-0021): mostra ogni
+     * pianeta (Sole/Giove/Venere) la cui posizione nella RS cade in IV
+     * casa della RS stessa. Sostituisce, SOLO per Casa, la stringa VAL
+     * generica di RuleEngine::generaVAL().
+     */
+    public function generaValCasa(array $temaRS): string {
+        $rilevamento = verificaCondizioneCasa($temaRS['pianeti'], $temaRS['case']);
+        $parti = [];
+        foreach ($rilevamento['pianeti_in_casa'] as $idPianeta) {
             $parti[] = RuleEngine::VAL_NOMI[$idPianeta] ?? (string)$idPianeta;
         }
 
