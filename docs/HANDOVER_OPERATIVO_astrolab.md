@@ -3888,3 +3888,85 @@ Verifica sintattica (`php -l`) dopo ogni patch, `git diff`/`git status`
 per isolamento ad ogni step, test funzionale confermato dal committente
 su ricerca standard (colonna VAL solo Giove/Venere, ordinamento VI prima
 di I/XII, Giove prima di Venere) e controllo rapido su griglia e RL.
+
+## 2026-08-31 — Condizione Casa: gerarchia (UX-0021), correzione ordinamento veti/stellium misto (UX-0023), estensione a Decima/Amore/Lavoro/Salute (UX-0024)
+
+Prima sessione con lavoro committato per la condizione Casa: la gerarchia
+base (UX-0021, Giove>Venere>Sole su IV casa, orbo 2,5°, fasce malefici)
+era già stata implementata in sessioni precedenti ma mai committata.
+
+### Bug segnalato dal committente
+Nella ricerca Casa, risultati con Giove in IV ma con un veto GENERALE
+delle 34 regole (es. Regola 4 - Ascendente RS in casa natale pericolosa)
+salivano in cima alla classifica, sopra risultati completamente puliti
+con solo Venere/Sole in IV (es. Honiara International Airport). La
+gerarchia Giove>Venere>Sole non teneva conto dei veti prodotti da
+`RuleEngine::valuta()` (mostrati in UI come badge "N VETO"), mai
+controllati da `calcolaLivelloCasa()`.
+
+### UX-0023 — Correzione per Casa
+- Veti UFFICIALI delle 34 regole (Regola 4/5/31/34, identificati leggendo
+  per intero `RuleEngine::calcolaVeti()` e incrociandoli col testo di
+  `docs/status/34_regole_rsm.md`) ora escludono sempre la RSM/RL dalla
+  condizione Casa.
+- Il veto proprietario "astrolab-angoli" (esplicitamente non ufficiale,
+  commentato nel codice) e l'alert "stellium misto" del sistema Stelline
+  V2 (`alert_stellium_misto`, un terzo segnale del tutto indipendente sia
+  dai veti RuleEngine sia da astrolab-angoli, scoperto solo analizzando
+  `StellineV2Calculator::renderHTML()` per capire l'origine del triangolo
+  ⚠️ visualizzato in UI) NON escludono, ma retrocedono il livello sotto
+  qualunque risultato del tutto pulito (nuova costante
+  `RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE`, valore 10).
+- Un primo tentativo di aggiungere la retrocessione per stellium misto ha
+  causato la sparizione totale di un risultato valido (Honiara) dalla
+  ricerca reale, per motivi di cache/OPcache non del tutto chiariti
+  nonostante riavvio del container; correttamente revertato con patch
+  chirurgica (non `git checkout`, perché nulla era ancora committato).
+  Rieseguito con successo dopo verifica preventiva sull'INTERO dataset
+  reale (4620 aeroporti, non un campione di 300 come nei test precedenti)
+  in uno script isolato, prima di rimettere la patch in produzione.
+
+### UX-0024 — Estensione alle altre 4 condizioni
+Lo stesso identico gap (nessun controllo di veti ufficiali/stellium misto
+prima di assegnare il livello) era presente in `calcolaLivelloDecima()`,
+`calcolaLivelloAmore()`, `calcolaLivelloLavoro()`, `calcolaLivelloSalute()`.
+Applicata la stessa correzione a tutte e quattro, su tutte le modalità di
+ricerca applicabili (Amore non esiste in modalità griglia). Per Salute la
+correzione si aggiunge, senza sostituire, ai 5 passaggi proprietari già
+esistenti di `verificaCondizioneSalute()` (UX-0020).
+
+Rinominata la costante `OFFSET_FASCIA_VETO_ANGOLI_CASA` in
+`OFFSET_FASCIA_VETO_MINORE` per riflettere l'uso ora condiviso tra tutte
+le condizioni, non solo Casa.
+
+### File toccati
+`api/ricerca_stream_api.php`, `api/ricerca_griglia_api.php`,
+`api/ricerca_stream_rl_api.php`, `includes/RicercaRSFilters.php`,
+`includes/RicercaRSResultBuilder.php`, `includes/RuleEngineExtended.php`,
+`tests/test_casa.php` (nuovo — script diagnostico esteso durante la
+sessione: rimosso il limite di campionamento a 300 aeroporti, ora
+processa l'intero dataset reale; aggiunto calcolo Stelline V2 parallelo
+per replicare fedelmente la pipeline di produzione).
+
+### Test eseguiti
+Verifica sintattica (`php -l`) dopo ogni singola patch (oltre 20 patch
+incrementali in questa sessione), `git diff`/`git status` per isolamento
+ad ogni step, test diagnostico su script dedicato sia su campione (300
+aeroporti) sia sull'intero dataset reale (4620 aeroporti) prima di ogni
+reinserimento in produzione, test funzionale confermato dal committente
+nel browser su tutte e 5 le condizioni dopo il riavvio finale del
+container.
+
+### Commit Git
+`4cb897c` — UX-0021 (base Casa) + UX-0023 (esclusione veti ufficiali,
+prima parte).
+`edb3baa` — UX-0023 completata (retrocessione stellium misto).
+`ae14b1d` — UX-0024 (estensione a Decima/Amore/Lavoro/Salute).
+
+### Ancora da fare
+**Denaro e Denaro Low** restano le uniche due condizioni a gerarchia non
+ancora implementate. Andranno costruite fin dall'inizio con lo stesso
+controllo di UX-0023/UX-0024 incluso (veti ufficiali + astrolab-angoli/
+stellium misto), non aggiunto come correzione successiva - il
+committente ha esplicitamente richiesto di anticipare questo requisito
+in fase di progettazione per evitare una sesta sessione correttiva.

@@ -706,7 +706,7 @@ Documentazione completa: `docs/BUG_GEOCODING_NOMINATIM.md`
 
 ---
 
-## Estensione architettura a gerarchia alle condizioni restanti (Casa, Salute, Denaro, Denaro Low)
+## Estensione architettura a gerarchia alle condizioni restanti (Denaro, Denaro Low)
 
-Al completamento di UX-0019 (condizione Lavoro), 3 delle 7 condizioni disponibili (Decima, Amore, Lavoro) sono ora sul modello a gerarchia a livelli; le altre 4 restano sul vecchio modello a filtro-che-esclude, da allineare in sessioni dedicate future. Tracciata nella roadmap dedicata:
+Al completamento di UX-0019 (condizione Lavoro), 3 delle 7 condizioni disponibili (Decima, Amore, Lavoro) erano sul modello a gerarchia a livelli. Con UX-0020 (Salute, 2026-08-30) e UX-0021/UX-0023 (Casa, 2026-08-31) sono ora 5 su 7; restano solo Denaro e Denaro Low. UX-0023/UX-0024 hanno inoltre introdotto un requisito trasversale obbligatorio per ogni condizione a gerarchia (esclusione veti ufficiali delle 34 regole + retrocessione per veto proprietario/alert stellium misto), da includere fin dalla progettazione di Denaro e Denaro Low. Tracciata nella roadmap dedicata:
 - `docs/ROADMAP_GERARCHIA_CONDIZIONI_RESTANTI.md`
