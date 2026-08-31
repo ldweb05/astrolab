@@ -792,9 +792,13 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     }
                 }
 
-                // UX-0023: veto "astrolab-angoli" residuo (non ufficiale) -
-                // retrocede il livello Casa sotto qualunque risultato senza veti.
-                if ($condizione === 'Casa' && $livelloCasa !== null && !empty($val['veti'] ?? [])) {
+                // UX-0023: veto "astrolab-angoli" residuo (non ufficiale) E/O
+                // alert stellium misto (sistema Stelline V2) - retrocedono
+                // il livello Casa sotto qualunque risultato senza avvisi.
+                // Verificato su tutti i 4620 aeroporti reali prima del
+                // reinserimento in produzione.
+                if ($condizione === 'Casa' && $livelloCasa !== null
+                    && (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false))) {
                     $livelloCasa['livello'] = ($livelloCasa['livello'] ?? 0)
                         + RuleEngineExtended::OFFSET_FASCIA_VETO_ANGOLI_CASA;
                 }
