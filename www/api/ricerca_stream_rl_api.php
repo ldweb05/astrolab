@@ -432,6 +432,7 @@ try {
     $totaleEsclusiDecimaVuota = 0; // UX-0015/UX-0018: RS escluse per assenza di ASC/benefico in X casa
     $totaleEsclusiLavoroVuota = 0; // UX-0019: RS/RL escluse per VI/X casa senza alcun segnale valido
     $totaleEsclusiSaluteVuota = 0; // UX-0020: fallback difensivo, in pratica sempre 0
+    $totaleEsclusiCasaVuota = 0; // UX-0021: RS/RL escluse per IV casa senza alcun benefico
     $totaleEsclusiCasa     = 0; // contatore RS escluse dal filtro specifico Casa
     $totaleEsclusiSalute   = 0; // contatore RS escluse dal filtro specifico Salute
     $totaleEsclusiDenaro   = 0; // contatore RS escluse dal filtro specifico Denaro
@@ -530,35 +531,13 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 // $totaleEsclusiAmore resta dichiarato (sempre 0) per non
                 // rompere le statistiche finali che lo referenziano.
 
-                // ── C-quater. FILTRO SPECIFICO PER CASA (IV Casa) ─────────────
-                // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
-                // Verifica che almeno un benefico (SO/GI/VE) sia in IV casa RS
-                // con pre-ingresso di 3°, che non ci siano malevoli (MA/SA/UR/NE/PLU)
-                // in IV casa (con pre-ingresso), e che i benefici non siano
-                // troppo vicini all'uscita dalla IV (cuspide V).
-                if ($condizione === 'Casa') {
-                    $verificaCasa = verificaCondizioneCasa($pianetiConCase, $caseRS);
-                    if (!$verificaCasa['valida']) {
-                        $totaleEsclusiCasa++;
-                        // Le RS escluse dal filtro Casa NON vengono incluse nei risultati
-                        // (non c'è un checkbox "Mostra anche le RS escluse da Casa")
-                        $processed++;
-                        if ($processed % 50 === 0) {
-                            sse('progress', [
-                                'processed'        => $processed,
-                                'totale'           => $totaleCalc,
-                                'perc'             => round($processed / $totaleCalc * 100),
-                                'fase'             => 'calcolo',
-                                'esclusi_radicale' => $totaleEsclusiRadicale,
-                                'esclusi_filtro'   => $totaleEsclusiFiltro,
-                            'calcoli_placido'  => $totaleCalcoliPlacido,
-                                'esclusi_amore'    => $totaleEsclusiAmore,
-                                'esclusi_casa'     => $totaleEsclusiCasa,
-                            ]);
-                        }
-                        continue;
-                    }
-                }
+                // ── C-quater. EX-FILTRO SPECIFICO PER CASA (rimosso) ─────────
+                // UX-0021: stesso trattamento di Amore/Decima/Lavoro/Salute -
+                // demandato interamente a RuleEngineExtended::calcolaLivelloCasa()
+                // piu' avanti nel loop. verificaCondizioneCasa() resta in
+                // RicercaRSFilters.php come semplice rilevatore geometrico.
+                // $totaleEsclusiCasa resta dichiarato (sempre 0) per non
+                // rompere le statistiche finali che lo referenziano.
 
                 // ── C-quinquies. FILTRO SPECIFICO PER SALUTE ────────────────────
                 // Applicato DOPO i filtri globali (veti e FiltroEsclusione).
@@ -783,6 +762,43 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     continue;
                 }
 
+                // UX-0021: livello 1-6 per Casa (stesso schema di
+                // ricerca_stream_api.php/ricerca_griglia_api.php, esteso qui
+                // alle RL).
+                $livelloCasa = null;
+                if ($engineExt !== null && $condizione === 'Casa') {
+                    $livelloCasa = $engineExt->calcolaLivelloCasa($temaRS);
+                }
+
+                if ($livelloCasa !== null && ($livelloCasa['escludi'] ?? false)) {
+                    $totaleEsclusiCasaVuota++;
+                    $processed++;
+                    continue;
+                }
+
+                // UX-0023: veto UFFICIALE delle 34 regole (Regola 4/5/31/34)
+                // esclude comunque la RSM/RL per Casa, anche con benefico
+                // valido in IV. Il veto "astrolab-angoli" non e' ufficiale
+                // e resta solo un avviso non bloccante.
+                if ($condizione === 'Casa') {
+                    $vetiUfficialiCasa = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiCasa)) {
+                        $totaleEsclusiCasaVuota++;
+                        $processed++;
+                        continue;
+                    }
+                }
+
+                // UX-0023: veto "astrolab-angoli" residuo (non ufficiale) -
+                // retrocede il livello Casa sotto qualunque risultato senza veti.
+                if ($condizione === 'Casa' && $livelloCasa !== null && !empty($val['veti'] ?? [])) {
+                    $livelloCasa['livello'] = ($livelloCasa['livello'] ?? 0)
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_ANGOLI_CASA;
+                }
+
                 // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
                 // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
                 // stessa casa della condizione, la RS/RL va tolta dai risultati -
@@ -855,7 +871,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 livelloDecima: $livelloDecima,
                 livelloAmore: $livelloAmore,
                 livelloLavoro: $livelloLavoro,
-                livelloSalute: $livelloSalute
+                livelloSalute: $livelloSalute,
+                livelloCasa: $livelloCasa
             );
             // Campi V2 aggiunti al record risultato (additivo, Fase 2a)
             $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
@@ -888,6 +905,10 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
 
             if ($engineExt !== null && $condizione === 'Salute') {
                 $ris['val'] = $engineExt->generaValSalute($temaRS);
+            }
+
+            if ($engineExt !== null && $condizione === 'Casa') {
+                $ris['val'] = $engineExt->generaValCasa($temaRS);
             }
 
             aggiungiRisultatoTopK(
@@ -977,8 +998,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     usort($risultati, static function (array $a, array $b): int {
         // UX-0015/UX-0016/UX-0019: livello Decima, Amore e Lavoro sono
         // mutuamente esclusivi (una sola condizione attiva per ricerca).
-        $livA = $a['livello_decima']['livello'] ?? $a['livello_amore']['livello'] ?? $a['livello_lavoro']['livello'] ?? $a['livello_salute']['livello'] ?? null;
-        $livB = $b['livello_decima']['livello'] ?? $b['livello_amore']['livello'] ?? $b['livello_lavoro']['livello'] ?? $b['livello_salute']['livello'] ?? null;
+        $livA = $a['livello_decima']['livello'] ?? $a['livello_amore']['livello'] ?? $a['livello_lavoro']['livello'] ?? $a['livello_salute']['livello'] ?? $a['livello_casa']['livello'] ?? null;
+        $livB = $b['livello_decima']['livello'] ?? $b['livello_amore']['livello'] ?? $b['livello_lavoro']['livello'] ?? $b['livello_salute']['livello'] ?? $b['livello_casa']['livello'] ?? null;
 
         if ($livA !== null || $livB !== null) {
             $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);

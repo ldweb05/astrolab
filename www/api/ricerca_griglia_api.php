@@ -489,7 +489,6 @@ try {
                 if ($modalita === 'standard') {
                     $verificaCond = match($condizioneInput) {
                         'Amore'      => verificaCondizioneAmoreLegacy($pianetiConCase, $caseRS), // UX-0016: wrapper compatibilita'
-                        'Casa'       => verificaCondizioneCasa($pianetiConCase, $caseRS),
                         'Salute'     => verificaCondizioneSalute($pianetiConCase, $caseRS, $temaNatale['case'], $latPoint),
                         'Denaro'     => verificaCondizioneDenaro($pianetiConCase, $caseRS),
                         'Denaro Low' => verificaCondizioneDenaroLow($pianetiConCase, $caseRS),
@@ -564,6 +563,40 @@ try {
                     }
                 }
 
+                $livelloCasa = null;
+                if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Casa') {
+                    $livelloCasa = $engineExt->calcolaLivelloCasa($temaRS);
+                    if ($livelloCasa['escludi'] ?? false) {
+                        $processed++;
+                        if ($processed % $progressOgni === 0) $emitProgress();
+                        continue;
+                    }
+                }
+
+                // UX-0023: veto UFFICIALE delle 34 regole (Regola 4/5/31/34)
+                // esclude comunque la RSM per Casa, anche con benefico
+                // valido in IV. Il veto "astrolab-angoli" non e' ufficiale
+                // e resta solo un avviso non bloccante.
+                if ($modalita === 'standard' && $condizioneInput === 'Casa') {
+                    $vetiUfficialiCasa = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiCasa)) {
+                        $processed++;
+                        if ($processed % $progressOgni === 0) $emitProgress();
+                        continue;
+                    }
+                }
+
+                // UX-0023: veto "astrolab-angoli" residuo (non ufficiale) -
+                // retrocede il livello Casa sotto qualunque risultato senza veti.
+                if ($modalita === 'standard' && $condizioneInput === 'Casa'
+                    && $livelloCasa !== null && !empty($val['veti'] ?? [])) {
+                    $livelloCasa['livello'] = ($livelloCasa['livello'] ?? 0)
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_ANGOLI_CASA;
+                }
+
                 // Calcolo Stelline V2 (sistema primario)
                 $pianetiRS_v2 = [];
                 foreach ($pianetiConCase as $_pid => $_p) {
@@ -603,6 +636,7 @@ try {
                     'livello_decima'    => $livelloDecima,
                     'livello_lavoro'    => $livelloLavoro,
                     'livello_salute'    => $livelloSalute,
+                    'livello_casa'      => $livelloCasa,
                 ];
 
                 // UX-0015/UX-0018: per Decima, la colonna VAL mostra ASC (se
@@ -619,6 +653,10 @@ try {
 
                 if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Salute') {
                     $ris['val'] = $engineExt->generaValSalute($temaRS);
+                }
+
+                if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Casa') {
+                    $ris['val'] = $engineExt->generaValCasa($temaRS);
                 }
 
                 // Debug opt-in (?debug=1): espone la casa esatta di ogni pianeta
@@ -664,8 +702,8 @@ try {
             // esclusivi, una sola condizione per ricerca) come criterio
             // primario quando presente, prima di V2/vicinanza. Tutte le
             // altre condizioni: comportamento invariato (nessun livello).
-            $livA = $a['livello_decima']['livello'] ?? $a['livello_lavoro']['livello'] ?? $a['livello_salute']['livello'] ?? null;
-            $livB = $b['livello_decima']['livello'] ?? $b['livello_lavoro']['livello'] ?? $b['livello_salute']['livello'] ?? null;
+            $livA = $a['livello_decima']['livello'] ?? $a['livello_lavoro']['livello'] ?? $a['livello_salute']['livello'] ?? $a['livello_casa']['livello'] ?? null;
+            $livB = $b['livello_decima']['livello'] ?? $b['livello_lavoro']['livello'] ?? $b['livello_salute']['livello'] ?? $b['livello_casa']['livello'] ?? null;
             if ($livA !== null || $livB !== null) {
                 $cmpLivello = ($livA ?? 999) <=> ($livB ?? 999);
                 if ($cmpLivello !== 0) return $cmpLivello;
