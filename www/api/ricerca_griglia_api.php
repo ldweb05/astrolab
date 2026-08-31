@@ -538,6 +538,21 @@ try {
                     }
                 }
 
+                // UX-0024: stesso principio di UX-0023 (Casa) esteso a
+                // Decima - veto UFFICIALE (Regola 4/5/31/34) esclude,
+                // "astrolab-angoli"/stellium misto retrocedono soltanto.
+                if ($modalita === 'standard' && $condizioneInput === 'Decima' && $livelloDecima !== null) {
+                    $vetiUfficialiDecima = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiDecima)) {
+                        $processed++;
+                        if ($processed % $progressOgni === 0) $emitProgress();
+                        continue;
+                    }
+                }
+
                 // UX-0019: livello 1-7 per Lavoro (gerarchia Giove/Venere/
                 // Sole su VI/X, con vincolo Regola 33 specifico incluso
                 // internamente), estesa qui alla ricerca a griglia. Colma
@@ -553,10 +568,41 @@ try {
                     }
                 }
 
+                // UX-0024: veto UFFICIALE (Regola 4/5/31/34) esclude anche
+                // Lavoro; "astrolab-angoli"/stellium misto retrocedono soltanto
+                // (offset applicato piu' avanti, dopo il calcolo di $valV2).
+                if ($modalita === 'standard' && $condizioneInput === 'Lavoro' && $livelloLavoro !== null) {
+                    $vetiUfficialiLavoro = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiLavoro)) {
+                        $processed++;
+                        if ($processed % $progressOgni === 0) $emitProgress();
+                        continue;
+                    }
+                }
+
                 $livelloSalute = null;
                 if ($engineExt !== null && $modalita === 'standard' && $condizioneInput === 'Salute') {
                     $livelloSalute = $engineExt->calcolaLivelloSalute($temaRS);
                     if ($livelloSalute['escludi'] ?? false) {
+                        $processed++;
+                        if ($processed % $progressOgni === 0) $emitProgress();
+                        continue;
+                    }
+                }
+
+                // UX-0024: veto UFFICIALE non gia' coperto dai 5 passaggi
+                // proprietari di verificaCondizioneSalute() esclude comunque;
+                // "astrolab-angoli"/stellium misto retrocedono soltanto
+                // (offset applicato piu' avanti, dopo il calcolo di $valV2).
+                if ($modalita === 'standard' && $condizioneInput === 'Salute' && $livelloSalute !== null) {
+                    $vetiUfficialiSalute = array_filter(
+                        $val['veti'] ?? [],
+                        static fn(string $v): bool => strpos($v, 'astrolab-angoli') === false
+                    );
+                    if (!empty($vetiUfficialiSalute)) {
                         $processed++;
                         if ($processed % $progressOgni === 0) $emitProgress();
                         continue;
@@ -594,7 +640,7 @@ try {
                 if ($modalita === 'standard' && $condizioneInput === 'Casa'
                     && $livelloCasa !== null && !empty($val['veti'] ?? [])) {
                     $livelloCasa['livello'] = ($livelloCasa['livello'] ?? 0)
-                        + RuleEngineExtended::OFFSET_FASCIA_VETO_ANGOLI_CASA;
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
                 }
 
                 // Calcolo Stelline V2 (sistema primario)
@@ -613,7 +659,34 @@ try {
                 if ($modalita === 'standard' && $condizioneInput === 'Casa'
                     && $livelloCasa !== null && ($valV2['alert_stellium_misto'] ?? false)) {
                     $livelloCasa['livello'] = ($livelloCasa['livello'] ?? 0)
-                        + RuleEngineExtended::OFFSET_FASCIA_VETO_ANGOLI_CASA;
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
+                }
+
+                // UX-0024: stesso principio per Decima - veto "astrolab-
+                // angoli" o alert stellium misto residui retrocedono il
+                // livello (l'esclusione per veti ufficiali e' gia' avvenuta
+                // sopra, prima del calcolo di $valV2).
+                if ($modalita === 'standard' && $condizioneInput === 'Decima'
+                    && $livelloDecima !== null
+                    && (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false))) {
+                    $livelloDecima['livello'] = ($livelloDecima['livello'] ?? 0)
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
+                }
+
+                // UX-0024: stesso principio per Lavoro.
+                if ($modalita === 'standard' && $condizioneInput === 'Lavoro'
+                    && $livelloLavoro !== null
+                    && (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false))) {
+                    $livelloLavoro['livello'] = ($livelloLavoro['livello'] ?? 0)
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
+                }
+
+                // UX-0024: stesso principio per Salute.
+                if ($modalita === 'standard' && $condizioneInput === 'Salute'
+                    && $livelloSalute !== null
+                    && (!empty($val['veti'] ?? []) || ($valV2['alert_stellium_misto'] ?? false))) {
+                    $livelloSalute['livello'] = ($livelloSalute['livello'] ?? 0)
+                        + RuleEngineExtended::OFFSET_FASCIA_VETO_MINORE;
                 }
 
                 if ($stellineMin > 0 && $valV2['stelle_totali'] < $stellineMin) {
