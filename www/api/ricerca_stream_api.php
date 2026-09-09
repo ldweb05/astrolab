@@ -261,7 +261,7 @@ try {
     require_once '../includes/RuleEngine.php';
     require_once '../includes/FiltroEsclusione.php';
     require_once '../includes/StellineV2Calculator.php';
-    if (MYASTRAL_ALIGNMENT_MODE) {
+    if (ASTROLAB_ALIGNMENT_MODE) {
         require_once '../includes/RuleEngineExtended.php';
     }
 
@@ -273,7 +273,7 @@ try {
     $v2Calc = new StellineV2Calculator();
     // Motore parallelo opzionale (roadmap MyAstral) — null se il flag è OFF,
     // così il resto del file non deve controllare il flag a ogni iterazione.
-    $engineExt = MYASTRAL_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
+    $engineExt = ASTROLAB_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
     $pdo = db_connect();
 
@@ -922,7 +922,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 }
 
                 // Regola 33 (Saturno prevale) - ESCLUSIONE, non azzeramento.
-                // Attiva solo con MYASTRAL_ALIGNMENT_MODE=true. Se Saturno e nella
+                // Attiva solo con ASTROLAB_ALIGNMENT_MODE=true. Se Saturno e nella
                 // stessa casa della condizione, la RSM/RL va tolta dai risultati -
                 // confermato esplicitamente dal committente, non solo punteggio a 0.
                 // UX-0019/UX-0020: ESCLUSE Lavoro e Salute da questo controllo
@@ -1115,7 +1115,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
     // Riga precedente commentata per rollback rapido in caso di problemi:
     // ($b['v2_stelle_totali'] <=> $a['v2_stelle_totali']) ?: ($b['stelline'] <=> $a['stelline'])
     //
-    // UX-0015: per Decima (con MYASTRAL_ALIGNMENT_MODE attivo) il livello 1-7
+    // UX-0015: per Decima (con ASTROLAB_ALIGNMENT_MODE attivo) il livello 1-7
     // sostituisce v2_stelle_totali come criterio primario di ordinamento; le
     // stelle V2 restano visibili nel risultato e fanno da tie-break a parita'
     // di livello. Tutte le altre condizioni: comportamento invariato.

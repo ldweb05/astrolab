@@ -38,19 +38,21 @@ if (!defined('ABSPATH')) {
 define('APP_ENV',   getenv('APP_ENV')   ?: 'production');
 define('APP_DEBUG', filter_var(getenv('APP_DEBUG') ?: 'false', FILTER_VALIDATE_BOOLEAN));
 
-// ── Feature flag: allineamento MyAstral (roadmap docs/ROADMAP_MYASTRAL_UX.md) ──
+// ── Feature flag: allineamento interno ASTROLAB (roadmap docs/ROADMAP_ASTROLAB_UX.md) ──
 // Attiva il punteggio "Discepolo parziale" calcolato da RuleEngineExtended.php,
 // IN AGGIUNTA alle stelline esistenti — non le sostituisce mai.
 // Default OFF: a flag disattivo il comportamento dell'app resta identico a
-// prima di questa feature. Decisione UX-0001 (docs/ux-myastral/DECISION_LOG_ux.md).
-define('MYASTRAL_ALIGNMENT_MODE', filter_var(getenv('MYASTRAL_ALIGNMENT_MODE') ?: 'false', FILTER_VALIDATE_BOOLEAN));
+// prima di questa feature. Decisione UX-0001 (docs/ux-astrolab/DECISION_LOG_ux.md).
+// Nota: rinominata da MYASTRAL_ALIGNMENT_MODE il 2026-09-09 (naming legacy
+// interno, mai da esporre pubblicamente — vedi bonifica naming).
+define('ASTROLAB_ALIGNMENT_MODE', filter_var(getenv('ASTROLAB_ALIGNMENT_MODE') ?: 'false', FILTER_VALIDATE_BOOLEAN));
 
 // ── AI Agent: provider Gemini (percorso AI Agent — Fase 0) ────────────────
 // Chiave letta esclusivamente dall'ambiente, MAI un default hardcoded.
 // Nessuna eccezione se assente: a differenza di DB_PASS, ASTROLAB deve
 // continuare a funzionare normalmente anche senza integrazione AI attiva
 // (PROMPT_OPERATIVO_ASTROLAB, sez. 21 "Free Tier" e sez. 25 "Criterio di
-// successo"). Stesso schema del flag MYASTRAL_ALIGNMENT_MODE qui sopra.
+// successo"). Stesso schema del flag ASTROLAB_ALIGNMENT_MODE qui sopra.
 define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: null);
 define('AI_AGENT_ENABLED', filter_var(getenv('AI_AGENT_ENABLED') ?: 'false', FILTER_VALIDATE_BOOLEAN));
 
