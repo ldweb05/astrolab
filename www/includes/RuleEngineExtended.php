@@ -13,7 +13,7 @@ require_once __DIR__ . '/RicercaRSFilters.php';
  * (non è parte delle 34 regole in sé: è un metro di paragone che serve a
  * misurare quanto una RSM/RL rispetta le regole).
  *
- * Attivo solo se il feature flag MYASTRAL_ALIGNMENT_MODE è abilitato in
+ * Attivo solo se il feature flag ASTROLAB_ALIGNMENT_MODE è abilitato in
  * config. A flag disattivo il comportamento dell'app resta identico a oggi.
  *
  * COPERTURA ATTUALE (parziale, per costruzione):
@@ -369,7 +369,7 @@ class RuleEngineExtended {
     /**
      * Gerarchia a 7 livelli per la condizione Decima (UX-0015), da usare per
      * l'ordinamento dei risultati al posto del sistema stelline, solo quando
-     * MYASTRAL_ALIGNMENT_MODE e' attivo e la condizione e' Decima. Il sistema
+     * ASTROLAB_ALIGNMENT_MODE e' attivo e la condizione e' Decima. Il sistema
      * stelline (V2) resta invariato e visibile nel risultato, usato come
      * tie-break a parita' di livello.
      *

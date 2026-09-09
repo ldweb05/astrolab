@@ -211,7 +211,7 @@ try {
     require_once '../includes/RuleEngine.php';
     require_once '../includes/FiltroEsclusione.php';
     require_once '../includes/StellineV2Calculator.php';
-    if (MYASTRAL_ALIGNMENT_MODE) {
+    if (ASTROLAB_ALIGNMENT_MODE) {
         require_once '../includes/RuleEngineExtended.php';
     }
 
@@ -224,7 +224,7 @@ try {
     // Motore parallelo opzionale (roadmap MyAstral) — null se il flag è OFF.
     // Usato per la gerarchia Decima (UX-0015/UX-0018), estesa qui alla
     // ricerca a griglia/geografica/fascia oraria (modalita 'standard').
-    $engineExt = MYASTRAL_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
+    $engineExt = ASTROLAB_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
     // ── Parametri natali ────────────────────────────────────────────────
     $g      = intval($_GET['g']         ?? 1);

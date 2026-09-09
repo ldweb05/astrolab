@@ -7,7 +7,7 @@ declare(strict_types=1);
  * Riproduce fedelmente il percorso reale di api/ricerca_stream_api.php per
  * il soggetto "Rossella Fumai", anno RS 2026, condizione Casa, aeroporti
  * large/medium (comportamento di default) - per verificare concretamente,
- * su dati reali, se MYASTRAL_ALIGNMENT_MODE è letto correttamente in questo
+ * su dati reali, se ASTROLAB_ALIGNMENT_MODE è letto correttamente in questo
  * contesto, se calcolaLivelloCasa() viene invocata, e come vengono ordinati
  * i risultati.
  *
@@ -22,10 +22,10 @@ require_once __DIR__ . '/../includes/RicercaRSFilters.php';
 require_once __DIR__ . '/../includes/RicercaRSPlanetHouseAssigner.php';
 require_once __DIR__ . '/../includes/RicercaRSThemeBuilder.php';
 
-echo "MYASTRAL_ALIGNMENT_MODE (come letta da bootstrap.php): "
-    . (MYASTRAL_ALIGNMENT_MODE ? 'TRUE' : 'FALSE') . "\n";
+echo "ASTROLAB_ALIGNMENT_MODE (come letta da bootstrap.php): "
+    . (ASTROLAB_ALIGNMENT_MODE ? 'TRUE' : 'FALSE') . "\n";
 
-if (!MYASTRAL_ALIGNMENT_MODE) {
+if (!ASTROLAB_ALIGNMENT_MODE) {
     echo "✗ Il flag risulta FALSE in questo contesto PHP - questa è la causa.\n";
     exit(1);
 }

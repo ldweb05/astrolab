@@ -52,23 +52,23 @@ function costruisciRisultatoRicercaRS(
     'denaro_alert_giove' => ($condizione === 'Denaro') ? $denaroAlertGiove : null,
     'passed_denaro_low'  => ($condizione === 'Denaro Low'),
     // Punteggio "Discepolo parziale" (roadmap MyAstral, RuleEngineExtended.php).
-    // null se MYASTRAL_ALIGNMENT_MODE è disattivo o la condizione non è ancora
+    // null se ASTROLAB_ALIGNMENT_MODE è disattivo o la condizione non è ancora
     // supportata dal punteggio parziale — non sostituisce mai 'stelline'.
     'punteggio_myastral' => $punteggioMyAstral,
     // Livello 1-7 (UX-0015) per la condizione Decima. null per tutte
-    // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
+    // le altre condizioni o se ASTROLAB_ALIGNMENT_MODE è disattivo.
     'livello_decima'     => $livelloDecima,
     // Livello 1-7 (UX-0016) per la condizione Amore. null per tutte
-    // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
+    // le altre condizioni o se ASTROLAB_ALIGNMENT_MODE è disattivo.
     'livello_amore'      => $livelloAmore,
     // Livello 1-7 (UX-0019) per la condizione Lavoro. null per tutte
-    // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
+    // le altre condizioni o se ASTROLAB_ALIGNMENT_MODE è disattivo.
     'livello_lavoro'     => $livelloLavoro,
     // Livello 1-9 (UX-0020) per la condizione Salute. null per tutte
-    // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
+    // le altre condizioni o se ASTROLAB_ALIGNMENT_MODE è disattivo.
     'livello_salute'     => $livelloSalute,
     // Livello 1-6 (UX-0021) per la condizione Casa. null per tutte
-    // le altre condizioni o se MYASTRAL_ALIGNMENT_MODE è disattivo.
+    // le altre condizioni o se ASTROLAB_ALIGNMENT_MODE è disattivo.
     'livello_casa'       => $livelloCasa,
              ];
 }
