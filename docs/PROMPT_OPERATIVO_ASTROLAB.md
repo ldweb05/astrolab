@@ -38,11 +38,11 @@ Prima di qualunque modifica al codice:
 1. Verificare `docs/START_HERE.md`, `docs/ROADMAP.md`, `docs/roadmap_aiuto.md`,
    `docs/HANDOVER_OPERATIVO_astrolab.md` (o l'equivalente aggiornato) per lo stato reale del
    progetto — non fidarsi della sola memoria di sessioni precedenti. Controllare anche
-   `docs/ux-myastral/BACKLOG_ux.md`: se una voce lì registrata è pertinente al lavoro di
+   `docs/ux-astrolab/BACKLOG_ux.md`: se una voce lì registrata è pertinente al lavoro di
    oggi, va menzionata all'utente prima di iniziare, per non lasciarla sepolta a tempo
    indefinito.
 2. Se la richiesta è collegata a una voce di roadmap esistente (es.
-   `docs/ROADMAP_MYASTRAL_UX.md`), leggerla per intero prima di iniziare.
+   `docs/ROADMAP_ASTROLAB_UX.md`), leggerla per intero prima di iniziare.
 3. Comunicare all'utente un piano sintetico e attendere conferma prima del primo comando che
    tocca codice.
 
@@ -150,7 +150,7 @@ Aggiornare a fine feature (non per ogni singolo micro-step):
   file toccati, decisioni tecniche prese (e perché), eventuali problemi incontrati e come risolti.
 - `docs/START_HERE.md` — solo se la feature aggiunge una funzionalità visibile all'utente finale
   dell'app (non per modifiche puramente grafiche/di stile).
-- `docs/ROADMAP.md` o roadmap dedicate (es. `docs/ROADMAP_MYASTRAL_UX.md`) — aggiornare lo stato
+- `docs/ROADMAP.md` o roadmap dedicate (es. `docs/ROADMAP_ASTROLAB_UX.md`) — aggiornare lo stato
   della voce corrispondente quando un punto del piano viene completato.
 
 Per modifiche puramente estetiche/di layout su una singola pagina, la documentazione può

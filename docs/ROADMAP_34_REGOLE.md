@@ -7,7 +7,7 @@ per tutta l'applicazione ASTROLAB. Ogni regola aggiuntiva o personalizzata
 (veti extra, filtri, punteggi come `RuleEngineExtended.php`) è un livello
 costruito SOPRA le 34 regole, mai un sostituto: in caso di conflitto, le 34
 regole prevalgono sempre. Questo principio è già stabilito nelle decisioni
-UX-0001 e UX-0002 (`docs/ux-myastral/DECISION_LOG_ux.md`).
+UX-0001 e UX-0002 (`docs/ux-astrolab/DECISION_LOG_ux.md`).
 
 ## Cosa è già stato fatto (branch `feature/allineamento-myastral`)
 
@@ -154,6 +154,6 @@ Stesso protocollo già in uso: un file alla volta, patch minime verificate,
 del commit per modifiche comportamentali. Per ogni modifica a
 `RuleEngine.php` (FREEZE) o `FiltroEsclusione.php` che cambi il
 comportamento di default: registrare la decisione in
-`docs/ux-myastral/DECISION_LOG_ux.md` PRIMA di scrivere il codice, come già
+`docs/ux-astrolab/DECISION_LOG_ux.md` PRIMA di scrivere il codice, come già
 fatto per UX-0001 e UX-0002. Confermare sempre con il committente prima di
 ogni commit.

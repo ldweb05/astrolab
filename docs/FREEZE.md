@@ -28,7 +28,7 @@ che condividono solo il nome generico "Rule Engine". Non confonderli.
   giusta). Questa e' LA BIBBIA operativa del progetto attuale.
 - Freeze: informale e modificabile, ma ogni modifica al comportamento
   di default va registrata PRIMA come decisione in
-  docs/ux-myastral/DECISION_LOG_ux.md (UX-XXXX).
+  docs/ux-astrolab/DECISION_LOG_ux.md (UX-XXXX).
 - Si tocca: sempre, ma solo dopo aver scritto la decisione UX
   corrispondente. Mai codice prima della decisione.
 - Regole a scarto automatico incondizionato: 4, 5, 31, 32, 34

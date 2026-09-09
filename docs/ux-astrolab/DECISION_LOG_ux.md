@@ -32,7 +32,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
   rigido a 5 stelle) e MyAstral.org (8 aeroporti raccomandati). Causa: tetto a 5 stelle e assenza
   di regola di bonus "Giove entro 2° dalla cuspide della X casa" nel Rule Engine attuale.
 - **Evidenze:** screenshot ricerca comparata Sinner RS 2025 condizione Decima; dettaglio in
-  `docs/ROADMAP_MYASTRAL_UX.md` §3.
+  `docs/ROADMAP_ASTROLAB_UX.md` §3.
 - **Confronto MyAstral.org / Astrolab:** secondo l'intervista di Discepolo riportata dal
   committente, MyAstral usa una scala fino a 8-10 stelle con bonus per Giove angolare in X;
   Astrolab tronca a 5 e non ha tale bonus.
@@ -49,8 +49,8 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 - **Rischi:** doppia manutenzione tra logica standard e logica estesa finché non si deciderà se e
   come unificarle; necessità di tenere sincronizzate le regole di veto condivise tra le due
   versioni.
-- **Documento collegato:** `docs/ROADMAP_MYASTRAL_UX.md`, `docs/roadmap_comparazione_myastral.md`
-- **Eventuale voce della roadmap tecnica:** `docs/ROADMAP_MYASTRAL_UX.md` §3.1, §3.2
+- **Documento collegato:** `docs/ROADMAP_ASTROLAB_UX.md`, `docs/roadmap_comparazione_myastral.md`
+- **Eventuale voce della roadmap tecnica:** `docs/ROADMAP_ASTROLAB_UX.md` §3.1, §3.2
 
 ---
 
@@ -340,7 +340,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 - **Costo tecnico stimato:** BASSO (rimozione di una riga, nessuna nuova logica)
 - **Rischi:** minimi - la logica per le due modalita' speciali e' gia' testata lato RS; verificare
   comunque con un test funzionale reale su ricerca_rl.php dopo la modifica.
-- **Documento collegato:** `docs/ux-myastral/03_RICERCA_RSM_ux.md` (UX-0010)
+- **Documento collegato:** `docs/ux-astrolab/03_RICERCA_RSM_ux.md` (UX-0010)
 - **Eventuale voce della roadmap tecnica:** roadmap Fase 2 (PROMPT_OPERATIVO_ASTROLAB_ALLIUNEAMENTO_UX)
 
 ---
@@ -507,7 +507,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
   segnala) - da verificare con attenzione in fase di test.
 - **Scope esplicitamente escluso:** estensione della gerarchia ad altre condizioni (Salute,
   Lavoro, Soldi/Denaro) - da trattare in sessioni dedicate future, non in questa.
-- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0015 (riferimento
+- **Documento collegato:** `docs/ux-astrolab/DECISION_LOG_ux.md` voce UX-0015 (riferimento
   diretto), `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-28
 
 ### UX-0017 - Correzione: nessun benefico = RSM sempre esclusa (principio generale, tutte le condizioni/filtri)
@@ -559,7 +559,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 - **Scope esplicitamente escluso da questa voce:** la correzione concreta di
   `calcolaLivelloDecima()` (il principio e' approvato per Decima, ma la patch tecnica e'
   rimandata a sessione dedicata); l'estensione della gerarchia a Salute/Lavoro/Denaro/Casa.
-- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0016 (corretta
+- **Documento collegato:** `docs/ux-astrolab/DECISION_LOG_ux.md` voce UX-0016 (corretta
   parzialmente da questa voce), UX-0015 (da correggere in sessione futura con lo stesso
   principio)
 
@@ -600,7 +600,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 - **Scope esplicitamente escluso:** allineamento del filtro Decima in griglia/RL (gap
   preesistente, indipendente da questa correzione); estensione della gerarchia/principio alle
   altre condizioni (Salute, Lavoro, Denaro, Denaro Low, Casa).
-- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0017 (principio
+- **Documento collegato:** `docs/ux-astrolab/DECISION_LOG_ux.md` voce UX-0017 (principio
   generale applicato qui), UX-0015 (gerarchia Decima corretta da questa voce)
 
 ### UX-0019 - Gerarchia a livelli per Lavoro (VI+X casa, pari peso) + vincolo Regola 33 specifico
@@ -746,7 +746,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
   giudicate dal committente più importanti della coerenza architetturale
   con le altre tre condizioni - nessun refactoring non richiesto.
 - **Documento collegato:** `docs/status/34_regole_rsm.md` (Regola 33),
-  `docs/ux-myastral/DECISION_LOG_ux.md` voci UX-0015/16/17/18/19,
+  `docs/ux-astrolab/DECISION_LOG_ux.md` voci UX-0015/16/17/18/19,
   `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-30
 
 ---
@@ -764,7 +764,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
   5. Fasce malefici (UX-0022): 0 malefici in IV = livello invariato; esattamente 1 malefico = livello + `OFFSET_FASCIA_MALEFICO_SINGOLO` (100); 2+ malefici = esclusione totale.
   6. Scope: tutte e tre le modalita' di ricerca (standard, griglia, RL) coperte fin da subito.
 - **Motivazione:** estendere alla condizione Casa la stessa architettura a gerarchia gia' costruita per Decima/Amore/Lavoro.
-- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voci UX-0015/16/17/18/19, `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-31.
+- **Documento collegato:** `docs/ux-astrolab/DECISION_LOG_ux.md` voci UX-0015/16/17/18/19, `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-31.
 
 ---
 
@@ -796,7 +796,7 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
   - Salute: si aggiunge, senza sostituire, ai 5 passaggi proprietari gia' esistenti di `verificaCondizioneSalute()` (UX-0020) - intercetta veti ufficiali non gia' coperti (es. Regola 31/34, non verificati esplicitamente dai 5 passaggi) e gestisce l'offset che Salute non aveva affatto.
 - **Motivazione:** coerenza trasversale - un bug di ordinamento identificato e corretto su una condizione va verificato e corretto su tutte le condizioni strutturalmente identiche, non lasciato latente altrove.
 - **Ancora da fare:** Denaro e Denaro Low (le uniche due condizioni a gerarchia non ancora implementate) andranno costruite fin dall'inizio con questo controllo incluso (veti ufficiali + astrolab-angoli/stellium misto), non aggiunto come correzione successiva.
-- **Documento collegato:** `docs/ux-myastral/DECISION_LOG_ux.md` voce UX-0023, `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-31.
+- **Documento collegato:** `docs/ux-astrolab/DECISION_LOG_ux.md` voce UX-0023, `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-31.
 
 ---
 

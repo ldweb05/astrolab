@@ -7,7 +7,7 @@ require_once __DIR__ . '/RicercaRSFilters.php';
  * RuleEngineExtended — Punteggio "Discepolo parziale" (allineamento ASTROLAB)
  *
  * NON sostituisce RuleEngine.php (che resta in FREEZE, invariato — vedi
- * docs/roadmap_comparazione_myastral.md e docs/ux-myastral/DECISION_LOG_ux.md,
+ * docs/roadmap_comparazione_myastral.md e docs/ux-astrolab/DECISION_LOG_ux.md,
  * decisione UX-0001). Calcola un punteggio PARALLELO e OPZIONALE, additivo,
  * basato sul metro di valutazione confermato direttamente dal committente
  * (non è parte delle 34 regole in sé: è un metro di paragone che serve a
