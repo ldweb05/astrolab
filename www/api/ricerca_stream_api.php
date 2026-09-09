@@ -271,7 +271,7 @@ try {
     // Sistema V2 parallelo (roadmap sostituzione stelline) — calcolato in
     // aggiunta al sistema attuale, non lo sostituisce ancora (Fase 1a additiva).
     $v2Calc = new StellineV2Calculator();
-    // Motore parallelo opzionale (roadmap MyAstral) — null se il flag è OFF,
+    // Motore parallelo opzionale (roadmap ASTROLAB) — null se il flag è OFF,
     // così il resto del file non deve controllare il flag a ogni iterazione.
     $engineExt = ASTROLAB_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
@@ -715,12 +715,12 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $caseRS_v2 = $temaRS['case'] ?? [];
                 $valV2 = $v2Calc->calcola($pianetiRS_v2, $caseRS_v2, $condizione, $temaNatale);
 
-                // ── E-bis. Punteggio "Discepolo parziale" opzionale (roadmap MyAstral) ──
+                // ── E-bis. Punteggio "Discepolo parziale" opzionale (roadmap ASTROLAB) ──
                 // Calcolato SOLO se il flag è attivo; non influenza in alcun modo
                 // $val, i veti o il filtro stelline_min qui sotto.
-                $punteggioMyAstral = null;
+                $punteggioAstrolab = null;
                 if ($engineExt !== null) {
-                    $punteggioMyAstral = $engineExt->calcolaPunteggioParziale(
+                    $punteggioAstrolab = $engineExt->calcolaPunteggioParziale(
                         $temaRS['pianeti'],
                         $temaRS['case'],
                         $condizione
@@ -930,8 +930,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 // rappresenta correttamente le tre case I/VI/XII di Salute (gia'
                 // gestite per intero, con severita' pari o superiore, dal Passo 1
                 // di verificaCondizioneSalute()).
-                if ($punteggioMyAstral !== null && $condizione !== 'Lavoro' && $condizione !== 'Salute'
-                    && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
+                if ($punteggioAstrolab !== null && $condizione !== 'Lavoro' && $condizione !== 'Salute'
+                    && ($punteggioAstrolab['saturno_prevale'] ?? false)) {
                     $processed++;
                     continue;
                 }
@@ -986,7 +986,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $beneficoInI,
                 $denaroBeneficioTrovato,
                 $denaroAlertGiove,
-                $punteggioMyAstral,
+                $punteggioAstrolab,
                 $livelloDecima,
                 $livelloAmore,
                 $livelloLavoro,

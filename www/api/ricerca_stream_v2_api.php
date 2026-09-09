@@ -268,7 +268,7 @@ try {
     $tStart = microtime(true);
     $swe    = new SweCalc();
     $engine = new RuleEngine();
-    // Motore parallelo opzionale (roadmap MyAstral) — null se il flag è OFF,
+    // Motore parallelo opzionale (roadmap ASTROLAB) — null se il flag è OFF,
     // così il resto del file non deve controllare il flag a ogni iterazione.
     $engineExt = ASTROLAB_ALIGNMENT_MODE ? new RuleEngineExtended() : null;
 
@@ -775,12 +775,12 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $caseRS_v2 = $temaRS['case'] ?? [];
                 $valV2 = $v2Calc->calcola($pianetiRS_v2, $caseRS_v2, $condizione, $temaNatale);
 
-                // ── E-bis. Punteggio "Discepolo parziale" opzionale (roadmap MyAstral) ──
+                // ── E-bis. Punteggio "Discepolo parziale" opzionale (roadmap ASTROLAB) ──
                 // Calcolato SOLO se il flag è attivo; non influenza in alcun modo
                 // $val, i veti o il filtro stelline_min qui sotto.
-                $punteggioMyAstral = null;
+                $punteggioAstrolab = null;
                 if ($engineExt !== null) {
-                    $punteggioMyAstral = $engineExt->calcolaPunteggioParziale(
+                    $punteggioAstrolab = $engineExt->calcolaPunteggioParziale(
                         $temaRS['pianeti'],
                         $temaRS['case'],
                         $condizione
@@ -791,7 +791,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 // Attiva solo con ASTROLAB_ALIGNMENT_MODE=true. Se Saturno e nella
                 // stessa casa della condizione, la RSM/RL va tolta dai risultati -
                 // confermato esplicitamente dal committente, non solo punteggio a 0.
-                if ($punteggioMyAstral !== null && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
+                if ($punteggioAstrolab !== null && ($punteggioAstrolab['saturno_prevale'] ?? false)) {
                     $processed++;
                     continue;
                 }
@@ -856,7 +856,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $beneficoInI,
                 $denaroBeneficioTrovato,
                 $denaroAlertGiove,
-                $punteggioMyAstral
+                $punteggioAstrolab
             );
             // Campi V2 aggiunti al record risultato
             $ris['v2_stelle_totali']   = $valV2['stelle_totali'];

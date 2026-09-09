@@ -221,7 +221,7 @@ try {
     // Sistema V2 (roadmap sostituzione stelline) — sistema primario per
     // filtro, streaming e ordinamento (coerente con ricerca_stream_api.php)
     $v2Calc = new StellineV2Calculator();
-    // Motore parallelo opzionale (roadmap MyAstral) — null se il flag è OFF.
+    // Motore parallelo opzionale (roadmap ASTROLAB) — null se il flag è OFF.
     // Usato per la gerarchia Decima (UX-0015/UX-0018), estesa qui alla
     // ricerca a griglia/geografica/fascia oraria (modalita 'standard').
     $engineExt = ASTROLAB_ALIGNMENT_MODE ? new RuleEngineExtended() : null;

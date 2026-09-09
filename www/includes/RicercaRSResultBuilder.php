@@ -15,7 +15,7 @@ function costruisciRisultatoRicercaRS(
     $beneficoInI,
     $denaroBeneficioTrovato,
     bool $denaroAlertGiove,
-    ?array $punteggioMyAstral = null,
+    ?array $punteggioAstrolab = null,
     ?array $livelloDecima = null,
     ?array $livelloAmore = null,
     ?array $livelloLavoro = null,
@@ -51,10 +51,10 @@ function costruisciRisultatoRicercaRS(
     'denaro_beneficio'   => ($condizione === 'Denaro') ? $denaroBeneficioTrovato : null,
     'denaro_alert_giove' => ($condizione === 'Denaro') ? $denaroAlertGiove : null,
     'passed_denaro_low'  => ($condizione === 'Denaro Low'),
-    // Punteggio "Discepolo parziale" (roadmap MyAstral, RuleEngineExtended.php).
+    // Punteggio "Discepolo parziale" (roadmap ASTROLAB, RuleEngineExtended.php).
     // null se ASTROLAB_ALIGNMENT_MODE è disattivo o la condizione non è ancora
     // supportata dal punteggio parziale — non sostituisce mai 'stelline'.
-    'punteggio_myastral' => $punteggioMyAstral,
+    'punteggio_astrolab' => $punteggioAstrolab,
     // Livello 1-7 (UX-0015) per la condizione Decima. null per tutte
     // le altre condizioni o se ASTROLAB_ALIGNMENT_MODE è disattivo.
     'livello_decima'     => $livelloDecima,

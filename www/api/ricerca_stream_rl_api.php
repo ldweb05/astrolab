@@ -683,11 +683,11 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $caseRS_v2 = $temaRS['case'] ?? [];
                 $valV2 = $v2Calc->calcola($pianetiRS_v2, $caseRS_v2, $condizione, $temaNatale);
 
-                // Punteggio "Discepolo parziale" opzionale (roadmap MyAstral).
+                // Punteggio "Discepolo parziale" opzionale (roadmap ASTROLAB).
                 // Calcolato SOLO se il flag e attivo; non influenza $val ne i veti.
-                $punteggioMyAstral = null;
+                $punteggioAstrolab = null;
                 if ($engineExt !== null) {
-                    $punteggioMyAstral = $engineExt->calcolaPunteggioParziale(
+                    $punteggioAstrolab = $engineExt->calcolaPunteggioParziale(
                         $temaRS['pianeti'],
                         $temaRS['case'],
                         $condizione
@@ -893,8 +893,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 // ricerca_stream_api.php - il meccanismo a casa singola non
                 // rappresenta le tre case I/VI/XII, gia' gestite dal Passo 1
                 // di verificaCondizioneSalute().
-                if ($punteggioMyAstral !== null && $condizione !== 'Lavoro' && $condizione !== 'Salute'
-                    && ($punteggioMyAstral['saturno_prevale'] ?? false)) {
+                if ($punteggioAstrolab !== null && $condizione !== 'Lavoro' && $condizione !== 'Salute'
+                    && ($punteggioAstrolab['saturno_prevale'] ?? false)) {
                     $processed++;
                     continue;
                 }

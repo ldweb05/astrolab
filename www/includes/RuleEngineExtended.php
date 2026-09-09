@@ -4,7 +4,7 @@ require_once __DIR__ . '/RuleEngine.php';
 require_once __DIR__ . '/RicercaRSFilters.php';
 
 /**
- * RuleEngineExtended — Punteggio "Discepolo parziale" (allineamento MyAstral)
+ * RuleEngineExtended — Punteggio "Discepolo parziale" (allineamento ASTROLAB)
  *
  * NON sostituisce RuleEngine.php (che resta in FREEZE, invariato — vedi
  * docs/roadmap_comparazione_myastral.md e docs/ux-myastral/DECISION_LOG_ux.md,
