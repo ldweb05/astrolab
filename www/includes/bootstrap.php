@@ -45,6 +45,15 @@ define('APP_DEBUG', filter_var(getenv('APP_DEBUG') ?: 'false', FILTER_VALIDATE_B
 // prima di questa feature. Decisione UX-0001 (docs/ux-myastral/DECISION_LOG_ux.md).
 define('MYASTRAL_ALIGNMENT_MODE', filter_var(getenv('MYASTRAL_ALIGNMENT_MODE') ?: 'false', FILTER_VALIDATE_BOOLEAN));
 
+// ── AI Agent: provider Gemini (percorso AI Agent — Fase 0) ────────────────
+// Chiave letta esclusivamente dall'ambiente, MAI un default hardcoded.
+// Nessuna eccezione se assente: a differenza di DB_PASS, ASTROLAB deve
+// continuare a funzionare normalmente anche senza integrazione AI attiva
+// (PROMPT_OPERATIVO_ASTROLAB, sez. 21 "Free Tier" e sez. 25 "Criterio di
+// successo"). Stesso schema del flag MYASTRAL_ALIGNMENT_MODE qui sopra.
+define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: null);
+define('AI_AGENT_ENABLED', filter_var(getenv('AI_AGENT_ENABLED') ?: 'false', FILTER_VALIDATE_BOOLEAN));
+
 // ── Configurazione database ───────────────────────────────────────────────
 // bootstrap.php — FASE DEFINITIVA
 // Fallback rimosso: la credenziale reale vive esclusivamente in .env
