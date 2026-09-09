@@ -49,7 +49,7 @@ stesso div).
 - [x] Rilette `docs/START_HERE.md`, `docs/ROADMAP.md`, `docs/HANDOVER_OPERATIVO_astrolab.md` sul
   branch `feature/2-astri-in-cuspide`.
 - [x] Branch `feature/2-astri-in-cuspide` creato da `feature/allineamento-myastral` e pushato.
-- [ ] Creare voce UX-0008 in `docs/ux-myastral/DECISION_LOG_ux.md` prima di toccare
+- [ ] Creare voce UX-0008 in `docs/ux-astrolab/DECISION_LOG_ux.md` prima di toccare
   `RuleEngine.php` o `RicercaRSFilters.php` (obbligatorio per la regola di FREEZE già in vigore).
 - [ ] Questo documento creato e collegato da `docs/ROADMAP.md` e `docs/HANDOVER_OPERATIVO_astrolab.md`.
 

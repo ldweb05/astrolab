@@ -11,7 +11,7 @@ UX-0021/UX-0023 (Casa, 2026-08-31) sono 5 su 7.
 
 ## Le 5 condizioni già completate (riferimento architetturale)
 
-- **Decima** — UX-0015/UX-0018 (`docs/ux-myastral/DECISION_LOG_ux.md`)
+- **Decima** — UX-0015/UX-0018 (`docs/ux-astrolab/DECISION_LOG_ux.md`)
 - **Amore** — UX-0016/UX-0017
 - **Lavoro** — UX-0019
 - **Salute** — UX-0020 (con un'eccezione architetturale, vedi sotto)
@@ -67,7 +67,7 @@ successiva:
    campione ridotto per Casa non aveva rivelato un problema che si è poi
    manifestato solo sui dati completi.
 
-Dettagli completi in `docs/ux-myastral/DECISION_LOG_ux.md` voci UX-0023 e
+Dettagli completi in `docs/ux-astrolab/DECISION_LOG_ux.md` voci UX-0023 e
 UX-0024, `docs/HANDOVER_OPERATIVO_astrolab.md` voce 2026-08-31.
 
 ## Le 2 condizioni restanti DA FARE
@@ -98,7 +98,7 @@ Per ciascuna condizione, seguendo `docs/PROMPT_OPERATIVO_ASTROLAB.md`:
 1. Chiarire con il committente i punti aperti (case target definitive,
    gerarchia di priorità tra i benefici, bonus orbo, eventuali vincoli
    specifici come la Regola 33 per Lavoro) — non assumere
-2. Registrare la decisione in `docs/ux-myastral/DECISION_LOG_ux.md`
+2. Registrare la decisione in `docs/ux-astrolab/DECISION_LOG_ux.md`
    (prossima voce libera: UX-0025)
 3. Implementare rilevatore geometrico + `calcolaLivello*()` + VAL dedicata
 4. **Includere fin da subito** il controllo veti ufficiali (esclusione) +

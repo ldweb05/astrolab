@@ -82,7 +82,7 @@ Non si passa allo step successivo finché quello corrente non è stato eseguito,
 
 Sono state completate e verificate:
 
-- creazione di `docs/ux-myastral/`;
+- creazione di `docs/ux-astrolab/`;
 - separazione dalla documentazione tecnica;
 - convenzione obbligatoria `_ux.md`;
 - cartelle evidenze MyAstral.org e Astrolab;

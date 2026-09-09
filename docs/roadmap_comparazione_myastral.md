@@ -4,7 +4,7 @@
 **Ultimo aggiornamento:** 2026-08-07
 **Priorità:** ALTA
 **Collegamento:** `docs/ROADMAP.md` (roadmap principale)
-**Collegamento UX:** `docs/ux-myastral/` (protocolli operativi)
+**Collegamento UX:** `docs/ux-astrolab/` (protocolli operativi)
 
 ---
 
@@ -28,7 +28,7 @@ troppo restrittivi o algoritmi divergenti.
 - Astrolab non deve essere trasformato in MyAstral.org.
 - Ogni discrepanza deve essere spiegata, non eliminata.
 - Il Rule Engine di Astrolab (120 Rule, FREEZE) non deve essere modificato.
-- La documentazione UX (`docs/ux-myastral/`) resta il riferimento per
+- La documentazione UX (`docs/ux-astrolab/`) resta il riferimento per
   l'analisi comparativa dell'esperienza utente.
 - Le modifiche applicative sono subordinate all'approvazione esplicita
   di una decisione comparativa.
@@ -107,7 +107,7 @@ ma non in Astrolab, nonostante i calcoli di Astrolab siano esatti.
 - [ ] Per ogni località mancante, determinare quale filtro Astrolab la esclude.
 - [ ] Classificare le cause (dedup geografica, rule map, filtro specifico,
   FiltroEsclusione globale, database località).
-- [ ] Proporre decisioni documentate in `docs/ux-myastral/DECISION_LOG_ux.md`.
+- [ ] Proporre decisioni documentate in `docs/ux-astrolab/DECISION_LOG_ux.md`.
 - [ ] Eventuali modifiche applicative solo dopo approvazione.
 
 ### M2 — Comparazione Rivoluzioni Lunari (PRIORITÀ MEDIA)
@@ -141,7 +141,7 @@ Non rientra nelle priorità attuali e non sarà sviluppata in questa roadmap.
 ## 6. Relazione con la documentazione UX
 
 Questa roadmap è strettamente collegata alla documentazione UX già presente
-in `docs/ux-myastral/`:
+in `docs/ux-astrolab/`:
 
 | Documento | Ruolo |
 |---|---|

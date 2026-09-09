@@ -5,7 +5,7 @@ e poi evoluta in UX-0015/UX-0018 (gerarchia a 8→6 livelli, Regola 14,
 principio UX-0017). Lavoro è stata implementata ed estesa a tutte le
 modalità in UX-0019, con un'architettura più completa di quanto previsto
 qui sotto (gerarchia a livelli invece di un semplice filtro, vincolo
-Regola 33 specifico per-casa). Vedi `docs/ux-myastral/DECISION_LOG_ux.md`
+Regola 33 specifico per-casa). Vedi `docs/ux-astrolab/DECISION_LOG_ux.md`
 (voci UX-0015/16/17/18/19) e `docs/HANDOVER_OPERATIVO_astrolab.md` (voci
 2026-08-28 e 2026-08-29) per lo stato reale e definitivo. Questo documento
 resta solo come riferimento storico del problema originale.
