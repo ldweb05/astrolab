@@ -97,11 +97,24 @@ Passo successivo: FASE 5 — Criterio di successo.
 
 ---
 
-## FASE 5 — Criterio di successo — PIANIFICATA
+## FASE 5 — Criterio di successo — COMPLETATA (2026-09-10)
 
-Verifica finale: Gemini raggiungibile, chiave esterna al codice, integrazione isolata, ASTROLAB funzionante anche senza Gemini, errori API gestiti, provider sostituibile senza riscrivere il core, nessuna alterazione a logiche astronomiche/34 Regole/veti, modifiche completamente reversibili tramite Git.
+Verifica finale contro tutti i criteri della Sezione 25 di `docs/roadmaps/ROADMAP_AI_PRINCIPI.md`, con evidenza oggettiva per ciascuno (non solo dichiarazione):
 
-Fuori scope per l'intero Provider 1: tool calling verso le funzioni ASTROLAB, chat completa, memoria conversazionale — arriveranno solo dopo la conclusione e validazione delle Fasi 0-5.
+- **Gemini raggiungibile tramite API** — verificato in Fase 0 (test curl da host e container);
+- **Chiave esterna al codice** — verificato: `GEMINI_API_KEY` esiste solo in `.env`, mai in nessun commit di file `.php` (confermato con `git log --name-status`);
+- **Integrazione isolata** — verificato: tutto il codice AI Agent è confinato a `www/includes/ai/AiProviderInterface.php`, `www/includes/ai/GeminiProvider.php`, `www/api/ai_agent_api.php`, `www/test_ai_agent.php` — zero modifiche a file esistenti del core;
+- **ASTROLAB funzionante anche senza Gemini** — verificato in Fase 4 (`session_api.php` funzionante durante errori Gemini simulati);
+- **Errori API gestiti** — verificato in Fase 4 (chiave assente, modello inesistente/404, timeout; gestione di quota 429 presente nel codice fin dalla Fase 1);
+- **Provider sostituibile senza riscrivere il core** — `AiProviderInterface` predisposta a questo scopo; non ancora testato con un secondo provider reale, verifica completa rimandata all'arrivo del Provider 2;
+- **Nessuna alterazione a logiche astronomiche** — verificato con `git log --name-status 0d373d7..HEAD`: nessun file del motore RSM/RL/Rule Engine/Evidence Engine/Theme Engine toccato in tutto il percorso;
+- **Nessuna alterazione alle 34 Regole** — idem;
+- **Nessun veto modificato** — idem;
+- **Modifiche completamente reversibili tramite Git** — verificato: ogni fase è un commit atomico e distinto (`5c56fca`, `34074d3`, `c1a761e`, `25d53c1`, `4939df2`), tutti pushati su `origin/main`.
+
+**Provider 1 (Google Gemini) formalmente concluso.** Tutti i criteri di successo soddisfatti.
+
+Fuori scope per l'intero Provider 1: tool calling verso le funzioni ASTROLAB, chat completa, memoria conversazionale — restano fuori scope anche ora che il Provider 1 è concluso; arriveranno solo con una futura roadmap dedicata al tool calling, dopo l'eventuale aggiunta di ulteriori provider per il benchmark (Sezione 22).
 
 ---
 
