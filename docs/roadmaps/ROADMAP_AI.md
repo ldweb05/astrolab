@@ -5,6 +5,12 @@ Documento dedicato al percorso di integrazione di un AI Agent in ASTROLAB, un pr
 > **Nota**
 > Questo documento è il riferimento ufficiale per tutto ciò che riguarda l'integrazione AI in ASTROLAB. `docs/roadmaps/ROADMAP.md` non descrive queste attività; `docs/PROMPT_OPERATIVO_ASTROLAB.md` mantiene solo le regole operative generali del progetto e rimanda qui.
 
+## Criterio di completamento (permanente, valido per ogni provider)
+
+Un'integrazione AI non si considera "finita" quando il provider risponde a un prompt di test in una pagina isolata. Si considera finita quando un utente reale (in prima battuta: solo admin) può usarla per ottenere un risultato concreto e verificato di ASTROLAB — es. una ricerca RSM/RL — tramite tool calling, non testo libero. Il testo libero (Fasi 0-5) è l'infrastruttura di base indispensabile, non la funzionalità finale.
+
+Solo dopo test approfonditi con l'admin, su ciascun tool aggiunto, si valuta l'apertura ai piani supporter/free — con eventuali limiti di quota/costo da definire in quel momento.
+
 ---
 
 # Provider 1 — Google Gemini
@@ -112,12 +118,58 @@ Verifica finale contro tutti i criteri della Sezione 25 di `docs/roadmaps/ROADMA
 - **Nessun veto modificato** — idem;
 - **Modifiche completamente reversibili tramite Git** — verificato: ogni fase è un commit atomico e distinto (`5c56fca`, `34074d3`, `c1a761e`, `25d53c1`, `4939df2`), tutti pushati su `origin/main`.
 
-**Provider 1 (Google Gemini) formalmente concluso.** Tutti i criteri di successo soddisfatti.
+**Provider 1 (Google Gemini) formalmente concluso — limitatamente all'infrastruttura.** Tutti i criteri di successo soddisfatti per il canale Gemini isolato, sicuro e testato. Non soddisfatto (volutamente, per scope): il Criterio di completamento sopra definito — un utente non può ancora ottenere un risultato concreto di ASTROLAB tramite l'AI. Prosegue con la sezione "Tool Calling" sotto.
 
 Fuori scope per l'intero Provider 1: tool calling verso le funzioni ASTROLAB, chat completa, memoria conversazionale — restano fuori scope anche ora che il Provider 1 è concluso; arriveranno solo con una futura roadmap dedicata al tool calling, dopo l'eventuale aggiunta di ulteriori provider per il benchmark (Sezione 22).
 
 ---
 
+# Tool Calling — Ricerca RSM/RL (Provider 1: Gemini)
+
+Le 9 condizioni di ricerca usate dall'astrologo nell'interfaccia sono: Decima (default), Lavoro, Amore, Salute, Denaro, Denaro Low, Casa, Astri nelle Case, Longitudini Cuspidi. Tecnicamente si dividono in 7 condizioni "standard" (parametro `condizione` di `ricerca_stream_api.php`), + Astri nelle Case (stesso endpoint, parametro aggiuntivo `astri_in_casa`), + Longitudini Cuspidi (endpoint diverso, `cuspidi_search_api.php`). Tutte e 9 restano nel piano, introdotte in tool separati e progressivi — nessuna esclusa definitivamente.
+
+Mappa pagina→API in produzione verificata (non tutte le varianti nel repository sono in uso reale):
+- Ricerca RSM per condizione: `ricerca.php` → `ricerca_stream_api.php` (+ `ricerca_griglia_api.php` per modalità griglia, `cuspidi_search_api.php` per cuspidi);
+- Ricerca RL per condizione: `ricerca_rl.php` → `ricerca_stream_rl_api.php`;
+- Ricerca rilocazione: `rilocazione.php` → `riloc_angolari_api.php`;
+- `ricerca_stream_v2_api.php` e `ricerca_api.php` risultano non in uso da nessuna pagina di produzione (solo la prima usata dal laboratorio `test_stelline_v2.php`) — scartate come base per i tool.
+
+## FASE 6 — Primo tool reale: RicercaRsmTool (7 condizioni standard) — COMPLETATA (2026-09-10)
+
+Obiettivo: costruire un tool PHP deterministico (nessuna AI coinvolta in questo passo) che, dato un soggetto/anno/condizione, restituisca un risultato JSON pulito riusando al 100% la logica di ricerca esistente — senza duplicarla.
+
+Decisione architetturale: `ricerca_stream_api.php` (oltre 1200 righe: deduplicazione geografica, batch/tranche per la modalità località, 7+ contatori di esclusione per condizione, ordinamenti condizionali UX-0015/0016/0019) è troppo complesso e delicato per essere duplicato in una nuova funzione (violerebbe la Sezione 7). Il tool lo chiama invece come client HTTP interno (`curl` verso `http://localhost`, stessa sessione), consumandone lo stream SSE e restituendo solo l'evento finale `done`. Zero duplicazione, aggiornamento automatico se l'endpoint originale cambia.
+
+Creato `www/includes/ai/RicercaRsmTool.php`:
+- riceve soggetto/anno/condizione (una delle 7 condizioni standard; Astri in Casa e Cuspidi restano fuori scope per questo tool, vedi Fasi successive);
+- carica il soggetto con `caricaSoggettoById()` (`SoggettoRepository.php`) e converte i dati di nascita con `calcolaDataOraGmtCorretta()` (`NascitaGmtHelper.php`) — stessa funzione già usata da `tema.php`, che gestisce correttamente il cambio di giorno GMT (vedi `ROADMAP_BUG_GIORNO_GMT.md`);
+- propaga la sessione corrente (cookie `ASTROSESSID`) alla chiamata interna, così l'endpoint riusa l'autenticazione già presente, senza bisogno di credenziali separate;
+- estrae dall'evento SSE `done` i primi N risultati (default 5) più i totali, scartando i decine di campi tecnici irrilevanti per una spiegazione in linguaggio naturale (rimane da fare in Fase 7: un livello di sintesi ulteriore prima di passare i dati a Gemini).
+
+**Due bug/scoperte architetturali reali emerse e risolte durante l'implementazione, rilevanti per ogni tool futuro che farà chiamate HTTP interne:**
+1. **Deadlock da lock di sessione**: PHP blocca in scrittura il file di sessione per tutta la durata di una richiesta con `session_start()` attivo. Una richiesta che ne chiama un'altra sulla stessa sessione (come il nostro tool verso `ricerca_stream_api.php`) va in deadlock se non si rilascia il lock prima — risolto con `session_write_close()` subito prima della chiamata `curl` interna.
+2. **OPcache con `validate_timestamps=Off`**: il container ASTROLAB ha questa direttiva disattivata, quindi **ogni modifica a un file PHP richiede un riavvio del container** (`docker compose restart astrolab-web`) per essere effettiva — salvare il file non basta, a differenza di quanto si potrebbe assumere. Da tenere presente per ogni futura sessione di sviluppo, non solo per l'AI Agent.
+
+Test eseguiti: chiamata reale (login via `curl` con utente admin, poi richiesta autenticata) — risultato positivo, `ok:true`, 6 risultati reali per RSM 2027/Lavoro del soggetto di test, 2.7 secondi, dati coerenti con una chiamata diretta all'endpoint originale. Azione di test temporanea (`test_rsm` in `ai_agent_api.php`, usata solo per questa verifica) rimossa a fine test — l'endpoint è tornato alla sua forma pulita di Fase 2.
+
+Passo successivo: FASE 7 — collegamento del tool a Gemini (tool calling vero: Gemini interpreta la richiesta in linguaggio naturale, chiama `RicercaRsmTool`, spiega il risultato reale senza inventare nulla).
+
+## FASE 7 — Collegamento a Gemini (tool calling) — PIANIFICATA
+
+Obiettivo: Gemini interpreta una richiesta in linguaggio naturale (es. "cercami la RSM per lavoro nel 2027"), estrae anno e condizione, chiama `RicercaRsmTool`, e spiega il risultato reale restituito — mai inventato (Sezione 1, Sezione 23).
+
+Da definire in questa fase: formato della dichiarazione di funzione per l'API Gemini (function calling), livello di sintesi dei risultati prima di passarli a Gemini (i campi tecnici grezzi vanno ridotti), e come gestire il caso "nessun risultato trovato" in modo chiaro per l'utente.
+
+## FASE 8 — Astri nelle Case e Longitudini Cuspidi — PIANIFICATA
+
+Estensione di `RicercaRsmTool` (o nuovo tool dedicato per le Cuspidi, dato l'endpoint diverso) alle rimanenti 2 delle 9 condizioni. Da avviare solo dopo che la Fase 7 è stata testata a fondo dall'admin sulle 7 condizioni standard.
+
+## FASE 9 — Apertura ai piani supporter — PIANIFICATA
+
+Da valutare solo dopo che tutte le 9 condizioni sono state implementate e testate a fondo dall'admin (Criterio di completamento). Include la definizione di eventuali limiti di quota/costo per l'uso AI da parte dei supporter.
+
+---
+
 # Provider successivi
 
-Percorso a un provider alla volta. I prossimi candidati per il benchmark (GPT, Claude, DeepSeek, Kimi o altri) verranno aggiunti qui come nuove sezioni "Provider N", con lo stesso schema di fasi 0-5, solo dopo che il Provider 1 (Gemini) avrà superato la Fase 5.
+Percorso a un provider alla volta. I prossimi candidati per il benchmark (GPT, Claude, DeepSeek, Kimi o altri) verranno aggiunti qui come nuove sezioni "Provider N", con lo stesso schema di fasi 0-5, solo dopo che il tool calling con Gemini (Fasi 6-9) avrà raggiunto il Criterio di completamento.
