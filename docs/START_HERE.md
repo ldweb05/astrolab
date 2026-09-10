@@ -112,15 +112,22 @@ password, piani `free` e `supporter`, limiti, quote, restrizioni funzionali e
 sicurezza delle sessioni è completata.
 
 Il riferimento operativo dedicato è
-`docs/roadmap_registrazioneutenti.md`; la decisione architetturale corrispondente
+`docs/roadmaps/roadmap_registrazioneutenti.md`; la decisione architetturale corrispondente
 è ADR-016, con stato `Accettata`.
 
 La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org
-è mantenuta separatamente nel documento `docs/roadmap_comparazione_myastral.md`,
+è mantenuta separatamente nel documento `docs/roadmaps/roadmap_comparazione_myastral.md`,
 che costituisce il riferimento ufficiale per le attività di allineamento con
 il software di Ciro Discepolo. Le attività sono subordinate all'acquisto di
 un account MyAstral.org e richiedono evidenze verificabili prima di qualsiasi
 modifica applicativa.
+
+La roadmap relativa all'integrazione di un AI Agent in ASTROLAB (Google
+Gemini come primo provider LLM, poi altri provider a seguire) è mantenuta
+separatamente nei documenti `docs/roadmaps/ROADMAP_AI.md` (stato per fasi) e
+`docs/roadmaps/ROADMAP_AI_PRINCIPI.md` (principi e regole, sezioni 0-26), che
+costituiscono il riferimento ufficiale per tale percorso. Fase 0 (setup e
+primo contatto con Gemini) completata il 2026-09-09.
 
 Non deve essere modificato salvo:
 
@@ -401,13 +408,15 @@ La documentazione principale del progetto è composta dai seguenti file.
 1. `docs/START_HERE.md`
 2. `docs/README_ASTROLAB.md`
 3. `docs/03_ARCHITECTURE_ASTROLAB.md`
-4. `docs/ROADMAP.md`
+4. `docs/roadmaps/ROADMAP.md`
 5. `docs/HANDOVER_OPERATIVO_astrolab.md`
 6. `docs/ADR_INDEX_ASTROLAB.md`
 7. `docs/01_PROJECT_MANIFESTO.md`
 8. `docs/02_ASTROLOGY.md`
 9. `docs/10_THEME_ENGINE.md`
 10. `docs/11_ANNUAL_REPORT_SPEC.md`
+11. `docs/roadmaps/ROADMAP_AI.md`
+12. `docs/roadmaps/ROADMAP_AI_PRINCIPI.md`
 
 I documenti devono essere mantenuti coerenti tra loro.
 

@@ -3970,3 +3970,27 @@ controllo di UX-0023/UX-0024 incluso (veti ufficiali + astrolab-angoli/
 stellium misto), non aggiunto come correzione successiva - il
 committente ha esplicitamente richiesto di anticipare questo requisito
 in fase di progettazione per evitare una sesta sessione correttiva.
+
+---
+
+## 2026-09-09 — AI Agent, Fase 0 (setup e primo contatto con Gemini) — COMPLETATA
+
+**Data:** 2026-09-09
+
+**Componente modificato:** `www/includes/bootstrap.php` (costanti già committate in sessione precedente), `.env` (valorizzato localmente, non tracciato da Git), nessun altro file di codice in questa sessione.
+
+**Obiettivo:** predisporre l'ambiente per la prima integrazione di un AI Agent in ASTROLAB con Google Gemini come primo provider LLM, verificando la raggiungibilità di rete prima di scrivere qualunque codice del Provider Layer. Percorso e vincoli tracciati ora in `docs/ROADMAP_AI.md`.
+
+**Risultato:**
+- confermato che `GEMINI_API_KEY`/`AI_AGENT_ENABLED`, pur committate in `bootstrap.php` in una sessione precedente (`d38c661`), non erano mai state scritte fisicamente nel `.env` sul Raspberry Pi (file non tracciato da Git); aggiunte manualmente e verificate;
+- creata la chiave API Gemini su un progetto Google Cloud dedicato ad ASTROLAB (separato da altri progetti dell'account), sul **free tier**, per scelta esplicita del committente;
+- rilevato che il modello `gemini-2.5-flash` non è più disponibile per nuovi progetti (404); identificato e testato con successo il sostituto **`gemini-3.6-flash`**, confermato incluso nel free tier;
+- rilevato che `gemini-3.6-flash` ha il "thinking" attivo di default, con un costo in token non trascurabile anche per prompt banali — da tenere presente in Fase 1;
+- test di raggiungibilità pura verso `generateContent` riuscito sia da host Raspberry Pi sia da dentro il container `astrolab-web`.
+- creata la roadmap dedicata `docs/ROADMAP_AI.md` (comprensiva dello stato a fasi e delle 26 sezioni di principi/regole AI Agent) e collegata da `docs/ROADMAP.md`, `docs/START_HERE.md` e `docs/PROMPT_OPERATIVO_ASTROLAB.md`, per tracciare stabilmente questo percorso nella documentazione ufficiale del progetto.
+
+**Test eseguiti:** lettura della costante `GEMINI_API_KEY` da dentro il container dopo `docker compose up -d astrolab-web`; chiamata `curl` diretta a `generateContent` da host e da container, esito positivo in entrambi i casi (`"finishReason": "STOP"`).
+
+**Commit Git:** nessun nuovo commit di codice in questa sessione (solo configurazione locale `.env`, non tracciata; script di test volutamente non committato, per roadmap). Commit di riferimento preesistente: `d38c661`.
+
+**Passo successivo:** FASE 1 — Provider Layer (`AiProviderInterface.php` + `GeminiProvider.php`, modello `gemini-3.6-flash`), dettagliata in `docs/ROADMAP_AI.md`.
