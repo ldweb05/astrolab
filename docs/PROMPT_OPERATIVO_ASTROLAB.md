@@ -6,6 +6,14 @@ ristrutturazione grafica di Tema Natale, integrato con le lezioni apprese in que
 
 Questo documento va copiato in testa a ogni nuova conversazione di sviluppo su ASTROLAB.
 
+**Documenti da leggere OBBLIGATORIAMENTE prima di iniziare qualunque attività** (dettaglio completo al §2):
+- `docs/FREEZE.md` — cosa è congelato e perché, fix noti presenti solo su alcuni branch;
+- `docs/START_HERE.md` — stato reale dell'applicazione;
+- `docs/roadmaps/ROADMAP.md` — cronologia ed evoluzione generale del progetto;
+- `docs/HANDOVER_OPERATIVO_astrolab.md` — cronologia operativa dettagliata, sessione per sessione;
+- `docs/ux-astrolab/BACKLOG_ux.md` — eventuali voci pertinenti al lavoro odierno;
+- `docs/roadmaps/ROADMAP_AI.md` e `docs/roadmaps/ROADMAP_AI_PRINCIPI.md` — **obbligatori solo se il lavoro riguarda l'AI Agent**: stato di avanzamento per fasi e, rispettivamente, principi architetturali/provider LLM (sezioni 0-26). Per l'AI Agent questi sono il riferimento ufficiale, non il presente documento.
+
 ---
 
 ## 0. RUOLO
@@ -35,14 +43,15 @@ codice reale o fare un commit: quelle decisioni restano sempre dell'utente.
 ## 2. PRIMO STEP DI OGNI NUOVA FEATURE
 
 Prima di qualunque modifica al codice:
-1. Verificare `docs/START_HERE.md`, `docs/ROADMAP.md`, `docs/roadmap_aiuto.md`,
+1. Verificare `docs/START_HERE.md`, `docs/roadmaps/ROADMAP.md`,
    `docs/HANDOVER_OPERATIVO_astrolab.md` (o l'equivalente aggiornato) per lo stato reale del
    progetto — non fidarsi della sola memoria di sessioni precedenti. Controllare anche
    `docs/ux-astrolab/BACKLOG_ux.md`: se una voce lì registrata è pertinente al lavoro di
    oggi, va menzionata all'utente prima di iniziare, per non lasciarla sepolta a tempo
-   indefinito.
+   indefinito. Se il lavoro riguarda l'AI Agent, leggere invece per intero
+   `docs/roadmaps/ROADMAP_AI.md` e `docs/roadmaps/ROADMAP_AI_PRINCIPI.md`, che ne sono il riferimento ufficiale dedicato.
 2. Se la richiesta è collegata a una voce di roadmap esistente (es.
-   `docs/ROADMAP_ASTROLAB_UX.md`), leggerla per intero prima di iniziare.
+   `docs/roadmaps/ROADMAP_ASTROLAB_UX.md`), leggerla per intero prima di iniziare.
 3. Comunicare all'utente un piano sintetico e attendere conferma prima del primo comando che
    tocca codice.
 
@@ -150,7 +159,7 @@ Aggiornare a fine feature (non per ogni singolo micro-step):
   file toccati, decisioni tecniche prese (e perché), eventuali problemi incontrati e come risolti.
 - `docs/START_HERE.md` — solo se la feature aggiunge una funzionalità visibile all'utente finale
   dell'app (non per modifiche puramente grafiche/di stile).
-- `docs/ROADMAP.md` o roadmap dedicate (es. `docs/ROADMAP_ASTROLAB_UX.md`) — aggiornare lo stato
+- `docs/roadmaps/ROADMAP.md` o roadmap dedicate (es. `docs/roadmaps/ROADMAP_ASTROLAB_UX.md`) — aggiornare lo stato
   della voce corrispondente quando un punto del piano viene completato.
 
 Per modifiche puramente estetiche/di layout su una singola pagina, la documentazione può

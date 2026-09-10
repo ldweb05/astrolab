@@ -14,6 +14,8 @@ Deve essere aggiornato al completamento di ogni milestone significativa.
 > Il sistema valutativo stelline "V2" (logica additiva per colore) è stato promosso a sistema PRIMARIO in produzione (branch `feature/sostituzione-stelline-v2`, da `new_dashboard`): sostituisce il vecchio punteggio di `RuleEngine::valuta()` per ordinamento/filtro/visualizzazione su RSM, RL, viste singole ed endpoint secondari. Documentazione ufficiale della migrazione: `docs/ROADMAP_SOSTITUZIONE_STELLINE_V2.md`. Lo studio/laboratorio originale resta in `docs/ROADMAP_STELLINE_V2.md` per riferimento storico.
 >
 > `docs/ROADMAP.md` continua invece a descrivere l'evoluzione generale di Astro-DSS e delle funzionalità principali del progetto.
+>
+> La roadmap relativa all'integrazione di un AI Agent in ASTROLAB (Google Gemini come primo provider LLM, poi altri provider a seguire) è mantenuta separatamente nel documento `docs/ROADMAP_AI.md`, che costituisce il riferimento ufficiale per tale percorso.
 
 ---
 
