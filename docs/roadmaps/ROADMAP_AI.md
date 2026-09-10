@@ -79,9 +79,21 @@ Passo successivo: FASE 4 — Hardening.
 
 ---
 
-## FASE 4 — Hardening — PIANIFICATA
+## FASE 4 — Hardening — COMPLETATA (2026-09-10)
 
-Gestione esplicita di quota esaurita, rate limit, timeout, modello non disponibile, risposta malformata; verifica che ASTROLAB continui a funzionare normalmente senza GEMINI_API_KEY o con Gemini irraggiungibile.
+Obiettivo: verificare con test reali (non solo lettura del codice) i percorsi di errore già implementati in `GeminiProvider.php` fin dalla Fase 1, e l'assenza di impatto sul resto di ASTROLAB.
+
+Metodo: script PHP temporanei isolati (non committati), che non toccano mai `.env` ne' richiedono riavvii del container - per lo scenario "chiave assente" le costanti sono definite localmente nello script stesso invece di modificare la configurazione reale, per non esporre l'intera applicazione a una finestra con chiave vuota.
+
+Test eseguiti, tutti con esito positivo, nessun bug trovato:
+- **Chiave API assente**: `ok:false`, errore `'GEMINI_API_KEY non configurata'`, nessun crash;
+- **Modello inesistente (HTTP 404)**: `ok:false`, messaggio d'errore estratto correttamente dal campo `error.message` della risposta Gemini;
+- **Timeout di rete** (forzato a 1s su un prompt che richiede piu' tempo): `ok:false`, errore `'errore di rete: Operation timed out...'`, interruzione pulita a 1.01s, nessuna richiesta rimasta pendente;
+- **Non-impatto su ASTROLAB**: verificato che un endpoint estraneo all'AI Agent (`session_api.php`) risponda normalmente (401 su richiesta anonima, comportamento atteso) nello stesso momento, confermando l'indipendenza del resto dell'applicazione dall'AI Agent (Sezione 10).
+
+Nessuna modifica al codice è stata necessaria: la gestione errori implementata in Fase 1 si è rivelata già corretta per tutti gli scenari testati.
+
+Passo successivo: FASE 5 — Criterio di successo.
 
 ---
 
