@@ -65,9 +65,17 @@ Passo successivo: FASE 3 — Test UI minimale.
 
 ---
 
-## FASE 3 — Test UI minimale — PIANIFICATA
+## FASE 3 — Test UI minimale — COMPLETATA (2026-09-10)
 
-Pagina `test_ai_agent.php` (admin-only, stesso pattern di test_stelline_v2.php), prima verifica end-to-end reale nel browser.
+Pagina `www/test_ai_agent.php` creata: campo prompt, pulsante di invio, area risposta con gestione visiva di errore. Accesso protetto con `Auth::richiediAdmin()` (redirect se non admin, coerente con l'uso corretto di questo metodo per pagine HTML, a differenza di `isAdmin()` + JSON usato in `ai_agent_api.php`).
+
+Correzione rispetto alla roadmap originale: `test_stelline_v2.php`, indicato come modello "admin-only", in realtà richiede solo login (`richiediLogin()`), non `richiediAdmin()` — la restrizione ad amministratori per l'AI Agent è stata implementata direttamente qui.
+
+Attivato `AI_AGENT_ENABLED=true` nel `.env` (era rimasto `false` come interruttore di sicurezza dalla Fase 0), con `docker compose up -d astrolab-web` per far rileggere la variabile.
+
+**Test end-to-end riuscito dal browser**: prompt reale ("Rispondi con una sola parola: OK va bene?") inviato dalla pagina, risposta reale di Gemini ricevuta e mostrata correttamente ("Sì"), HTTP 200, 1.9 secondi. Prima verifica completa dell'intera catena: browser → `test_ai_agent.php` → `ai_agent_api.php` → `GeminiProvider` → Gemini API → ritorno.
+
+Passo successivo: FASE 4 — Hardening.
 
 ---
 
