@@ -50,9 +50,18 @@ Passo successivo: FASE 2 — Primo endpoint.
 
 ---
 
-## FASE 2 — Primo endpoint — PIANIFICATA
+## FASE 2 — Primo endpoint — COMPLETATA (2026-09-10)
 
-`www/api/ai_agent_api.php`, stesso stile procedurale delle altre API di ASTROLAB, autenticato come le altre.
+`www/api/ai_agent_api.php` creato, stesso stile procedurale delle altre API di ASTROLAB (modello: `session_api.php`).
+
+Dettagli implementativi:
+- richiede login (`Auth::isLoggedIn()`, HTTP 401 se assente) e ruolo admin (`Auth::isAdmin()`, HTTP 403 se non admin) — in questa fase l'AI Agent è riservato agli amministratori;
+- azione `chiedi` con parametro `prompt`: valida che non sia vuoto (HTTP 400), rispetta il flag `AI_AGENT_ENABLED` (se `false`, risponde con errore esplicito invece di tentare la chiamata a Gemini);
+- istanzia `GeminiProvider` e restituisce direttamente il suo output (`ok`/`testo`/`errore`), senza tool calling (fuori scope, Sezione 18).
+
+Test eseguiti: verifica funzionale reale dell'endpoint via `curl` sull'IP LAN del Pi (porta 8090, mappata da Docker Compose) — richiesta senza autenticazione correttamente rifiutata con HTTP 401 e corpo JSON `{"ok":false,"errore":"Non autenticato."}`. Il percorso con utente admin reale non è stato testato via curl (per non far transitare credenziali in chat) e sarà verificato naturalmente in Fase 3, tramite la sessione browser già autenticata.
+
+Passo successivo: FASE 3 — Test UI minimale.
 
 ---
 
