@@ -32,14 +32,21 @@ Passo successivo: FASE 1 — Provider Layer.
 
 ---
 
-## FASE 1 — Provider Layer — DA INIZIARE
+## FASE 1 — Provider Layer — COMPLETATA (2026-09-09)
 
 Obiettivo: creare l'astrazione del provider AI, isolata e sostituibile.
 
-Attività previste:
+Attività completate:
 - `www/includes/ai/AiProviderInterface.php` — contratto minimo (chiedi(string $prompt): array, ritorno sempre ['ok'=>bool,'testo'=>...,'errore'=>...], mai eccezioni non gestite);
-- `www/includes/ai/GeminiProvider.php` — implementazione concreta via curl verso gemini-3.6-flash, gestione esplicita di timeout, errori HTTP, quota esaurita, risposta malformata;
-- nessuna libreria esterna, nessun Composer (coerente con il resto del progetto).
+- `www/includes/ai/GeminiProvider.php` — implementazione concreta via curl verso gemini-3.6-flash, con gestione esplicita di: chiave API assente, errori di rete, timeout, HTTP non-200, quota esaurita (429), risposta malformata o priva di testo;
+- nessuna libreria esterna, nessun Composer (coerente con il resto del progetto);
+- thinking del modello disattivabile via parametro del costruttore (`abilitaThinking`, default `false`).
+
+Correzione rilevante emersa durante l'implementazione: la sintassi per limitare il thinking della serie Gemini 2.5 (`thinkingConfig.thinkingBudget`) non è valida per Gemini 3.x e causa un errore "Request contains an invalid argument". Per `gemini-3.6-flash` va usata `thinkingConfig.thinkingLevel` (valori tipo "low"/"high"). Inoltre, i modelli Flash della serie Gemini 3 **non supportano la disattivazione completa del thinking**: "low" è il minimo disponibile, non uno zero assoluto.
+
+Test eseguiti: chiamata funzionale reale a `chiedi()` sia con thinking ridotto (default) sia con thinking pieno, entrambe con esito positivo (`ok: true`, `testo: 'OK'`).
+
+Passo successivo: FASE 2 — Primo endpoint.
 
 ---
 
