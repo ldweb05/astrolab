@@ -15,6 +15,7 @@ session_start();
 require_once __DIR__ . '/../includes/Auth.php';
 require_once __DIR__ . '/../includes/ai/AiProviderInterface.php';
 require_once __DIR__ . '/../includes/ai/GeminiProvider.php';
+require_once __DIR__ . '/../includes/ai/RicercaRsmTool.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -52,10 +53,69 @@ switch ($action) {
             break;
         }
 
-        $provider  = new GeminiProvider();
-        $risultato = $provider->chiedi($prompt);
+        // Tool calling: ricerca RSM per condizione (Fase 7). Il soggetto e sempre
+        // quello attivo di sessione, mai un parametro che Gemini puo scegliere
+        // (Sezione 23 - nessun dato anagrafico esposto al modello).
+        $dichiarazioneCercaRsm = [
+            'name' => 'cerca_rsm',
+            'description' => 'Cerca la Rivoluzione Solare Mondiale (RSM) del soggetto attivo per un anno e una condizione tematica specifici, tra gli aeroporti e localita del mondo. Restituisce i luoghi migliori trovati dal motore ASTROLAB.',
+            'parameters' => [
+                'type' => 'OBJECT',
+                'properties' => [
+                    'anno' => [
+                        'type' => 'INTEGER',
+                        'description' => 'Anno della Rivoluzione Solare da cercare, es. 2027.',
+                    ],
+                    'condizione' => [
+                        'type' => 'STRING',
+                        'enum' => ['Decima', 'Lavoro', 'Amore', 'Salute', 'Denaro', 'Denaro Low', 'Casa'],
+                        'description' => 'Tema di vita su cui orientare la ricerca. Decima riguarda il successo e la visibilita generale.',
+                    ],
+                ],
+                'required' => ['anno', 'condizione'],
+            ],
+        ];
 
-        echo json_encode($risultato);
+        $provider = new GeminiProvider();
+        $primoTurno = $provider->chiediConFunzione($prompt, $dichiarazioneCercaRsm);
+
+        if ($primoTurno['tipo'] === 'errore') {
+            echo json_encode(['ok' => false, 'testo' => null, 'errore' => $primoTurno['errore']]);
+            break;
+        }
+
+        if ($primoTurno['tipo'] === 'testo') {
+            echo json_encode(['ok' => true, 'testo' => $primoTurno['testo'], 'errore' => null]);
+            break;
+        }
+
+        // tipo === 'function_call'
+        $soggettoId = $auth->getSoggettoAttivo();
+        if (!$soggettoId) {
+            echo json_encode([
+                'ok' => true,
+                'testo' => 'Per cercare una RSM devi prima selezionare un soggetto attivo in ASTROLAB.',
+                'errore' => null,
+            ]);
+            break;
+        }
+
+        $tool = new RicercaRsmTool($pdo);
+        $risultatoTool = $tool->cerca(
+            $soggettoId,
+            (int) ($primoTurno['argomenti']['anno'] ?? (int) date('Y')),
+            (string) ($primoTurno['argomenti']['condizione'] ?? 'Decima')
+        );
+
+        $secondoTurno = $provider->rispondiConRisultatoFunzione(
+            $prompt,
+            $primoTurno['model_content'],
+            $primoTurno['nome'],
+            $risultatoTool,
+            $dichiarazioneCercaRsm
+        );
+
+        echo json_encode($secondoTurno);
         break;
 
     default:
