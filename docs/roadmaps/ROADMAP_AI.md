@@ -144,7 +144,7 @@ Creato `www/includes/ai/RicercaRsmTool.php`:
 - riceve soggetto/anno/condizione (una delle 7 condizioni standard; Astri in Casa e Cuspidi restano fuori scope per questo tool, vedi Fasi successive);
 - carica il soggetto con `caricaSoggettoById()` (`SoggettoRepository.php`) e converte i dati di nascita con `calcolaDataOraGmtCorretta()` (`NascitaGmtHelper.php`) — stessa funzione già usata da `tema.php`, che gestisce correttamente il cambio di giorno GMT (vedi `ROADMAP_BUG_GIORNO_GMT.md`);
 - propaga la sessione corrente (cookie `ASTROSESSID`) alla chiamata interna, così l'endpoint riusa l'autenticazione già presente, senza bisogno di credenziali separate;
-- estrae dall'evento SSE `done` i primi N risultati (default 5) più i totali, scartando i decine di campi tecnici irrilevanti per una spiegazione in linguaggio naturale (rimane da fare in Fase 7: un livello di sintesi ulteriore prima di passare i dati a Gemini).
+- estrae dall'evento SSE `done` i primi N risultati (default 5) più i totali. Nota di correzione: il tool NON filtra i campi di ciascun risultato (passa gli oggetti completi, con tutti i campi tecnici); limita solo il numero di risultati restituiti. Questo si è rivelato importante in Fase 7.
 
 **Due bug/scoperte architetturali reali emerse e risolte durante l'implementazione, rilevanti per ogni tool futuro che farà chiamate HTTP interne:**
 1. **Deadlock da lock di sessione**: PHP blocca in scrittura il file di sessione per tutta la durata di una richiesta con `session_start()` attivo. Una richiesta che ne chiama un'altra sulla stessa sessione (come il nostro tool verso `ricerca_stream_api.php`) va in deadlock se non si rilascia il lock prima — risolto con `session_write_close()` subito prima della chiamata `curl` interna.
@@ -154,11 +154,25 @@ Test eseguiti: chiamata reale (login via `curl` con utente admin, poi richiesta 
 
 Passo successivo: FASE 7 — collegamento del tool a Gemini (tool calling vero: Gemini interpreta la richiesta in linguaggio naturale, chiama `RicercaRsmTool`, spiega il risultato reale senza inventare nulla).
 
-## FASE 7 — Collegamento a Gemini (tool calling) — PIANIFICATA
+## FASE 7 — Collegamento a Gemini (tool calling) — COMPLETATA (2026-09-10)
 
-Obiettivo: Gemini interpreta una richiesta in linguaggio naturale (es. "cercami la RSM per lavoro nel 2027"), estrae anno e condizione, chiama `RicercaRsmTool`, e spiega il risultato reale restituito — mai inventato (Sezione 1, Sezione 23).
+Obiettivo: Gemini interpreta una richiesta in linguaggio naturale, estrae anno e condizione, chiama `RicercaRsmTool`, e spiega il risultato reale restituito — mai inventato (Sezione 1, Sezione 23).
 
-Da definire in questa fase: formato della dichiarazione di funzione per l'API Gemini (function calling), livello di sintesi dei risultati prima di passarli a Gemini (i campi tecnici grezzi vanno ridotti), e come gestire il caso "nessun risultato trovato" in modo chiaro per l'utente.
+Implementazione:
+- `GeminiProvider.php` riscritto: logica HTTP comune estratta in un metodo privato condiviso (`eseguiRichiesta`), riusato da `chiedi()` (invariato nel comportamento esterno, riverificato con lo stesso test della Fase 1 — nessuna regressione) e dai due nuovi metodi `chiediConFunzione()` e `rispondiConRisultatoFunzione()`, che implementano il flusso a due turni richiesto dall'API Gemini per il function calling (turno 1: Gemini decide se rispondere a testo libero o chiedere di invocare una funzione; turno 2, solo se richiesto: gli viene passato il risultato vero della funzione, esegue la sintesi finale in linguaggio naturale);
+- verificato isolatamente con un tool fittizio (somma di due numeri) prima di collegare quello vero, per isolare eventuali problemi di formato dal resto della logica — esito positivo;
+- `ai_agent_api.php`, azione `chiedi`, ora dichiara a Gemini il tool `cerca_rsm` (anno, condizione tra le 7 standard) e orchestra i due turni; il soggetto su cui cercare è **sempre** quello attivo di sessione (`Auth::getSoggettoAttivo()`), mai un parametro che Gemini possa scegliere o vedere (Sezione 23);
+- se nessun soggetto è attivo, risposta esplicita che invita a selezionarne uno, senza tentare la ricerca.
+
+**Test end-to-end reale dal browser, riuscito**: prompt "Cercami una buona RSM per la DECIMA nell'anno 2026" → Gemini ha capito anno e condizione, chiamato il tool, ricevuto dati reali (soggetto 23), risposto con 5 località (Mar del Plata, Montevideo, Villa Gesell, Durazno, Santa Teresita) corrispondenti esattamente ai primi 5 risultati reali del motore (verificato per confronto diretto con una chiamata separata a `ricerca_stream_api.php`).
+
+**Correzione di un giudizio affrettato durante la verifica**: inizialmente è stato valutato come "inventato" un riferimento di Gemini alla "Regola 14" nella spiegazione. Verifica successiva nel codice (`RuleEngineExtended::verificaRegola14()`) ha mostrato che si tratta di una regola reale delle 34 ufficiali (ASC di RSM in X casa natale, indebolito da pianeti lenti in aspetto dissonante ai 4 punti natali), già calcolata dal motore con un campo `regola14_scattata` e una `nota` testuale pronta quando la regola scatta. Gemini aveva letto correttamente il dato (`regola14_scattata: false` per tutti i risultati mostrati), non l'aveva inventato. Lezione operativa: verificare sempre il significato esatto di un campo nel codice prima di giudicare una risposta AI come "inventata".
+
+**Scoperta strutturale importante emersa durante l'analisi**: il motore (`RuleEngineExtended.php`) ha già una ricca gerarchia a livelli, condizione per condizione (Decima, Amore, Lavoro, Salute, Casa: pianeti benefici/malefici per casa, orbi, fasce), ma **solo Decima** ha una spiegazione testuale pronta (`nota` per la Regola 14) — le altre condizioni restituiscono solo un numero di `livello`, senza frase leggibile. Gemini riceve già questi numeri (il tool non filtra nulla), ma dovrebbe interpretarli da solo per spiegarli bene, con lo stesso rischio di imprecisione già visto. Tracciato come lavoro separato in Fase 10, non essendo tool calling ma arricchimento del motore.
+
+Denaro e Denaro Low restano senza alcuna gerarchia a livelli (solo veto/non-veto) - confermato nel codice, coerente con quanto già segnalato dal committente in precedenti sessioni.
+
+Passo successivo: valutare Fase 8 (condizioni restanti), Fase 10 (spiegazioni testuali) e Fase 11 (conversazione sulle esclusioni) in base alle priorità del committente.
 
 ## FASE 8 — Astri nelle Case e Longitudini Cuspidi — PIANIFICATA
 
@@ -167,6 +181,27 @@ Estensione di `RicercaRsmTool` (o nuovo tool dedicato per le Cuspidi, dato l'end
 ## FASE 9 — Apertura ai piani supporter — PIANIFICATA
 
 Da valutare solo dopo che tutte le 9 condizioni sono state implementate e testate a fondo dall'admin (Criterio di completamento). Include la definizione di eventuali limiti di quota/costo per l'uso AI da parte dei supporter.
+
+## FASE 10 — Spiegazioni testuali per Amore, Lavoro, Salute, Casa — PIANIFICATA
+
+Obiettivo: portare Amore, Lavoro, Salute e Casa allo stesso livello di Decima — una frase testuale pronta, scritta dal motore stesso (non da Gemini), per ogni combinazione di livello/fascia malefici già calcolata da `RuleEngineExtended.php`. Nessuna nuova dottrina astrologica da inventare: solo tradurre in linguaggio leggibile una logica che il motore applica già solo in forma numerica (`livello`, `escludi`).
+
+Esempio concreto verificato: `calcolaLivelloLavoro()` restituisce oggi solo `{'livello': 1, 'escludi': false}` per "Giove entro l'orbo stretto in VI o X casa" (il livello più alto per Lavoro). Con questa fase, lo stesso caso includerebbe anche `'spiegazione': "Giove entro l'orbo stretto (2,5°) dalla cuspide di VI o X casa - massima protezione professionale."`, pronta per essere citata da Gemini senza che debba interpretare il numero da solo.
+
+Da fare per ciascuna condizione (Amore, Lavoro, Salute, Casa): una tabella di corrispondenza livello→frase nello stesso file (`RuleEngineExtended.php`), seguendo lo schema già esistente per la Regola 14 di Decima.
+
+## FASE 11 — Conversazione sulle RSM/RL escluse — PIANIFICATA
+
+Richiesta del committente: quando una ricerca non trova risultati validi (es. Salute 2027, oggi zero risultati secchi), l'astrologo deve poter chiedere "vuoi vedere quelle scartate?" e ricevere **tutte** le RSM/RL scartate per quella condizione (non solo alcune), poter cliccare su una qualsiasi e vedere la pagina di dettaglio RSM/RL **identica in tutto** a quella attuale, con l'aggiunta di un riquadro di colore diverso in alto che mostra il motivo dell'esclusione. Se serve creare una pagina nuova, deve essere visivamente identica a quella esistente, non un nuovo design.
+
+Implicazioni architetturali da affrontare, in ordine:
+
+1. **Modifica al motore, solo per le condizioni a veto duro (Salute, Denaro, Denaro Low)**: oggi `ricerca_stream_api.php` scarta questi risultati con un semplice `continue`, senza salvare il motivo (commento nel codice, riga 595: "Le RS escluse dal filtro Salute NON vengono incluse nei risultati"). Va modificato per conservarli con il motivo, invece di scartarli. Decima/Amore/Lavoro/Casa non hanno bisogno di questa modifica: non scartano più duramente da tempo (UX-0015/0016/0021), restano già visibili con un livello basso.
+2. **Nuova funzione nel tool AI** per recuperare tutte le RSM/RL escluse dell'ultima ricerca fatta per una condizione.
+3. **Riapertura consapevole di uno scope escluso in Fase 5**: questo flusso ("vuoi vederle?" → "sì" → mostrale) richiede memoria minima della conversazione (l'ultima ricerca fatta), esplicitamente fuori scope per l'intero Provider 1 fino a questo momento. Va riaperto con una decisione esplicita, non introdotto di nascosto.
+4. **Pagina di dettaglio**: riuso totale del template esistente della pagina RSM/RL, con solo l'aggiunta del riquadro colorato del motivo — nessun nuovo design.
+
+Da pianificare in dettaglio (numero di sotto-fasi, ordine, test) solo quando il committente decide di darle priorità rispetto a Fase 8/9/10.
 
 ---
 
