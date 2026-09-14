@@ -524,6 +524,14 @@ function verificaCondizioneCasa(array $pianetiConCase, array $caseRS): array
  * Verifica che la condizione "Salute" sia soddisfatta secondo i criteri
  * di protezione massima della scuola di Ciro Discepolo.
  *
+ * NOTA (sessione 2026-08-21): Saturno in I/VI/XII casa RS non causa piu'
+ * l'esclusione della localita' - genera solo un alert informativo se entro
+ * 3° dalla cuspide (Regola 32: 2,5° di prudenza rispetto a una cuspide
+ * pericolosa; confermato con un confronto diretto contro un software di
+ * riferimento, che accetta localita' con Saturno fino a 3,02° dalla cuspide
+ * I). Marte/Urano/Nettuno/Plutone restano invariati (fail assoluto su tutta
+ * la casa, tolleranza pre-ingresso 4°).
+ *
  * REGOLE:
  * 1. TOLLERANZA PRE-INGRESSO AMPLIATA A 4° per i malefici in I/VI/XII:
  *    MA/SA/UR/NE/PLU entro 4° prima della cuspide di I/VI/XII → FAIL ASSOLUTO.
@@ -548,7 +556,7 @@ function verificaCondizioneCasa(array $pianetiConCase, array $caseRS): array
  * @param array<int,array{longitudine:float}> $caseRS
  * @param array<int,array{longitudine:float}> $caseNatale
  * @param float $latA Latitudine dell'aeroporto (per il contesto)
- * @return array{valida:bool, motivo?:string, scudo_benefico?:bool, benefico_in_i?:array}
+ * @return array{valida:bool, motivo?:string, scudo_benefico?:bool, benefico_in_i?:array, alert_saturno?:array|null}
  */
 function verificaCondizioneSalute(
     array $pianetiConCase,
@@ -565,18 +573,23 @@ function verificaCondizioneSalute(
     ];
     
     // ================================================================
-    // PASSO 1 (numerazione locale, non e' la Regola 1 ufficiale): TOLLERANZA PRE-INGRESSO AMPLIATA A 4° PER MALEFICI
+    // PASSO 1 (numerazione locale, non e' la Regola 1 ufficiale): TOLLERANZA PRE-INGRESSO AMPLIATA A 4° PER MALEFICI GRAVI
     // ================================================================
-    $malevoli = [4, 6, 7, 8, 9]; // MA, SA, UR, NE, PLU
+    // Saturno (6) e' gestito separatamente sotto: non causa piu' fail
+    // assoluto, solo un alert entro un orbo stretto dalla cuspide (vedi nota
+    // in cima alla funzione).
+    $malevoliGravi = [4, 7, 8, 9]; // MA, UR, NE, PLU (invariato)
     $caseVetoSalute = [1, 6, 12];
     $tolleranzaPreIngressoSalute = 4.0; // +1° rispetto allo standard
+    $orboAlertSaturno = 3.0; // Regola 32 (2,5°) + margine dal confronto col software di riferimento
+    $alertSaturno = null;
     
-    // Controllo malefici in I/VI/XII con tolleranza 4°
+    // Controllo malefici gravi in I/VI/XII con tolleranza 4° (invariato)
     foreach ($caseVetoSalute as $casaVeto) {
         if (!isset($caseRS[$casaVeto])) continue;
         $cuspideVeto = $caseRS[$casaVeto]['longitudine'];
         
-        foreach ($malevoli as $idMal) {
+        foreach ($malevoliGravi as $idMal) {
             if (!isset($pianetiConCase[$idMal])) continue;
             $lonMal = $pianetiConCase[$idMal]['longitudine'];
             $casaAssegnata = (int)$pianetiConCase[$idMal]['casa'];
@@ -596,6 +609,20 @@ function verificaCondizioneSalute(
                     'valida' => false,
                     'motivo' => $NOMI[$idMal] . ' a ' . round(abs($diff), 1) . 
                                 '° dalla ' . $casaVeto . 'a casa RS (pre-ingresso 4°) — fail assoluto'
+                ];
+            }
+        }
+
+        // Saturno: entro 3° dalla cuspide (dentro o in pre-ingresso) genera
+        // solo un alert, non esclude piu' la localita'.
+        if (isset($pianetiConCase[6])) {
+            $lonSat = $pianetiConCase[6]['longitudine'];
+            $diffSat = diffAngolo($lonSat, $cuspideVeto);
+            if (abs($diffSat) <= $orboAlertSaturno) {
+                $alertSaturno = [
+                    'casa'      => $casaVeto,
+                    'distanza'  => round(abs($diffSat), 1),
+                    'lato'      => $diffSat < 0.0 ? 'pre-ingresso' : 'dentro la casa',
                 ];
             }
         }
@@ -740,7 +767,8 @@ function verificaCondizioneSalute(
     return [
         'valida' => true,
         'scudo_benefico' => ($beneficoInI !== null),
-        'benefico_in_i' => $beneficoInI
+        'benefico_in_i' => $beneficoInI,
+        'alert_saturno' => $alertSaturno,
     ];
 }
 

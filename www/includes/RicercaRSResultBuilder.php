@@ -20,7 +20,8 @@ function costruisciRisultatoRicercaRS(
     ?array $livelloAmore = null,
     ?array $livelloLavoro = null,
     ?array $livelloSalute = null,
-    ?array $livelloCasa = null
+    ?array $livelloCasa = null,
+    ?array $saluteAlertSaturno = null
 ): array {
     return [
     'icao'           => $aero['icao_code'],
@@ -70,6 +71,7 @@ function costruisciRisultatoRicercaRS(
     // Livello 1-6 (UX-0021) per la condizione Casa. null per tutte
     // le altre condizioni o se ASTROLAB_ALIGNMENT_MODE è disattivo.
     'livello_casa'       => $livelloCasa,
+    'salute_alert_saturno' => ($condizione === 'Salute') ? $saluteAlertSaturno : null,
              ];
 }
 

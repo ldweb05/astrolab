@@ -581,6 +581,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 //   5. Protezione universale: Giove o Venere in I/VI/XII
                 $scudoBeneficoAttivo = false;
                 $beneficoInI = null;
+                $saluteAlertSaturno = null;
             
                 if ($condizione === 'Salute') {
                     $verificaSalute = verificaCondizioneSalute(
@@ -614,6 +615,7 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                     // Se lo scudo benefico è attivo, lo registriamo per il risultato
                     $scudoBeneficoAttivo = $verificaSalute['scudo_benefico'] ?? false;
                     $beneficoInI = $verificaSalute['benefico_in_i'] ?? null;
+                    $saluteAlertSaturno = $verificaSalute['alert_saturno'] ?? null;
                 }
 
                 // ── C-sexies. FILTRO SPECIFICO PER DENARO ──────────────────────
@@ -991,7 +993,8 @@ $totaleValutazioniRuleEngine = 0; // diagnostica: numero chiamate RuleEngine::va
                 $livelloAmore,
                 $livelloLavoro,
                 $livelloSalute,
-                $livelloCasa
+                $livelloCasa,
+                $saluteAlertSaturno
             );
             // Campi V2 aggiunti al record risultato (additivo, Fase 1a)
             $ris['v2_stelle_totali']   = $valV2['stelle_totali'];
