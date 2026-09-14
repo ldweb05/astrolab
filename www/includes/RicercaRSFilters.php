@@ -35,9 +35,12 @@ function getRuleMapEsclusione(string $condizione): array {
         'Amore'      => ['malevoli' => [],     'case' => []],
 
         // Salute → VI (malattie acute) e XII (ospedalizzazione/crisi)
-        // NOTA: La logica estesa con tolleranza 4° e controllo Sole in XII
-        // è gestita separatamente in verificaCondizioneSalute()
-        'Salute'     => ['malevoli' => $tutti,  'case' => [6, 12]],
+        // NOTA: La logica estesa (tolleranza 4°, controllo Sole in XII, orbo
+        // 3° per i malefici minori) è gestita separatamente in
+        // verificaCondizioneSalute() - qui come pre-filtro rapido resta
+        // solo Marte (l'unico nominato dalla Regola 5 per lo scarto
+        // assoluto su tutta la casa; sessione 2026-08-21).
+        'Salute'     => ['malevoli' => [4],     'case' => [6, 12]],
 
         // Entrate/uscite, eredità, investimenti → II e VIII
         'Denaro'     => ['malevoli' => $tutti,  'case' => [2, 8, 10]],
