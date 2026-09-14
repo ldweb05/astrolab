@@ -524,13 +524,15 @@ function verificaCondizioneCasa(array $pianetiConCase, array $caseRS): array
  * Verifica che la condizione "Salute" sia soddisfatta secondo i criteri
  * di protezione massima della scuola di Ciro Discepolo.
  *
- * NOTA (sessione 2026-08-21): Saturno in I/VI/XII casa RS non causa piu'
- * l'esclusione della localita' - genera solo un alert informativo se entro
- * 3° dalla cuspide (Regola 32: 2,5° di prudenza rispetto a una cuspide
- * pericolosa; confermato con un confronto diretto contro un software di
- * riferimento, che accetta localita' con Saturno fino a 3,02° dalla cuspide
- * I). Marte/Urano/Nettuno/Plutone restano invariati (fail assoluto su tutta
- * la casa, tolleranza pre-ingresso 4°).
+ * NOTA (sessione 2026-08-21): Saturno/Urano/Nettuno/Plutone in I/VI/XII
+ * casa RS non causano piu' l'esclusione della localita' - generano solo un
+ * alert informativo se entro 3° dalla cuspide (Regola 32: 2,5° di prudenza
+ * rispetto a una cuspide pericolosa; confermato con un confronto diretto
+ * contro un software di riferimento, che accetta localita' con questi
+ * pianeti fino a 3,02° dalla cuspide). Solo Marte resta invariato (fail
+ * assoluto su tutta la casa, tolleranza pre-ingresso 4°) - e' l'unico
+ * nominato esplicitamente dalla Regola 5 per lo scarto automatico in
+ * I/VI/XII.
  *
  * REGOLE:
  * 1. TOLLERANZA PRE-INGRESSO AMPLIATA A 4° per i malefici in I/VI/XII:
@@ -556,7 +558,7 @@ function verificaCondizioneCasa(array $pianetiConCase, array $caseRS): array
  * @param array<int,array{longitudine:float}> $caseRS
  * @param array<int,array{longitudine:float}> $caseNatale
  * @param float $latA Latitudine dell'aeroporto (per il contesto)
- * @return array{valida:bool, motivo?:string, scudo_benefico?:bool, benefico_in_i?:array, alert_saturno?:array|null}
+ * @return array{valida:bool, motivo?:string, scudo_benefico?:bool, benefico_in_i?:array, alert_malefici_minori?:array}
  */
 function verificaCondizioneSalute(
     array $pianetiConCase,
@@ -573,32 +575,33 @@ function verificaCondizioneSalute(
     ];
     
     // ================================================================
-    // PASSO 1 (numerazione locale, non e' la Regola 1 ufficiale): TOLLERANZA PRE-INGRESSO AMPLIATA A 4° PER MALEFICI GRAVI
+    // PASSO 1 (numerazione locale, non e' la Regola 1 ufficiale): TOLLERANZA PRE-INGRESSO AMPLIATA A 4° PER MARTE
     // ================================================================
-    // Saturno (6) e' gestito separatamente sotto: non causa piu' fail
-    // assoluto, solo un alert entro un orbo stretto dalla cuspide (vedi nota
-    // in cima alla funzione).
-    $malevoliGravi = [4, 7, 8, 9]; // MA, UR, NE, PLU (invariato)
+    // Solo Marte (4) causa fail assoluto su tutta la casa - e' l'unico
+    // nominato esplicitamente dalla Regola 5. Saturno/Urano/Nettuno/Plutone
+    // (malefici minori) sono gestiti separatamente sotto: non causano piu'
+    // fail assoluto, solo un alert entro un orbo stretto dalla cuspide
+    // (vedi nota in cima alla funzione).
     $caseVetoSalute = [1, 6, 12];
     $tolleranzaPreIngressoSalute = 4.0; // +1° rispetto allo standard
-    $orboAlertSaturno = 3.0; // Regola 32 (2,5°) + margine dal confronto col software di riferimento
-    $alertSaturno = null;
+    $maleficiMinori = [6, 7, 8, 9]; // SA, UR, NE, PLU
+    $orboAlertMaleficiMinori = 3.0; // Regola 32 (2,5°) + margine dal confronto col software di riferimento
+    $alertMaleficiMinori = [];
     
-    // Controllo malefici gravi in I/VI/XII con tolleranza 4° (invariato)
+    // Controllo Marte in I/VI/XII con tolleranza 4° (invariato, Regola 5)
     foreach ($caseVetoSalute as $casaVeto) {
         if (!isset($caseRS[$casaVeto])) continue;
         $cuspideVeto = $caseRS[$casaVeto]['longitudine'];
         
-        foreach ($malevoliGravi as $idMal) {
-            if (!isset($pianetiConCase[$idMal])) continue;
-            $lonMal = $pianetiConCase[$idMal]['longitudine'];
-            $casaAssegnata = (int)$pianetiConCase[$idMal]['casa'];
+        if (isset($pianetiConCase[4])) {
+            $lonMal = $pianetiConCase[4]['longitudine'];
+            $casaAssegnata = (int)$pianetiConCase[4]['casa'];
             
-            // Se il pianeta è già nella casa veto, è un fail
+            // Se Marte è già nella casa veto, è un fail
             if ($casaAssegnata === $casaVeto) {
                 return [
                     'valida' => false,
-                    'motivo' => $NOMI[$idMal] . ' in ' . $casaVeto . 'a casa RS — fail assoluto (tolleranza 4°)'
+                    'motivo' => $NOMI[4] . ' in ' . $casaVeto . 'a casa RS — fail assoluto (tolleranza 4°)'
                 ];
             }
             
@@ -607,22 +610,25 @@ function verificaCondizioneSalute(
             if ($diff > -$tolleranzaPreIngressoSalute && $diff < 0.0) {
                 return [
                     'valida' => false,
-                    'motivo' => $NOMI[$idMal] . ' a ' . round(abs($diff), 1) . 
+                    'motivo' => $NOMI[4] . ' a ' . round(abs($diff), 1) .
                                 '° dalla ' . $casaVeto . 'a casa RS (pre-ingresso 4°) — fail assoluto'
                 ];
             }
         }
 
-        // Saturno: entro 3° dalla cuspide (dentro o in pre-ingresso) genera
-        // solo un alert, non esclude piu' la localita'.
-        if (isset($pianetiConCase[6])) {
-            $lonSat = $pianetiConCase[6]['longitudine'];
-            $diffSat = diffAngolo($lonSat, $cuspideVeto);
-            if (abs($diffSat) <= $orboAlertSaturno) {
-                $alertSaturno = [
+        // Malefici minori (Saturno/Urano/Nettuno/Plutone): entro 3° dalla
+        // cuspide (dentro o in pre-ingresso) generano solo un alert, non
+        // escludono piu' la localita'.
+        foreach ($maleficiMinori as $idMal) {
+            if (!isset($pianetiConCase[$idMal])) continue;
+            $lonMal = $pianetiConCase[$idMal]['longitudine'];
+            $diffMal = diffAngolo($lonMal, $cuspideVeto);
+            if (abs($diffMal) <= $orboAlertMaleficiMinori) {
+                $alertMaleficiMinori[] = [
+                    'pianeta'   => $NOMI[$idMal],
                     'casa'      => $casaVeto,
-                    'distanza'  => round(abs($diffSat), 1),
-                    'lato'      => $diffSat < 0.0 ? 'pre-ingresso' : 'dentro la casa',
+                    'distanza'  => round(abs($diffMal), 1),
+                    'lato'      => $diffMal < 0.0 ? 'pre-ingresso' : 'dentro la casa',
                 ];
             }
         }
@@ -768,7 +774,7 @@ function verificaCondizioneSalute(
         'valida' => true,
         'scudo_benefico' => ($beneficoInI !== null),
         'benefico_in_i' => $beneficoInI,
-        'alert_saturno' => $alertSaturno,
+        'alert_malefici_minori' => $alertMaleficiMinori,
     ];
 }
 
