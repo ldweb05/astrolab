@@ -4079,3 +4079,21 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuna nota specifica lasciata dal committente in questa sessione.
 
 ---
+
+## 2026-09-18 quater — "Confronta le selezioni" apre in nuova scheda (RS + RL)
+
+**Data:** 2026-09-18
+
+**Componente modificato:** `www/ricerca.php`, `www/ricerca_rl.php` (solo markup/JS di rendering lato client).
+
+**Obiettivo:** allineare al comportamento gia' introdotto per i pulsanti "Usa" (voce precedente): il pulsante "Confronta le selezioni" (2-3 checkbox RS/RL selezionate) apriva `compare_rs.php`/`compare_ril.php` sostituendo la pagina di ricerca corrente (`window.location.href`); il committente ha segnalato che il vecchio comportamento era rimasto attivo qui.
+
+**Modifica:** patch testuale via script Python (verifica di 1 occorrenza attesa per file prima della scrittura): `window.location.href = 'compare_rs.php';` -> `window.open('compare_rs.php', '_blank');` in `ricerca.php`; stessa modifica su `compare_ril.php` in `ricerca_rl.php`. Nessuna modifica al salvataggio dello stato (`salvaStatoRicerca()`, `sessionStorage.setItem(...)`) ne' alla costruzione del payload di confronto.
+
+**Test eseguiti:** `php -l` su entrambi i file (OK), `git diff --check` pulito, `git status` verificato per escludere modifiche fuori scope, riavvio container per invalidare l'OPcache, verifica funzionale nel browser da parte del committente su entrambe le pagine (RS e RL) — confermato funzionante.
+
+**Commit Git:** vedi commit successivo a questa voce.
+
+**Passo successivo:** nessuna nota specifica lasciata dal committente in questa sessione.
+
+---
