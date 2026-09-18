@@ -4059,3 +4059,23 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuna nota specifica lasciata dal committente in questa sessione.
 
 ---
+
+## 2026-09-18 ter — Paginazione risultati e apertura "Usa" in nuova scheda (RS + RL)
+
+**Data:** 2026-09-18
+
+**Componente modificato:** `www/ricerca.php`, `www/ricerca_rl.php` (solo markup/JS di rendering lato client, nessuna modifica a logica di backend/API).
+
+**Obiettivo:** su richiesta del committente, due aggiustamenti UX applicati in modo identico sia alla ricerca RS sia alla ricerca RL:
+1. Opzioni della select "Per pagina" cambiate da `25/50/100` a `50/100/300` (default rimasto 50, gia' presente nel nuovo set).
+2. I pulsanti "↺ Usa" / "↺ RS" (RS) e "☽ Usa" (RL) ora aprono la RS/RL selezionata in una nuova scheda (`target="_blank"` aggiunto ai link), invece di sostituire la pagina di ricerca corrente. Nessuna modifica a `salvaStatoRicerca()` ne' alla generazione di `rsUrl`/`rlUrl`.
+
+**Modifica:** patch testuale via script Python (verifica del numero di occorrenze attese prima della scrittura) sui 4 punti di rendering per file: array `[25,50,100]` -> `[50,100,300]`; attributo `target="_blank"` aggiunto a ciascun tag `<a class="btn-usa">`.
+
+**Test eseguiti:** `php -l` su entrambi i file (OK), `git diff --check` pulito, `git status` verificato per escludere modifiche fuori scope, riavvio container per invalidare l'OPcache, verifica funzionale nel browser da parte del committente su entrambe le pagine (RS e RL) — confermato funzionante.
+
+**Commit Git:** `9a5d1bc` (branch `main`).
+
+**Passo successivo:** nessuna nota specifica lasciata dal committente in questa sessione.
+
+---
