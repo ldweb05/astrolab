@@ -11,8 +11,7 @@ Questo documento va copiato in testa a ogni nuova conversazione di sviluppo su A
 - `docs/START_HERE.md` — stato reale dell'applicazione;
 - `docs/roadmaps/ROADMAP.md` — cronologia ed evoluzione generale del progetto;
 - `docs/HANDOVER_OPERATIVO_astrolab.md` — cronologia operativa dettagliata, sessione per sessione;
-- `docs/ux-astrolab/BACKLOG_ux.md` — eventuali voci pertinenti al lavoro odierno;
-- `docs/roadmaps/ROADMAP_AI.md` e `docs/roadmaps/ROADMAP_AI_PRINCIPI.md` — **obbligatori solo se il lavoro riguarda l'AI Agent**: stato di avanzamento per fasi e, rispettivamente, principi architetturali/provider LLM (sezioni 0-26). Per l'AI Agent questi sono il riferimento ufficiale, non il presente documento.
+- `docs/ux-astrolab/BACKLOG_ux.md` — eventuali voci pertinenti al lavoro odierno.
 
 ---
 
@@ -48,8 +47,7 @@ Prima di qualunque modifica al codice:
    progetto — non fidarsi della sola memoria di sessioni precedenti. Controllare anche
    `docs/ux-astrolab/BACKLOG_ux.md`: se una voce lì registrata è pertinente al lavoro di
    oggi, va menzionata all'utente prima di iniziare, per non lasciarla sepolta a tempo
-   indefinito. Se il lavoro riguarda l'AI Agent, leggere invece per intero
-   `docs/roadmaps/ROADMAP_AI.md` e `docs/roadmaps/ROADMAP_AI_PRINCIPI.md`, che ne sono il riferimento ufficiale dedicato.
+   indefinito.
 2. Se la richiesta è collegata a una voce di roadmap esistente (es.
    `docs/roadmaps/ROADMAP_ASTROLAB_UX.md`), leggerla per intero prima di iniziare.
 3. Comunicare all'utente un piano sintetico e attendere conferma prima del primo comando che

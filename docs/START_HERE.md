@@ -122,13 +122,6 @@ il software di Ciro Discepolo. Le attività sono subordinate all'acquisto di
 un account MyAstral.org e richiedono evidenze verificabili prima di qualsiasi
 modifica applicativa.
 
-La roadmap relativa all'integrazione di un AI Agent in ASTROLAB (Google
-Gemini come primo provider LLM, poi altri provider a seguire) è mantenuta
-separatamente nei documenti `docs/roadmaps/ROADMAP_AI.md` (stato per fasi) e
-`docs/roadmaps/ROADMAP_AI_PRINCIPI.md` (principi e regole, sezioni 0-26), che
-costituiscono il riferimento ufficiale per tale percorso. Fase 0 (setup e
-primo contatto con Gemini) completata il 2026-09-09.
-
 Non deve essere modificato salvo:
 
 - bug documentati;
@@ -415,8 +408,6 @@ La documentazione principale del progetto è composta dai seguenti file.
 8. `docs/02_ASTROLOGY.md`
 9. `docs/10_THEME_ENGINE.md`
 10. `docs/11_ANNUAL_REPORT_SPEC.md`
-11. `docs/roadmaps/ROADMAP_AI.md`
-12. `docs/roadmaps/ROADMAP_AI_PRINCIPI.md`
 
 I documenti devono essere mantenuti coerenti tra loro.
 
