@@ -4036,3 +4036,26 @@ in fase di progettazione per evitare una sesta sessione correttiva.
 **Punto di ripristino, se in futuro si volesse riprendere:** tag Git checkpoint-prima-fase8 e i commit 5c56fca...779a9c7 (Fasi 0-7 complete) restano permanentemente disponibili nella cronologia Git, recuperabili in qualunque momento.
 
 **Passo successivo:** nessuno, percorso concluso. Se in futuro si decidera' di reintrodurre un AI Agent, si ripartira' da questo stesso handover come riferimento su cosa era gia' stato fatto e su cosa era emerso come lavoro necessario mancante.
+
+## 2026-09-18 — Fix etichetta grado pianeta che esce dal viewBox della ruota
+
+**Data:** 2026-09-18
+
+**Componente modificato:** `www/js/zodiac_wheel.js` (funzione `_disegnaPianetiModificato`).
+
+**Obiettivo:** risolvere un bug segnalato dal committente (screenshot rs.php) in cui l'etichetta del grado di un pianeta (es. Mercurio/Venere/Sole ammassati vicino al MC) usciva dal bordo visibile della ruota, rendendo illeggibile a quanti gradi si trovasse il pianeta.
+
+**Causa reale:** non era un bug CSS come inizialmente ipotizzato, ma di geometria SVG. Quando l'algoritmo anti-sovrapposizione (`_calcolaPosizioniDisplayAvanzato`) sposta un pianeta al "livello 1" (`rPia + size*0.045`) per separarlo da un altro pianeta troppo vicino in longitudine, l'etichetta del grado veniva comunque disegnata a un raggio ulteriore fisso (`rDisplay + size*0.055`). Sommando i due offset il raggio finale (`0.605*size`) arrivava a ridosso del raggio utile del `viewBox` (`cx = 0.62*size`), lasciando un margine di ~7px su una ruota da 480px — insufficiente a contenere l'altezza/larghezza reale del testo.
+
+**Modifica:** raggio dell'etichetta cappato al valore minimo tra l'offset calcolato e un massimo sicuro rispetto a `cx` (gia' disponibile come parametro della funzione), invece di lasciarlo crescere senza limite:
+`const rLabel = Math.min(rDisplay + size * 0.055, cx - size * 0.035);`
+
+Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato alla sola riga del calcolo del raggio dell'etichetta, senza impatto su angoli (AS/DS/MC/FC), cuspidi o dimensioni della ruota su nessuna delle pagine che condividono `zodiac_wheel.js` (rs.php, rl.php, tema.php, rilocazione, comparator).
+
+**Test eseguiti:** `node --check www/js/zodiac_wheel.js` (sintassi OK), `git diff --check` pulito, riavvio container e verifica funzionale nel browser da parte del committente sul caso specifico dello screenshot — confermato risolto.
+
+**Commit Git:** vedi commit successivo a questa voce.
+
+**Passo successivo:** nessuna nota specifica lasciata dal committente in questa sessione.
+
+---
