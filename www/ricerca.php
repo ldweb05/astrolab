@@ -1917,7 +1917,7 @@ document.getElementById('risultati-area').addEventListener('click', function(eve
 
     salvaStatoRicerca();
     sessionStorage.setItem('astroDssConfrontoRs', JSON.stringify(payload));
-    window.location.href = 'compare_rs.php';
+    window.open('compare_rs.php', '_blank');
 });
 
 // Preset orbe sincronizza con pannello cuspidi in tempo reale

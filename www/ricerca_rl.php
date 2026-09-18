@@ -1982,7 +1982,7 @@ document.getElementById('risultati-area').addEventListener('click', function(eve
 
     salvaStatoRicerca();
     sessionStorage.setItem('astroDssConfrontoRiloc', JSON.stringify(payload));
-    window.location.href = 'compare_ril.php';
+    window.open('compare_ril.php', '_blank');
 });
 
 // Preset orbe sincronizza con pannello cuspidi in tempo reale
