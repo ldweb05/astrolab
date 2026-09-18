@@ -451,7 +451,7 @@ const ZodiacWheel = {
 
             if (p.posizione && p.posizione.gradi !== undefined) {
                 const labelGradi = p.posizione.gradi + '°' + String(p.posizione.minuti).padStart(2, '0') + '′';
-                const rLabel = rDisplay + size * 0.055;
+                const rLabel = Math.min(rDisplay + size * 0.055, cx - size * 0.035);
                 const xL = cx + rLabel * Math.cos(radDisplay);
                 const yL = cy + rLabel * Math.sin(radDisplay);
                 svg.appendChild(this._text(xL, yL, labelGradi, {
