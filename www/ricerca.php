@@ -1495,7 +1495,7 @@ console.log('ATL_POS', ris.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
     const pagRis    = ris.slice(offset, offset + stato.perPagina);
 console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
 
-    const ppOpt = [25,50,100].map(n =>
+    const ppOpt = [50,100,300].map(n =>
         `<option value="${n}" ${stato.perPagina===n?'selected':''}>${n}</option>`).join('');
 
     const sogg = getSoggetto();
@@ -1543,7 +1543,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             <td><div class="td-val-wrap"><div><span class="val-badge">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${vicinanzaHtml}${pannelloVeti}</div></td>
             <td style="color:#888">${r.lat.toFixed(3)}</td>
             <td style="color:#888">${r.lon.toFixed(3)}</td>
-            <td><a href="${rsUrl}" class="btn-usa">↺ Usa</a></td>
+            <td><a href="${rsUrl}" class="btn-usa" target="_blank">↺ Usa</a></td>
         </tr>`;
     }).join('');
 
@@ -1576,7 +1576,7 @@ console.log('ATL_POS', ris.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
     const pagRis    = ris.slice(offset, offset + stato.perPagina);
 console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
 
-    const ppOpt = [25,50,100].map(n =>
+    const ppOpt = [50,100,300].map(n =>
         `<option value="${n}" ${stato.perPagina===n?'selected':''}>${n}</option>`).join('');
 
     const sogg = getSoggetto();
@@ -1607,7 +1607,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             </td>
             <td style="color:#888">${r.lat.toFixed(3)}</td>
             <td style="color:#888">${r.lon.toFixed(3)}</td>
-            <td><a href="${rsUrl}" class="btn-usa">↺ RS</a></td>
+            <td><a href="${rsUrl}" class="btn-usa" target="_blank">↺ RS</a></td>
         </tr>`;
     }).join('');
 
@@ -1655,7 +1655,7 @@ const nazioniOpt = nazioniSet.map(n =>
 `<option value="${n}" ${stato.filtroNaz===n?'selected':''}>${n}</option>`).join('');
 const stelleOpt = [0,1,2,3,4,5].map(n =>
 `<option value="${n}" ${stato.filtroStelle===n?'selected':''}>${n===0?'Tutte':'≥ '+'★'.repeat(n)}</option>`).join('');
-const ppOpt = [25,50,100].map(n =>
+const ppOpt = [50,100,300].map(n =>
 `<option value="${n}" ${stato.perPagina===n?'selected':''}>${n}</option>`).join('');
 const sogg = getSoggetto();
 const anno = document.getElementById('anno-rs').value;
@@ -1723,7 +1723,7 @@ return `<tr class="${rigaCls}">
 <td>${r.nazione||''}</td>
 <td style="color:#888">${parseFloat(r.lat||0).toFixed(2)}</td>
 <td style="color:#888">${parseFloat(r.lon||0).toFixed(2)}</td>
-<td><a href="${rsUrl}" class="btn-usa">↺ Usa</a></td>
+<td><a href="${rsUrl}" class="btn-usa" target="_blank">↺ Usa</a></td>
 <td style="text-align:center">
 <input
 type="checkbox"
@@ -1774,7 +1774,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
 const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))].sort();
 const nazioniOpt = nazioniSet.map(n =>
 `<option value="${n}" ${stato.filtroNaz===n?'selected':''}>${n}</option>`).join('');
-const ppOpt = [25,50,100].map(n =>
+const ppOpt = [50,100,300].map(n =>
 `<option value="${n}" ${stato.perPagina===n?'selected':''}>${n}</option>`).join('');
 const sogg = getSoggetto();
 const anno = document.getElementById('anno-rs').value;
@@ -1805,7 +1805,7 @@ ${distStr ? '<div class="dist-badge">'+distStr+'</div>' : ''}
 <td>${r.nazione||''}</td>
 <td style="color:#888;font-size:11px">${parseFloat(r.lat||0).toFixed(3)}</td>
 <td style="color:#888;font-size:11px">${parseFloat(r.lon||0).toFixed(3)}</td>
-<td><a href="${rsUrl}" class="btn-usa">↺ RS</a></td>
+<td><a href="${rsUrl}" class="btn-usa" target="_blank">↺ RS</a></td>
 </tr>`;
 }).join('');
 document.getElementById('risultati-area').innerHTML = `
