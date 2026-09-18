@@ -3997,6 +3997,28 @@ in fase di progettazione per evitare una sesta sessione correttiva.
 
 ---
 
+## 2026-09-14 — Condizione Salute: da esclusione rigida ad alert per i malefici minori
+
+**Data:** 2026-09-14
+
+**Componente modificato:** `www/includes/RicercaRSFilters.php` (funzioni `verificaCondizioneSalute()` e `getRuleMapEsclusione()`), `www/api/ricerca_stream_api.php`, `www/includes/RicercaRSResultBuilder.php`.
+
+**Obiettivo:** rivedere il rigore della condizione Salute (case I/VI/XII), confrontata con un software di riferimento esterno, che risultava piu' permissivo di ASTROLAB sulla vicinanza dei malefici minori alla cuspide.
+
+**Modifiche, in 3 commit sequenziali nella stessa sessione:**
+
+1. (`5e4deab`) Saturno in I/VI/XII casa RS non causa piu' l'esclusione assoluta della localita': se entro 3° dalla cuspide (dentro la casa o in pre-ingresso), genera solo un alert informativo (nuovo campo `alert_saturno`). Riferimento dottrinale: Regola 32 (2,5° di prudenza rispetto a una cuspide pericolosa), con margine allineato al confronto diretto contro il software di riferimento (che accetta localita' con Saturno fino a 3,02° dalla cuspide). Marte/Urano/Nettuno/Plutone restati invariati in questo primo commit (fail assoluto su tutta la casa, tolleranza pre-ingresso 4°).
+
+2. (`dfd72a0`) La stessa logica di "solo alert" e' stata estesa anche a Urano, Nettuno e Plutone (non solo Saturno) - questi 4 pianeti sono ora trattati insieme come "malefici minori" (campo rinominato `alert_malefici_minori`, ora un array che puo' contenere piu' segnalazioni). **Solo Marte resta fail assoluto su tutta la casa**: e' l'unico dei cinque malefici nominato esplicitamente dalla Regola 5 per lo scarto automatico in I/VI/XII.
+
+3. (`a9f071a`) Corretto un bug introdotto dai due commit precedenti: il pre-filtro rapido `getRuleMapEsclusione()` (usato come prima scrematura, prima ancora di raggiungere `verificaCondizioneSalute()`) continuava a escludere in base a **tutti e 5** i malefici, bypassando di fatto il nuovo comportamento "solo alert" per i 4 malefici minori. Corretto perche' il pre-filtro rispecchi la stessa logica (solo Marte esclude, gli altri 4 generano alert).
+
+**Effetto pratico per l'astrologo:** una RSM/RL con Saturno, Urano, Nettuno o Plutone vicino (entro 3°) alla cuspide di I, VI o XII casa non viene piu' scartata automaticamente per la condizione Salute - compare tra i risultati con una segnalazione esplicita del pianeta, della casa e della distanza esatta, lasciando alla valutazione dell'astrologo se accettarla. Marte mantiene il comportamento originale (esclusione assoluta).
+
+**Passo successivo:** nessuna nota specifica lasciata dal committente in questa sessione.
+
+---
+
 ## 2026-09-17 — AI Agent, rimozione completa su decisione del committente
 
 **Data:** 2026-09-17
