@@ -3994,3 +3994,23 @@ in fase di progettazione per evitare una sesta sessione correttiva.
 **Commit Git:** nessun nuovo commit di codice in questa sessione (solo configurazione locale `.env`, non tracciata; script di test volutamente non committato, per roadmap). Commit di riferimento preesistente: `d38c661`.
 
 **Passo successivo:** FASE 1 — Provider Layer (`AiProviderInterface.php` + `GeminiProvider.php`, modello `gemini-3.6-flash`), dettagliata in `docs/ROADMAP_AI.md`.
+
+---
+
+## 2026-09-17 — AI Agent, rimozione completa su decisione del committente
+
+**Data:** 2026-09-17
+
+**Componente modificato:** `www/includes/bootstrap.php` (rimosse costanti GEMINI_API_KEY/AI_AGENT_ENABLED), `docs/PROMPT_OPERATIVO_ASTROLAB.md`, `docs/START_HERE.md` (rimossi riferimenti); eliminati `www/includes/ai/` (intera cartella), `www/api/ai_agent_api.php`, `www/test_ai_agent.php`, `docs/roadmaps/ROADMAP_AI.md`, `docs/roadmaps/ROADMAP_AI_PRINCIPI.md`.
+
+**Obiettivo:** rimuovere completamente l'integrazione AI Agent (Google Gemini), su esplicita decisione del committente, dopo che le Fasi 0-7 erano state completate e verificate funzionanti (canale Gemini isolato e sicuro, tool calling reale con 3 tool per ricerca RSM/Astri in casa/Cuspidi).
+
+**Motivazione:** nel corso della Fase 8 (estensione alle condizioni Astri nelle Case e Longitudini Cuspidi) sono emerse discussioni approfondite su cosa avrebbe dovuto fare davvero l'AI Agent per essere utile a un astrologo professionista (interpretazione di configurazioni planetarie oltre ai dati gia' calcolati dal motore, gestione delle RSM/RL scartate con relativa motivazione) - portando alla luce che il lavoro necessario per arrivare a una funzionalita' realmente completa era piu' esteso di quanto inizialmente previsto. Il committente ha deciso di non proseguire e di rimuovere l'intera funzionalita'.
+
+**Cosa NON e' stato toccato**, per esplicita richiesta del committente: i 3 commit di fix alla condizione Salute (5e4deab, dfd72a0, a9f071a), arrivati dopo la conclusione della Fase 7 e indipendenti dal lavoro AI; la riorganizzazione di tutte le roadmap in docs/roadmaps/ (Fase 0 AI, ma valutata come miglioramento strutturale valido a se'); questa cronologia storica del percorso AI (Fasi 0-7 sopra), lasciata intatta come racconto onesto di cosa e' stato fatto e perche' poi rimosso.
+
+**Verifica post-rimozione:** index.php e api/session_api.php verificati funzionanti (302/401, comportamento normale) dopo il riavvio del container - ASTROLAB continua a funzionare regolarmente senza alcuna traccia dell'integrazione AI.
+
+**Punto di ripristino, se in futuro si volesse riprendere:** tag Git checkpoint-prima-fase8 e i commit 5c56fca...779a9c7 (Fasi 0-7 complete) restano permanentemente disponibili nella cronologia Git, recuperabili in qualunque momento.
+
+**Passo successivo:** nessuno, percorso concluso. Se in futuro si decidera' di reintrodurre un AI Agent, si ripartira' da questo stesso handover come riferimento su cosa era gia' stato fatto e su cosa era emerso come lavoro necessario mancante.
