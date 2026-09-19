@@ -11,6 +11,16 @@ Branch di lavoro: `new_dashboard` (verificare stato reale prima di
 ogni step, non assumere che coincida con `feature/2-astri-in-cuspide`
 solo perché il comportamento di `index.php` osservato coincide).
 
+> **Aggiornamento 19-09-2026**: `new_dashboard` e' stato interamente assorbito in `main`
+> (riconciliazione dei branch conclusa). Oggi il lavoro su `dashboard.php` si fa
+> direttamente su `main`, con un tag di ripristino creato prima di ogni intervento
+> (ultimo: `restore/pre-dashboard-grafici-2026-09-19`). Il branch sul Pi non va cambiato:
+> un cambio branch ha gia' rotto il login il 23-08-2026. Il resto di questa sezione
+> descrive lo stato storico del lavoro sul branch `new_dashboard`.
+>
+> Documenti collegati: `docs/roadmaps/ROADMAP.md` (sezione 2026-09-19),
+> `docs/HANDOVER_OPERATIVO_astrolab.md` (voce 2026-09-19), `docs/FREEZE.md`.
+
 ---
 
 ## Decisioni prese (2026-08-22)
@@ -71,6 +81,8 @@ solo perché il comportamento di `index.php` osservato coincide).
     avrebbe richiesto o un iframe ingombrante o la duplicazione della logica di
     rendering. Sostituiti con: tab TEMA (→ tema.php) e nuovo tab RSM (→ rs.php),
     entrambi con ?id= dinamico. Contenitore centrale ristretto di conseguenza.
+    → SUPERATA il 19-09-2026: i due grafici sono stati reintrodotti in dashboard.php
+      (vedi sezione "Grafici Tema Natale + RS in dashboard" in fondo a questo file).
   - [x] Nome Cognome: dropdown reale con i soggetti dell'astrologo (1 solo soggetto
     → nome mostrato in automatico; più soggetti → placeholder "Seleziona Soggetto").
     Campi Data/Ora di Nascita (ora locale, non GMT) si riempiono di conseguenza.
@@ -166,3 +178,45 @@ dall'icona ingranaggio in header, con due sezioni:
 
 Rifiniture layout header nella stessa sessione: respiro a sinistra del
 logo e a destra delle icone, avatar ingrandito da 32px a 40px.
+
+## Grafici Tema Natale + RS in dashboard — reintroduzione (19-09-2026)
+
+**Decisione (19-09-2026)**: ribaltata la decisione del 23-08-2026 di eliminare i due
+pannelli grafico. Il committente vuole i grafici Tema Natale + RS in `dashboard.php`, tra
+i pulsanti Transiti/Rilocazione e la mappa, con il riquadro centrale allargato
+(`max-w-3xl` -> `max-w-6xl`). Lavoro in due fasi.
+
+Lavoro fatto sempre su `main` (branch mai cambiato). Punto di ripristino: tag annotato
+`restore/pre-dashboard-grafici-2026-09-19` (main @ 2ba830c), presente sul Pi e su GitHub.
+Per tornare indietro sul solo file: `git restore --source=restore/pre-dashboard-grafici-2026-09-19 www/dashboard.php`.
+
+### Fase 1 — grafici + pulsanti Cuspidi/Gradi + riga ASC/MC (completata)
+- Modificato solo `www/dashboard.php`. Nessun file condiviso toccato: `js/zodiac_wheel.js`
+  viene caricato cosi' com'e', senza `app.js` ne' `svg_zoom.js`.
+- Dati: data/ora GMT calcolate lato PHP con `calcolaDataOraGmtCorretta()`
+  (`includes/NascitaGmtHelper.php`, stesso helper di `rs.php`) e passate al browser in
+  `DASH_SOGGETTI_DATI` (nuove chiavi: `g`, `m`, `a`, `ora_gmt`, `nlat`, `nlon`, `luogo_rs`).
+  Mai ricalcolarle in JS (bug del giorno GMT). Le due SELECT dei soggetti leggono anche
+  `residenza_nazione`, `luogo_nascita`, `nazione_nascita`, `offset_gmt`.
+- Disegno: JS nella pagina, fetch di `api/tema_api.php` (`tipo=natale` e `tipo=rs`, stessi
+  calcoli di `rs_api.php` ma senza valutazione/relazione annuale) e `ZodiacWheel.disegna`.
+- Comportamento: la ruota RS segue "Scelta Anno"; il Tema Natale non dipende dall'anno;
+  "Rivoluzione Lunare" non modifica le ruote. Grafici nascosti se non c'e' un soggetto o se
+  mancano ora/coordinate di nascita. Un token di sequenza scarta le risposte superate;
+  se la risposta non e' valida compare "Grafico non disponibile".
+- Stile: classi locali `.dash-*` piu' `.is-hidden`, `.simbolo-pianeta`, `.grado-cuspide`
+  riprese da `style.css`. `style.css` NON e' caricato nella dashboard (rischio collisioni
+  con Tailwind CDN).
+- Non inclusi in fase 1: zoom al click sulla ruota (`initSvgZoom` dipende dal CSS di
+  `.tema-box`) e tabelle "Mostra Dati".
+- Limite noto: per latitudini molto alte `tema_api.php` non intercetta l'eccezione delle
+  case Placidus (lo fa `rs_api.php`); la dashboard mostra "Grafico non disponibile".
+- Verifiche: `php -l`, `git diff --check`, test in sandbox del JS con `zodiac_wheel.js`
+  reale, test nel browser con soggetto reale e con soggetto "a rischio" (ora locale
+  precedente all'offset).
+
+### Fase 2 — pulsante "Mostra Dati" (da fare)
+Tabelle pianeti/aspetti/cuspidi sotto i grafici. Le funzioni `popolaTabella*` sono scritte
+inline in `rs.php`, `rilocazione.php` e `transiti.php` (non condivise): serve una copia
+locale nella dashboard oppure un'estrazione in un file condiviso (toccherebbe pagine
+condivise: da decidere prima di procedere).

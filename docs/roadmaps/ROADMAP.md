@@ -712,3 +712,23 @@ Documentazione completa: `docs/BUG_GEOCODING_NOMINATIM.md`
 
 Al completamento di UX-0019 (condizione Lavoro), 3 delle 7 condizioni disponibili (Decima, Amore, Lavoro) erano sul modello a gerarchia a livelli. Con UX-0020 (Salute, 2026-08-30) e UX-0021/UX-0023 (Casa, 2026-08-31) sono ora 5 su 7; restano solo Denaro e Denaro Low. UX-0023/UX-0024 hanno inoltre introdotto un requisito trasversale obbligatorio per ogni condizione a gerarchia (esclusione veti ufficiali delle 34 regole + retrocessione per veto proprietario/alert stellium misto), da includere fin dalla progettazione di Denaro e Denaro Low. Tracciata nella roadmap dedicata:
 - `docs/ROADMAP_GERARCHIA_CONDIZIONI_RESTANTI.md`
+
+---
+
+## 2026-09-19 — Dashboard: grafici Tema Natale + RS (fase 1 completata, fase 2 da fare)
+
+Riferimento operativo dettagliato: `docs/roadmaps/roadmap_nuova_dashboard.md`
+(sezione "Grafici Tema Natale + RS in dashboard — reintroduzione (19-09-2026)").
+
+- `dashboard.php` (pagina di destinazione dal click sul soggetto in `index.php` e dal logo)
+  mostra ora, tra i pulsanti Transiti/Rilocazione e la mappa, i grafici Tema Natale e RS;
+  il riquadro centrale e' stato allargato.
+- Fase 1 completata: grafici, pulsanti Cuspidi/Gradi, riga ASC/MC. Modificato solo
+  `www/dashboard.php`; nessun file condiviso toccato. Data/ora GMT calcolate lato PHP con
+  l'helper esistente (`NascitaGmtHelper.php`), verificate anche con un soggetto "a rischio".
+- Fase 2 da fare: pulsante "Mostra Dati" (tabelle). Prima va deciso se copiare le funzioni
+  `popolaTabella*` nella dashboard o estrarle in un file condiviso.
+- Ribaltata la decisione del 23-08-2026 che aveva eliminato i pannelli grafico dalla dashboard.
+- Lavoro fatto su `main`; punto di ripristino: tag `restore/pre-dashboard-grafici-2026-09-19`
+  (main @ 2ba830c), presente sul Pi e su GitHub.
+- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voce 2026-09-19.

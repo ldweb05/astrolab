@@ -104,6 +104,13 @@ Sono consolidati:
 - interfaccia web;
 - suite automatica dei test.
 
+La dashboard (`dashboard.php`) è la pagina di destinazione dal click sul soggetto in
+`index.php` e dal logo: raccoglie ricerca RS/RL, Transiti, Rilocazione, mappa della
+residenza e, dal 19-09-2026, i grafici Tema Natale + RS (fase 1 completata; la fase 2,
+"Mostra Dati", è da fare). Il riferimento operativo è
+`docs/roadmaps/roadmap_nuova_dashboard.md`. Le modifiche a questa pagina si fanno su
+`main`, con un tag di ripristino creato prima di ogni intervento.
+
 Il Rule Engine contiene 120 Rule ed è considerato
 parte della baseline permanente.
 

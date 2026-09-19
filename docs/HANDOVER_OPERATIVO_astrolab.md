@@ -4097,3 +4097,30 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuna nota specifica lasciata dal committente in questa sessione.
 
 ---
+
+## 2026-09-19 — Dashboard: grafici Tema Natale + RS (fase 1)
+
+**Data:** 2026-09-19
+
+**Componente modificato:** `www/dashboard.php`. Documentazione allineata: `docs/roadmaps/roadmap_nuova_dashboard.md`, `docs/roadmaps/ROADMAP.md`, `docs/START_HERE.md`, `docs/README_ASTROLAB.md` e questo handover.
+
+**Obiettivo:** su richiesta del committente, reintrodurre in `dashboard.php` i due grafici Tema Natale + RS (tra i pulsanti Transiti/Rilocazione e la mappa), allargando il riquadro centrale. Lavoro in due fasi: fase 1 = grafici + pulsanti Cuspidi/Gradi + riga ASC/MC (questa voce); fase 2 = pulsante "Mostra Dati" con le tabelle (da fare). Ribalta la decisione del 23-08-2026 che aveva eliminato i due pannelli dalla dashboard (dettagli in `docs/roadmaps/roadmap_nuova_dashboard.md`).
+
+**Punto di ripristino:** tag annotato `restore/pre-dashboard-grafici-2026-09-19` su `main` @ `2ba830c`, creato sul Pi e pushato su GitHub prima di toccare il codice. Su richiesta esplicita del committente il branch e' rimasto sempre `main`.
+
+**Modifica:**
+1. Riquadro centrale allargato: `max-w-3xl` -> `max-w-6xl`.
+2. Lato PHP: le due SELECT dei soggetti leggono anche `residenza_nazione`, `luogo_nascita`, `nazione_nascita`, `offset_gmt`; per ogni soggetto data/ora GMT sono calcolate con `calcolaDataOraGmtCorretta()` (`includes/NascitaGmtHelper.php`, stesso helper di `rs.php`) ed esposte in `DASH_SOGGETTI_DATI` (chiavi `g`, `m`, `a`, `ora_gmt`, `nlat`, `nlon`, `luogo_rs`). Nessun ricalcolo GMT in JS.
+3. Lato browser: due riquadri (Tema Natale a sinistra, RS a destra) che chiamano `api/tema_api.php` (`tipo=natale` e `tipo=rs`) e disegnano con `ZodiacWheel.disegna`. La ruota RS segue "Scelta Anno"; grafici nascosti senza soggetto o senza ora/coordinate di nascita; un token di sequenza scarta le risposte superate; se la risposta non e' valida compare "Grafico non disponibile". Pulsanti "Nascondi Cuspidi" e "Mostra Gradi" e riga ASC/MC come in `rs.php`.
+4. Stile: classi locali `.dash-*` piu' `.is-hidden`, `.simbolo-pianeta`, `.grado-cuspide` riprese da `style.css`, che NON e' caricato nella dashboard (rischio collisioni con Tailwind CDN). Caricato solo `js/zodiac_wheel.js`, senza modifiche. Nessun file condiviso toccato.
+5. Metodo: patch via script Python con verifica di 1 occorrenza per ogni ancora prima di scrivere; la patch piu' grande e' stata trasferita in base64 con controllo MD5, e per ogni patch e' stato confrontato l'hash del file (`git hash-object`) tra sandbox e Pi.
+
+**Test eseguiti:** `php -l` dopo ogni patch al codice (OK), `git status`, `git diff --check` (pulito), `git diff` rivisto, riavvio container per invalidare l'OPcache. In sandbox: logica dei dati provata su 5 soggetti finti (ora locale precedente all'offset, offset negativo, ora mancante, data non valida) e 17 controlli JS con `zodiac_wheel.js` reale (URL, titolo RS, toggle, cambio anno, cambio soggetto, risposte in ritardo, errori). Nel browser da parte del committente: soggetto reale e soggetto "a rischio" (ora locale precedente all'offset) — confermato funzionante.
+
+**Note e limiti noti:** per latitudini molto alte `tema_api.php` non intercetta l'eccezione delle case Placidus (lo fa `rs_api.php`): la dashboard mostra "Grafico non disponibile". Zoom al click sulla ruota e tabelle "Mostra Dati" non sono inclusi nella fase 1.
+
+**Commit Git:** vedi commit successivo a questa voce.
+
+**Passo successivo:** fase 2, pulsante "Mostra Dati". Prima di iniziare: nuovo tag di ripristino sul commit della fase 1 e decisione se copiare nella dashboard le funzioni `popolaTabella*` (oggi inline in `rs.php`, `rilocazione.php`, `transiti.php`) oppure estrarle in un file condiviso (toccherebbe pagine condivise).
+
+---
