@@ -215,8 +215,19 @@ Per tornare indietro sul solo file: `git restore --source=restore/pre-dashboard-
   reale, test nel browser con soggetto reale e con soggetto "a rischio" (ora locale
   precedente all'offset).
 
-### Fase 2 — pulsante "Mostra Dati" (da fare)
-Tabelle pianeti/aspetti/cuspidi sotto i grafici. Le funzioni `popolaTabella*` sono scritte
-inline in `rs.php`, `rilocazione.php` e `transiti.php` (non condivise): serve una copia
-locale nella dashboard oppure un'estrazione in un file condiviso (toccherebbe pagine
-condivise: da decidere prima di procedere).
+### Fase 2 — pulsante "Mostra Dati" (NON necessaria, decisione del 19-09-2026)
+Il committente ha stabilito che sulla dashboard non serve visualizzare "Mostra Dati": la
+fase 2 non verra' eseguita e il lavoro sui grafici in dashboard e' concluso con la fase 1.
+Le tabelle restano disponibili in `rs.php`.
+
+Punto di ripristino della fase 1: tag `restore/dashboard-grafici-fase1-2026-09-19`
+(main @ 0227feb), sul Pi e su GitHub.
+
+Per un'eventuale ripresa futura, elementi emersi dall'analisi del 19-09-2026:
+- le tabelle pianeti e cuspidi si ricavano dal tema restituito da `api/tema_api.php`
+  (gia' scaricato dalla dashboard per disegnare le ruote);
+- la tabella "Aspetti nella RS" arriva invece solo da `api/rs_api.php` (calcolo inline,
+  5 tipi di aspetto con orbi, insieme a valutazione e stelline): `tema_api.php` non la fornisce;
+- `popolaTabellaPianeti` esiste in tre versioni (`rs.php` e `transiti.php` identiche,
+  `rilocazione.php` diversa); un'estrazione in file condiviso sarebbe un refactoring su
+  pagine funzionanti.

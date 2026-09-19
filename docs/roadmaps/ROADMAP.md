@@ -715,7 +715,7 @@ Al completamento di UX-0019 (condizione Lavoro), 3 delle 7 condizioni disponibil
 
 ---
 
-## 2026-09-19 — Dashboard: grafici Tema Natale + RS (fase 1 completata, fase 2 da fare)
+## 2026-09-19 — Dashboard: grafici Tema Natale + RS (completata; fase 2 non necessaria)
 
 Riferimento operativo dettagliato: `docs/roadmaps/roadmap_nuova_dashboard.md`
 (sezione "Grafici Tema Natale + RS in dashboard — reintroduzione (19-09-2026)").
@@ -726,8 +726,9 @@ Riferimento operativo dettagliato: `docs/roadmaps/roadmap_nuova_dashboard.md`
 - Fase 1 completata: grafici, pulsanti Cuspidi/Gradi, riga ASC/MC. Modificato solo
   `www/dashboard.php`; nessun file condiviso toccato. Data/ora GMT calcolate lato PHP con
   l'helper esistente (`NascitaGmtHelper.php`), verificate anche con un soggetto "a rischio".
-- Fase 2 da fare: pulsante "Mostra Dati" (tabelle). Prima va deciso se copiare le funzioni
-  `popolaTabella*` nella dashboard o estrarle in un file condiviso.
+- Fase 2 (pulsante "Mostra Dati") non necessaria: decisione del committente del 19-09-2026,
+  sulla dashboard non serve. Punto di ripristino della fase 1: tag
+  `restore/dashboard-grafici-fase1-2026-09-19` (main @ 0227feb).
 - Ribaltata la decisione del 23-08-2026 che aveva eliminato i pannelli grafico dalla dashboard.
 - Lavoro fatto su `main`; punto di ripristino: tag `restore/pre-dashboard-grafici-2026-09-19`
   (main @ 2ba830c), presente sul Pi e su GitHub.

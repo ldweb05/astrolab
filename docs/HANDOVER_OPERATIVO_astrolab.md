@@ -4119,8 +4119,30 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 
 **Note e limiti noti:** per latitudini molto alte `tema_api.php` non intercetta l'eccezione delle case Placidus (lo fa `rs_api.php`): la dashboard mostra "Grafico non disponibile". Zoom al click sulla ruota e tabelle "Mostra Dati" non sono inclusi nella fase 1.
 
+**Commit Git:** `0227feb` (branch `main`).
+
+**Passo successivo:** fase 2, pulsante "Mostra Dati". Prima di iniziare: nuovo tag di ripristino sul commit della fase 1 e decisione se copiare nella dashboard le funzioni `popolaTabella*` (oggi inline in `rs.php`, `rilocazione.php`, `transiti.php`) oppure estrarle in un file condiviso (toccherebbe pagine condivise). [Aggiornamento: fase 2 annullata dal committente, vedi voce 2026-09-19 bis.]
+
+---
+
+## 2026-09-19 bis — Dashboard: fase 2 ("Mostra Dati") non necessaria, lavoro concluso
+
+**Data:** 2026-09-19
+
+**Componente modificato:** solo documentazione: `docs/roadmaps/roadmap_nuova_dashboard.md`, `docs/roadmaps/ROADMAP.md`, `docs/START_HERE.md` e questo handover. Nessuna modifica al codice.
+
+**Obiettivo:** registrare la decisione del committente: sulla dashboard non serve visualizzare il pulsante "Mostra Dati". La fase 2 non viene eseguita e il lavoro sui grafici in dashboard si chiude con la fase 1 (commit `0227feb`, voce precedente).
+
+**Analisi svolta prima della decisione (utile per un'eventuale ripresa):** le tabelle pianeti e cuspidi si ricavano dal tema di `api/tema_api.php`, gia' scaricato dalla dashboard; la tabella "Aspetti nella RS" arriva invece solo da `api/rs_api.php` (calcolo inline, 5 tipi di aspetto con orbi, insieme a valutazione e stelline) e `tema_api.php` non la fornisce; `popolaTabellaPianeti` esiste in tre versioni (`rs.php` e `transiti.php` identiche, `rilocazione.php` diversa).
+
+**Punti di ripristino:** tag `restore/pre-dashboard-grafici-2026-09-19` (`main` @ `2ba830c`) e tag `restore/dashboard-grafici-fase1-2026-09-19` (`main` @ `0227feb`), entrambi sul Pi e su GitHub.
+
+**Modifica:** allineati i documenti che riportavano la fase 2 come "da fare" (roadmap della dashboard, ROADMAP generale, START_HERE). La voce precedente dell'handover non e' stata riscritta: contiene solo l'hash del commit e un rimando a questa voce.
+
+**Test eseguiti:** `git diff --check` pulito; hash di ogni file confrontato tra sandbox e Pi (`git hash-object`). Nessun test funzionale: solo documentazione.
+
 **Commit Git:** vedi commit successivo a questa voce.
 
-**Passo successivo:** fase 2, pulsante "Mostra Dati". Prima di iniziare: nuovo tag di ripristino sul commit della fase 1 e decisione se copiare nella dashboard le funzioni `popolaTabella*` (oggi inline in `rs.php`, `rilocazione.php`, `transiti.php`) oppure estrarle in un file condiviso (toccherebbe pagine condivise).
+**Passo successivo:** nessuna attivita' aperta su questo lavoro.
 
 ---
