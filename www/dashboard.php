@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 session_start();
 require_once 'includes/Auth.php';
+require_once __DIR__ . '/includes/NascitaGmtHelper.php';
 
 $pdo = db_connect();
 $auth = new Auth($pdo);
@@ -21,9 +22,9 @@ $rsmUrl         = $soggettoAttivo > 0 ? 'rs.php?id=' . (int)$soggettoAttivo : 'r
 // Elenco soggetti dell'astrologo (stessa logica di RicercaPageData.php)
 $userId = $auth->getCurrentUserId();
 if ($isAdmin) {
-    $dashSoggetti = $pdo->query("SELECT id, nome, data_nascita, ora_nascita, latitudine, longitudine, residenza_latitudine, residenza_longitudine, residenza_luogo FROM soggetti ORDER BY nome")->fetchAll(PDO::FETCH_ASSOC);
+    $dashSoggetti = $pdo->query("SELECT id, nome, data_nascita, ora_nascita, latitudine, longitudine, residenza_latitudine, residenza_longitudine, residenza_luogo, residenza_nazione, luogo_nascita, nazione_nascita, offset_gmt FROM soggetti ORDER BY nome")->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    $stmtDashSoggetti = $pdo->prepare("SELECT id, nome, data_nascita, ora_nascita, latitudine, longitudine, residenza_latitudine, residenza_longitudine, residenza_luogo FROM soggetti WHERE utente_id = ? ORDER BY nome");
+    $stmtDashSoggetti = $pdo->prepare("SELECT id, nome, data_nascita, ora_nascita, latitudine, longitudine, residenza_latitudine, residenza_longitudine, residenza_luogo, residenza_nazione, luogo_nascita, nazione_nascita, offset_gmt FROM soggetti WHERE utente_id = ? ORDER BY nome");
     $stmtDashSoggetti->execute([$userId]);
     $dashSoggetti = $stmtDashSoggetti->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -60,12 +61,39 @@ $dashSoggettiDatiJs = [];
 foreach ($dashSoggetti as $ds) {
     $resLat = $ds['residenza_latitudine']  ?: ($ds['latitudine']  ?? null);
     $resLon = $ds['residenza_longitudine'] ?: ($ds['longitudine'] ?? null);
+    // Dati per i grafici (Tema Natale + RS): data/ora GMT calcolate lato PHP con lo stesso
+    // helper di rs.php (gestisce il cambio giorno). Mai ricalcolarle in JS.
+    $gmtG = $gmtM = $gmtA = $gmtOra = null;
+    if (!empty($ds['data_nascita']) && !empty($ds['ora_nascita']) && $ds['latitudine'] !== null && $ds['longitudine'] !== null) {
+        try {
+            $gmtDash   = calcolaDataOraGmtCorretta($ds['data_nascita'], $ds['ora_nascita'], (float)($ds['offset_gmt'] ?? 0));
+            $dtGmtDash = new DateTime($gmtDash['data_gmt'] . ' ' . $gmtDash['ora_gmt']);
+            $oraGmtPartiDash = explode(':', $gmtDash['ora_gmt']);
+            $gmtG   = (int)$dtGmtDash->format('d');
+            $gmtM   = (int)$dtGmtDash->format('m');
+            $gmtA   = (int)$dtGmtDash->format('Y');
+            $gmtOra = (int)$oraGmtPartiDash[0] + ((int)($oraGmtPartiDash[1] ?? 0)) / 60;
+        } catch (\Throwable $e) {
+            $gmtG = $gmtM = $gmtA = $gmtOra = null;
+        }
+    }
+    // Stessa etichetta luogo di default di rs.php (residenza, altrimenti luogo di nascita)
+    $luogoRsLabel = $ds['residenza_luogo']
+        ? $ds['residenza_luogo'] . ($ds['residenza_nazione'] ? ', ' . $ds['residenza_nazione'] : '')
+        : ($ds['luogo_nascita'] ?? '');
     $dashSoggettiDatiJs[(int)$ds['id']] = [
         'data' => $ds['data_nascita'] ? date('d/m/Y', strtotime($ds['data_nascita'])) : '',
         'ora'  => $ds['ora_nascita'] ? substr($ds['ora_nascita'], 0, 5) : '',
         'lat'  => $resLat !== null ? (float)$resLat : null,
         'lon'  => $resLon !== null ? (float)$resLon : null,
         'luogo'=> $ds['residenza_luogo'] ?: null,
+        'luogo_rs' => $luogoRsLabel,
+        'nlat' => $ds['latitudine']  !== null ? (float)$ds['latitudine']  : null,
+        'nlon' => $ds['longitudine'] !== null ? (float)$ds['longitudine'] : null,
+        'g'    => $gmtG,
+        'm'    => $gmtM,
+        'a'    => $gmtA,
+        'ora_gmt' => $gmtOra,
     ];
 }
 
@@ -182,6 +210,21 @@ $annoCorrente = (int)date('Y');
         ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
         ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.25); }
+        /* Grafici Tema Natale + RS (classi richieste da zodiac_wheel.js; stile ripreso da style.css) */
+        .is-hidden { display: none; }
+        .simbolo-pianeta {
+            font-size: 36px !important;
+            font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Symbols 2", "Symbol", sans-serif;
+        }
+        .grado-cuspide { font-family: 'Montserrat', 'Verdana', sans-serif; pointer-events: none; }
+        .dash-tema-card { background: #ffffff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); min-width: 0; }
+        .dash-tema-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-bottom: 6px; padding-bottom: 8px; border-bottom: 1px solid #E0D8CC; }
+        .dash-tema-header h3 { margin: 0; font-size: 12px; color: #2C3E6B; text-transform: uppercase; letter-spacing: 0.1em; font-weight: normal; text-align: center; }
+        .dash-btn-toggle { background: #F0EDE5; color: #2C3E6B; border: 1px solid #D0C8BC; border-radius: 14px; padding: 4px 12px; font-size: 11px; font-family: inherit; cursor: pointer; letter-spacing: 0.03em; white-space: nowrap; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+        .dash-btn-toggle:hover, .dash-btn-toggle.attivo { background: #2C3E6B; color: #ffffff; border-color: #2C3E6B; }
+        .dash-wheel { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+        .dash-tema-info-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+        .dash-tema-info { font-size: 11px; color: #667; margin: 0; text-align: left; }
     </style>
 </head>
 <body class="text-on-surface font-body-lg overflow-x-hidden pt-16 bg-surface">
@@ -233,7 +276,7 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 </div>
 </header>
 <main class="p-container-padding-mobile md:p-container-padding-desktop min-h-[calc(100vh-64px)] flex items-center justify-center pb-32 md:pb-12 bg-white">
-<div class="bg-white rounded-[2rem] w-full max-w-3xl p-8 flex flex-col gap-8 shadow-xl border border-outline-variant/30">
+<div class="bg-white rounded-[2rem] w-full max-w-6xl p-8 flex flex-col gap-8 shadow-xl border border-outline-variant/30">
 <!-- 1. Tabs Row -->
 <div class="flex gap-6 border-b border-outline-variant">
 <a id="dash-link-tema" href="<?= htmlspecialchars($temaUrl) ?>" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
@@ -320,6 +363,29 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
                     Rilocazione
                 </a>
 </div>
+<!-- 4b. Grafici: Tema Natale + RS (dati da api/tema_api.php, disegno con ZodiacWheel) -->
+<div id="dash-grafici-wrap" class="hidden">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="dash-tema-card">
+<div class="dash-tema-header">
+<button type="button" id="btn-toggle-cuspidi" class="dash-btn-toggle justify-self-start" onclick="toggleCuspidiCase()">Nascondi Cuspidi</button>
+<h3>Tema Natale</h3>
+<span></span>
+</div>
+<svg id="wheel-natale" width="480" height="480" class="dash-wheel"></svg>
+<div class="dash-tema-info-row"><p class="dash-tema-info" id="info-natale"></p></div>
+</div>
+<div class="dash-tema-card">
+<div class="dash-tema-header">
+<span></span>
+<h3 id="rs-titolo">Rivoluzione Solare</h3>
+<button type="button" id="btn-toggle-gradi" class="dash-btn-toggle justify-self-end" onclick="toggleGradiPianeti()">Mostra Gradi</button>
+</div>
+<svg id="wheel-rs" width="480" height="480" class="dash-wheel"></svg>
+<div class="dash-tema-info-row"><p class="dash-tema-info" id="info-rs"></p></div>
+</div>
+</div>
+</div>
 <!-- 5. Mappa decorativa residenza (3:1, marker celeste centrato) -->
 <div id="dash-mappa-wrap" class="hidden w-full aspect-[3/1] rounded-2xl overflow-hidden border border-outline-variant">
 <div id="dash-mappa" class="w-full h-full"></div>
@@ -355,6 +421,7 @@ function aggiornaSoggettoSelezionato(id) {
     if (datiCampo) { datiCampo.value = dati ? dati.data : ''; }
     if (oraCampo) { oraCampo.value = dati ? dati.ora : ''; }
     aggiornaMappaResidenza(dati);
+    try { aggiornaGrafici(dati); } catch (e) { console.error('Grafici dashboard:', e); }
 }
 
 function eseguiCercaDashboard() {
@@ -408,6 +475,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/zodiac_wheel.js"></script>
 <script>
 function apriModaleImpostazioni() {
     document.getElementById('dash-modale-overlay').classList.remove('hidden');
@@ -532,6 +600,98 @@ function aggiornaMappaResidenza(dati) {
         dashLeafletMap.setView([dati.lat, dati.lon], 9);
     }, 100);
 }
+
+// ── Grafici Tema Natale + RS ─────────────────────────────────────────────
+// Data/ora GMT e coordinate arrivano gia' calcolate da PHP (DASH_SOGGETTI_DATI):
+// qui non si ricalcola nulla. Il token scarta le risposte superate da una richiesta piu' recente.
+let dashTokenNatale = 0;
+let dashTokenRS = 0;
+
+function dashGraficiDisponibili(dati) {
+    return !!dati && dati.g != null && dati.m != null && dati.a != null && dati.ora_gmt != null
+        && dati.nlat != null && dati.nlon != null && dati.lat != null && dati.lon != null;
+}
+
+function dashInfoAscMc(tema) {
+    return 'ASC: ' + (tema.case?.ASC?.posizione?.stringa ?? '?') +
+           ' — MC: ' + (tema.case?.MC?.posizione?.stringa ?? '?');
+}
+
+function dashGraficoNonDisponibile(svgId, infoId, err) {
+    const svg = document.getElementById(svgId);
+    if (svg) { svg.innerHTML = ''; }
+    const info = document.getElementById(infoId);
+    if (info) {
+        const msg = (err && err.message && err.message !== 'risposta non valida') ? err.message : '';
+        info.textContent = 'Grafico non disponibile' + (msg ? ': ' + msg : '');
+    }
+}
+
+function dashCaricaTemaNatale(dati) {
+    const token = ++dashTokenNatale;
+    document.getElementById('info-natale').textContent = 'Calcolo in corso…';
+    const url = 'api/tema_api.php?tipo=natale&g=' + dati.g + '&m=' + dati.m + '&a=' + dati.a +
+                '&ora_gmt=' + dati.ora_gmt + '&lat=' + dati.nlat + '&lon=' + dati.nlon;
+    fetch(url)
+        .then(r => r.json())
+        .then(tema => {
+            if (token !== dashTokenNatale) return;
+            if (!tema || tema.errore || !tema.pianeti) throw new Error((tema && tema.errore) ? tema.errore : 'risposta non valida');
+            ZodiacWheel.disegna('wheel-natale', tema, {size: 480});
+            document.getElementById('info-natale').textContent = dashInfoAscMc(tema);
+        })
+        .catch(err => {
+            if (token !== dashTokenNatale) return;
+            dashGraficoNonDisponibile('wheel-natale', 'info-natale', err);
+        });
+}
+
+function dashCaricaRS(dati) {
+    const token = ++dashTokenRS;
+    const anno = document.getElementById('dash-anno').value;
+    const luogo = dati.luogo_rs || '';
+    document.getElementById('rs-titolo').textContent = 'RS ' + anno + (luogo ? ' — ' + luogo : '');
+    document.getElementById('info-rs').textContent = 'Calcolo in corso…';
+    const url = 'api/tema_api.php?tipo=rs&g=' + dati.g + '&m=' + dati.m + '&a=' + dati.a +
+                '&ora_gmt=' + dati.ora_gmt + '&lat=' + dati.nlat + '&lon=' + dati.nlon +
+                '&anno=' + encodeURIComponent(anno) + '&lat_rs=' + dati.lat + '&lon_rs=' + dati.lon;
+    fetch(url)
+        .then(r => r.json())
+        .then(tema => {
+            if (token !== dashTokenRS) return;
+            if (!tema || tema.errore || !tema.pianeti) throw new Error((tema && tema.errore) ? tema.errore : 'risposta non valida');
+            ZodiacWheel.disegna('wheel-rs', tema, {size: 480});
+            document.getElementById('info-rs').textContent = dashInfoAscMc(tema);
+        })
+        .catch(err => {
+            if (token !== dashTokenRS) return;
+            dashGraficoNonDisponibile('wheel-rs', 'info-rs', err);
+        });
+}
+
+function aggiornaGrafici(dati) {
+    const wrap = document.getElementById('dash-grafici-wrap');
+    if (!wrap) return;
+    if (typeof ZodiacWheel === 'undefined' || !dashGraficiDisponibili(dati)) {
+        dashTokenNatale++;
+        dashTokenRS++;
+        wrap.classList.add('hidden');
+        return;
+    }
+    wrap.classList.remove('hidden');
+    dashCaricaTemaNatale(dati);
+    dashCaricaRS(dati);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const selAnno = document.getElementById('dash-anno');
+    if (selAnno) {
+        selAnno.addEventListener('change', function () {
+            const dati = DASH_SOGGETTI_DATI[dashSoggettoSelezionatoId];
+            if (dashGraficiDisponibili(dati) && typeof ZodiacWheel !== 'undefined') { dashCaricaRS(dati); }
+        });
+    }
+});
 </script>
 </body>
 </html>

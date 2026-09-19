@@ -58,6 +58,7 @@ ASTROLAB integra:
 -   ruote astrologiche integrate
 -   preservazione delle regole personalizzate
 -   Decision Support System
+-   Dashboard di ingresso (ricerca RS/RL, Transiti, Rilocazione, mappa e grafici Tema Natale + RS)
 
 ## Stato dello sviluppo
 
@@ -131,6 +132,9 @@ API / Browser / PDF
 ## Roadmap
 
 La roadmap ufficiale è descritta in `docs/ROADMAP.md`.
+
+La roadmap della dashboard (`dashboard.php`) è descritta in
+`docs/roadmaps/roadmap_nuova_dashboard.md`.
 
 ## Punto di ripresa
 
