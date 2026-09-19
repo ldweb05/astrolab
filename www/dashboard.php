@@ -285,11 +285,11 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <a id="dash-link-rsm" href="<?= htmlspecialchars($rsmUrl) ?>" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
                     RSM
                 </a>
-<a href="ricerca.php?tipo=localita" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
-                    LOCALITÀ
-                </a>
 <a href="ricerca.php" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
                     AEROPORTI
+                </a>
+<a href="ricerca.php?tipo=localita" class="px-4 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline font-label-caps text-label-caps transition-colors -mb-[1px]">
+                    LOCALITÀ
                 </a>
 </div>
 <!-- 2. Personal Info Row -->
