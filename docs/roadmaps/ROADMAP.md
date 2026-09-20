@@ -733,3 +733,24 @@ Riferimento operativo dettagliato: `docs/roadmaps/roadmap_nuova_dashboard.md`
 - Lavoro fatto su `main`; punto di ripristino: tag `restore/pre-dashboard-grafici-2026-09-19`
   (main @ 2ba830c), presente sul Pi e su GitHub.
 - Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voce 2026-09-19.
+
+---
+
+## 20-09-2026 — SEO: audit e primo intervento (titoli)
+
+Riferimento operativo dettagliato: `docs/roadmaps/ROADMAP_SEO.md`.
+
+- Obiettivo: in previsione del trasferimento su VPS pubblica, rendere ASTROLAB compatibile
+  con i motori di ricerca. Oggi la fase e' di studio e pianificazione: le Fasi 2-7 della
+  roadmap SEO sono una proposta non ancora approvata dal committente.
+- Audit: non esistono `robots.txt` e `sitemap.xml`; le pagine non hanno meta description,
+  canonical ne' Open Graph. Le pagine pubbliche sono solo `login`, `registrazione`,
+  `verifica-email`, `logout` e `34_regole.html`: il resto richiede login, quindi per un
+  crawler il sito e' di fatto una pagina di login.
+- Fase 1 completata: `<title>` uniformati al formato "Nome pagina — AstroLab" in 15 file
+  (commit `261f787` su `main`, solo righe `<title>`). Punto di ripristino: tag
+  `restore/pre-seo-title-2026-09-20` (main @ 14f9afa). Test funzionale nel browser: OK.
+- Decisioni aperte (anonimato e obblighi legali, uso di "Astrologia Attiva" e delle 34 regole
+  nelle pagine pubbliche, manuale pubblico o no, lingue, dominio): elencate in
+  `docs/roadmaps/ROADMAP_SEO.md`.
+- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voce 20-09-2026.

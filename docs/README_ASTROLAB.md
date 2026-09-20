@@ -136,6 +136,9 @@ La roadmap ufficiale è descritta in `docs/ROADMAP.md`.
 La roadmap della dashboard (`dashboard.php`) è descritta in
 `docs/roadmaps/roadmap_nuova_dashboard.md`.
 
+La roadmap SEO (visibilità sui motori di ricerca, in vista del trasferimento su VPS) è
+descritta in `docs/roadmaps/ROADMAP_SEO.md`.
+
 ## Punto di ripresa
 
 Dal momento del deployment su VPS, il diario operativo del progetto

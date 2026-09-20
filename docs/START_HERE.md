@@ -111,6 +111,12 @@ residenza e, dal 19-09-2026, i grafici Tema Natale + RS (lavoro concluso; il pul
 riferimento operativo è `docs/roadmaps/roadmap_nuova_dashboard.md`. Le modifiche a questa
 pagina si fanno su `main`, con un tag di ripristino creato prima di ogni intervento.
 
+Il piano per rendere ASTROLAB compatibile con i motori di ricerca, in vista del
+trasferimento su VPS pubblica, e' in fase di studio e pianificazione. Dal 20-09-2026 i
+`<title>` delle pagine sono uniformati al formato "Nome pagina — AstroLab" (Fase 1); le fasi
+successive sono una proposta non ancora approvata dal committente. Il riferimento operativo
+e' `docs/roadmaps/ROADMAP_SEO.md`.
+
 Il Rule Engine contiene 120 Rule ed è considerato
 parte della baseline permanente.
 

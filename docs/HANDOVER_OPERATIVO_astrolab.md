@@ -4146,3 +4146,27 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuna attivita' aperta su questo lavoro.
 
 ---
+
+## 20-09-2026 — SEO: audit, roadmap e uniformazione dei titoli
+
+**Data:** 20-09-2026
+
+**Componente modificato:** codice: 15 file `www/*.php`, solo righe `<title>` (admin_utenti, cambia_password, compare_ril, compare_rs, dashboard, index, login, ricerca, ricerca_rl, rilocazione, rl, rs, stampa, tema, transiti). Documentazione: nuovo `docs/roadmaps/ROADMAP_SEO.md`, `docs/roadmaps/ROADMAP.md`, `docs/START_HERE.md`, `docs/README_ASTROLAB.md` e questo handover.
+
+**Obiettivo:** in previsione del trasferimento su VPS pubblica, studiare e pianificare l'allineamento di ASTROLAB ai motori di ricerca. Per questa sezione l'assistente opera anche come webmaster, web developer e SEO, su indicazione del committente; restano del committente le decisioni su se e quando modificare il codice e sui commit.
+
+**Analisi svolta (sola lettura):** non esistono `robots.txt` e `sitemap.xml`; le pagine hanno `lang="it"`, viewport e `<title>` ma non meta description, canonical ne' Open Graph. Il login e' imposto da `Auth::richiediLogin()` (redirect a `login.php?next=...`): le pagine pubbliche sono solo `login`, `registrazione`, `verifica-email`, `logout` e `34_regole.html`, quindi per un crawler il sito e' di fatto una pagina di login. Il web server e' `php:8.3-apache` con `mod_rewrite` (non NGINX/PHP-FPM come in `docs/campagna-promozionale-e-sicurezza.md`). `docker-compose.production.yml` e' stato rimosso nel commit `54550d2` e va ricreato per la VPS.
+
+**Modifica:** `<title>` uniformati al formato "Nome pagina — AstroLab"; `login.php` con la frase "AstroLab — la tua esperienza in Astrologia Attiva" (provvisoria fino alla landing); titoli di ricerca RSM e RL distinti; il secondo `<title>` di `rs.php` e' nella finestra di stampa della Relazione Annuale. Creata `docs/roadmaps/ROADMAP_SEO.md` (stato reale, Fasi 1-7, decisioni aperte, vincoli): le Fasi 2-7 sono una proposta non ancora approvata. Aggiunti rimandi in ROADMAP.md, START_HERE.md e README_ASTROLAB.md.
+
+**Punti di ripristino:** tag `restore/pre-seo-title-2026-09-20` (`main` @ `14f9afa`).
+
+**Test eseguiti:** `php -l` nel container su tutti i 15 file; `git status` e `git diff --check` puliti (15 file, 16 inserimenti e 16 cancellazioni, tutte righe `<title>`); controllo nel browser dei titoli: OK. Per la documentazione: `git diff --check` e revisione dei diff, nessuna cancellazione.
+
+**Commit Git:** `261f787` (titoli, pubblicato su `origin/main`). Documentazione: vedi commit successivo a questa voce.
+
+**Note e punti aperti:** decisioni da chiudere prima delle fasi successive: anonimato e obblighi legali di un servizio con dati personali e contributi, uso di "Astrologia Attiva" e delle 34 regole nelle pagine pubbliche, manuale pubblico o no, lingue, dominio. Non toccati: `README.md` in radice (privo del rimando SEO) e i riferimenti a `docs/ROADMAP.md` in `README.md` e `README_ASTROLAB.md`, il cui percorso reale e' `docs/roadmaps/ROADMAP.md`.
+
+**Passo successivo:** decidere se e come procedere con la Fase 2 (fondamenta tecniche) e chiudere le decisioni aperte; nessuna modifica al codice senza approvazione.
+
+---
