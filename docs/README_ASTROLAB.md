@@ -12,7 +12,7 @@ Leggere nell'ordine:
 
 1.  `docs/START_HERE.md`
 2.  `docs/ADR_INDEX_ASTROLAB.md`
-3.  `docs/ROADMAP.md`
+3.  `docs/roadmaps/ROADMAP.md`
 4.  `docs/HANDOVER_OPERATIVO_astrolab.md`
 
 Questi documenti costituiscono la documentazione ufficiale del progetto.
@@ -131,7 +131,7 @@ API / Browser / PDF
 
 ## Roadmap
 
-La roadmap ufficiale è descritta in `docs/ROADMAP.md`.
+La roadmap ufficiale è descritta in `docs/roadmaps/ROADMAP.md`.
 
 La roadmap della dashboard (`dashboard.php`) è descritta in
 `docs/roadmaps/roadmap_nuova_dashboard.md`.

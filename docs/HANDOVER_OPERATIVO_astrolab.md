@@ -4165,7 +4165,7 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 
 **Commit Git:** `261f787` (titoli, pubblicato su `origin/main`). Documentazione: vedi commit successivo a questa voce.
 
-**Note e punti aperti:** decisioni da chiudere prima delle fasi successive: anonimato e obblighi legali di un servizio con dati personali e contributi, uso di "Astrologia Attiva" e delle 34 regole nelle pagine pubbliche, manuale pubblico o no, lingue, dominio. Non toccati: `README.md` in radice (privo del rimando SEO) e i riferimenti a `docs/ROADMAP.md` in `README.md` e `README_ASTROLAB.md`, il cui percorso reale e' `docs/roadmaps/ROADMAP.md`.
+**Note e punti aperti:** decisioni da chiudere prima delle fasi successive: anonimato e obblighi legali di un servizio con dati personali e contributi, uso di "Astrologia Attiva" e delle 34 regole nelle pagine pubbliche, manuale pubblico o no, lingue, dominio. Non toccato: `README.md` in radice non ha il rimando alla roadmap SEO. Corretto il percorso della roadmap (`docs/roadmaps/ROADMAP.md` al posto di `docs/ROADMAP.md`) in `README.md` e `docs/README_ASTROLAB.md` (commit successivo a `0aef520`, 20-09-2026). Restano invariati i riferimenti a `docs/ROADMAP.md` in altri documenti (01_PROJECT_MANIFESTO, ADR_INDEX_ASTROLAB, PROJECT_RESUME_GUIDE, 02_ASTROLOGY, 05_NARRATIVE, 10_THEME_ENGINE, 11_ANNUAL_REPORT_SPEC, FREEZE, alcune roadmap in `docs/roadmaps/`) e nello storico di questo handover: da correggere solo su richiesta.
 
 **Passo successivo:** decidere se e come procedere con la Fase 2 (fondamenta tecniche) e chiudere le decisioni aperte; nessuna modifica al codice senza approvazione.
 
