@@ -98,7 +98,7 @@ if ($soggetto) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rivoluzione Solare</title>
+    <title>Rivoluzione Solare — AstroLab</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/print.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -643,7 +643,7 @@ function stampaPrevisioneAnnuale() {
 <html lang="it">
 <head>
     <meta charset="utf-8">
-    <title>Relazione Annuale</title>
+    <title>Relazione Annuale — AstroLab</title>
     <style>
         body {
             font-family: Georgia, "Times New Roman", serif;
