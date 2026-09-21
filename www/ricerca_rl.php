@@ -1624,7 +1624,9 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
                 <tbody>${righe||'<tr><td colspan="6" class="empty-results">Nessun punto trovato.</td></tr>'}</tbody>
             </table>
         </div>
-        ${buildPaginazione(pagina, totPagine)}`;
+        ${buildPaginazione(pagina, totPagine)}
+<div class="legenda-v2"><span class="legenda-v2-titolo">ℹ️ Legenda:</span> <span class="legenda-v2-item"><span style="color:#2ecc71">★★★★</span> Giove/Venere in casa cond.</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#2ecc71">★★★</span> Sole in casa cond.</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#f1c40f">★</span> Luna/Mercurio in casa cond.</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#f1c40f">★★</span> Benefico cuspide angolare</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#f39c12">★★</span> Bistabile II/VII/VIII</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#e74c3c">★★</span> Malefico in casa cond./malus</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#f1c40f">⚠️</span> Stellium misto</span></div>
+`;
 }
 
 function renderTabellaGrigliaCuspidi() {
@@ -1822,7 +1824,9 @@ ${confrontoToolbar}
 <tbody>${righe||'<tr><td colspan="11" class="empty-results">Nessun risultato.</td></tr>'}</tbody>
 </table>
 </div>
-${buildPaginazione(pagina, totPagine)}`;
+${buildPaginazione(pagina, totPagine)}
+<div class="legenda-v2"><span class="legenda-v2-titolo">ℹ️ Legenda:</span> <span class="legenda-v2-item"><span style="color:#2ecc71">★★★★</span> Giove/Venere in casa cond.</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#2ecc71">★★★</span> Sole in casa cond.</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#f1c40f">★</span> Luna/Mercurio in casa cond.</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#f1c40f">★★</span> Benefico cuspide angolare</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#f39c12">★★</span> Bistabile II/VII/VIII</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#e74c3c">★★</span> Malefico in casa cond./malus</span><span class="legenda-v2-sep"> · </span><span class="legenda-v2-item"><span style="color:#f1c40f">⚠️</span> Stellium misto</span></div>
+`;
 }
 function renderTabellaCuspidi() {
 let ris = [...stato.tutti];
