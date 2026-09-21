@@ -30,3 +30,10 @@ bkup*.sql
 # Dataset geografici scaricabili e rigenerabili
 import/data/
 
+
+# Backup ed editor artifacts generici (hardening 2026-09)
+*.bak
+*.orig
+*.old
+*~
+*.swp
