@@ -6,7 +6,7 @@ session_start();
 require_once 'includes/Auth.php';
 $pdo = db_connect();
 $auth = new Auth($pdo);
-$auth->richiediLogin();
+$auth->richiediAdmin();   // security: pagina di lab/debug, solo admin (allineato ad admin_utenti.php)
 $isAdmin        = $auth->isAdmin();
 $username       = $auth->getCurrentUsername();
 $userId         = $auth->getCurrentUserId();
