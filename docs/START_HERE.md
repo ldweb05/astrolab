@@ -32,7 +32,7 @@ Repository unico.
 
 **Branch stabile**
 
-`master`
+`main`
 
 **Stato**
 
@@ -458,7 +458,7 @@ Ogni evoluzione deve avere un beneficio concreto e verificabile.
 
 Alla data di questo documento il repository presenta:
 
-- branch principale `master`;
+- branch principale `main`;
 - working tree pulita;
 - Rule Engine congelato;
 - regressione disponibile;
@@ -563,6 +563,6 @@ o migliore, rispetto a quello precedente.
 
 Versione documentale allineata alla baseline stabile di ASTROLAB.
 
-Repository: `master`
+Repository: `main`
 
 Stato: **Baseline stabile – sviluppo funzionale completato, manutenzione evolutiva e documentale.**
