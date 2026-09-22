@@ -181,7 +181,7 @@ Per ogni macro-attività la comparazione è considerata conclusa quando:
 - [ ] Ogni discrepanza è stata classificata per causa.
 - [ ] Le decisioni sono state registrate in `DECISION_LOG_ux.md`.
 - [ ] Le modifiche applicative approvate sono state implementate.
-- [ ] La regressione completa (`www/tests/run.php`) resta verde.
+- [ ] La regressione completa (`tests/run.php`) resta verde.
 - [ ] La documentazione tecnica e UX è allineata.
 - [ ] Il commit è stato eseguito e tracciato in
   `HANDOVER_OPERATIVO_astrolab.md`.

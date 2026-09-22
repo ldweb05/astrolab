@@ -93,6 +93,15 @@ Legenda stelline colorata visualizzata sotto la paginazione in tutte le viste (s
 - [ ] Clone V2 per RL (test_stelline_rl_v2.php + API)
 - [ ] Aggiornamento HANDOVER_OPERATIVO_astrolab.md
 
+**Nota (sessione di hardening sicurezza, 2026-09)**: `www/test_stelline_v2.php` è stato
+eliminato — era raggiungibile da URL diretto anche da utenti non-admin (la navbar
+nascondeva solo il link, non era una vera protezione server-side). La legenda colori
+stelline che conteneva è stata portata in produzione su `ricerca.php` e `ricerca_rl.php`.
+L'API `ricerca_stream_v2_api.php`, usata solo da quella pagina, è stata rimossa perché
+orfana. Dettagli in `docs/SICUREZZA_HARDENING_2026-09.md`. I due item aperti sopra
+(clone V2 per RL, aggiornamento HANDOVER) restano validi come lavoro futuro indipendente
+dalla pagina di laboratorio ormai decommissionata.
+
 ## Decisioni Chiave
 
 | Data       | Decisione                              | Motivazione                                          |
