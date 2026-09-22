@@ -12,6 +12,7 @@ Questo documento va copiato in testa a ogni nuova conversazione di sviluppo su A
 - `docs/roadmaps/ROADMAP.md` — cronologia ed evoluzione generale del progetto;
 - `docs/HANDOVER_OPERATIVO_astrolab.md` — cronologia operativa dettagliata, sessione per sessione;
 - `docs/ux-astrolab/BACKLOG_ux.md` — eventuali voci pertinenti al lavoro odierno.
+- `docs/CHECKLIST_SICUREZZA_SVILUPPO.md` — regole di sicurezza da rispettare per qualunque nuova feature o modifica (file temporanei, pagine di test, Docker, git).
 
 ---
 
@@ -50,6 +51,7 @@ Prima di qualunque modifica al codice:
    indefinito.
 2. Se la richiesta è collegata a una voce di roadmap esistente (es.
    `docs/roadmaps/ROADMAP_ASTROLAB_UX.md`), leggerla per intero prima di iniziare.
+2bis. Verificare `docs/CHECKLIST_SICUREZZA_SVILUPPO.md`: se il lavoro odierno tocca uno dei punti lì elencati (nuovi file temporanei, pagine di test/debug, modifiche a `docker-compose.yml`/`.env`, operazioni git su branch/history), seguirla fin dal primo commit — non come controllo a posteriori.
 3. Comunicare all'utente un piano sintetico e attendere conferma prima del primo comando che
    tocca codice.
 
