@@ -226,9 +226,6 @@ $_hnFotoProfilo = $_stmtHnFoto->fetchColumn() ?: null;
             <a href="admin_utenti.php"
                <?= ($paginaAttiva??'') === 'admin' ? 'class="active"' : '' ?>>⚙️ Utenti</a>
             <?php endif; ?>
-            <?php if ($isAdmin): ?>
-            <a href="test_stelline_v2.php" <?= ($paginaAttiva??'') === 'stelline_v2' ? 'class="active"' : '' ?>>🔬 Stelline V2</a>
-            <?php endif; ?>
 
 
             <hr class="nav-separator">
