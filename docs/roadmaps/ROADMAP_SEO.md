@@ -35,7 +35,8 @@ modificare il codice e sui commit (PROMPT_OPERATIVO_ASTROLAB.md, §6).
 **Mappa pubblico / privato** (criterio: la pagina chiama `richiediLogin`)
 - Private: `cambia_password`, `compare_ril`, `compare_rs`, `dashboard`, gli 8 `help_*`,
   `index`, `ricerca`, `ricerca_rl`, `rilocazione`, `rl`, `rs`, `stampa`, `tema`,
-  `test_stelline_v2`, `transiti`.
+  `transiti`. (`test_stelline_v2` rimosso: pagina eliminata, vedi
+  `docs/SICUREZZA_HARDENING_2026-09.md`)
 - Pubbliche (senza login): `login`, `logout`, `registrazione`, `verifica-email` e il file
   statico `34_regole.html`.
 - `admin_utenti.php` non chiama `richiediLogin`: la protezione è presumibilmente
@@ -82,8 +83,13 @@ modificare il codice e sui commit (PROMPT_OPERATIVO_ASTROLAB.md, §6).
 - Eventuali guide su Rivoluzione Solare, Rivoluzione Lunare e rilocazione.
 
 ## Fase 5 — Pulizia pre-VPS
-- Non devono essere serviti: `www/rilocazione.php.bak`, `www/test_stelline_v2.php`,
-  `www/tests/`, `www/composer.json`, `www/composer.lock`, `www/vendor/` (tracciato in git).
+- [x] `www/rilocazione.php.bak` — rimosso dal repo (risolto nella sessione di hardening
+  2026-09, vedi `docs/SICUREZZA_HARDENING_2026-09.md`).
+- [x] `www/test_stelline_v2.php` — pagina eliminata (stessa sessione).
+- [x] `www/tests/` — spostato fuori dal docroot in `tests/`, montato in sola lettura
+  su `/var/www/tests` (stessa sessione).
+- [ ] `www/composer.json`, `www/composer.lock`, `www/vendor/` (tracciato in git) — ancora
+  da affrontare, non toccato nella sessione di hardening.
 - Da verificare: `www/uploads/`. Da decidere: `34_regole.html` (vedi decisioni aperte).
 
 ## Fase 6 — Server VPS
