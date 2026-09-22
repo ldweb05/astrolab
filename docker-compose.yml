@@ -11,6 +11,7 @@ services:
     volumes:
       - ./www:/var/www/html
       - ./php-config/php.ini:/usr/local/etc/php/php.ini
+      - ./tests:/var/www/tests:ro
     env_file:
       - .env
     environment:
