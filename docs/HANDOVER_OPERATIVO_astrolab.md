@@ -4170,3 +4170,25 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** decidere se e come procedere con la Fase 2 (fondamenta tecniche) e chiudere le decisioni aperte; nessuna modifica al codice senza approvazione.
 
 ---
+
+## 25-09-2026 — Casa: confronto con Aladino e pre-ingresso dei pianeti lenti ad avviso (UX-0025)
+
+**Data:** 25-09-2026
+
+**Componente modificato:** codice: `www/includes/RuleEngine.php` (`calcolaVeti()` e `valuta()`). Test: nuovo `tests/test_confronto_aladino_casa.php` (fuori dal docroot, sola lettura). Documentazione: `docs/ux-astrolab/DECISION_LOG_ux.md` (UX-0025) e questo handover.
+
+**Obiettivo:** confrontare la ricerca Casa di ASTROLAB con il software ufficiale Aladino (soggetto Lorenzo Diana, RS 05/09/2027 21:30 GMT) e allineare il piu' possibile le posizioni dei pianeti nelle case; non e' richiesto che le localita' coincidano (Aladino usa un database di aeroporti diverso).
+
+**Analisi svolta:** trascritte dagli screenshot di Aladino 103 localita' (longitudine 41°52'-45°32' Est; Aladino usa longitudine negativa per Est e coordinate in gradi,primi). Lo script `tests/test_confronto_aladino_casa.php` le passa alla pipeline reale della condizione Casa (stessa di `tests/test_casa.php`). RS e posizioni planetarie coincidono con Aladino (21:30:09 GMT); in tutte le 103 localita' ASTROLAB trova Mercurio+Venere in IV. Esito iniziale: 96/103 (93,2%). Le 7 escluse lo erano tutte per il veto "Urano entro 3° prima della cuspide di I/XII RS" (blocco "Fail-safe 1 v4.1" di `calcolaVeti()`); Aladino le accetta con 5 stelle, segnalandole con "/U". Verifica su `docs/status/34_regole_rsm.md`: nessuna regola esclude Saturno/Urano/Nettuno/Plutone in I/VI/XII (Regole 4, 5, 16 citano solo ASC, stellium, Sole, Marte; Urano compare solo nei transiti).
+
+**Modifica (UX-0025):** in `calcolaVeti()` il pre-ingresso entro 3° sulle cuspidi di I/VI/XII resta veto solo per Sole e Marte (ciclo `[0, 4]` al posto di `array_merge([0], self::MALEVOLI)`; la costante `MALEVOLI` non e' toccata). In `valuta()`, dopo le note della Regola 33, nuovo blocco che per Saturno/Urano/Nettuno/Plutone nello stesso caso genera una nota AVV (codici `PRE1`/`PRE6`/`PRE12`). Soglia lasciata a 3° (non 2,5° della Regola 32) per scelta prudenziale del committente. Vale per tutte le condizioni, perche' `RuleEngine::valuta()` e' comune.
+
+**Test eseguiti:** `php -l` nel container su `includes/RuleEngine.php` e sullo script di test; `git diff --check` pulito sui file del lavoro; riavvio `astrolab-web`; confronto Aladino: 103/103 (100%); regressione `tests/test_casa.php` (Rossella Fumai 2026): 4620 processati, 100 mostrati, ordinamento coerente; test funzionale nel browser della ricerca Casa: OK.
+
+**Commit Git:** vedi commit successivo a questa voce.
+
+**Note e punti aperti:** la soglia di 3° del pre-ingresso per Sole/Marte/ASC resta diversa dai 2,5° della Regola 32: eventuale allineamento da valutare con una decisione separata e un confronto dedicato con Aladino. Il significato esatto di "/U" in Aladino non e' confermato (ipotesi: segnalazione di Urano). `www/index.html` (landing page in costruzione per la VPS) e la modifica a `docs/PROMPT_OPERATIVO_ASTROLAB.md` restano fuori da questo lavoro.
+
+**Passo successivo:** eventuale confronto con Aladino sulle altre condizioni (Decima, Amore, Lavoro, Salute), con lo stesso metodo dello script di confronto.
+
+---

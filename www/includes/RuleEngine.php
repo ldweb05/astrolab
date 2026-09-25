@@ -426,6 +426,28 @@ class RuleEngine {
             }
         }
 
+        // UX-0025: pre-ingresso entro 3° di Saturno/Urano/Nettuno/Plutone
+        // sulle cuspidi di I/VI/XII RS — declassato da veto a nota
+        // informativa non bloccante (nessuna delle 34 regole esclude questi
+        // pianeti in I/VI/XII: Regole 4/5/16/32). Sole e Marte restano veto
+        // in calcolaVeti().
+        foreach ([1, 6, 12] as $casaPre) {
+            if (!isset($case[$casaPre]['longitudine'])) continue;
+            foreach ([6, 7, 8, 9] as $idLento) {
+                if (!isset($pianeti[$idLento])) continue;
+                if ((int)$pianeti[$idLento]['casa'] === $casaPre) continue;
+                $diffPre = $this->diffAngolo($pianeti[$idLento]['longitudine'], $case[$casaPre]['longitudine']);
+                if ($diffPre > -3.0 && $diffPre < 0.0) {
+                    $nomePre = self::VAL_NOMI[$idLento] ?? '?';
+                    $note[] = [
+                        'codice' => 'PRE' . $casaPre,
+                        'tipo'   => 'AVV',
+                        'nota'   => "{$nomePre} a " . round(abs($diffPre), 1) . "° dalla {$casaPre}a casa RS (pre-ingresso) — posizione delicata, valuta con attenzione",
+                    ];
+                }
+            }
+        }
+
         // ── FASE 3: FILTRO ASTRI IN CASA ─────────────────────────────────
         $penalitaAstri = $this->filtraAstri($astriInCasa, $pianeti);
 
@@ -638,7 +660,9 @@ class RuleEngine {
         foreach ([1, 6, 12] as $casaVeto) {
             if (!isset($case[$casaVeto])) continue;
             $cuspideVeto = $case[$casaVeto]['longitudine'];
-            foreach (array_merge([0], self::MALEVOLI) as $idMal) {
+            // UX-0025: solo Sole e Marte restano veto in pre-ingresso (Regole 4/5/32);
+            // Saturno/Urano/Nettuno/Plutone generano una nota in valuta().
+            foreach ([0, 4] as $idMal) {
                 if (!isset($pianeti[$idMal])) continue;
                 $lonMal = $pianeti[$idMal]['longitudine'];
                 // Il pianeta è già assegnato a questa casa da SweCalc?

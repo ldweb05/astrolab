@@ -800,4 +800,23 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0025 - Pre-ingresso di Saturno/Urano/Nettuno/Plutone in I/VI/XII declassato da veto ad avviso
+
+- **Data:** 2026-09-25
+- **Area:** `includes/RuleEngine.php` - `calcolaVeti()` (blocco "Fail-safe 1 v4.1") e `valuta()` (canale `$note`).
+- **Stato:** APPROVATA
+- **Problema osservato:** nel confronto con il software ufficiale Aladino (soggetto Lorenzo Diana, RS 2027, condizione Casa, 103 localita' campione, script `tests/test_confronto_aladino_casa.php`) ASTROLAB coincide sui pianeti in IV casa in tutte le 103 localita' (Mercurio+Venere), ma ne esclude 7, tutte per "Urano entro 3 gradi prima della cuspide di I/XII RS". Aladino accetta le stesse localita' con 5 stelle, segnalandole con "/U".
+- **Verifica sulle 34 regole:** nessuna regola esclude una RS per Saturno/Urano/Nettuno/Plutone in I/VI/XII. Le Regole 4, 5 e 16 indicano come pericolosi in quelle case solo ASC, stellium, Sole e Marte; Urano compare solo a proposito dei transiti (Regole 11, 14, 16, 17, 22, 23). La Regola 32 ("astro potenzialmente pericoloso") e' coerente solo con gli astri che le Regole 4/5 vietano in quelle case. Il codice produceva inoltre un'incoerenza: escludeva un pianeta lento a meno di 3 gradi *prima* della cuspide, ma non lo stesso pianeta gia' *dentro* la casa.
+- **Decisione:**
+  1. Il pre-ingresso entro 3 gradi di Saturno, Urano, Nettuno e Plutone sulle cuspidi di I/VI/XII RS non genera piu' un veto ma una nota informativa (canale `$note`, tipo AVV, stesso schema di UX-0007/UX-0013). Vale per tutte le condizioni.
+  2. Il pre-ingresso di Sole e Marte resta un veto (Regole 4, 5, 32).
+  3. La soglia di pre-ingresso resta a 3 gradi (non 2,5 come la Regola 32): scelta prudenziale del committente.
+- **Motivazione:** allineamento alle 34 regole e ad Aladino; coerente con quanto gia' deciso per Salute il 2026-08-21 (stessi pianeti declassati ad avviso), declassamento che con UX-0024 veniva di fatto annullato dal veto generale di `RuleEngine`.
+- **Beneficio atteso:** sul campione Aladino, allineamento dal 93,2% al 100%.
+- **Costo tecnico stimato:** BASSO.
+- **Rischi:** modifica in un file condiviso da tutte le condizioni - da verificare con `tests/test_confronto_aladino_casa.php` e `tests/test_casa.php`.
+- **Documento collegato:** `docs/status/34_regole_rsm.md` (Regole 4, 5, 16, 32), UX-0007, UX-0013, UX-0024.
+
+---
+
 Nessuna ulteriore decisione registrata.
