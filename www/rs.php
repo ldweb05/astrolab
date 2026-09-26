@@ -148,7 +148,7 @@ if ($soggetto) {
                 <?php endfor; ?>
             </select>
         </div>
-        <input type="hidden" id="condizione" value="Decima">
+        <input type="hidden" id="condizione" value="<?= htmlspecialchars($condizioneRS_Url ?? 'Decima') ?>">
         <div class="form-group luogo-group">
             <label>Luogo RS</label>
             <div class="luogo-rs-wrap">
