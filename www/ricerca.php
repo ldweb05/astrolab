@@ -438,6 +438,7 @@ return [
 'giorno' => (int)$dateGmt->format('d'),
 'mese'   => (int)$dateGmt->format('m'),
 'anno'   => (int)$dateGmt->format('Y'),
+'data_nascita_locale' => substr((string)$s['data_nascita'], 0, 10),
 'ora_gmt'=> (int)$oraGmtParts[0] + ((int)($oraGmtParts[1] ?? 0) / 60),
 'lat'    => (float)$s['latitudine'],
 'lon'    => (float)$s['longitudine'],
@@ -1855,6 +1856,27 @@ function getRisultatiConfronto() {
 function setFiltroNaz(v)    { stato.filtroNaz = v; stato.pagina = 1; renderTabella(); }
 function setFiltroStelle(v) { stato.filtroStelle = parseInt(v)||0; stato.pagina = 1; renderTabella(); }
 
+// ── Anno RS predefinito (solo ricerca.php) ─────────────────────────────────
+function annoRsPredefinito(s) {
+    const oggi = new Date();
+    const anno = oggi.getFullYear();
+    if (!s || !s.data_nascita_locale) return anno;
+    const parti = s.data_nascita_locale.split('-');
+    const mese = parseInt(parti[1], 10);
+    const giorno = parseInt(parti[2], 10);
+    if (!mese || !giorno) return anno;
+    const compleanno = new Date(anno, mese - 1, giorno);
+    const oggiSenzaOra = new Date(anno, oggi.getMonth(), oggi.getDate());
+    return oggiSenzaOra > compleanno ? anno + 1 : anno;
+}
+function impostaAnnoRsPredefinito() {
+    const s = getSoggetto();
+    if (!s) return;
+    const sel = document.getElementById('anno-rs');
+    const valore = String(annoRsPredefinito(s));
+    if ([...sel.options].some(o => o.value === valore)) sel.value = valore;
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
 applicaRestrizioniInterfaccia();
@@ -1863,6 +1885,9 @@ aggiornaSommarioAstri();
 onCondizioneChange(document.getElementById('condizione').value);
 caricaNazioniLocalita();
 onTipoLocalitaChange(document.getElementById('tipo-localita').value);
+// Anno RS predefinito: dal giorno dopo il compleanno si propone la prossima RS
+impostaAnnoRsPredefinito();
+document.getElementById('sel-soggetto').addEventListener('change', impostaAnnoRsPredefinito);
 ripristinaStatoRicerca();
 
 document.getElementById('risultati-area').addEventListener('change', function(event) {

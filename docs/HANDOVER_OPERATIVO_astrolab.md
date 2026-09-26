@@ -4192,3 +4192,23 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** eventuale confronto con Aladino sulle altre condizioni (Decima, Amore, Lavoro, Salute), con lo stesso metodo dello script di confronto.
 
 ---
+
+## 26-09-2026 — Ricerca RS: anno RS predefinito sulla prossima RS dopo il compleanno
+
+**Data:** 26-09-2026
+
+**Componente modificato:** `www/ricerca.php` (solo Ricerca RS). Non toccati `www/ricerca_rl.php`, `www/dashboard.php` e `www/includes/RicercaPageData.php` (condiviso con dashboard e ricerca RL).
+
+**Obiettivo:** nel combo "Anno RS" proporre gia' l'anno della prossima RS quando il compleanno del soggetto e' passato. Esempio: soggetto ID=23, compleanno 05/09; fino al 05/09/2026 compreso resta 2026, dal 06/09/2026 viene proposto 2027, perche' la RS dell'anno in corso non e' piu' quella su cui concentrarsi.
+
+**Modifica:** aggiunto a `soggettiData` il campo `data_nascita_locale` (data di nascita locale, non convertita in GMT, per evitare lo scarto di un giorno nelle nascite notturne). Aggiunte le funzioni page-scoped `annoRsPredefinito()` e `impostaAnnoRsPredefinito()`: se la data odierna del browser e' successiva al compleanno dell'anno corrente, il combo passa ad anno + 1; il giorno stesso del compleanno resta sull'anno corrente. La funzione viene chiamata al caricamento e al cambio del soggetto (nuovo listener `change` su `#sel-soggetto`), subito prima di `ripristinaStatoRicerca()`, cosi' un anno salvato in sessionStorage ha la precedenza. L'anno resta modificabile a mano. Nessuna modifica a CSS/JS condivisi.
+
+**Test eseguiti:** patch testata prima nel sandbox (MD5 del file di partenza verificato identico sul Pi: `71280afe...`, dopo la patch `aef702d5...`); logica verificata con node (05/09 -> 2026, 06/09 e 26/09 -> 2027, compleanno a dicembre -> 2026); `php -l ricerca.php` nel container; `git status` e `git diff --check` puliti (25 righe aggiunte, nessuna cancellata); riavvio `astrolab-web`; test funzionale nel browser (soggetto con compleanno passato, soggetto con compleanno futuro, cambio soggetto senza ricarica, anno scelto a mano): OK.
+
+**Commit Git:** vedi commit successivo a questa voce.
+
+**Note e punti aperti:** `www/index.html` (landing page in costruzione per la VPS) e la modifica a `docs/PROMPT_OPERATIVO_ASTROLAB.md` restano fuori da questo lavoro. La data di riferimento e' quella del browser di chi si collega. Stesso comportamento non esteso a `ricerca_rl.php` e `dashboard.php`, per scelta del committente.
+
+**Passo successivo:** nessuno per questa voce.
+
+---
