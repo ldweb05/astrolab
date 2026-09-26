@@ -235,6 +235,7 @@ if (!raw) {
                 <p><strong>Anno:</strong> ${payload.anno}</p>
                 <p><strong>Condizione:</strong> ${condizione}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
+                <p><button type="button" class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button></p>
 
                 <div class="compare-rsm-grid ${risultati.length === 3 ? 'compare-rsm-grid-3' : ''}">
                     ${schede}

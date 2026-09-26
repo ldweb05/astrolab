@@ -233,6 +233,7 @@ if (!raw) {
                 <h3>Comparatore RL</h3>
                 <p><strong>Soggetto:</strong> ${nomeSoggetto}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
+                <p><button type="button" class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button></p>
                 <div class="compare-ril-grid ${risultati.length === 3 ? 'compare-ril-grid-3' : ''}">
                     ${schede}
                 </div>

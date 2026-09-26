@@ -4212,3 +4212,41 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno per questa voce.
 
 ---
+## 26-09-2026 bis — Sessioni RS salvate: condizione sempre "Decima"
+
+**Data:** 26-09-2026
+
+**Componente modificato:** `www/rs.php` (una riga).
+
+**Problema:** in "Sessioni RS salvate per questo soggetto" la colonna Condizione mostrava sempre "Decima", anche per RSM salvate partendo da una ricerca con altra condizione (es. Casa, destinazione Sharm el Sheik).
+
+**Causa:** non era un problema di visualizzazione ma di salvataggio. `rs.php` leggeva e validava `$condizioneRS_Url` dal parametro `&condizione=` (passato correttamente da `ricerca.php`), ma non lo usava: il campo nascosto `#condizione` aveva il valore fisso `Decima` fin dall'import iniziale. Il JS lo leggeva per il calcolo, lo copiava in `ultimaRSCalcolata.condizione` e lo inviava a `api/sessioni_api.php`. Effetto collaterale: anche la valutazione stelline in `rs.php` veniva calcolata sempre con Decima.
+
+**Modifica:** `<input type="hidden" id="condizione" value="<?= htmlspecialchars($condizioneRS_Url ?? 'Decima') ?>">`. Senza parametro in URL il default resta Decima. Nessuna modifica a API, CSS o JS condivisi.
+
+**Test eseguiti:** patch testata nel sandbox; `php -l rs.php` nel container; `git status`, `git diff --check` e `git diff` puliti; riavvio `astrolab-web`; test nel browser (ricerca con Casa -> apertura RS -> salvataggio -> colonna Condizione = Casa; apertura da dashboard senza parametro -> Decima): OK.
+
+**Commit Git:** `44f05d7`.
+
+**Note e punti aperti:** le sessioni salvate prima del fix restano registrate come "Decima" nel DB; vanno risalvate (o corrette puntualmente) se servono con la condizione reale.
+
+**Passo successivo:** nessuno per questa voce.
+
+---
+## 26-09-2026 ter — Comparator RS e Comparatore RL: pulsante "Mostra Gradi"
+
+**Data:** 26-09-2026
+
+**Componenti modificati:** `www/compare_rs.php`, `www/compare_ril.php` (una riga ciascuno).
+
+**Obiettivo:** nel confronto tra 2-3 RS o rilocazioni mancava il pulsante "Mostra Gradi" presente nelle altre pagine con ruota (rs.php, rl.php, transiti.php, tema.php).
+
+**Modifica:** aggiunto nella card di riepilogo, sotto "Localita' confrontate", un unico pulsante con lo stesso markup delle altre pagine (`id="btn-toggle-gradi"`, classe `.btn-toggle-gradi`, `onclick="toggleGradiPianeti()"`). `ZodiacWheel.toggleGradi()` agisce su tutte le `.grado-pianeta` della pagina, quindi un solo clic mostra/nasconde i gradi su tutte le ruote confrontate; le ruote disegnate dopo il clic ne rispettano lo stato perche' `disegna()` riapplica `_applicaStatoGradi()`. Per scelta del committente non aggiunto "Mostra Cuspidi". Nessuna modifica a `js/zodiac_wheel.js` o `css/style.css`.
+
+**Test eseguiti:** patch testate nel sandbox; `php -l` nel container su entrambi i file; `git status`, `git diff --check` e `git diff` puliti; riavvio `astrolab-web`; test nel browser su Comparator RS e Comparatore RL (mostra/nascondi su tutte le ruote, testo del pulsante che alterna): OK.
+
+**Commit Git:** vedi commit successivo a questa voce.
+
+**Passo successivo:** nessuno per questa voce.
+
+---
