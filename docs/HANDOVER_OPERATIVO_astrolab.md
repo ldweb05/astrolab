@@ -4228,7 +4228,7 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 
 **Commit Git:** `44f05d7`.
 
-**Note e punti aperti:** le sessioni salvate prima del fix restano registrate come "Decima" nel DB; vanno risalvate (o corrette puntualmente) se servono con la condizione reale.
+**Note e punti aperti:** la sessione Sharm el Sheik (condizione Casa, salvata come "Decima" prima del fix) e' stata eliminata dal committente dalle Sessioni RS; verificato nel DB che il record non e' piu' presente in `sessioni_rs` (anno 2027) e che non restano RL orfane in `sessioni_rl`. Le sessioni salvate dopo il fix (Luxor, Larnaca) risultano registrate con condizione Casa. Nessun punto aperto.
 
 **Passo successivo:** nessuno per questa voce.
 
