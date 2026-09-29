@@ -109,8 +109,10 @@ $idxFotoProfilo = $stmtIdxFoto->fetchColumn() ?: null;
                     <input type="text" id="nome" placeholder="Es: Mario Rossi" required>
                 </div>
                 <div class="form-group">
-                    <label>Codice (opzionale)</label>
-                    <input type="text" id="codice" placeholder="Es: MR001">
+                    <label>Codice</label>
+                    <input type="text" id="codice" readonly tabindex="-1" class="readonly-field"
+                           placeholder="Assegnato automaticamente al salvataggio"
+                           title="Il codice viene assegnato automaticamente e non è modificabile">
                 </div>
             </div>
 

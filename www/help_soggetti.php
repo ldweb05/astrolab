@@ -45,7 +45,7 @@ $auth->richiediLogin();
         <p>Dal pulsante "+ Nuovo Soggetto" compila:</p>
         <ul>
             <li><strong>Nome e Cognome</strong> — obbligatorio.</li>
-            <li><strong>Codice</strong> (opzionale) — un tuo codice identificativo personale, es. "MR001".</li>
+            <li><strong>Codice</strong> — assegnato automaticamente al salvataggio: le iniziali del tuo nome e cognome seguite da un numero progressivo (es. "LD001", "LD002"). Non è modificabile e un numero già usato non viene mai riassegnato, nemmeno dopo l'eliminazione del soggetto.</li>
             <li><strong>Data di Nascita</strong> e <strong>Ora Locale</strong> — obbligatori. Puoi indicare anche Ora GMT / Offset GMT se li conosci già.</li>
             <li><strong>Luogo di Nascita</strong> — cerca la città: latitudine, longitudine, paese e fuso orario si compilano automaticamente.</li>
             <li><strong>Città di Residenza</strong> (opzionale) — stesso meccanismo di ricerca, utile per calcoli di rilocazione.</li>
