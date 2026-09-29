@@ -770,9 +770,40 @@ Riferimenti operativi dettagliati: `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.
   numero progressivo, es. `LD001`, `RF120`), blocco B (login dei soggetti con sessione e
   credenziali separate da quelle degli astrologi), blocco C (Diario RSM). Migrazioni:
   `sql/010` e `sql/011` (blocco A, applicate), `sql/012` (blocco B), `sql/013` (blocco C).
-- Stato: design concordato con il committente (decisioni C1-C12 e D1-D16). Blocco A in
-  corso: Fasi A1-A3 completate il 29-09-2026 (commit `9f612a5`, `1d0f278`, `f0fc22f`), A4 da
+- Stato: design concordato con il committente (decisioni C1-C12 e D1-D16). Blocco A
+  completato il 29-09-2026 (commit `9f612a5`, `1d0f278`, `f0fc22f`, `b13a33a`); blocco B da
   fare. La feature e' progettata fin da subito per la futura VPS
   pubblica (CSRF, blocco tentativi di login, escaping, noindex).
-- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voce da aggiungere a fine
-  feature.
+- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voce 29-09-2026 (blocco A).
+
+---
+
+## BUG APERTO — Eliminazione utente con trasferimento dei soggetti a se stesso (scoperto 29-09-2026)
+
+Stato: **aperto, fix rimandato per decisione del committente** (29-09-2026). Non causato dal
+lavoro sul CODICE automatico: e' un difetto preesistente, emerso durante i test del blocco A.
+
+- Sintomo: in `admin_utenti.php` l'eliminazione di un utente che ha soggetti termina con
+  "Fatal error: Uncaught PDOException: SQLSTATE[23502] ... null value in column utente_id of
+  relation soggetti" se nel menu "Trasferisci i soggetti a" e' selezionato l'utente stesso.
+- Causa: il menu del modale elenca tutti gli utenti, compreso quello da eliminare.
+  `Auth::eliminaUtente($id, $trasferisciA)` non controlla che `$trasferisciA` sia diverso da
+  `$id`: l'UPDATE dei soggetti non cambia nulla, poi il DELETE dell'utente attiva la FK
+  `soggetti_utente_id_fkey` (ON DELETE SET NULL) su una colonna NOT NULL e il DB rifiuta.
+  Trasferimento ed eliminazione non sono in una transazione. Il DB resta comunque integro
+  (verificato il 29-09-2026: nessuna modifica dopo l'errore).
+- Workaround: nel modale scegliere un utente diverso da quello da eliminare, oppure eliminare
+  prima i soggetti dell'utente e poi l'utente (pulsante di eliminazione diretta).
+- Fix gia' progettato e collaudato nel sandbox (non applicato), due file:
+  1. `www/includes/Auth.php`, `eliminaUtente()`: rifiuta trasferimento verso lo stesso utente
+     o verso un utente inesistente (solo se ci sono soggetti da spostare), rifiuta un utente
+     da eliminare inesistente, esegue UPDATE + DELETE in una transazione con rollback, e
+     restituisce `['ok' => bool, 'errore' => string]` invece di un booleano.
+  2. `www/admin_utenti.php`: usa `$result['errore']` nel messaggio e, in `apriModaleElimina()`,
+     esclude dal menu l'utente da eliminare preselezionando il primo utente valido.
+  I due file vanno applicati insieme, con un solo riavvio del container dopo entrambi
+  (cambia il tipo restituito da `eliminaUtente()`). Collaudo sandbox: 9 casi su 9 OK
+  (trasferimento a se stesso, destinazione inesistente, proprio account, utente inesistente,
+  trasferimento valido con codice soggetto invariato, utente senza soggetti).
+- Nota correlata: un soggetto trasferito mantiene il proprio CODICE (vedi
+  `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`, nota dopo C8).

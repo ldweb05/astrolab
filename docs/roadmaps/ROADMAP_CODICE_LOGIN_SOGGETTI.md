@@ -2,9 +2,9 @@
 
 **Creata:** 29-09-2026
 **Branch:** `main`
-**Stato:** design concordato con il committente il 29-09-2026 (decisioni C1-C12). Fasi A1-A3
-completate il 29-09-2026 (vedi §4); A4 e blocco B da eseguire una fase alla volta, ciascuna
-su conferma esplicita.
+**Stato:** design concordato con il committente il 29-09-2026 (decisioni C1-C12). Blocco A
+(Fasi A1-A4) completato il 29-09-2026 (vedi §4); blocco B da eseguire una fase alla volta,
+ciascuna su conferma esplicita.
 **Collegata a:** `docs/roadmaps/ROADMAP_DIARIO_RSM.md` (blocco C), di cui questa roadmap è
 prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto stesso.
 
@@ -74,6 +74,12 @@ prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto ste
   simultanei) si ricalcola e si riprova. Il campo CODICE in `index.php` diventa di sola
   lettura (mostrato, non modificabile). In modifica di un soggetto il codice non cambia.
 - **C8 — Soggetti esistenti:** nessun intervento, tutti hanno già un codice valido.
+- **Nota — trasferimento di soggetti (29-09-2026):** quando l'admin elimina un astrologo e ne
+  trasferisce i soggetti a un altro, i soggetti mantengono il proprio CODICE (es. `RO001`
+  resta `RO001` anche sotto lodian). È un comportamento voluto: il CODICE diventerà lo
+  username di login del soggetto e non deve mai cambiare; da quel momento il prefisso non
+  indica più l'astrologo attuale. Bug aperto collegato all'eliminazione con trasferimento:
+  vedi `docs/roadmaps/ROADMAP.md`, sezione "BUG APERTO — Eliminazione utente".
 
 ### Blocco B — Login dei soggetti
 - **C9 — Credenziali separate:** nuova tabella `accessi_soggetti` (una riga per soggetto
@@ -107,7 +113,7 @@ propri soggetti. Ogni controllo è lato server.
 | A1 | Migrazione `sql/010_codice_soggetti.sql`: `utenti.prefisso_codice` + valori RF/LD/AD | `sql/` | Completata (`9f612a5`) |
 | A2 | Generazione automatica del codice all'inserimento del soggetto, contatore che non riusa i numeri | `sql/011_contatore_codice.sql`, `www/includes/CodiceSoggetto.php`, `www/api/soggetti_api.php` | Completata (`1d0f278`) |
 | A3 | Campo CODICE di sola lettura nel form soggetto, manuale aggiornato | `www/index.php`, `www/help_soggetti.php` | Completata (`f0fc22f`) |
-| A4 | Nome e Cognome in registrazione + calcolo prefisso; username in forma di codice rifiutati (C12) | `www/registrazione.php`, `www/includes/Auth.php` | Da fare |
+| A4 | Nome e Cognome in registrazione + calcolo prefisso; username in forma di codice rifiutati (C12) | `www/registrazione.php`, `www/includes/Auth.php` | Completata (`b13a33a`) |
 | B1 | Migrazione `sql/012_accessi_soggetti.sql` | `sql/` | Da fare |
 | B2 | Login del soggetto, sessione dedicata, blocco tentativi, cambio password obbligatorio | `www/includes/Auth.php`, `www/login.php` | Da fare |
 | B3 | Abilitazione accesso e password provvisoria dalla scheda soggetto | `www/index.php`, `www/api/soggetti_api.php` | Da fare |

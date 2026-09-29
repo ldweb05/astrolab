@@ -128,6 +128,17 @@ Il riferimento operativo dedicato è
 `docs/roadmaps/roadmap_registrazioneutenti.md`; la decisione architetturale corrispondente
 è ADR-016, con stato `Accettata`.
 
+Dal 29-09-2026 il CODICE dei soggetti e' assegnato in automatico al salvataggio: prefisso di
+2 lettere dell'astrologo (iniziali di nome e cognome, salvato una sola volta in
+`utenti.prefisso_codice`) + numero progressivo di almeno 3 cifre (es. `LD001`, `RF120`). Il
+numero deriva da un contatore per astrologo (`utenti.ultimo_numero_codice`) che non torna mai
+indietro, quindi il codice di un soggetto eliminato non viene riassegnato; nel form soggetto
+il campo e' di sola lettura. La registrazione pubblica chiede ora Nome e Cognome e rifiuta gli
+username in forma di codice soggetto (2 lettere + cifre). Logica in
+`www/includes/CodiceSoggetto.php`, migrazioni `sql/010` e `sql/011`. E' il blocco A di un
+lavoro piu' ampio (login dei soggetti con il proprio CODICE e Diario RSM, non ancora
+realizzati): riferimento operativo `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`.
+
 La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org
 è mantenuta separatamente nel documento `docs/roadmaps/roadmap_comparazione_myastral.md`,
 che costituisce il riferimento ufficiale per le attività di allineamento con

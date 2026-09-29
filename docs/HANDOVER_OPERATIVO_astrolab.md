@@ -4250,3 +4250,36 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno per questa voce.
 
 ---
+## 29-09-2026 — Diario RSM e CODICE soggetti: pianificazione e blocco A (CODICE automatico)
+
+**Data:** 29-09-2026
+
+**Componente modificato:** codice: nuove migrazioni `sql/010_codice_soggetti.sql` e `sql/011_contatore_codice.sql` (applicate al DB del Pi), nuovo `www/includes/CodiceSoggetto.php`, `www/api/soggetti_api.php`, `www/index.php`, `www/help_soggetti.php`, `www/includes/Auth.php`, `www/registrazione.php`. Documentazione: nuove `docs/roadmaps/ROADMAP_DIARIO_RSM.md` e `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`, `docs/roadmaps/ROADMAP.md`, `docs/START_HERE.md` e questo handover.
+
+**Obiettivo:** richiesta del committente: permettere di salvare i viaggi fatti per una RSM (localita', periodo, albergo, costi, trasporti, note) e condividere le sole informazioni di viaggio con gli altri astrologi (esempio: RSM 2022 a Longyearbyen, Svalbard). Chi inserisce i dati del viaggio e' il soggetto stesso, che accede con il proprio CODICE. Il lavoro e' diviso in tre blocchi: A (CODICE automatico), B (login dei soggetti), C (Diario RSM). In questa sessione: pianificazione completa e blocco A.
+
+**Analisi svolta:** `soggetti.codice` era facoltativo e libero, con vincolo UNIQUE gia' presente nel DB (non riportato in `sql/schema_baseline.sql`). Codici reali: `RF001`-`RF005` (roxy), `LD001` (lodian), `TEST01` (admin). `Auth::isLoggedIn()` si basa su `$_SESSION['utente_id']`, e `$_SESSION['soggetto_id']` e' gia' usato per il soggetto attivo dell'astrologo (da non riusare per il login dei soggetti). Non esiste un blocco dei tentativi di login falliti. La registrazione pubblica non chiedeva nome e cognome.
+
+**Decisioni:** roadmap Diario RSM (D1-D16: due livelli privato/condiviso, contributi per autore con username visibile, costi condivisi solo come spesa indicativa, nel condiviso solo anno e mese del viaggio perche' la data esatta rivelerebbe il compleanno dell'autore, raggruppamento per nome + nazione, predisposizione per la VPS pubblica). Roadmap CODICE e login soggetti (C1-C12: prefisso di 2 lettere salvato una sola volta, regola anti-conflitto con prima lettera fissa = iniziale del nome, credenziali e sessione dei soggetti separate da quelle degli astrologi). Durante la Fase A2 e' emerso che "numero piu' alto + 1" avrebbe riassegnato il numero dell'ultimo soggetto eliminato: aggiunto il contatore `utenti.ultimo_numero_codice` (migrazione 011) e rinumerate le migrazioni successive (012 accessi soggetti, 013 Diario).
+
+**Modifica (blocco A):**
+- A1 `9f612a5`: migrazione 010, colonna `utenti.prefisso_codice` (univoca, `^[A-Z]{2}$`), valori RF/LD/AD.
+- A2 `1d0f278`: migrazione 011 (contatore inizializzato a RF=5, LD=1, AD=0); `CodiceSoggetto.php` (normalizzazione degli accenti, candidati del prefisso, prefisso occupato anche se usato in codici di soggetti altrui, `generaCodice()` con `SELECT ... FOR UPDATE` sulla riga dell'astrologo); `soggetti_api.php`: codice generato lato server nella transazione dell'INSERT, ignorato il valore del browser, codice non piu' aggiornato in modifica.
+- A3 `f0fc22f`: campo CODICE di sola lettura in `index.php` (classe gia' esistente `readonly-field`), voce del manuale in `help_soggetti.php`.
+- A4 `b13a33a`: `registrazione.php` con Nome e Cognome obbligatori; `Auth::registraUtentePubblico()` salva `nome_completo` e calcola il prefisso (un errore sul prefisso non blocca la registrazione: verra' calcolato al primo soggetto); username in forma di codice soggetto rifiutati anche in `creaUtente()`. `login()`, `isLoggedIn()` e `richiediLogin()` non toccati. Utenti creati dall'admin: prefisso calcolato al primo soggetto da `nome_completo`.
+
+**Punti di ripristino:** tag `restore/pre-codice-soggetti-2026-09-29` (`main` @ `cf2df8c`); backup DB `~/backup-temp/astrolab_pre010_2026-09-29.dump` (formato custom, fuori dal repository).
+
+**Test eseguiti:** migrazioni e codice collaudati prima nel sandbox (PostgreSQL 16, PHP 8.3, schema completo ricostruito da baseline + migrazioni): 13 casi su `CodiceSoggetto` (prefisso RO per Rosa Fumai con RF occupato, accenti, numeri non riusati dopo eliminazione, rollback, oltre 999), 3 processi x 25 inserimenti simultanei (75 codici distinti e consecutivi), 16 casi sul vero `Auth.php` (registrazione, validazioni, login di un astrologo identico prima e dopo). Sul Pi: `php -l` nel container, `git diff --check`, MD5 dei file identici al sandbox, riavvio `astrolab-web`, test nel browser: codice automatico LD002/LD003 con numeri non riusati, codice invariato in modifica, campo di sola lettura, manuale, registrazione di un astrologo di prova "Rosa Filotto" con prefisso RO e primo soggetto RO001 (account e soggetto di prova poi eliminati). Tutto OK.
+
+**Commit Git:** `98a4252`, `cf2df8c`, `577277a` (roadmap), `9f612a5`, `1d0f278`, `f0fc22f`, `b13a33a` (codice). Questa voce: vedi commit successivo.
+
+**Note e punti aperti:**
+- BUG APERTO (preesistente, emerso nei test): eliminazione di un utente con soggetti quando nel menu "Trasferisci i soggetti a" e' selezionato l'utente stesso -> errore fatale (vincolo NOT NULL su `soggetti.utente_id`), DB integro. Fix progettato e collaudato ma rimandato dal committente: dettagli e workaround in `docs/roadmaps/ROADMAP.md`, sezione "BUG APERTO — Eliminazione utente".
+- Un soggetto trasferito a un altro astrologo mantiene il proprio CODICE (voluto: sara' lo username di login).
+- Le pagine d'errore mostrano percorsi e stack trace: da disattivare sulla VPS (`display_errors=Off`).
+- `www/index.html` (landing page) e la modifica a `docs/PROMPT_OPERATIVO_ASTROLAB.md` restano fuori da questo lavoro; nel prompt c'e' uno spazio finale alla riga 186 segnalato da `git diff --check`.
+
+**Passo successivo:** blocco B (login dei soggetti), a partire dalla migrazione `sql/012_accessi_soggetti.sql`.
+
+---
