@@ -153,6 +153,8 @@ misure deve dare per scontata la protezione della VPN.
 - `display_errors=Off` in produzione; header di sicurezza (CSP, `X-Content-Type-Options`,
   `Referrer-Policy`) a livello di Apache o reverse proxy.
 - Nuove tabelle incluse nei backup del DB della VPS.
+- IP reale del client dietro il reverse proxy per tutti i limiti per IP del login (astrologi e
+  soggetti): vedi `docs/roadmaps/ROADMAP.md`, sezione "PUNTO APERTO — Limite per IP del login".
 - **GDPR / informativa privacy:** dichiarare che lo username è visibile agli altri utenti
   sui contributi e che, alla cancellazione dell'account, i contributi restano senza autore
   (D12). Punto di attenzione: il testo libero di un contributo potrebbe contenere dati

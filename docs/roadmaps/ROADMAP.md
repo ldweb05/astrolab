@@ -807,3 +807,31 @@ lavoro sul CODICE automatico: e' un difetto preesistente, emerso durante i test 
   trasferimento valido con codice soggetto invariato, utente senza soggetti).
 - Nota correlata: un soggetto trasferito mantiene il proprio CODICE (vedi
   `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`, nota dopo C8).
+
+---
+
+## PUNTO APERTO — Limite per IP del login (`loginRateLimit()`) da correggere (scoperto 29-09-2026)
+
+Stato: **aperto, da correggere** (deciso dal committente il 29-09-2026). Difetto preesistente,
+emerso durante il test del blocco dei tentativi del login soggetti (Fase B2).
+
+- Sintomo: durante il test, dopo il login di un soggetto, 5 password errate e un 6o tentativo,
+  anche il login dell'astrologo `lodian` dallo stesso computer e' stato rifiutato con
+  "Troppi tentativi di accesso. Riprova piu' tardi." per circa 15 minuti.
+- Causa: `loginRateLimit()` in `www/login.php` (10 tentativi in 15 minuti per IP, file
+  temporanei in `sys_get_temp_dir()`) ha tre limiti:
+  1. conta **tutti** i tentativi, anche i login riusciti: chi entra ed esce spesso si blocca da solo;
+  2. e' **condiviso da tutti gli utenti dello stesso IP** (famiglia, studio, stessa connessione):
+     un soggetto che sbaglia la password puo' bloccare anche il proprio astrologo;
+  3. i file temporanei si azzerano al riavvio del container.
+- Rischio sulla VPS: se l'app sara' dietro un reverse proxy, `$_SERVER['REMOTE_ADDR']` potrebbe
+  essere per tutti l'IP del proxy: un solo utente che sbaglia bloccherebbe l'accesso a tutti.
+  Lo stesso vale per il limite per IP del login soggetti (tabella `tentativi_login_soggetti`).
+- Correzione indicata (non ancora progettata nel dettaglio):
+  1. contare solo i tentativi **falliti** (come gia' fa il login soggetti);
+  2. valutare un blocco per singolo account anche per gli astrologi, come per i soggetti;
+  3. al trasferimento su VPS, ricavare l'IP reale del client dall'header del reverse proxy
+     (es. `X-Forwarded-For`), fidandosi solo del proxy configurato, sia in `loginClientIp()`
+     sia nel login soggetti.
+- Il limite per IP del login soggetti (5 errori in 15 minuti, solo tentativi falliti, nel DB)
+  funziona correttamente: verificato il 29-09-2026 (vedi `ROADMAP_CODICE_LOGIN_SOGGETTI.md`, C12).

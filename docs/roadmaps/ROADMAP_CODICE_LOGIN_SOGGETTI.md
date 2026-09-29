@@ -108,6 +108,12 @@ prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto ste
   gli astrologi. Gli username degli astrologi non possono avere la forma di un codice
   (2 lettere + sole cifre), per evitare ambiguità nel form di login unico; oggi nessuno
   username esistente ha questa forma.
+  Il form di login è unico, quindi anche il login del soggetto passa prima dal limite per IP
+  già esistente `loginRateLimit()` (10 tentativi in 15 minuti, riusciti compresi). *Punto
+  aperto (29-09-2026):* quel limite è condiviso tra astrologi e soggetti dello stesso IP e
+  va corretto; sulla VPS entrambi i limiti per IP dovranno leggere l'IP reale dietro il
+  reverse proxy. Dettagli in `docs/roadmaps/ROADMAP.md`, sezione "PUNTO APERTO — Limite
+  per IP del login".
 
 **Permessi del soggetto (vincolo inderogabile):** vede e modifica solo i propri viaggi e i
 propri contributi condivisi, e legge i contributi condivisi degli altri. Non vede mai dati
