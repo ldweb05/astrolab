@@ -77,6 +77,8 @@ function registrationRateLimit(string $ip): bool
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = trim((string)($_POST["username"] ?? ""));
+    $nome = trim((string)($_POST["nome"] ?? ""));
+    $cognome = trim((string)($_POST["cognome"] ?? ""));
     $email = trim((string)($_POST["email"] ?? ""));
     $password = (string)($_POST["password"] ?? "");
     $passwordConfirm = (string)($_POST["password_confirm"] ?? "");
@@ -89,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } elseif ($password !== $passwordConfirm) {
         $errore = "Le password non coincidono.";
     } else {
-        $result = $auth->registraUtentePubblico($username, $email, $password);
+        $result = $auth->registraUtentePubblico($username, $email, $password, $nome, $cognome);
 
         if ($result["ok"] === true) {
             $successo = true;
@@ -216,13 +218,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                        value="<?= htmlspecialchars($_SESSION["registration_csrf"], ENT_QUOTES, "UTF-8") ?>">
 
                 <div class="form-group">
+                    <label for="nome">Nome</label>
+                    <input id="nome" type="text" name="nome"
+                           maxlength="100" autocomplete="given-name"
+                           value="<?= htmlspecialchars($_POST["nome"] ?? "", ENT_QUOTES, "UTF-8") ?>"
+                           required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="cognome">Cognome</label>
+                    <input id="cognome" type="text" name="cognome"
+                           maxlength="100" autocomplete="family-name"
+                           value="<?= htmlspecialchars($_POST["cognome"] ?? "", ENT_QUOTES, "UTF-8") ?>"
+                           required>
+                </div>
+
+                <div class="form-group">
                     <label for="username">Username</label>
                     <input id="username" type="text" name="username"
                            minlength="3" maxlength="60"
                            pattern="[A-Za-z0-9._-]+"
                            autocomplete="username"
                            value="<?= htmlspecialchars($_POST["username"] ?? "", ENT_QUOTES, "UTF-8") ?>"
-                           required autofocus>
+                           required>
                 </div>
 
                 <div class="form-group">

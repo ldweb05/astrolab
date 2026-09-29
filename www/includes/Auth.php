@@ -274,13 +274,27 @@ class Auth {
     public function registraUtentePubblico(
         string $username,
         string $email,
-        string $password
+        string $password,
+        string $nome = '',
+        string $cognome = ''
     ): array {
         $username = trim($username);
         $email = mb_strtolower(trim($email));
+        // Nome e Cognome obbligatori, spazi multipli ridotti a uno
+        // (ROADMAP_CODICE_LOGIN_SOGGETTI.md, C5).
+        $nome    = trim((string)preg_replace('/\s+/u', ' ', $nome));
+        $cognome = trim((string)preg_replace('/\s+/u', ' ', $cognome));
 
         if (preg_match('/^[a-zA-Z0-9._-]{3,60}$/', $username) !== 1) {
             return ['ok' => false, 'errore' => 'Username non valido: usa 3-60 caratteri, lettere, numeri, punto, trattino o underscore.'];
+        }
+        if ($this->usernameFormaCodice($username)) {
+            return ['ok' => false, 'errore' => 'Username non valido: non può avere la forma di un codice soggetto (es. LD001).'];
+        }
+        if ($nome === '' || $cognome === ''
+            || mb_strlen($nome) > 100 || mb_strlen($cognome) > 100
+            || preg_match('/\p{L}/u', $nome) !== 1 || preg_match('/\p{L}/u', $cognome) !== 1) {
+            return ['ok' => false, 'errore' => 'Inserisci nome e cognome (massimo 100 caratteri ciascuno).'];
         }
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || mb_strlen($email) > 200) {
             return ['ok' => false, 'errore' => 'Indirizzo email non valido.'];
@@ -294,19 +308,31 @@ class Auth {
             $stmt = $this->pdo->prepare(
                 "INSERT INTO utenti (
                     username, email, password_hash, ruolo, attivo,
-                    account_status, plan_id
+                    account_status, plan_id, nome_completo
                  )
-                 SELECT ?, ?, ?, 'user', TRUE, 'active', id
+                 SELECT ?, ?, ?, 'user', TRUE, 'active', id, ?
                  FROM piani
                  WHERE code = 'free' AND is_active = TRUE
                  LIMIT 1
                  RETURNING id"
             );
-            $stmt->execute([$username, $email, $hash]);
+            $stmt->execute([$username, $email, $hash, $nome . ' ' . $cognome]);
             $id = $stmt->fetchColumn();
 
             if ($id === false) {
                 return ['ok' => false, 'errore' => 'Piano gratuito non disponibile.'];
+            }
+
+            // Prefisso del CODICE soggetti (C1, C3-C5). Un errore qui non blocca
+            // la registrazione: il prefisso verra' calcolato al primo soggetto.
+            try {
+                require_once __DIR__ . '/CodiceSoggetto.php';
+                $prefisso = CodiceSoggetto::calcolaPrefisso($this->pdo, $nome, $cognome, (int)$id);
+                $this->pdo->prepare(
+                    "UPDATE utenti SET prefisso_codice = ? WHERE id = ? AND prefisso_codice IS NULL"
+                )->execute([$prefisso, (int)$id]);
+            } catch (Throwable $e) {
+                error_log('registraUtentePubblico prefisso: ' . $e->getMessage());
             }
 
             $verificationToken = $this->creaTokenSicurezza(
@@ -327,6 +353,16 @@ class Auth {
         }
     }
 
+
+    /**
+     * Vero se lo username ha la forma di un CODICE soggetto (2 lettere + sole
+     * cifre, es. LD001): vietato per gli astrologi (C12), per non creare
+     * ambiguita' con il login dei soggetti.
+     */
+    private function usernameFormaCodice(string $username): bool
+    {
+        return preg_match('/^[A-Za-z]{2}[0-9]+$/', trim($username)) === 1;
+    }
 
     // ── TOKEN SICUREZZA ───────────────────────────────────────────
 
@@ -695,6 +731,9 @@ class Auth {
         string $telefono       = '',
         string $note           = ''
     ): array {
+        if ($this->usernameFormaCodice($username)) {
+            return ['ok' => false, 'errore' => 'Username non valido: non può avere la forma di un codice soggetto (es. LD001).'];
+        }
         if (strlen($password) < 8) {
             return ['ok' => false, 'errore' => 'Password troppo corta (min 8 caratteri).'];
         }
