@@ -95,6 +95,187 @@ class Auth {
         session_destroy();
     }
 
+    // ── LOGIN SOGGETTI ────────────────────────────────────────────
+    // docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md, blocco B (C9-C12).
+    // Credenziali in accessi_soggetti, username = soggetti.codice. La sessione
+    // del soggetto usa solo $_SESSION['accesso_soggetto'] e non contiene mai
+    // utente_id: tutte le pagine protette da richiediLogin() restano chiuse.
+
+    private const SOGGETTO_MAX_TENTATIVI = 5;
+    private const SOGGETTO_BLOCCO_MINUTI = 15;
+    // Hash bcrypt di una stringa casuale, usato solo per uguagliare i tempi di
+    // risposta quando il codice non esiste (nessuna password corrisponde).
+    private const SOGGETTO_HASH_FITTIZIO = '$2y$10$HWE6uECEKb3kBVxzhiNpKuZHMZPjNbuKNpAhC22MFmJCmu4vg2U3.';
+
+    /** Vero se il testo ha la forma di un CODICE soggetto (2 lettere + cifre). */
+    public function isFormaCodiceSoggetto(string $testo): bool
+    {
+        return $this->usernameFormaCodice($testo);
+    }
+
+    public function loginSoggetto(string $codice, string $password, string $ip): array
+    {
+        $erroreGenerico = ['ok' => false, 'errore' => 'Credenziali non valide.'];
+        $erroreBlocco   = ['ok' => false, 'errore' => 'Troppi tentativi di accesso. Riprova tra qualche minuto.'];
+        $ipHash = hash('sha256', $ip);
+        $codice = strtoupper(trim($codice));
+
+        // Pulizia dei tentativi piu' vecchi di un giorno.
+        $this->pdo->exec(
+            "DELETE FROM tentativi_login_soggetti WHERE creato_il < NOW() - INTERVAL '1 day'"
+        );
+
+        // Limite per IP: impedisce di provare molti codici in sequenza.
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM tentativi_login_soggetti
+              WHERE ip_hash = ? AND creato_il > NOW() - (? * INTERVAL '1 minute')"
+        );
+        $stmt->execute([$ipHash, self::SOGGETTO_BLOCCO_MINUTI]);
+        if ((int)$stmt->fetchColumn() >= self::SOGGETTO_MAX_TENTATIVI) {
+            return $erroreBlocco;
+        }
+
+        $stmt = $this->pdo->prepare(
+            "SELECT a.soggetto_id, a.password_hash, a.attivo, a.deve_cambiare_password,
+                    (a.bloccato_fino IS NOT NULL AND a.bloccato_fino > NOW()) AS bloccato,
+                    s.codice
+               FROM accessi_soggetti a
+               JOIN soggetti s ON s.id = a.soggetto_id
+              WHERE UPPER(TRIM(s.codice)) = ?
+              LIMIT 1"
+        );
+        $stmt->execute([$codice]);
+        $accesso = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Limite per account.
+        if ($accesso && $accesso['bloccato']) {
+            return $erroreBlocco;
+        }
+
+        // Verifica sempre una password, anche per un codice inesistente, cosi'
+        // i tempi di risposta non rivelano quali codici esistono.
+        $hash = $accesso
+            ? (string)$accesso['password_hash']
+            : self::SOGGETTO_HASH_FITTIZIO;
+        $passwordValida = password_verify($password, $hash);
+
+        if (!$accesso || !$accesso['attivo'] || !$passwordValida) {
+            $this->pdo->prepare(
+                "INSERT INTO tentativi_login_soggetti (ip_hash) VALUES (?)"
+            )->execute([$ipHash]);
+            if ($accesso) {
+                $stmt = $this->pdo->prepare(
+                    "UPDATE accessi_soggetti SET tentativi_falliti = tentativi_falliti + 1
+                      WHERE soggetto_id = ? RETURNING tentativi_falliti"
+                );
+                $stmt->execute([(int)$accesso['soggetto_id']]);
+                if ((int)$stmt->fetchColumn() >= self::SOGGETTO_MAX_TENTATIVI) {
+                    $this->pdo->prepare(
+                        "UPDATE accessi_soggetti
+                            SET tentativi_falliti = 0,
+                                bloccato_fino = NOW() + (? * INTERVAL '1 minute')
+                          WHERE soggetto_id = ?"
+                    )->execute([self::SOGGETTO_BLOCCO_MINUTI, (int)$accesso['soggetto_id']]);
+                }
+            }
+            return $erroreGenerico;
+        }
+
+        $this->pdo->prepare(
+            "UPDATE accessi_soggetti
+                SET tentativi_falliti = 0, bloccato_fino = NULL, ultimo_accesso = NOW()
+              WHERE soggetto_id = ?"
+        )->execute([(int)$accesso['soggetto_id']]);
+
+        // Rigenera session ID per prevenire session fixation
+        if (!headers_sent()) {
+            session_regenerate_id(true);
+        }
+
+        // Nessuna chiave da astrologo nella sessione del soggetto.
+        $_SESSION = [];
+        $_SESSION['accesso_soggetto'] = [
+            'soggetto_id'            => (int)$accesso['soggetto_id'],
+            'codice'                 => (string)$accesso['codice'],
+            'deve_cambiare_password' => (bool)$accesso['deve_cambiare_password'],
+        ];
+
+        return [
+            'ok'                     => true,
+            'deve_cambiare_password' => (bool)$accesso['deve_cambiare_password'],
+        ];
+    }
+
+    public function isLoggedInSoggetto(): bool
+    {
+        return !empty($_SESSION['accesso_soggetto']['soggetto_id']);
+    }
+
+    /**
+     * Richiede il login di un soggetto. Ricontrolla nel DB che l'accesso sia
+     * ancora attivo (l'astrologo puo' disattivarlo in ogni momento) e, se il
+     * cambio password e' ancora dovuto, rimanda alla pagina di cambio.
+     */
+    public function richiediLoginSoggetto(bool $consentiCambioPassword = false): array
+    {
+        if (!$this->isLoggedInSoggetto()) {
+            header('Location: /login.php');
+            exit;
+        }
+        $stmt = $this->pdo->prepare(
+            "SELECT a.attivo, a.deve_cambiare_password, s.codice
+               FROM accessi_soggetti a
+               JOIN soggetti s ON s.id = a.soggetto_id
+              WHERE a.soggetto_id = ?"
+        );
+        $stmt->execute([(int)$_SESSION['accesso_soggetto']['soggetto_id']]);
+        $riga = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$riga || !$riga['attivo']) {
+            $this->logout();
+            header('Location: /login.php');
+            exit;
+        }
+        $_SESSION['accesso_soggetto']['codice'] = (string)$riga['codice'];
+        $_SESSION['accesso_soggetto']['deve_cambiare_password'] = (bool)$riga['deve_cambiare_password'];
+        if ($riga['deve_cambiare_password'] && !$consentiCambioPassword) {
+            header('Location: /cambio_password_soggetto.php');
+            exit;
+        }
+        return $_SESSION['accesso_soggetto'];
+    }
+
+    public function cambiaPasswordSoggetto(int $soggettoId, string $attuale, string $nuova): array
+    {
+        if (strlen($nuova) < 8) {
+            return ['ok' => false, 'errore' => 'La nuova password deve avere almeno 8 caratteri.'];
+        }
+        if ($nuova === $attuale) {
+            return ['ok' => false, 'errore' => 'La nuova password deve essere diversa da quella attuale.'];
+        }
+        $stmt = $this->pdo->prepare(
+            "SELECT password_hash FROM accessi_soggetti WHERE soggetto_id = ? AND attivo"
+        );
+        $stmt->execute([$soggettoId]);
+        $hash = $stmt->fetchColumn();
+        if ($hash === false || !password_verify($attuale, (string)$hash)) {
+            return ['ok' => false, 'errore' => 'Password attuale non corretta.'];
+        }
+        $this->pdo->prepare(
+            "UPDATE accessi_soggetti
+                SET password_hash = ?, deve_cambiare_password = FALSE,
+                    password_impostata_il = NOW()
+              WHERE soggetto_id = ?"
+        )->execute([password_hash($nuova, PASSWORD_DEFAULT), $soggettoId]);
+
+        if (!headers_sent()) {
+            session_regenerate_id(true);
+        }
+        if ($this->isLoggedInSoggetto()) {
+            $_SESSION['accesso_soggetto']['deve_cambiare_password'] = false;
+        }
+        return ['ok' => true];
+    }
+
     // ── CONTROLLI ─────────────────────────────────────────────────
 
     public function isLoggedIn(): bool {

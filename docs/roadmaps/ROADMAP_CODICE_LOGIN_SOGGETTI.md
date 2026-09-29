@@ -129,9 +129,9 @@ propri soggetti. Ogni controllo è lato server.
 | A3 | Campo CODICE di sola lettura nel form soggetto, manuale aggiornato | `www/index.php`, `www/help_soggetti.php` | Completata (`f0fc22f`) |
 | A4 | Nome e Cognome in registrazione + calcolo prefisso; username in forma di codice rifiutati (C12) | `www/registrazione.php`, `www/includes/Auth.php` | Completata (`b13a33a`) |
 | B1 | Migrazione `sql/012_accessi_soggetti.sql`: tabelle `accessi_soggetti` e `tentativi_login_soggetti` | `sql/` | Completata (29-09-2026) |
-| B2 | Login del soggetto, sessione dedicata, blocco tentativi, cambio password obbligatorio | `www/includes/Auth.php`, `www/login.php` | Da fare |
+| B2 | Login del soggetto, sessione dedicata, blocco tentativi, cambio password obbligatorio | `www/includes/Auth.php`, `www/login.php`, `www/cambio_password_soggetto.php` | Completata (29-09-2026) |
 | B3 | Pulsante di abilitazione accesso nella lista soggetti, password provvisoria generata e mostrata una volta | `www/index.php`, `www/api/soggetti_api.php` | Da fare |
-| B4 | Area riservata del soggetto (solo Diario) | nuova pagina | Da fare |
+| B4 | Area riservata del soggetto (solo Diario) | `www/area_soggetto.php` | Segnaposto attivo (29-09-2026); contenuto con il blocco C |
 
 Il blocco C (Diario RSM) segue in `docs/roadmaps/ROADMAP_DIARIO_RSM.md`, con migrazione
 `sql/013_diario_rsm.sql`.

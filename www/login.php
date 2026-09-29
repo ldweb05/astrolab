@@ -15,6 +15,12 @@ if (!empty($_SESSION['utente_id'])) {
     exit;
 }
 
+// Soggetto gia' loggato con il proprio CODICE: va alla sua area riservata.
+if (!empty($_SESSION['accesso_soggetto']['soggetto_id'])) {
+    header('Location: area_soggetto.php');
+    exit;
+}
+
 require_once 'includes/Auth.php';
 
 $pdo = db_connect();
@@ -85,6 +91,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errore = 'Inserisci username e password.';
     } elseif (!loginRateLimit(loginClientIp())) {
         $errore = 'Troppi tentativi di accesso. Riprova più tardi.';
+    } elseif ($auth->isFormaCodiceSoggetto($username)) {
+        // Login del soggetto con il proprio CODICE (ROADMAP_CODICE_LOGIN_SOGGETTI.md,
+        // blocco B). Il parametro next viene ignorato: il soggetto va solo alla
+        // propria area.
+        $result = $auth->loginSoggetto($username, $password, loginClientIp());
+        if ($result['ok']) {
+            header('Location: ' . ($result['deve_cambiare_password']
+                ? 'cambio_password_soggetto.php'
+                : 'area_soggetto.php'));
+            exit;
+        }
+        $errore = $result['errore'];
     } else {
         $result = $auth->login($username, $password);
         if ($result['ok']) {
@@ -240,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="POST" action="login.php?next=<?= urlencode($next) ?>">
             <div class="form-group">
-                <label>Username</label>
+                <label>Username o codice soggetto</label>
                 <input type="text" name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
                        autocomplete="username" autofocus required>
             </div>
