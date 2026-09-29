@@ -2,7 +2,7 @@
 
 **Creata:** 29-09-2026
 **Branch:** `main`
-**Stato:** Fase 0 (design) — decisioni D1-D16 concordate con il committente il 29-09-2026; Fasi 1-5 da eseguire
+**Stato:** Fase 0 (design) — decisioni D1-D19 concordate con il committente il 29-09-2026; Fasi 1-5 da eseguire
 una alla volta, ciascuna su conferma esplicita.
 **Prerequisito:** `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md` (blocchi A e B: CODICE
 automatico e login dei soggetti). Le Fasi 1-5 di questa roadmap partono dopo quei blocchi.
@@ -57,13 +57,13 @@ precedenti. Nessuna modifica a `sessioni_rs` né ad altre tabelle esistenti.
 ### `viaggi_rsm` (privato)
 `id`, `utente_id` (FK `utenti`, nullable, ON DELETE CASCADE), `soggetto_id` (FK `soggetti`,
 nullable, ON DELETE CASCADE) — esattamente uno dei due valorizzato (D14), `sessione_rs_id`
-(FK `sessioni_rs`, nullable, ON DELETE SET NULL, impostabile solo dall'astrologo — D16), `luogo`, `nazione`, `latitudine`, `longitudine`,
+(FK `sessioni_rs`, nullable, ON DELETE SET NULL, impostabile solo dall'astrologo — D16), `luogo`, `iso_nazione` (D18), `latitudine`, `longitudine`,
 `data_arrivo`, `data_partenza`, `albergo`, `costo_alloggio`, `costo_trasporti`, `valuta`
 (default `EUR`), `trasporti` (testo), `note_private`, `creato_il`, `aggiornato_il`.
 
 ### `contributi_localita` (condiviso)
 `id`, `utente_id` (FK `utenti`, nullable, ON DELETE SET NULL — vedi D12), `soggetto_id` (FK
-`soggetti`, nullable, ON DELETE SET NULL — vedi D14), `luogo`, `nazione`, `latitudine`, `longitudine`,
+`soggetti`, nullable, ON DELETE SET NULL — vedi D14), `luogo`, `iso_nazione` (D18), `latitudine`, `longitudine`,
 `anno_viaggio`, `mese_viaggio` (1-12, nullable), `alloggio_nome`, `alloggio_tipo`
 (hotel / b&b / appartamento / guesthouse / campeggio / altro), `alloggio_sito`,
 `alloggio_fascia_prezzo`, `alloggio_giudizio`, `costo_alloggio_indicativo`,
@@ -76,6 +76,16 @@ true), `creato_il`, `aggiornato_il`.
 `id`, `contributo_id` (FK `contributi_localita`, ON DELETE CASCADE), `ordine`, `mezzo`
 (aereo / nave / treno / bus / auto / altro), `da_luogo`, `a_luogo`, `compagnia`,
 `durata_indicativa`, `costo_indicativo`, `valuta`, `note`.
+
+### `nazioni` (riferimento, D18)
+`iso` (codice ISO 3166-1 alpha-2, chiave), `nome_it` (nome italiano da CLDR, es. "Polinesia
+Francese"), `nome_en` (nome inglese, come in `localita.nazione`), `alias` (altri nomi
+cercabili, es. "Malvine", "Malvinas"). Popolata dalla migrazione con i dati CLDR (263 voci).
+
+### `nazioni_appartenenza` (riferimento, D19)
+`iso_territorio`, `iso_nazione` (chiave composta). Un territorio con codice ISO proprio
+compare anche sotto la nazione indicata: SJ → NO (Svalbard), GL e FO → DK, PF e NC → FR,
+FK → GB e AR (vedi D19), ecc. Elenco completo nella migrazione, da rivedere col committente.
 
 ## 5. Decisioni chiuse in Fase 0 (29-09-2026)
 
@@ -98,6 +108,26 @@ true), `creato_il`, `aggiornato_il`.
 - **D16 — Collegamento alla sessione RS:** solo l'astrologo può collegare un viaggio a una
   propria sessione RS salvata; il soggetto non vede mai sessioni, temi o dati di nascita
   (vincolo di `ROADMAP_CODICE_LOGIN_SOGGETTI.md`).
+- **D17 — Motore di ricerca (29-09-2026):** i contributi condivisi si consultano con una
+  ricerca libera per nazione o località (es. "Norvegia", "Australia", "Tokyo", "Svalbard"),
+  tollerante a maiuscole, accenti e piccoli errori (estensione `pg_trgm`, già presente). Una
+  nazione porta all'elenco delle sue località con contributi, ciascuna con il numero di
+  contributi; una località porta alla sua scheda. Senza testo si vede l'elenco delle nazioni
+  con contributi. Accessibile a tutti gli utenti loggati, astrologi e soggetti.
+- **D18 — Nazione per nome, mai per codice (29-09-2026):** nel DB la nazione è salvata come
+  codice ISO (`iso_nazione`), ma nell'interfaccia compare **sempre e solo il nome italiano**
+  (tabella `nazioni`, nomi CLDR). La ricerca accetta nome italiano, nome inglese e alias.
+  Motivo: il committente non conosce i codici (es. PF = Polinesia Francese, CY = Cipro), e un
+  testo libero renderebbe la ricerca inaffidabile ("Norvegia" / "Norway" / "NO").
+- **D19 — Territori con codice proprio (29-09-2026):** un territorio con codice ISO proprio
+  compare anche sotto la nazione di appartenenza (tabella `nazioni_appartenenza`), così
+  cercando "Norvegia" si trova Longyearbyen, che nella tabella `localita` è classificata SJ
+  (Svalbard e Jan Mayen). Lo stesso per Groenlandia (Danimarca), Polinesia Francese (Francia),
+  ecc. Le Isole Falkland compaiono come "Isole Falkland (Malvine)", come nella denominazione
+  usata dall'ONU, sono cercabili anche come "Malvine" / "Malvinas" e risultano sia sotto il
+  Regno Unito (amministrazione) sia sotto l'Argentina (rivendicazione): scelta di sola
+  navigazione, senza alcuna presa di posizione. Territori contesi senza un'appartenenza
+  univoca non vengono collegati ad alcuna nazione.
 
 ## 6. Fasi
 
@@ -107,7 +137,7 @@ true), `creato_il`, `aggiornato_il`.
 | 1 | Migrazione `sql/013_diario_rsm.sql` + applicazione sul DB del Pi | Da fare |
 | 2 | API `www/api/diario_rsm_api.php` (CRUD viaggi privati e contributi) | Da fare |
 | 3 | Pagina viaggi privati (astrologi e soggetti) + collegamento da "Sessioni RS salvate" in `rs.php` | Da fare |
-| 4 | Consultazione schede località condivise (lettura contributi e tratte) | Da fare |
+| 4 | Motore di ricerca (D17) e schede località condivise (lettura contributi e tratte) | Da fare |
 | 5 | Documentazione: HANDOVER, START_HERE, ROADMAP generale | Da fare |
 
 ## 7. Vincoli di sicurezza (da `docs/CHECKLIST_SICUREZZA_SVILUPPO.md` e specifici)
