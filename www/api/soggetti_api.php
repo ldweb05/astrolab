@@ -7,11 +7,13 @@ require_once __DIR__ . '/../includes/bootstrap.php';
  * - Tutte le SELECT filtrano per utente_id (eccetto admin che vede tutto)
  * - INSERT imposta utente_id = utente loggato
  * - UPDATE/DELETE verificano appartenenza
+ * - CODICE generato in automatico all'inserimento e non modificabile
  */
 header('Content-Type: application/json');
 session_start();
 
 require_once '../includes/Auth.php';
+require_once __DIR__ . '/../includes/CodiceSoggetto.php';
 
 $pdo = db_connect();
 $auth = new Auth($pdo);
@@ -92,35 +94,51 @@ switch ($action) {
             }
         }
 
-        $stmt = $pdo->prepare("
-            INSERT INTO soggetti
-            (codice, nome, data_nascita, ora_nascita, ora_nascita_gmt,
-             luogo_nascita, nazione_nascita, latitudine, longitudine,
-             timezone, offset_gmt, note,
-             residenza_luogo, residenza_latitudine, residenza_longitudine,
-             residenza_nazione, utente_id)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        ");
-        $stmt->execute([
-            $data['codice']               ?: null,
-            $data['nome'],
-            $data['data_nascita'],
-            $data['ora_nascita'],
-            $data['ora_nascita_gmt'],
-            $data['luogo_nascita'],
-            $data['nazione_nascita'],
-            $data['latitudine'],
-            $data['longitudine'],
-            $data['timezone']             ?: null,
-            $data['offset_gmt'],
-            $data['note']                 ?: null,
-            $data['residenza_luogo']      ?: null,
-            $data['residenza_latitudine'] ? floatval($data['residenza_latitudine']) : null,
-            $data['residenza_longitudine']? floatval($data['residenza_longitudine']): null,
-            $data['residenza_nazione']    ?: null,
-            $userId,   // sempre l'utente loggato
-        ]);
-        echo json_encode(['ok' => true, 'id' => $pdo->lastInsertId()]);
+        // CODICE generato lato server (ROADMAP_CODICE_LOGIN_SOGGETTI.md, C6-C7):
+        // il valore eventualmente inviato dal browser viene ignorato.
+        try {
+            $pdo->beginTransaction();
+            $codice = CodiceSoggetto::generaCodice($pdo, $userId);
+            $stmt = $pdo->prepare("
+                INSERT INTO soggetti
+                (codice, nome, data_nascita, ora_nascita, ora_nascita_gmt,
+                 luogo_nascita, nazione_nascita, latitudine, longitudine,
+                 timezone, offset_gmt, note,
+                 residenza_luogo, residenza_latitudine, residenza_longitudine,
+                 residenza_nazione, utente_id)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ");
+            $stmt->execute([
+                $codice,   // generato lato server (CodiceSoggetto)
+                $data['nome'],
+                $data['data_nascita'],
+                $data['ora_nascita'],
+                $data['ora_nascita_gmt'],
+                $data['luogo_nascita'],
+                $data['nazione_nascita'],
+                $data['latitudine'],
+                $data['longitudine'],
+                $data['timezone']             ?: null,
+                $data['offset_gmt'],
+                $data['note']                 ?: null,
+                $data['residenza_luogo']      ?: null,
+                $data['residenza_latitudine'] ? floatval($data['residenza_latitudine']) : null,
+                $data['residenza_longitudine']? floatval($data['residenza_longitudine']): null,
+                $data['residenza_nazione']    ?: null,
+                $userId,   // sempre l'utente loggato
+            ]);
+            $nuovoId = $pdo->lastInsertId();
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log('soggetti_api inserisci: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['errore' => 'Errore durante il salvataggio del soggetto.']);
+            break;
+        }
+        echo json_encode(['ok' => true, 'id' => $nuovoId, 'codice' => $codice]);
         break;
 
     case 'modifica':
@@ -131,7 +149,7 @@ switch ($action) {
         }
         $stmt = $pdo->prepare("
             UPDATE soggetti SET
-                codice=?, nome=?, data_nascita=?, ora_nascita=?,
+                nome=?, data_nascita=?, ora_nascita=?,
                 ora_nascita_gmt=?, luogo_nascita=?, nazione_nascita=?,
                 latitudine=?, longitudine=?, timezone=?, offset_gmt=?,
                 note=?,
@@ -141,7 +159,6 @@ switch ($action) {
             WHERE id=?
         ");
         $stmt->execute([
-            $data['codice']               ?: null,
             $data['nome'],
             $data['data_nascita'],
             $data['ora_nascita'],
