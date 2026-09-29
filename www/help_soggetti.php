@@ -65,7 +65,20 @@ $auth->richiediLogin();
 
     <div class="help-section">
         <h2>Azioni sulla tabella</h2>
-        <p>Per ogni soggetto: ⭐ imposta come attivo, <strong>TN</strong> calcola il Tema Natale, <strong>RS</strong> calcola la Rivoluzione Solare, ✏️ modifica, 🗑️ elimina.</p>
+        <p>Per ogni soggetto: ⭐ imposta come attivo, ✏️ modifica, 🔑 gestisce l'accesso del soggetto (vedi sotto), 🗑️ elimina. Cliccando sul nome si apre la dashboard del soggetto.</p>
+    </div>
+
+    <div class="help-section">
+        <h2>🔑 Accesso del soggetto</h2>
+        <p>Puoi permettere a un tuo soggetto di entrare in AstroLab con il proprio <strong>Codice</strong> (es. "LD004") per consultare la sua area personale, dove arriverà il Diario dei viaggi RSM. Il soggetto <strong>non vede mai</strong> temi, rivoluzioni, ricerche, dati di nascita o altri soggetti.</p>
+        <ul>
+            <li><strong>Abilitare l'accesso</strong> — clicca 🔑 nella riga del soggetto e poi "Abilita accesso": il sistema genera una <strong>password provvisoria</strong> e te la mostra <strong>una sola volta</strong>. Copiala e comunicala al soggetto insieme al suo Codice.</li>
+            <li><strong>Primo accesso</strong> — il soggetto entra dalla normale pagina di login scrivendo il Codice al posto dello username; al primo accesso deve sostituire la password provvisoria con una sua (almeno 8 caratteri).</li>
+            <li><strong>Password dimenticata</strong> — da 🔑 scegli "Genera nuova password": quella precedente smette subito di funzionare.</li>
+            <li><strong>Disattivare l'accesso</strong> — da 🔑 scegli "Disattiva accesso": il soggetto viene disconnesso e non può più entrare finché non lo riattivi (con una nuova password).</li>
+        </ul>
+        <p>Il colore dell'icona indica lo stato: sbiadita = accesso non abilitato, sfondo verde = accesso attivo, barrata = accesso disattivato.</p>
+        <div class="help-note">💡 Solo tu puoi gestire l'accesso dei tuoi soggetti: nemmeno l'amministratore può generare password per i soggetti di un altro astrologo. Dopo 5 password sbagliate l'accesso del soggetto viene bloccato per 15 minuti.</div>
     </div>
 
     <div class="help-section">

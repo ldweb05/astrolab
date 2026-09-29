@@ -4283,3 +4283,31 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** blocco B (login dei soggetti), a partire dalla migrazione `sql/012_accessi_soggetti.sql`.
 
 ---
+## 29-09-2026 (bis) — Login dei soggetti con il CODICE (blocco B)
+
+**Data:** 29-09-2026
+
+**Componente modificato:** codice: nuova migrazione `sql/012_accessi_soggetti.sql` (applicata al DB del Pi), `www/includes/Auth.php`, `www/login.php`, `www/api/soggetti_api.php`, `www/index.php`, `www/help_soggetti.php`; nuovi `www/cambio_password_soggetto.php`, `www/area_soggetto.php`, `www/js/accesso_soggetti.js`. Documentazione: `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`, `docs/roadmaps/ROADMAP.md`, `docs/roadmaps/ROADMAP_DIARIO_RSM.md`, `docs/START_HERE.md` e questo handover.
+
+**Obiettivo:** permettere al soggetto di entrare in AstroLab con il proprio CODICE (es. `LD001`) per usare la propria area, dove arrivera' il Diario RSM (blocco C), senza mai poter vedere pagine, dati o API dell'astrologo.
+
+**Decisioni (committente, 29-09-2026):** blocco dopo 5 tentativi falliti per 15 minuti, per account e per IP; password provvisoria generata dal sistema e mostrata una sola volta all'astrologo; pulsante di accesso nella lista soggetti di `index.php`; solo l'astrologo proprietario gestisce le credenziali dei propri soggetti, admin compreso. Scelte tecniche: tentativi per IP nel DB (non in file temporanei, che si azzerano al riavvio) con IP salvato solo come hash SHA-256; sessione del soggetto con la sola chiave `$_SESSION['accesso_soggetto']` e mai `utente_id` (le pagine protette da `richiediLogin()` restano chiuse senza modificarle); form di login unico, instradato sulla forma dello username (2 lettere + cifre).
+
+**Modifica (blocco B):**
+- B1 `a727f7b`: migrazione 012, tabelle `accessi_soggetti` (credenziali, attivo, cambio password dovuto, tentativi, blocco, date, `abilitato_da`) e `tentativi_login_soggetti` (hash IP + data). Backup DB prima dell'applicazione: `~/backup-temp/astrolab_pre012_2026-09-29.dump`.
+- B2 `61e1a7b`: in `Auth.php` solo metodi nuovi (`loginSoggetto()`, `isLoggedInSoggetto()`, `richiediLoginSoggetto()`, `cambiaPasswordSoggetto()`): messaggio d'errore sempre generico, verifica di un hash fittizio precalcolato per i codici inesistenti (tempi di risposta uguali), `session_regenerate_id()`, svuotamento della sessione da ogni chiave da astrologo, ricontrollo nel DB a ogni richiesta che l'accesso sia ancora attivo. `login.php` instrada i codici su `loginSoggetto()` (il parametro `next` e' ignorato per i soggetti) e l'etichetta del campo diventa "Username o codice soggetto". Pagine nuove `cambio_password_soggetto.php` (CSRF, noindex) e `area_soggetto.php` (segnaposto, nessun dato astrologico).
+- B3 `900ba5a`: `Auth::abilitaAccessoSoggetto()` / `disattivaAccessoSoggetto()`; in `api/soggetti_api.php` la lista espone solo `accesso_stato` e `accesso_gestibile` (mai l'hash) e le azioni `accesso_genera` / `accesso_disattiva` accettano solo POST `application/json` e solo per i soggetti dell'astrologo loggato; in `index.php` pulsante di accesso e finestra "Accesso soggetto"; nuovo `js/accesso_soggetti.js` (gestore delegato, nessun handler inline, testi con `textContent`).
+- Chiusura: manuale `help_soggetti.php` (sezione sull'accesso del soggetto; corretta anche la riga "Azioni sulla tabella", che citava pulsanti TN/RS non piu' presenti).
+
+**Test eseguiti:** sandbox (PostgreSQL 16, PHP 8.3, schema completo, server PHP locale): 24 casi sui metodi di `Auth.php` (blocco per account da IP diversi, blocco per IP su codici diversi, codice inesistente e accesso disattivato con messaggio generico, tempi uguali dopo la correzione con l'hash fittizio, cambio password, login astrologo invariato); scansione di tutti i 48 file PHP con la sessione di un soggetto (solo le pagine del soggetto e quelle pubbliche rispondono, le API dell'astrologo rispondono "Non autenticato"); test end-to-end della B3 (astrologo diverso e admin rifiutati, form non JSON rifiutato, nessun hash nella lista) e 8 casi della finestra con jsdom. Sul Pi: MD5 dei file identici al sandbox, `php -l` e `node --check`, riavvio `astrolab-web`, login astrologo invariato, primo accesso di LD001 con cambio password obbligatorio, blocco al 5o errore verificato nel DB, isolamento verificato lato server (pagine dell'astrologo -> rinvio al login, API -> 401), pulsante di accesso: disattivazione, riattivazione con nuova password, copia, login del soggetto con la nuova password. Tutto OK.
+
+**Commit Git:** `a727f7b`, `61e1a7b`, `900ba5a` (codice); `48fa647` (correzione documentale sul limite per IP gia' esistente), `9217aaa` (punto aperto sul limite per IP). Questa voce: vedi commit successivo.
+
+**Note e punti aperti:**
+- PUNTO APERTO emerso nei test: `loginRateLimit()` in `login.php` conta anche i login riusciti ed e' condiviso da tutti gli utenti dello stesso IP (durante il test ha bloccato anche `lodian` per 15 minuti); sulla VPS i limiti per IP dovranno leggere l'IP reale dietro il reverse proxy. Dettagli e correzione indicata in `docs/roadmaps/ROADMAP.md`, sezione "PUNTO APERTO — Limite per IP del login".
+- Il soggetto `LD001` (lodian) resta abilitato per i test del blocco C, su decisione del committente.
+- Resta aperto il BUG dell'eliminazione utente con trasferimento dei soggetti a se stesso (voce precedente).
+
+**Passo successivo:** blocco C (Diario RSM), a partire dalla migrazione `sql/013_diario_rsm.sql` (`docs/roadmaps/ROADMAP_DIARIO_RSM.md`).
+
+---

@@ -769,12 +769,15 @@ Riferimenti operativi dettagliati: `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.
 - Ordine di lavoro: blocco A (CODICE automatico: prefisso di 2 lettere dell'astrologo +
   numero progressivo, es. `LD001`, `RF120`), blocco B (login dei soggetti con sessione e
   credenziali separate da quelle degli astrologi), blocco C (Diario RSM). Migrazioni:
-  `sql/010` e `sql/011` (blocco A, applicate), `sql/012` (blocco B), `sql/013` (blocco C).
+  `sql/010` e `sql/011` (blocco A, applicate), `sql/012` (blocco B, applicata), `sql/013`
+  (blocco C).
 - Stato: design concordato con il committente (decisioni C1-C12 e D1-D16). Blocco A
-  completato il 29-09-2026 (commit `9f612a5`, `1d0f278`, `f0fc22f`, `b13a33a`); blocco B da
-  fare. La feature e' progettata fin da subito per la futura VPS
+  completato il 29-09-2026 (commit `9f612a5`, `1d0f278`, `f0fc22f`, `b13a33a`); blocco B
+  completato il 29-09-2026 (commit `a727f7b`, `61e1a7b`, `900ba5a`; l'area del soggetto e' per
+  ora un segnaposto); blocco C (Diario RSM) da fare. La feature e' progettata fin da subito per la futura VPS
   pubblica (CSRF, blocco tentativi di login, escaping, noindex).
-- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voce 29-09-2026 (blocco A).
+- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voci 29-09-2026 (blocco A e
+  blocco B).
 
 ---
 

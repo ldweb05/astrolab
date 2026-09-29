@@ -135,9 +135,20 @@ numero deriva da un contatore per astrologo (`utenti.ultimo_numero_codice`) che 
 indietro, quindi il codice di un soggetto eliminato non viene riassegnato; nel form soggetto
 il campo e' di sola lettura. La registrazione pubblica chiede ora Nome e Cognome e rifiuta gli
 username in forma di codice soggetto (2 lettere + cifre). Logica in
-`www/includes/CodiceSoggetto.php`, migrazioni `sql/010` e `sql/011`. E' il blocco A di un
-lavoro piu' ampio (login dei soggetti con il proprio CODICE e Diario RSM, non ancora
-realizzati): riferimento operativo `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`.
+`www/includes/CodiceSoggetto.php`, migrazioni `sql/010` e `sql/011`. Riferimento operativo
+`docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`.
+
+Dal 29-09-2026 un soggetto puo' accedere ad AstroLab con il proprio CODICE come username,
+dalla normale pagina di login. L'astrologo abilita, rigenera o disattiva l'accesso con il
+pulsante di accesso nella lista soggetti di `index.php`: la password provvisoria e' generata
+dal sistema, mostrata una sola volta e da cambiare al primo accesso. Credenziali in tabella
+`accessi_soggetti` (migrazione `sql/012`), separate da `utenti`; la sessione del soggetto usa
+solo `$_SESSION['accesso_soggetto']` e non contiene mai `utente_id`, quindi tutte le pagine e
+le API dell'astrologo restano chiuse al soggetto. Blocco dopo 5 tentativi falliti per 15
+minuti, per account e per IP (tabella `tentativi_login_soggetti`, IP solo come hash). Solo
+l'astrologo proprietario gestisce le credenziali dei propri soggetti, admin compreso. Pagine
+del soggetto: `cambio_password_soggetto.php` e `area_soggetto.php` (per ora segnaposto: il
+Diario RSM, blocco C di `docs/roadmaps/ROADMAP_DIARIO_RSM.md`, non e' ancora realizzato).
 
 La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org
 è mantenuta separatamente nel documento `docs/roadmaps/roadmap_comparazione_myastral.md`,
