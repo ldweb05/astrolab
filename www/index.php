@@ -346,6 +346,14 @@ function caricaSoggettiConDropdown() {
                     </td>`;
                 }
 
+                // Pulsante accesso del soggetto (Fase B3): solo per i propri soggetti.
+                const accStati  = { nessuno: 'Accesso non abilitato', attivo: 'Accesso attivo', disattivato: 'Accesso disattivato' };
+                const accStato  = accStati[s.accesso_stato] ? s.accesso_stato : 'nessuno';
+                const accCodice = String(s.codice || '').replace(/[^A-Za-z0-9]/g, '');
+                const accBtn    = (s.accesso_gestibile && accCodice)
+                    ? `<button type="button" class="btn-icon btn-accesso accesso-${accStato}" title="${accStati[accStato]}" data-accesso-id="${parseInt(s.id, 10)}" data-accesso-codice="${accCodice}" data-accesso-stato="${accStato}">🔑</button>`
+                    : '';
+
                 html += `<tr class="${isAttivo ? 'riga-soggetto-attivo' : ''}">
                     <td>${s.codice || '—'}</td>
                     <td><b><a onclick="apriDashboard(${s.id})" style="cursor:pointer;color:inherit;text-decoration:none;">${s.nome}</a></b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
@@ -359,6 +367,7 @@ function caricaSoggettiConDropdown() {
                     <td><div class="azioni">
                         <button class="btn-icon" title="Imposta attivo" onclick="impostaSoggettoAttivo(${s.id})">⭐</button>
                         <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${s.id})">✏️</button>
+                        ${accBtn}
                         <button class="btn-icon" title="Elimina" onclick="eliminaSoggetto(${s.id}, '${s.nome.replace(/'/g, "\\'")}')">🗑️</button>
                     </div></td>
                 </tr>`;
@@ -489,5 +498,40 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnSettings) { btnSettings.addEventListener('click', idxApriModaleImpostazioni); }
 });
 </script>
+<!-- Modale Accesso soggetto (Fase B3, docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md) -->
+<style>
+.btn-accesso.accesso-nessuno { opacity: 0.45; }
+.btn-accesso.accesso-attivo { background: #E8F5E9; }
+.btn-accesso.accesso-disattivato { opacity: 0.45; text-decoration: line-through; }
+.acc-riga { margin: 6px 0 14px; font-size: 14px; color: #444; }
+.acc-password { font-family: monospace; font-size: 22px; letter-spacing: 2px; background: #F5F5F5; border: 1px dashed #2C3E6B; border-radius: 6px; padding: 10px; text-align: center; margin: 8px 0; user-select: all; }
+.acc-avviso { font-size: 13px; color: #8A5A00; margin-bottom: 10px; }
+.acc-pulsanti { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.acc-btn-secondario { background: #fff; color: #8A1C1C; border: 1px solid #8A1C1C; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+</style>
+<div id="acc-modale-overlay" class="idx-modal-overlay">
+    <div class="idx-modal-box">
+        <div class="idx-modal-header">
+            <h2>🔑 Accesso soggetto</h2>
+            <button type="button" id="acc-btn-chiudi" class="idx-modal-close">&times;</button>
+        </div>
+        <div class="idx-modal-section">
+            <div class="acc-riga">Codice: <strong id="acc-codice"></strong> &middot; <span id="acc-stato"></span></div>
+            <div id="acc-msg" class="idx-modal-msg"></div>
+            <div id="acc-risultato" style="display:none">
+                <div class="acc-password" id="acc-password"></div>
+                <div class="acc-avviso">Comunica codice e password al soggetto: la password non verrà più mostrata. Al primo accesso dovrà cambiarla.</div>
+                <button type="button" id="acc-btn-copia" class="idx-btn-primary">Copia password</button>
+            </div>
+            <div class="acc-pulsanti">
+                <button type="button" id="acc-btn-abilita" class="idx-btn-primary">Abilita accesso</button>
+                <button type="button" id="acc-btn-rigenera" class="idx-btn-primary">Genera nuova password</button>
+                <button type="button" id="acc-btn-riattiva" class="idx-btn-primary">Riattiva (nuova password)</button>
+                <button type="button" id="acc-btn-disattiva" class="acc-btn-secondario">Disattiva accesso</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/accesso_soggetti.js"></script>
 </body>
 </html>

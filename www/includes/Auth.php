@@ -276,6 +276,47 @@ class Auth {
         return ['ok' => true];
     }
 
+    /**
+     * Abilita (o reimposta) l'accesso di un soggetto con una password
+     * provvisoria generata dal sistema (C11). La password viene restituita una
+     * sola volta: nel DB resta solo il suo hash. Il chiamante deve aver gia'
+     * verificato che il soggetto appartenga all'astrologo $astrologoId.
+     */
+    public function abilitaAccessoSoggetto(int $soggettoId, int $astrologoId): array
+    {
+        $alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+        $password = '';
+        for ($i = 0; $i < 12; $i++) {
+            $password .= $alfabeto[random_int(0, strlen($alfabeto) - 1)];
+        }
+        $this->pdo->prepare(
+            "INSERT INTO accessi_soggetti (soggetto_id, password_hash, abilitato_da)
+             VALUES (?, ?, ?)
+             ON CONFLICT (soggetto_id) DO UPDATE
+             SET password_hash = EXCLUDED.password_hash, attivo = TRUE,
+                 deve_cambiare_password = TRUE, tentativi_falliti = 0,
+                 bloccato_fino = NULL, password_impostata_il = NOW(),
+                 abilitato_da = EXCLUDED.abilitato_da"
+        )->execute([$soggettoId, password_hash($password, PASSWORD_DEFAULT), $astrologoId]);
+        return ['ok' => true, 'password' => $password];
+    }
+
+    /**
+     * Disattiva l'accesso di un soggetto. Una sessione del soggetto gia' aperta
+     * viene chiusa alla richiesta successiva (richiediLoginSoggetto()).
+     */
+    public function disattivaAccessoSoggetto(int $soggettoId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE accessi_soggetti SET attivo = FALSE WHERE soggetto_id = ?"
+        );
+        $stmt->execute([$soggettoId]);
+        if ($stmt->rowCount() !== 1) {
+            return ['ok' => false, 'errore' => "L'accesso di questo soggetto non e' abilitato."];
+        }
+        return ['ok' => true];
+    }
+
     // ── CONTROLLI ─────────────────────────────────────────────────
 
     public function isLoggedIn(): bool {

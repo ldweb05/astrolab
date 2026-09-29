@@ -3,8 +3,8 @@
 **Creata:** 29-09-2026
 **Branch:** `main`
 **Stato:** design concordato con il committente il 29-09-2026 (decisioni C1-C12). Blocco A
-(Fasi A1-A4) completato il 29-09-2026 (vedi §4); blocco B da eseguire una fase alla volta,
-ciascuna su conferma esplicita.
+(Fasi A1-A4) e blocco B (Fasi B1-B3) completati il 29-09-2026 (vedi §4); la Fase B4 è un
+segnaposto che riceve il contenuto con il blocco C (Diario RSM).
 **Collegata a:** `docs/roadmaps/ROADMAP_DIARIO_RSM.md` (blocco C), di cui questa roadmap è
 prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto stesso.
 
@@ -115,6 +115,13 @@ prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto ste
   reverse proxy. Dettagli in `docs/roadmaps/ROADMAP.md`, sezione "PUNTO APERTO — Limite
   per IP del login".
 
+**Gestione delle credenziali (Fase B3, 29-09-2026):** solo l'astrologo proprietario del
+soggetto può abilitare, rigenerare o disattivare l'accesso, **admin compreso** (l'admin non
+gestisce le credenziali dei soggetti di altri astrologi). Le azioni `accesso_genera` e
+`accesso_disattiva` di `api/soggetti_api.php` accettano solo POST con
+`Content-Type: application/json` (protezione CSRF leggera) e la lista soggetti espone solo lo
+stato dell'accesso, mai l'hash della password.
+
 **Permessi del soggetto (vincolo inderogabile):** vede e modifica solo i propri viaggi e i
 propri contributi condivisi, e legge i contributi condivisi degli altri. Non vede mai dati
 di nascita, temi, RS, RL, sessioni o altri soggetti. Il suo astrologo vede i viaggi dei
@@ -130,7 +137,7 @@ propri soggetti. Ogni controllo è lato server.
 | A4 | Nome e Cognome in registrazione + calcolo prefisso; username in forma di codice rifiutati (C12) | `www/registrazione.php`, `www/includes/Auth.php` | Completata (`b13a33a`) |
 | B1 | Migrazione `sql/012_accessi_soggetti.sql`: tabelle `accessi_soggetti` e `tentativi_login_soggetti` | `sql/` | Completata (29-09-2026) |
 | B2 | Login del soggetto, sessione dedicata, blocco tentativi, cambio password obbligatorio | `www/includes/Auth.php`, `www/login.php`, `www/cambio_password_soggetto.php` | Completata (29-09-2026) |
-| B3 | Pulsante di abilitazione accesso nella lista soggetti, password provvisoria generata e mostrata una volta | `www/index.php`, `www/api/soggetti_api.php` | Da fare |
+| B3 | Pulsante di abilitazione accesso nella lista soggetti, password provvisoria generata e mostrata una volta | `www/index.php`, `www/js/accesso_soggetti.js`, `www/api/soggetti_api.php`, `www/includes/Auth.php` | Completata (29-09-2026) |
 | B4 | Area riservata del soggetto (solo Diario) | `www/area_soggetto.php` | Segnaposto attivo (29-09-2026); contenuto con il blocco C |
 
 Il blocco C (Diario RSM) segue in `docs/roadmaps/ROADMAP_DIARIO_RSM.md`, con migrazione

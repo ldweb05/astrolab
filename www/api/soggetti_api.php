@@ -8,6 +8,7 @@ require_once __DIR__ . '/../includes/bootstrap.php';
  * - INSERT imposta utente_id = utente loggato
  * - UPDATE/DELETE verificano appartenenza
  * - CODICE generato in automatico all'inserimento e non modificabile
+ * - accesso_genera / accesso_disattiva: credenziali del soggetto (solo proprietario)
  */
 header('Content-Type: application/json');
 session_start();
@@ -48,18 +49,34 @@ switch ($action) {
                         u.username      AS astrologo_username,
                         u.nome_completo AS astrologo_nome_completo,
                         u.id            AS astrologo_id,
-                        u.ruolo         AS astrologo_ruolo
+                        u.ruolo         AS astrologo_ruolo,
+                        CASE WHEN a.soggetto_id IS NULL THEN 'nessuno'
+                             WHEN a.attivo THEN 'attivo'
+                             ELSE 'disattivato' END AS accesso_stato
                  FROM soggetti s
                  LEFT JOIN utenti u ON u.id = s.utente_id
+                 LEFT JOIN accessi_soggetti a ON a.soggetto_id = s.id
                  ORDER BY u.username, s.nome"
             )->fetchAll(PDO::FETCH_ASSOC);
         } else {
             $stmt = $pdo->prepare(
-                "SELECT * FROM soggetti WHERE utente_id = ? ORDER BY nome"
+                "SELECT s.*,
+                        CASE WHEN a.soggetto_id IS NULL THEN 'nessuno'
+                             WHEN a.attivo THEN 'attivo'
+                             ELSE 'disattivato' END AS accesso_stato
+                 FROM soggetti s
+                 LEFT JOIN accessi_soggetti a ON a.soggetto_id = s.id
+                 WHERE s.utente_id = ?
+                 ORDER BY s.nome"
             );
             $stmt->execute([$userId]);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
+        // Credenziali del soggetto gestibili solo dal suo astrologo (Fase B3).
+        foreach ($rows as &$riga) {
+            $riga['accesso_gestibile'] = ((int)$riga['utente_id'] === (int)$userId);
+        }
+        unset($riga);
         echo json_encode($rows);
         break;
 
@@ -205,6 +222,50 @@ switch ($action) {
             ]);
         } else {
             echo json_encode(['ok' => false, 'errore' => 'Soggetto non trovato o non autorizzato.']);
+        }
+        break;
+
+    case 'accesso_genera':
+    case 'accesso_disattiva':
+        // Accesso del soggetto con il proprio CODICE (ROADMAP_CODICE_LOGIN_SOGGETTI.md,
+        // Fase B3). Solo POST JSON (un form di un altro sito non puo' inviarlo) e
+        // solo per i soggetti dell'astrologo loggato: nemmeno l'admin gestisce
+        // le credenziali dei soggetti di altri astrologi.
+        $contentType = strtolower((string)($_SERVER['CONTENT_TYPE'] ?? ''));
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || strpos($contentType, 'application/json') !== 0) {
+            http_response_code(400);
+            echo json_encode(['errore' => 'Richiesta non valida.']);
+            break;
+        }
+        $soggettoId = intval($data['id'] ?? 0);
+        $stmt = $pdo->prepare("SELECT id, codice FROM soggetti WHERE id = ? AND utente_id = ?");
+        $stmt->execute([$soggettoId, $userId]);
+        $soggetto = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$soggetto) {
+            http_response_code(403);
+            echo json_encode(['errore' => 'Non autorizzato.']);
+            break;
+        }
+        if (trim((string)$soggetto['codice']) === '') {
+            echo json_encode(['errore' => 'Il soggetto non ha un codice: impossibile abilitare l\'accesso.']);
+            break;
+        }
+        try {
+            if ($action === 'accesso_genera') {
+                $result = $auth->abilitaAccessoSoggetto($soggettoId, $userId);
+                echo json_encode([
+                    'ok'       => true,
+                    'codice'   => $soggetto['codice'],
+                    'password' => $result['password'],
+                ]);
+            } else {
+                $result = $auth->disattivaAccessoSoggetto($soggettoId);
+                echo json_encode($result['ok'] ? ['ok' => true] : ['errore' => $result['errore']]);
+            }
+        } catch (Throwable $e) {
+            error_log('soggetti_api ' . $action . ': ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['errore' => 'Operazione non riuscita.']);
         }
         break;
 
