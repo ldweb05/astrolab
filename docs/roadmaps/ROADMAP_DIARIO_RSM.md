@@ -2,16 +2,18 @@
 
 **Creata:** 29-09-2026
 **Branch:** `main`
-**Stato:** Fase 0 (design) — decisioni D1-D13 concordate con il committente il 29-09-2026; Fasi 1-5 da eseguire
+**Stato:** Fase 0 (design) — decisioni D1-D16 concordate con il committente il 29-09-2026; Fasi 1-5 da eseguire
 una alla volta, ciascuna su conferma esplicita.
+**Prerequisito:** `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md` (blocchi A e B: CODICE
+automatico e login dei soggetti). Le Fasi 1-5 di questa roadmap partono dopo quei blocchi.
 
 ---
 
 ## 1. Obiettivo
 
-Permettere a ogni utente registrato e loggato di salvare i viaggi fatti per una RSM
-(località, periodo, albergo, costi, trasporti, note) e di condividere con gli altri
-astrologi le sole informazioni di viaggio, così che chi deve raggiungere la stessa
+Permettere ai soggetti (con accesso tramite il proprio CODICE) e agli astrologi di salvare i
+viaggi fatti per una RSM (località, periodo, albergo, costi, trasporti, note) e di
+condividere con gli altri astrologi e soggetti le sole informazioni di viaggio, così che chi deve raggiungere la stessa
 località (es. Longyearbyen, Svalbard) trovi già come arrivarci, dove alloggiare,
 quanto spendere e i consigli pratici di chi c'è già stato.
 
@@ -49,17 +51,19 @@ alla sessione RS esiste solo nel livello privato.
 
 ## 4. Modello dati proposto (Fase 1)
 
-Migrazione: `sql/010_diario_rsm.sql`, in transazione `BEGIN; ... COMMIT;` come le
+Migrazione: `sql/012_diario_rsm.sql` (010 e 011 sono del blocco A-B), in transazione `BEGIN; ... COMMIT;` come le
 precedenti. Nessuna modifica a `sessioni_rs` né ad altre tabelle esistenti.
 
 ### `viaggi_rsm` (privato)
-`id`, `utente_id` (FK `utenti`, ON DELETE CASCADE), `sessione_rs_id` (FK `sessioni_rs`,
-nullable, ON DELETE SET NULL), `luogo`, `nazione`, `latitudine`, `longitudine`,
+`id`, `utente_id` (FK `utenti`, nullable, ON DELETE CASCADE), `soggetto_id` (FK `soggetti`,
+nullable, ON DELETE CASCADE) — esattamente uno dei due valorizzato (D14), `sessione_rs_id`
+(FK `sessioni_rs`, nullable, ON DELETE SET NULL, impostabile solo dall'astrologo — D16), `luogo`, `nazione`, `latitudine`, `longitudine`,
 `data_arrivo`, `data_partenza`, `albergo`, `costo_alloggio`, `costo_trasporti`, `valuta`
 (default `EUR`), `trasporti` (testo), `note_private`, `creato_il`, `aggiornato_il`.
 
 ### `contributi_localita` (condiviso)
-`id`, `utente_id` (FK `utenti`, nullable, ON DELETE SET NULL — vedi D12), `luogo`, `nazione`, `latitudine`, `longitudine`,
+`id`, `utente_id` (FK `utenti`, nullable, ON DELETE SET NULL — vedi D12), `soggetto_id` (FK
+`soggetti`, nullable, ON DELETE SET NULL — vedi D14), `luogo`, `nazione`, `latitudine`, `longitudine`,
 `anno_viaggio`, `mese_viaggio` (1-12, nullable), `alloggio_nome`, `alloggio_tipo`
 (hotel / b&b / appartamento / guesthouse / campeggio / altro), `alloggio_sito`,
 `alloggio_fascia_prezzo`, `alloggio_giudizio`, `costo_alloggio_indicativo`,
@@ -84,21 +88,31 @@ true), `creato_il`, `aggiornato_il`.
   I viaggi privati invece vengono cancellati con l'utente (CASCADE). Vedi anche §8 (GDPR).
 - **D13 — Piani (ex A3):** nessuna differenza tra `free` e `supporter`, nessuna voce in
   `piano_limiti`. Resta solo il limite anti-abuso tecnico del §8.
+- **D14 — Autori astrologi e soggetti:** viaggi e contributi possono essere scritti da un
+  astrologo (`utente_id`) o da un soggetto loggato con il proprio CODICE (`soggetto_id`),
+  con vincolo `CHECK` che non siano mai valorizzati entrambi. Sui contributi l'autore è
+  mostrato con lo username (astrologo) o con il CODICE (soggetto); se l'autore è stato
+  eliminato, "utente non più registrato" (D12).
+- **D15 — Visibilità dei viaggi privati di un soggetto:** solo il soggetto stesso e il suo
+  astrologo (`soggetti.utente_id`). Nessun altro utente o soggetto.
+- **D16 — Collegamento alla sessione RS:** solo l'astrologo può collegare un viaggio a una
+  propria sessione RS salvata; il soggetto non vede mai sessioni, temi o dati di nascita
+  (vincolo di `ROADMAP_CODICE_LOGIN_SOGGETTI.md`).
 
 ## 6. Fasi
 
 | Fase | Contenuto | Stato |
 |---|---|---|
-| 0 | Questa roadmap | In corso |
-| 1 | Migrazione `sql/010_diario_rsm.sql` + applicazione sul DB del Pi | Da fare |
+| 0 | Questa roadmap | Completata (aggiornata con D14-D16) |
+| 1 | Migrazione `sql/012_diario_rsm.sql` + applicazione sul DB del Pi | Da fare |
 | 2 | API `www/api/diario_rsm_api.php` (CRUD viaggi privati e contributi) | Da fare |
-| 3 | Pagina viaggi privati + collegamento da "Sessioni RS salvate" in `rs.php` | Da fare |
+| 3 | Pagina viaggi privati (astrologi e soggetti) + collegamento da "Sessioni RS salvate" in `rs.php` | Da fare |
 | 4 | Consultazione schede località condivise (lettura contributi e tratte) | Da fare |
 | 5 | Documentazione: HANDOVER, START_HERE, ROADMAP generale | Da fare |
 
 ## 7. Vincoli di sicurezza (da `docs/CHECKLIST_SICUREZZA_SVILUPPO.md` e specifici)
 
-- Login obbligatorio su tutte le pagine e le API nuove; ogni scrittura verifica lato server
+- Login obbligatorio (astrologo o soggetto) su tutte le pagine e le API nuove; ogni scrittura verifica lato server
   che `utente_id` coincida con l'utente in sessione (mai fidarsi di un id inviato dal client).
 - Solo query parametrizzate (PDO prepared statements).
 - Contenuto scritto da utenti e letto da altri: escaping in output (`htmlspecialchars` in

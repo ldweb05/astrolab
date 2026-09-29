@@ -754,3 +754,24 @@ Riferimento operativo dettagliato: `docs/roadmaps/ROADMAP_SEO.md`.
   nelle pagine pubbliche, manuale pubblico o no, lingue, dominio): elencate in
   `docs/roadmaps/ROADMAP_SEO.md`.
 - Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voce 20-09-2026.
+
+---
+
+## 29-09-2026 — Diario RSM, CODICE automatico e login dei soggetti (pianificazione)
+
+Riferimenti operativi dettagliati: `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md` e
+`docs/roadmaps/ROADMAP_DIARIO_RSM.md`.
+
+- Obiettivo: permettere ai soggetti di accedere ad ASTROLAB con il proprio CODICE per
+  salvare i viaggi fatti per una RSM (localita', periodo, albergo, costi, trasporti, note) e
+  condividere con astrologi e soggetti le sole informazioni di viaggio, senza alcun dato del
+  soggetto (nascita, tema, RS).
+- Ordine di lavoro: blocco A (CODICE automatico: prefisso di 2 lettere dell'astrologo +
+  numero progressivo, es. `LD001`, `RF120`), blocco B (login dei soggetti con sessione e
+  credenziali separate da quelle degli astrologi), blocco C (Diario RSM). Migrazioni previste
+  `sql/010`, `sql/011`, `sql/012`.
+- Stato: design concordato con il committente (decisioni C1-C12 e D1-D16), nessuna modifica
+  al codice ancora eseguita. La feature e' progettata fin da subito per la futura VPS
+  pubblica (CSRF, blocco tentativi di login, escaping, noindex).
+- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voce da aggiungere a fine
+  feature.
