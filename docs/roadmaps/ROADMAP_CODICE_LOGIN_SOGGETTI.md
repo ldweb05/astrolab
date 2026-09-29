@@ -2,8 +2,8 @@
 
 **Creata:** 29-09-2026
 **Branch:** `main`
-**Stato:** design concordato con il committente il 29-09-2026 (decisioni C1-C12); nessuna
-modifica al codice ancora eseguita. Blocchi A e B da eseguire una fase alla volta, ciascuna
+**Stato:** design concordato con il committente il 29-09-2026 (decisioni C1-C12). Fasi A1-A3
+completate il 29-09-2026 (vedi §4); A4 e blocco B da eseguire una fase alla volta, ciascuna
 su conferma esplicita.
 **Collegata a:** `docs/roadmaps/ROADMAP_DIARIO_RSM.md` (blocco C), di cui questa roadmap è
 prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto stesso.
@@ -55,12 +55,20 @@ prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto ste
   da cifre.
 - **C5 — Nome e Cognome obbligatori** in registrazione, in due campi separati, salvati in
   `utenti.nome_completo` come "Nome Cognome" (nessuna nuova colonna). Il prefisso viene
-  calcolato e salvato nello stesso momento. Lo stesso vale per un utente creato dall'admin
-  in `admin_utenti.php`. Se un utente senza prefisso crea un soggetto (caso residuo), il
-  prefisso viene calcolato in quel momento da `nome_completo` o, se vuoto, dallo username.
-- **C6 — Numerazione:** numero più alto già usato per quel prefisso + 1, con almeno 3 cifre
-  (`RF001` … `RF999`, poi `RF1000`). I numeri dei soggetti eliminati non vengono riusati:
-  un codice non passa mai a un'altra persona.
+  calcolato e salvato nello stesso momento. Per un utente creato dall'admin in
+  `admin_utenti.php` (campo unico `nome_completo`) il prefisso viene calcolato al suo primo
+  soggetto, come per ogni utente senza prefisso (caso residuo): nome = prima parola di
+  `nome_completo`, cognome = il resto, oppure lo username se `nome_completo` è vuoto. Limite
+  accettato (29-09-2026): per un nome composto ("Maria Grazia De Luca") il prefisso
+  risulta `MG` invece di `MD`, comunque stabile e univoco.
+- **C6 — Numerazione:** contatore per astrologo `utenti.ultimo_numero_codice` + 1, con almeno
+  3 cifre (`RF001` … `RF999`, poi `RF1000`). Il contatore non torna mai indietro: i numeri
+  dei soggetti eliminati non vengono riusati e un codice non passa mai a un'altra persona.
+  Per sicurezza si considera anche il numero più alto già presente con quel prefisso.
+  *Aggiornamento 29-09-2026:* il contatore (migrazione `sql/011_contatore_codice.sql`) è
+  stato aggiunto in Fase A2, perché il solo "numero più alto + 1" avrebbe riassegnato il
+  numero dell'ultimo soggetto eliminato. Le migrazioni successive sono state rinumerate
+  (accessi soggetti `012`, Diario RSM `013`).
 - **C7 — Generazione lato server** in `api/soggetti_api.php` all'inserimento del soggetto,
   dentro una transazione; in caso di violazione del vincolo `UNIQUE` (due inserimenti
   simultanei) si ricalcola e si riprova. Il campo CODICE in `index.php` diventa di sola
@@ -96,17 +104,17 @@ propri soggetti. Ogni controllo è lato server.
 
 | Fase | Contenuto | File principali | Stato |
 |---|---|---|---|
-| A1 | Migrazione `sql/010_codice_soggetti.sql`: `utenti.prefisso_codice` + valori RF/LD/AD | `sql/` | Da fare |
-| A2 | Generazione automatica del codice all'inserimento del soggetto | `www/api/soggetti_api.php` | Da fare |
-| A3 | Campo CODICE di sola lettura nel form soggetto | `www/index.php` | Da fare |
-| A4 | Nome e Cognome in registrazione + calcolo prefisso (anche utenti creati dall'admin) | `www/registrazione.php`, `www/includes/Auth.php` | Da fare |
-| B1 | Migrazione `sql/011_accessi_soggetti.sql` | `sql/` | Da fare |
+| A1 | Migrazione `sql/010_codice_soggetti.sql`: `utenti.prefisso_codice` + valori RF/LD/AD | `sql/` | Completata (`9f612a5`) |
+| A2 | Generazione automatica del codice all'inserimento del soggetto, contatore che non riusa i numeri | `sql/011_contatore_codice.sql`, `www/includes/CodiceSoggetto.php`, `www/api/soggetti_api.php` | Completata (`1d0f278`) |
+| A3 | Campo CODICE di sola lettura nel form soggetto, manuale aggiornato | `www/index.php`, `www/help_soggetti.php` | Completata (`f0fc22f`) |
+| A4 | Nome e Cognome in registrazione + calcolo prefisso; username in forma di codice rifiutati (C12) | `www/registrazione.php`, `www/includes/Auth.php` | Da fare |
+| B1 | Migrazione `sql/012_accessi_soggetti.sql` | `sql/` | Da fare |
 | B2 | Login del soggetto, sessione dedicata, blocco tentativi, cambio password obbligatorio | `www/includes/Auth.php`, `www/login.php` | Da fare |
 | B3 | Abilitazione accesso e password provvisoria dalla scheda soggetto | `www/index.php`, `www/api/soggetti_api.php` | Da fare |
 | B4 | Area riservata del soggetto (solo Diario) | nuova pagina | Da fare |
 
 Il blocco C (Diario RSM) segue in `docs/roadmaps/ROADMAP_DIARIO_RSM.md`, con migrazione
-`sql/012_diario_rsm.sql`.
+`sql/013_diario_rsm.sql`.
 
 ## 5. Vincoli
 

@@ -51,7 +51,7 @@ alla sessione RS esiste solo nel livello privato.
 
 ## 4. Modello dati proposto (Fase 1)
 
-Migrazione: `sql/012_diario_rsm.sql` (010 e 011 sono del blocco A-B), in transazione `BEGIN; ... COMMIT;` come le
+Migrazione: `sql/013_diario_rsm.sql` (010-012 sono del blocco A-B), in transazione `BEGIN; ... COMMIT;` come le
 precedenti. Nessuna modifica a `sessioni_rs` né ad altre tabelle esistenti.
 
 ### `viaggi_rsm` (privato)
@@ -104,7 +104,7 @@ true), `creato_il`, `aggiornato_il`.
 | Fase | Contenuto | Stato |
 |---|---|---|
 | 0 | Questa roadmap | Completata (aggiornata con D14-D16) |
-| 1 | Migrazione `sql/012_diario_rsm.sql` + applicazione sul DB del Pi | Da fare |
+| 1 | Migrazione `sql/013_diario_rsm.sql` + applicazione sul DB del Pi | Da fare |
 | 2 | API `www/api/diario_rsm_api.php` (CRUD viaggi privati e contributi) | Da fare |
 | 3 | Pagina viaggi privati (astrologi e soggetti) + collegamento da "Sessioni RS salvate" in `rs.php` | Da fare |
 | 4 | Consultazione schede località condivise (lettura contributi e tratte) | Da fare |
