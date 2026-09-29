@@ -33,7 +33,10 @@ prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto ste
   `richiediLogin()` protegge tutte le pagine dell'astrologo su questa base.
 - `$_SESSION['soggetto_id']` / `$_SESSION['soggetto_nome']` sono già usati per il
   **soggetto attivo** scelto dall'astrologo: non vanno riutilizzati per il login del soggetto.
-- Non esiste oggi un blocco dei tentativi di login falliti.
+- Il login esistente (`login.php`) ha un limite per IP, `loginRateLimit()`: 10 tentativi in
+  15 minuti (anche riusciti), salvati in file temporanei che si azzerano al riavvio del
+  container. Non esiste invece un blocco per singolo account. *(Correzione 29-09-2026: una
+  prima versione di questo documento indicava erroneamente l'assenza di qualunque blocco.)*
 - I soggetti non hanno un indirizzo email.
 
 ## 3. Decisioni (29-09-2026)
