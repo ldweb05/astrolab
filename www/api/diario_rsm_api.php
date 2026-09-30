@@ -8,7 +8,7 @@ require_once __DIR__ . '/../includes/bootstrap.php';
  * proprio CODICE e accesso attivo (accesso_soggetto).
  *
  * Lettura (GET, ?action=...):
- *   token, nazioni, cerca, nazione, scheda, miei_viaggi, miei_contributi
+ *   token, nazioni, cerca, nazione, scheda, miei_viaggi, miei_contributi, contributo
  * Scrittura (POST, Content-Type: application/json, header X-CSRF-Token):
  *   viaggio_salva, viaggio_elimina, viaggio_collega_sessione,
  *   contributo_salva, contributo_elimina, contributo_visibilita (solo admin)
@@ -177,7 +177,7 @@ if ($metodo === 'POST') {
     diario_errore('Richiesta non valida.', 405);
 }
 
-$azioniLettura = ['token', 'nazioni', 'cerca', 'nazione', 'scheda', 'miei_viaggi', 'miei_contributi'];
+$azioniLettura = ['token', 'nazioni', 'cerca', 'nazione', 'scheda', 'miei_viaggi', 'miei_contributi', 'contributo'];
 if ($metodo === 'GET' && !in_array($azione, $azioniLettura, true)) {
     diario_errore('Azione non valida.');
 }
@@ -358,6 +358,33 @@ try {
         );
         $stmt->execute([$parAutore]);
         diario_json(['contributi' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+
+    case 'contributo':
+        // Un proprio contributo completo, per modificarlo (anche se nascosto dall'admin).
+        [$condAutore, $parAutore] = diario_autore($attore);
+        $stmt = $pdo->prepare(
+            "SELECT c.id, c.luogo, c.iso_nazione, n.nome_it AS nazione, c.anno_viaggio, c.mese_viaggio,
+                    c.alloggio_nome, c.alloggio_tipo, c.alloggio_sito, c.alloggio_fascia_prezzo,
+                    c.alloggio_giudizio, c.costo_alloggio_indicativo, c.costo_alloggio_riferimento,
+                    c.valuta, c.info_documenti, c.info_clima, c.info_lingua_valuta,
+                    c.info_connettivita, c.info_particolarita, c.contatti_utili, c.consigli,
+                    c.visibile, c.luogo_chiave AS chiave
+               FROM contributi_localita c JOIN nazioni n ON n.iso = c.iso_nazione
+              WHERE c.id = ? AND c.$condAutore"
+        );
+        $stmt->execute([(int)($_GET['id'] ?? 0), $parAutore]);
+        $contributo = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$contributo) {
+            diario_errore('Contributo non trovato.', 404);
+        }
+        $stmt = $pdo->prepare(
+            "SELECT ordine, mezzo, da_luogo, a_luogo, compagnia, durata_indicativa,
+                    costo_indicativo, valuta, note
+               FROM contributi_tratte WHERE contributo_id = ? ORDER BY ordine"
+        );
+        $stmt->execute([$contributo['id']]);
+        $contributo['tratte'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        diario_json(['contributo' => $contributo]);
 
     // ── SCRITTURA: VIAGGI PRIVATI ──────────────────────────────
 

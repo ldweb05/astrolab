@@ -82,6 +82,32 @@ header('X-Robots-Tag: noindex, nofollow');
         .diario-tratte { margin: 8px 0; padding-left: 0; list-style: none; font-size: 14px; }
         .diario-tratte li { margin: 3px 0; }
         .diario-in-arrivo { background: #F7F3EA; border-radius: 8px; padding: 18px; color: #555; }
+        .diario-azioni { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+        .diario-btn { background: #2C3E6B; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+        .diario-btn.secondario { background: #fff; color: #2C3E6B; border: 1px solid #2C3E6B; }
+        .diario-btn.pericolo { background: #fff; color: #8A1C1C; border: 1px solid #8A1C1C; }
+        .diario-btn.piccolo { padding: 4px 9px; font-size: 13px; }
+        .diario-carta-azioni { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+        .diario-mio { background: #FFFDF6; border: 1px solid #E4DED0; border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
+        .diario-mio-titolo { font-weight: 600; color: #2C3E6B; }
+        .diario-mio-info { color: #7A6F5A; font-size: 13px; margin: 2px 0 8px; }
+        .diario-etichetta-stato { background: #FDECEA; color: #8A1C1C; border-radius: 10px; padding: 1px 8px; font-size: 12px; margin-left: 6px; }
+        .diario-form { background: #fff; border: 1px solid #E4DED0; border-radius: 8px; padding: 18px; margin-top: 12px; }
+        .diario-form fieldset { border: 0; border-top: 1px solid #EFE9DC; margin: 14px 0 0; padding: 12px 0 0; }
+        .diario-form legend { font-weight: 600; color: #2C3E6B; padding-right: 8px; }
+        .diario-griglia { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 14px; }
+        .diario-campo label { display: block; font-size: 13px; color: #555; margin-bottom: 3px; }
+        .diario-campo input, .diario-campo select, .diario-campo textarea { width: 100%; box-sizing: border-box;
+            padding: 7px 9px; border: 1px solid #C9C2B2; border-radius: 5px; font-size: 14px; font-family: inherit; }
+        .diario-campo textarea { min-height: 70px; resize: vertical; }
+        .diario-campo.largo { grid-column: 1 / -1; }
+        .diario-tratta { display: grid; grid-template-columns: 110px 1fr 1fr 1fr 110px 90px 70px auto; gap: 6px; align-items: end;
+            background: #FAF7F0; border-radius: 6px; padding: 8px; margin-bottom: 6px; }
+        .diario-tratta .diario-campo label { font-size: 12px; }
+        .diario-tratta-pulsanti { display: flex; gap: 4px; }
+        .diario-dichiarazione { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin-top: 14px; }
+        .diario-nota-privacy { font-size: 12px; color: #7A6F5A; margin-top: 4px; }
+        @media (max-width: 800px) { .diario-tratta { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body data-ruolo="<?= htmlspecialchars($ruoloDiario, ENT_QUOTES, 'UTF-8') ?>" data-admin="<?= $isAdmin ? '1' : '0' ?>">
@@ -121,6 +147,9 @@ header('X-Robots-Tag: noindex, nofollow');
             <h2 class="diario-scheda-titolo" id="scheda-titolo"></h2>
             <div id="scheda-msg" class="diario-msg"></div>
             <div id="scheda-contributi"></div>
+            <div class="diario-azioni">
+                <button type="button" class="diario-btn" id="scheda-scrivi">Scrivi anche tu un contributo per questa localit&agrave;</button>
+            </div>
         </div>
     </section>
 
@@ -129,7 +158,82 @@ header('X-Robots-Tag: noindex, nofollow');
     </section>
 
     <section id="pannello-contributi" class="diario-pannello">
-        <div class="diario-in-arrivo">La sezione dei contributi &egrave; in preparazione.</div>
+        <div id="contrib-vista-elenco">
+            <div class="diario-sottotitolo">I consigli di viaggio che hai condiviso. Sono visibili a tutti gli astrologi e ai soggetti di AstroLab, con il tuo nome utente (o il tuo codice) come autore.</div>
+            <div class="diario-azioni">
+                <button type="button" class="diario-btn" id="contrib-nuovo">+ Nuovo contributo</button>
+            </div>
+            <div id="contrib-msg" class="diario-msg"></div>
+            <div id="contrib-elenco"></div>
+        </div>
+
+        <form id="contrib-form" class="diario-form" style="display:none" novalidate>
+            <h2 class="diario-scheda-titolo" id="contrib-form-titolo">Nuovo contributo</h2>
+            <input type="hidden" id="cf-id">
+            <div class="diario-griglia">
+                <div class="diario-campo"><label for="cf-luogo">Localit&agrave; *</label>
+                    <input type="text" id="cf-luogo" maxlength="200" required placeholder="es. Longyearbyen"></div>
+                <div class="diario-campo"><label for="cf-nazione">Nazione *</label>
+                    <input type="text" id="cf-nazione" list="elenco-nazioni" required autocomplete="off" placeholder="Scrivi e scegli dall'elenco"></div>
+                <div class="diario-campo"><label for="cf-anno">Anno del viaggio *</label>
+                    <input type="number" id="cf-anno" min="1900" max="2100" required></div>
+                <div class="diario-campo"><label for="cf-mese">Mese del viaggio</label>
+                    <select id="cf-mese"><option value="">&mdash;</option></select></div>
+            </div>
+            <div class="diario-nota-privacy">Per la tua privacy si indicano solo anno e mese: la data esatta di una RSM rivelerebbe il giorno del compleanno.</div>
+
+            <fieldset><legend>Come arrivare (tratte)</legend>
+                <div id="cf-tratte"></div>
+                <button type="button" class="diario-btn secondario piccolo" id="cf-tratta-aggiungi">+ Aggiungi tratta</button>
+            </fieldset>
+
+            <fieldset><legend>Alloggio</legend>
+                <div class="diario-griglia">
+                    <div class="diario-campo"><label for="cf-alloggio-nome">Nome</label>
+                        <input type="text" id="cf-alloggio-nome" maxlength="200"></div>
+                    <div class="diario-campo"><label for="cf-alloggio-tipo">Tipo</label>
+                        <select id="cf-alloggio-tipo">
+                            <option value="">&mdash;</option><option value="hotel">Hotel</option><option value="bb">B&amp;B</option>
+                            <option value="appartamento">Appartamento</option><option value="guesthouse">Guesthouse</option>
+                            <option value="campeggio">Campeggio</option><option value="altro">Altro</option>
+                        </select></div>
+                    <div class="diario-campo"><label for="cf-alloggio-sito">Sito ufficiale</label>
+                        <input type="url" id="cf-alloggio-sito" maxlength="500" placeholder="https://..."></div>
+                    <div class="diario-campo"><label for="cf-alloggio-fascia">Fascia di prezzo</label>
+                        <input type="text" id="cf-alloggio-fascia" maxlength="50" placeholder="es. medio-alta"></div>
+                    <div class="diario-campo"><label for="cf-costo">Spesa indicativa</label>
+                        <input type="number" id="cf-costo" min="0" step="0.01"></div>
+                    <div class="diario-campo"><label for="cf-costo-rif">Riferimento</label>
+                        <input type="text" id="cf-costo-rif" maxlength="50" placeholder="es. per notte"></div>
+                    <div class="diario-campo"><label for="cf-valuta">Valuta</label>
+                        <input type="text" id="cf-valuta" maxlength="3" value="EUR"></div>
+                    <div class="diario-campo largo"><label for="cf-alloggio-giudizio">Giudizio sull'alloggio</label>
+                        <textarea id="cf-alloggio-giudizio" maxlength="4000"></textarea></div>
+                </div>
+            </fieldset>
+
+            <fieldset><legend>Informazioni pratiche</legend>
+                <div class="diario-griglia">
+                    <div class="diario-campo"><label for="cf-documenti">Documenti e visti</label><textarea id="cf-documenti" maxlength="4000"></textarea></div>
+                    <div class="diario-campo"><label for="cf-clima">Clima nel periodo</label><textarea id="cf-clima" maxlength="4000"></textarea></div>
+                    <div class="diario-campo"><label for="cf-lingua">Lingua e valuta</label><textarea id="cf-lingua" maxlength="4000"></textarea></div>
+                    <div class="diario-campo"><label for="cf-connettivita">Connettivit&agrave;</label><textarea id="cf-connettivita" maxlength="4000"></textarea></div>
+                    <div class="diario-campo largo"><label for="cf-particolarita">Particolarit&agrave; locali</label><textarea id="cf-particolarita" maxlength="4000"></textarea></div>
+                    <div class="diario-campo largo"><label for="cf-contatti">Contatti utili (solo strutture, agenzie, guide professionali)</label><textarea id="cf-contatti" maxlength="4000"></textarea></div>
+                    <div class="diario-campo largo"><label for="cf-consigli">Consigli</label><textarea id="cf-consigli" maxlength="4000"></textarea></div>
+                </div>
+            </fieldset>
+
+            <label class="diario-dichiarazione"><input type="checkbox" id="cf-dichiarazione">
+                <span>Confermo che nei contatti non inserisco dati personali di privati (solo strutture, agenzie e guide professionali). *</span></label>
+
+            <div id="cf-msg" class="diario-msg"></div>
+            <div class="diario-azioni">
+                <button type="submit" class="diario-btn" id="cf-salva">Salva contributo</button>
+                <button type="button" class="diario-btn secondario" id="cf-annulla">Annulla</button>
+            </div>
+        </form>
+        <datalist id="elenco-nazioni"></datalist>
     </section>
 </main>
 

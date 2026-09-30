@@ -21,7 +21,9 @@
         ruolo: document.body.getAttribute('data-ruolo') || '',
         admin: document.body.getAttribute('data-admin') === '1',
         token: null,
-        timerRicerca: null
+        timerRicerca: null,
+        nazioni: [],              // [{iso, nome}] per i form (nomi italiani)
+        schedaCorrente: null      // {iso, chiave, luogo, nazione}
     };
 
     // ── Utilita' ─────────────────────────────────────────────────
@@ -201,6 +203,7 @@
     // ── Scheda della localita' ───────────────────────────────────
 
     function apriScheda(iso, chiave, luogo, nazione) {
+        stato.schedaCorrente = { iso: iso, chiave: chiave, luogo: luogo, nazione: nazione };
         el('cerca-vista-ricerca').style.display = 'none';
         el('cerca-vista-scheda').style.display = '';
         el('scheda-titolo').textContent = luogo + (nazione ? ' \u2014 ' + nazione : '');
@@ -273,16 +276,286 @@
         riga(carta, 'Particolarit\u00e0 locali', c.info_particolarita, true);
         riga(carta, 'Contatti utili', c.contatti_utili, true);
         riga(carta, 'Consigli', c.consigli, true);
+
+        var azioni = nuovo('div', 'diario-carta-azioni');
+        if (c.mio) {
+            var mod = nuovo('button', 'diario-btn secondario piccolo', 'Modifica il mio contributo');
+            mod.type = 'button';
+            mod.addEventListener('click', function () { modificaContributo(c.id); });
+            azioni.appendChild(mod);
+        }
+        if (stato.admin) {
+            var vis = nuovo('button', 'diario-btn pericolo piccolo', c.visibile ? 'Nascondi (moderazione)' : 'Mostra di nuovo');
+            vis.type = 'button';
+            vis.addEventListener('click', function () { cambiaVisibilita(c.id, !c.visibile); });
+            azioni.appendChild(vis);
+        }
+        if (azioni.firstChild) { carta.appendChild(azioni); }
         return carta;
+    }
+
+    function ricaricaScheda() {
+        var sc = stato.schedaCorrente;
+        if (sc) { apriScheda(sc.iso, sc.chiave, sc.luogo, sc.nazione); }
+    }
+
+    function cambiaVisibilita(id, visibile) {
+        var domanda = visibile ? 'Rendere di nuovo visibile questo contributo?'
+                               : 'Nascondere questo contributo a tutti gli utenti? L\'autore continuer\u00e0 a vederlo tra i suoi.';
+        if (!window.confirm(domanda)) { return; }
+        apiPost('contributo_visibilita', { id: id, visibile: visibile }).then(function (d) {
+            if (!d.ok) { messaggio('scheda-msg', d.errore || 'Operazione non riuscita.', true); return; }
+            ricaricaScheda();
+        }).catch(function () { messaggio('scheda-msg', 'Errore di connessione. Riprova.', true); });
+    }
+
+    // ── Contributi: elenco e form ───────────────────────────────
+
+    var CAMPI_FORM = {
+        'cf-alloggio-nome': 'alloggio_nome', 'cf-alloggio-tipo': 'alloggio_tipo',
+        'cf-alloggio-sito': 'alloggio_sito', 'cf-alloggio-fascia': 'alloggio_fascia_prezzo',
+        'cf-costo': 'costo_alloggio_indicativo', 'cf-costo-rif': 'costo_alloggio_riferimento',
+        'cf-alloggio-giudizio': 'alloggio_giudizio', 'cf-documenti': 'info_documenti',
+        'cf-clima': 'info_clima', 'cf-lingua': 'info_lingua_valuta',
+        'cf-connettivita': 'info_connettivita', 'cf-particolarita': 'info_particolarita',
+        'cf-contatti': 'contatti_utili', 'cf-consigli': 'consigli'
+    };
+    var MAX_TRATTE = 15;
+
+    function caricaNazioni() {
+        if (stato.nazioni.length) { return Promise.resolve(); }
+        return apiGet('nazioni').then(function (d) {
+            stato.nazioni = d.nazioni || [];
+            var dl = el('elenco-nazioni');
+            svuota(dl);
+            stato.nazioni.forEach(function (n) {
+                var o = document.createElement('option');
+                o.value = n.nome;
+                dl.appendChild(o);
+            });
+        });
+    }
+
+    function isoDaNome(nome) {
+        var cercato = String(nome || '').trim().toLowerCase();
+        for (var i = 0; i < stato.nazioni.length; i++) {
+            if (stato.nazioni[i].nome.toLowerCase() === cercato) { return stato.nazioni[i].iso; }
+        }
+        return null;
+    }
+
+    function nomeDaIso(iso) {
+        for (var i = 0; i < stato.nazioni.length; i++) {
+            if (stato.nazioni[i].iso === iso) { return stato.nazioni[i].nome; }
+        }
+        return '';
+    }
+
+    function elencoContributi(messaggioFinale) {
+        var box = el('contrib-elenco');
+        messaggio('contrib-msg', 'Caricamento...');
+        apiGet('miei_contributi').then(function (d) {
+            svuota(box);
+            var lista = d.contributi || [];
+            messaggio('contrib-msg', messaggioFinale || (lista.length ? '' : 'Non hai ancora scritto contributi.'));
+            lista.forEach(function (c) {
+                var voce = nuovo('div', 'diario-mio');
+                var titolo = nuovo('div', 'diario-mio-titolo', c.luogo + ' \u2014 ' + c.nazione);
+                if (!c.visibile) { titolo.appendChild(nuovo('span', 'diario-etichetta-stato', 'nascosto dall\'amministratore')); }
+                voce.appendChild(titolo);
+                voce.appendChild(nuovo('div', 'diario-mio-info', 'Viaggio: ' + periodo(c.anno_viaggio, c.mese_viaggio)));
+                var az = nuovo('div', 'diario-carta-azioni');
+                var bApri = nuovo('button', 'diario-btn secondario piccolo', 'Apri la scheda');
+                bApri.type = 'button';
+                bApri.addEventListener('click', function () {
+                    mostraScheda('cerca');
+                    apriScheda(c.iso_nazione, c.chiave, c.luogo, c.nazione);
+                });
+                var bMod = nuovo('button', 'diario-btn secondario piccolo', 'Modifica');
+                bMod.type = 'button';
+                bMod.addEventListener('click', function () { modificaContributo(c.id); });
+                var bDel = nuovo('button', 'diario-btn pericolo piccolo', 'Elimina');
+                bDel.type = 'button';
+                bDel.addEventListener('click', function () { eliminaContributo(c.id, c.luogo); });
+                az.appendChild(bApri); az.appendChild(bMod); az.appendChild(bDel);
+                voce.appendChild(az);
+                box.appendChild(voce);
+            });
+        }).catch(function () { messaggio('contrib-msg', 'Errore di caricamento. Riprova.', true); });
+    }
+
+    function rigaTratta(t) {
+        t = t || {};
+        var r = nuovo('div', 'diario-tratta');
+        function campo(etichetta, input) {
+            var c = nuovo('div', 'diario-campo');
+            c.appendChild(nuovo('label', '', etichetta));
+            c.appendChild(input);
+            r.appendChild(c);
+            return input;
+        }
+        var sel = document.createElement('select');
+        [['aereo', 'Aereo'], ['nave', 'Nave'], ['treno', 'Treno'], ['bus', 'Bus'], ['auto', 'Auto'], ['altro', 'Altro']]
+            .forEach(function (m) {
+                var o = document.createElement('option'); o.value = m[0]; o.textContent = m[1]; sel.appendChild(o);
+            });
+        sel.value = t.mezzo || 'aereo';
+        sel.className = 'tr-mezzo';
+        campo('Mezzo', sel);
+        function testo(cls, etichetta, max, valore, tipo) {
+            var i = document.createElement('input');
+            i.type = tipo || 'text'; i.className = cls; i.value = (valore === null || valore === undefined) ? '' : valore;
+            if (max) { i.maxLength = max; }
+            if (tipo === 'number') { i.min = '0'; i.step = '0.01'; }
+            return campo(etichetta, i);
+        }
+        testo('tr-da', 'Da', 200, t.da_luogo);
+        testo('tr-a', 'A', 200, t.a_luogo);
+        testo('tr-compagnia', 'Compagnia', 150, t.compagnia);
+        testo('tr-durata', 'Durata', 50, t.durata_indicativa);
+        testo('tr-costo', 'Costo', 0, t.costo_indicativo, 'number');
+        testo('tr-valuta', 'Valuta', 3, t.valuta || 'EUR');
+        var p = nuovo('div', 'diario-tratta-pulsanti');
+        [['\u2191', -1, 'Sposta su'], ['\u2193', 1, 'Sposta gi\u00f9']].forEach(function (x) {
+            var b = nuovo('button', 'diario-btn secondario piccolo', x[0]);
+            b.type = 'button'; b.title = x[2];
+            b.addEventListener('click', function () {
+                var fratello = x[1] < 0 ? r.previousElementSibling : r.nextElementSibling;
+                if (!fratello) { return; }
+                if (x[1] < 0) { r.parentNode.insertBefore(r, fratello); }
+                else { r.parentNode.insertBefore(fratello, r); }
+            });
+            p.appendChild(b);
+        });
+        var del = nuovo('button', 'diario-btn pericolo piccolo', '\u2715');
+        del.type = 'button'; del.title = 'Elimina la tratta';
+        del.addEventListener('click', function () { r.parentNode.removeChild(r); });
+        p.appendChild(del);
+        r.appendChild(p);
+        return r;
+    }
+
+    function aggiungiTratta(t) {
+        var box = el('cf-tratte');
+        if (box.children.length >= MAX_TRATTE) {
+            messaggio('cf-msg', 'Puoi inserire al massimo ' + MAX_TRATTE + ' tratte.', true);
+            return;
+        }
+        box.appendChild(rigaTratta(t));
+    }
+
+    function apriForm(c) {
+        c = c || {};
+        caricaNazioni().then(function () {
+            mostraScheda('contributi');
+            el('contrib-vista-elenco').style.display = 'none';
+            el('contrib-form').style.display = '';
+            el('contrib-form-titolo').textContent = c.id ? 'Modifica contributo' : 'Nuovo contributo';
+            el('cf-id').value = c.id || '';
+            el('cf-luogo').value = c.luogo || '';
+            el('cf-nazione').value = c.iso_nazione ? nomeDaIso(c.iso_nazione) : '';
+            el('cf-anno').value = c.anno_viaggio || new Date().getFullYear();
+            el('cf-mese').value = c.mese_viaggio ? String(c.mese_viaggio) : '';
+            el('cf-valuta').value = c.valuta || 'EUR';
+            Object.keys(CAMPI_FORM).forEach(function (id) {
+                var v = c[CAMPI_FORM[id]];
+                el(id).value = (v === null || v === undefined) ? '' : v;
+            });
+            svuota(el('cf-tratte'));
+            (c.tratte || []).forEach(function (t) { aggiungiTratta(t); });
+            el('cf-dichiarazione').checked = !!c.id;
+            messaggio('cf-msg', '');
+            el('cf-luogo').focus();
+        }).catch(function () { messaggio('contrib-msg', 'Errore di caricamento. Riprova.', true); });
+    }
+
+    function chiudiForm(messaggioFinale) {
+        el('contrib-form').style.display = 'none';
+        el('contrib-vista-elenco').style.display = '';
+        elencoContributi(typeof messaggioFinale === 'string' ? messaggioFinale : '');
+    }
+
+    function modificaContributo(id) {
+        apiGet('contributo', { id: id }).then(function (d) {
+            if (d.errore) { window.alert(d.errore); return; }
+            apriForm(d.contributo);
+        }).catch(function () { window.alert('Errore di caricamento. Riprova.'); });
+    }
+
+    function eliminaContributo(id, luogo) {
+        if (!window.confirm('Eliminare definitivamente il tuo contributo su ' + luogo + '?')) { return; }
+        apiPost('contributo_elimina', { id: id }).then(function (d) {
+            if (!d.ok) { messaggio('contrib-msg', d.errore || 'Operazione non riuscita.', true); return; }
+            elencoContributi();
+        }).catch(function () { messaggio('contrib-msg', 'Errore di connessione. Riprova.', true); });
+    }
+
+    function salvaContributo(ev) {
+        ev.preventDefault();
+        var iso = isoDaNome(el('cf-nazione').value);
+        if (!el('cf-luogo').value.trim()) { messaggio('cf-msg', 'Indica la localit\u00e0.', true); return; }
+        if (!iso) { messaggio('cf-msg', 'Scegli la nazione dall\'elenco dei nomi proposti.', true); return; }
+        if (!el('cf-dichiarazione').checked) {
+            messaggio('cf-msg', 'Conferma di non inserire dati personali di privati nei contatti.', true); return;
+        }
+        var dati = {
+            luogo: el('cf-luogo').value,
+            iso_nazione: iso,
+            anno_viaggio: parseInt(el('cf-anno').value, 10) || 0,
+            mese_viaggio: el('cf-mese').value ? parseInt(el('cf-mese').value, 10) : null,
+            valuta: el('cf-valuta').value,
+            dichiarazione_contatti: true,
+            tratte: []
+        };
+        if (el('cf-id').value) { dati.id = parseInt(el('cf-id').value, 10); }
+        Object.keys(CAMPI_FORM).forEach(function (id) {
+            var v = el(id).value;
+            dati[CAMPI_FORM[id]] = v === '' ? null : v;
+        });
+        Array.prototype.forEach.call(el('cf-tratte').children, function (r) {
+            function v(cls) { var x = r.querySelector('.' + cls).value; return x === '' ? null : x; }
+            dati.tratte.push({ mezzo: v('tr-mezzo'), da_luogo: v('tr-da'), a_luogo: v('tr-a'),
+                compagnia: v('tr-compagnia'), durata_indicativa: v('tr-durata'),
+                costo_indicativo: v('tr-costo'), valuta: v('tr-valuta') });
+        });
+        el('cf-salva').disabled = true;
+        messaggio('cf-msg', 'Salvataggio...');
+        apiPost('contributo_salva', dati).then(function (d) {
+            el('cf-salva').disabled = false;
+            if (!d.ok) { messaggio('cf-msg', d.errore || 'Salvataggio non riuscito.', true); return; }
+            chiudiForm('Contributo salvato. Grazie!');
+        }).catch(function () {
+            el('cf-salva').disabled = false;
+            messaggio('cf-msg', 'Errore di connessione. Riprova.', true);
+        });
     }
 
     // ── Avvio ────────────────────────────────────────────────────
 
     document.addEventListener('DOMContentLoaded', function () {
+        if (stato.avviato) { return; }   // protezione da doppia inizializzazione
+        stato.avviato = true;
         document.querySelectorAll('.diario-scheda-btn').forEach(function (b) {
             b.addEventListener('click', function () { mostraScheda(b.getAttribute('data-scheda')); });
         });
         el('scheda-indietro').addEventListener('click', chiudiScheda);
+        el('scheda-scrivi').addEventListener('click', function () {
+            var sc = stato.schedaCorrente || {};
+            apriForm({ luogo: sc.luogo, iso_nazione: sc.iso });
+        });
+        var meseSel = el('cf-mese');
+        for (var m = 1; m <= 12; m++) {
+            var o = document.createElement('option');
+            o.value = String(m); o.textContent = MESI[m];
+            meseSel.appendChild(o);
+        }
+        el('contrib-nuovo').addEventListener('click', function () { apriForm({}); });
+        el('cf-annulla').addEventListener('click', chiudiForm);
+        el('cf-tratta-aggiungi').addEventListener('click', function () { aggiungiTratta({}); });
+        el('contrib-form').addEventListener('submit', salvaContributo);
+        document.querySelector('[data-scheda="contributi"]').addEventListener('click', function () {
+            if (el('contrib-form').style.display === 'none') { elencoContributi(); }
+        });
         el('cerca-testo').addEventListener('input', function () {
             clearTimeout(stato.timerRicerca);
             var testo = el('cerca-testo').value.trim();
