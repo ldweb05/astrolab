@@ -72,7 +72,12 @@ function parseGmtTimestamp(?string $gmtStr): string {
 function estraiNazione(?string $luogo): ?string {
     if (!$luogo) return null;
     $parti = array_map('trim', explode(',', $luogo));
-    return count($parti) > 1 ? end($parti) : null;
+    if (count($parti) < 2) return null;
+    $ultima = end($parti);
+    // Fix 30-09-2026: se l'ultima parte del luogo supera i 10 caratteri della
+    // colonna nazione_rs (es. "Longyearbyen, Nordenskiöld Land") non e' un codice
+    // nazione: si salva NULL invece di far fallire l'INSERT con un errore fatale.
+    return mb_strlen($ultima) <= 10 ? $ultima : null;
 }
 
 switch ($action) {
