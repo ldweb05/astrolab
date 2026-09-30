@@ -238,6 +238,7 @@ $annoCorrente = (int)date('Y');
 </div>
 <nav class="hidden md:flex items-center gap-8">
 <a class="text-primary border-b-2 border-primary pb-1 hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium" href="index.php">Soggetti</a>
+<a class="text-on-surface-variant hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium" href="diario.php">Diario RSM</a>
 <div class="relative group inline-flex items-center h-full">
 <button type="button" class="text-on-surface-variant hover:bg-surface-container font-title-md text-[16px] leading-6 font-medium px-1 py-2 flex items-center gap-1">
 HELP <span class="material-symbols-outlined text-sm">expand_more</span>

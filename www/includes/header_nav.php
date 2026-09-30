@@ -4,7 +4,7 @@
  *
  * Richiede che siano definiti:
  *   $auth, $isAdmin, $username, $soggettoNome
- *   $paginaAttiva → 'soggetti' | 'tema' | 'rs' | 'rl' | 'rilocazione' | 'ricerca' | 'admin'
+ *   $paginaAttiva → 'soggetti' | 'tema' | 'rs' | 'rl' | 'rilocazione' | 'ricerca' | 'diario' | 'admin'
  *
  * Il soggetto attivo viene propagato nei link del nav tramite ?id=
  * così la navigazione tra Tema / RS / Ricerca mantiene il soggetto corrente.
@@ -202,6 +202,10 @@ $_hnFotoProfilo = $_stmtHnFoto->fetchColumn() ?: null;
             </div>
             <!-- ── Fine dropdown ────────────────────────────────────── -->
 
+
+            <!-- Diario RSM (docs/roadmaps/ROADMAP_DIARIO_RSM.md, Fase 3d) -->
+            <a href="diario.php"
+               <?= ($paginaAttiva??'') === 'diario' ? 'class="active"' : '' ?>>Diario RSM</a>
 
             <!-- ── Dropdown: Help ─────────────────────────────────────── -->
             <div class="nav-dropdown">

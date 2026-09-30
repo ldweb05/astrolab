@@ -2,9 +2,9 @@
 require_once __DIR__ . '/includes/bootstrap.php';
 /**
  * area_soggetto.php - Area riservata del soggetto (accesso con il CODICE)
- * docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md, blocco B (B4 provvisoria).
- * Per ora pagina segnaposto: il Diario RSM arriva con il blocco C
- * (docs/roadmaps/ROADMAP_DIARIO_RSM.md). Nessun dato di nascita o astrologico.
+ * docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md, blocco B (B4) e
+ * docs/roadmaps/ROADMAP_DIARIO_RSM.md, Fase 3d: pagina iniziale del soggetto con
+ * l'accesso al Diario RSM (diario.php). Nessun dato di nascita o astrologico.
  */
 require_once __DIR__ . '/includes/Auth.php';
 
@@ -32,6 +32,9 @@ $passwordCambiata = isset($_GET['password']);
         .sogg-ok { background: #E8F5E9; color: #1B5E20; border-radius: 6px; padding: 10px 12px; font-size: 14px; margin-bottom: 16px; }
         .sogg-testo { color: #444; font-size: 15px; line-height: 1.5; margin-bottom: 22px; }
         .sogg-link { font-size: 13px; }
+        .sogg-btn { display: inline-block; background: #2C3E6B; color: #fff; text-decoration: none; border-radius: 6px;
+            padding: 12px 22px; font-size: 16px; margin-bottom: 22px; }
+        .sogg-btn:hover { background: #22325A; }
     </style>
 </head>
 <body>
@@ -44,9 +47,11 @@ $passwordCambiata = isset($_GET['password']);
         <?php endif; ?>
 
         <div class="sogg-testo">
-            Il tuo Diario RSM arriver&agrave; a breve: qui potrai salvare i viaggi fatti per le tue
-            Rivoluzioni Solari Mirate e consultare i consigli di viaggio degli altri.
+            Nel tuo Diario RSM puoi salvare i viaggi fatti per le tue Rivoluzioni Solari Mirate
+            e consultare i consigli di viaggio condivisi dagli altri.
         </div>
+
+        <a href="diario.php" class="sogg-btn">&#9992;&#65039; Apri il tuo Diario RSM</a>
 
         <div class="sogg-link">
             <a href="cambio_password_soggetto.php">Cambia password</a> &middot;
