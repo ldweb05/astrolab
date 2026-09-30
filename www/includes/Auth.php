@@ -317,6 +317,33 @@ class Auth {
         return ['ok' => true];
     }
 
+    /**
+     * Soggetto loggato con accesso ancora attivo, senza reindirizzare (per le API).
+     * Restituisce null se non c'e' un soggetto loggato, se l'accesso e' stato
+     * disattivato o se il cambio password al primo accesso e' ancora dovuto.
+     */
+    public function soggettoCorrente(): ?array
+    {
+        if (!$this->isLoggedInSoggetto()) {
+            return null;
+        }
+        $stmt = $this->pdo->prepare(
+            "SELECT a.attivo, a.deve_cambiare_password, s.codice
+               FROM accessi_soggetti a
+               JOIN soggetti s ON s.id = a.soggetto_id
+              WHERE a.soggetto_id = ?"
+        );
+        $stmt->execute([(int)$_SESSION['accesso_soggetto']['soggetto_id']]);
+        $riga = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$riga || !$riga['attivo'] || $riga['deve_cambiare_password']) {
+            return null;
+        }
+        return [
+            'soggetto_id' => (int)$_SESSION['accesso_soggetto']['soggetto_id'],
+            'codice'      => (string)$riga['codice'],
+        ];
+    }
+
     // ── CONTROLLI ─────────────────────────────────────────────────
 
     public function isLoggedIn(): bool {

@@ -138,7 +138,7 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
 |---|---|---|
 | 0 | Questa roadmap | Completata (aggiornata con D14-D16) |
 | 1 | Migrazione `sql/013_diario_rsm.sql` + applicazione sul DB del Pi | Completata (30-09-2026) |
-| 2 | API `www/api/diario_rsm_api.php` (CRUD viaggi privati e contributi) | Da fare |
+| 2 | API `www/api/diario_rsm_api.php` (viaggi privati, contributi, motore di ricerca D17, moderazione) | Completata (30-09-2026) |
 | 3 | Pagina viaggi privati (astrologi e soggetti) + collegamento da "Sessioni RS salvate" in `rs.php` | Da fare |
 | 4 | Motore di ricerca (D17) e schede località condivise (lettura contributi e tratte) | Da fare |
 | 5 | Documentazione: HANDOVER, START_HERE, ROADMAP generale | Da fare |
@@ -168,8 +168,8 @@ misure deve dare per scontata la protezione della VPN.
 
 **Già nel codice della feature (Fasi 1-4):**
 - Limite anti-abuso sulle scritture, applicato lato applicazione tramite conteggio su DB
-  (es. massimo N contributi per utente al giorno, massimo 15 tratte per contributo;
-  valori esatti da fissare in Fase 2).
+  (10 contributi e 20 viaggi per autore nelle ultime 24 ore, massimo 15 tratte per contributo;
+  valori decisi dal committente il 30-09-2026).
 - Link esterni (`alloggio_sito`, contatti) resi con `rel="noopener noreferrer nofollow ugc"`
   e `target="_blank"`: nessun beneficio SEO per siti inseriti da terzi, nessun accesso della
   pagina esterna alla finestra di ASTROLAB.
