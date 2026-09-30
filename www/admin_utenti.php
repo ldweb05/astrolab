@@ -105,9 +105,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($azione === 'elimina') {
             $id = intval($_POST['id'] ?? 0);
             $trasferisciA = intval($_POST['trasferisci_a'] ?? 1);
-            $ok = $auth->eliminaUtente($id, $trasferisciA);
-            $messaggio = $ok ? 'Utente eliminato e soggetti trasferiti.' : 'Impossibile eliminare il proprio account.';
-            $tipoMsg   = $ok ? 'success' : 'error';
+            $result = $auth->eliminaUtente($id, $trasferisciA);
+            $messaggio = $result['ok'] ? 'Utente eliminato e soggetti trasferiti.' : $result['errore'];
+            $tipoMsg   = $result['ok'] ? 'success' : 'error';
         }
     }
 }
@@ -726,6 +726,17 @@ function apriModaleElimina(id, nome, nSoggetti) {
         (nSoggetti === 1 ? 'o' : 'i') + ' di studio.' +
         '<br>Prima di eliminare l\'utente, scegli a chi trasferire i soggetti.';
     document.getElementById('elimina-id').value = id;
+    // L'utente da eliminare non puo' ricevere i propri soggetti: lo si esclude
+    // dall'elenco e si preseleziona il primo utente valido (fix 29-09-2026).
+    const selTrasf = document.querySelector('#modal-elimina select[name="trasferisci_a"]');
+    let primoValido = null;
+    Array.from(selTrasf.options).forEach(function (opt) {
+        const escluso = (parseInt(opt.value, 10) === id);
+        opt.disabled = escluso;
+        opt.hidden = escluso;
+        if (!escluso && primoValido === null) { primoValido = opt.value; }
+    });
+    if (primoValido !== null) { selTrasf.value = primoValido; }
     document.getElementById('modal-elimina').classList.add('vis');
 }
 function chiudiModali() {

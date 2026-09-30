@@ -782,9 +782,11 @@ Riferimenti operativi dettagliati: `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.
 
 ---
 
-## BUG APERTO — Eliminazione utente con trasferimento dei soggetti a se stesso (scoperto 29-09-2026)
+## BUG RISOLTO — Eliminazione utente con trasferimento dei soggetti a se stesso (scoperto 29-09-2026, corretto 30-09-2026)
 
-Stato: **aperto, fix rimandato per decisione del committente** (29-09-2026). Non causato dal
+Stato: **risolto il 30-09-2026** (fix rimandato il 29-09-2026 e applicato il giorno dopo; test nel
+browser OK: astrologo di prova con un soggetto eliminato dall'admin, menu senza l'utente da
+eliminare, soggetto trasferito con codice invariato). Non causato dal
 lavoro sul CODICE automatico: e' un difetto preesistente, emerso durante i test del blocco A.
 
 - Sintomo: in `admin_utenti.php` l'eliminazione di un utente che ha soggetti termina con
@@ -798,7 +800,8 @@ lavoro sul CODICE automatico: e' un difetto preesistente, emerso durante i test 
   (verificato il 29-09-2026: nessuna modifica dopo l'errore).
 - Workaround: nel modale scegliere un utente diverso da quello da eliminare, oppure eliminare
   prima i soggetti dell'utente e poi l'utente (pulsante di eliminazione diretta).
-- Fix gia' progettato e collaudato nel sandbox (non applicato), due file:
+- Fix applicato (progettato il 29-09-2026, ricollaudato il 30-09-2026 sulla versione attuale di
+  `Auth.php`: 9 casi su 9), due file:
   1. `www/includes/Auth.php`, `eliminaUtente()`: rifiuta trasferimento verso lo stesso utente
      o verso un utente inesistente (solo se ci sono soggetti da spostare), rifiuta un utente
      da eliminare inesistente, esegue UPDATE + DELETE in una transazione con rollback, e
@@ -839,3 +842,28 @@ emerso durante il test del blocco dei tentativi del login soggetti (Fase B2).
      sia nel login soggetti.
 - Il limite per IP del login soggetti (5 errori in 15 minuti, solo tentativi falliti, nel DB)
   funziona correttamente: verificato il 29-09-2026 (vedi `ROADMAP_CODICE_LOGIN_SOGGETTI.md`, C12).
+
+---
+
+## BUG APERTO — Lista soggetti: dati inseriti come HTML senza protezione (XSS) (scoperto 30-09-2026)
+
+Stato: **aperto, da correggere prima del trasferimento sulla VPS pubblica** (registrato su
+decisione del committente il 30-09-2026). Difetto preesistente, notato durante la Fase B3 del
+login soggetti e segnalato solo a fine lavoro.
+
+- Sintomo potenziale: in `www/index.php`, `caricaSoggettiConDropdown()` costruisce le righe della
+  lista soggetti concatenando i dati in una stringa HTML assegnata con `innerHTML`, senza
+  escaping: `s.nome` (anche dentro l'attributo `onclick` di elimina), `s.luogo_nascita`,
+  `s.nazione_nascita`, `s.residenza_luogo`, `s.residenza_nazione`; anche il riquadro del
+  soggetto attivo (`infoEl.innerHTML`) inserisce il nome. Il `codice` oggi e' generato dal
+  server (solo lettere e cifre).
+- Rischio: un astrologo che desse a un proprio soggetto un nome contenente HTML o JavaScript lo
+  farebbe eseguire nel browser di chi apre la lista; in particolare dell'**admin**, che vede i
+  soggetti di tutti gli astrologi. Oggi basso (pochi utenti di fiducia), serio con la
+  registrazione pubblica sulla VPS.
+- Correzione indicata: inserire i dati con una funzione di escaping (o con `textContent`/DOM),
+  e sostituire il nome nell'`onclick` con un attributo `data-` letto da JavaScript. Verificare
+  lo stesso schema in `www/js/app.js` (14 usi di `innerHTML`, tra cui la vecchia
+  `caricaSoggetti()`) e nelle altre pagine.
+- Il codice nuovo del Diario RSM e del pulsante di accesso (`js/diario_rsm.js`,
+  `js/accesso_soggetti.js`) usa gia' `textContent` e non ha questo problema.

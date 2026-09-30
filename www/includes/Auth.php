@@ -1156,16 +1156,53 @@ class Auth {
         return $stmt->rowCount() === 1;
     }
 
-    public function eliminaUtente(int $utenteId, int $trasferisciA = 1): bool {
-        if ($utenteId === $this->getCurrentUserId()) return false;
-        // Trasferisci i soggetti
-        $this->pdo->prepare(
-            "UPDATE soggetti SET utente_id = ? WHERE utente_id = ?"
-        )->execute([$trasferisciA, $utenteId]);
-        $this->pdo->prepare(
-            "DELETE FROM utenti WHERE id = ?"
-        )->execute([$utenteId]);
-        return true;
+    /**
+     * Elimina un utente trasferendo i suoi soggetti a un altro utente.
+     * Fix 29-09-2026: rifiuta il trasferimento verso lo stesso utente o verso un
+     * utente inesistente (prima causava un errore fatale: soggetti.utente_id e'
+     * NOT NULL) ed esegue trasferimento ed eliminazione in un'unica transazione.
+     */
+    public function eliminaUtente(int $utenteId, int $trasferisciA = 1): array {
+        if ($utenteId === $this->getCurrentUserId()) {
+            return ['ok' => false, 'errore' => 'Impossibile eliminare il proprio account.'];
+        }
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM utenti WHERE id = ?");
+        $stmt->execute([$utenteId]);
+        if ((int)$stmt->fetchColumn() !== 1) {
+            return ['ok' => false, 'errore' => 'Utente non trovato.'];
+        }
+        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM soggetti WHERE utente_id = ?");
+        $stmt->execute([$utenteId]);
+        $nSoggetti = (int)$stmt->fetchColumn();
+        if ($nSoggetti > 0) {
+            if ($trasferisciA === $utenteId) {
+                return ['ok' => false, 'errore' => 'Scegli un utente diverso a cui trasferire i soggetti.'];
+            }
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM utenti WHERE id = ?");
+            $stmt->execute([$trasferisciA]);
+            if ((int)$stmt->fetchColumn() !== 1) {
+                return ['ok' => false, 'errore' => 'Utente di destinazione non valido.'];
+            }
+        }
+        try {
+            $this->pdo->beginTransaction();
+            if ($nSoggetti > 0) {
+                $this->pdo->prepare(
+                    "UPDATE soggetti SET utente_id = ? WHERE utente_id = ?"
+                )->execute([$trasferisciA, $utenteId]);
+            }
+            $this->pdo->prepare(
+                "DELETE FROM utenti WHERE id = ?"
+            )->execute([$utenteId]);
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            error_log('eliminaUtente: ' . $e->getMessage());
+            return ['ok' => false, 'errore' => 'Eliminazione non riuscita.'];
+        }
+        return ['ok' => true];
     }
 
     /**
