@@ -80,12 +80,15 @@ true), `creato_il`, `aggiornato_il`.
 ### `nazioni` (riferimento, D18)
 `iso` (codice ISO 3166-1 alpha-2, chiave), `nome_it` (nome italiano da CLDR, es. "Polinesia
 Francese"), `nome_en` (nome inglese, come in `localita.nazione`), `alias` (altri nomi
-cercabili, es. "Malvine", "Malvinas"). Popolata dalla migrazione con i dati CLDR (263 voci).
+cercabili, es. "Malvine", "Malvinas"). Popolata dalla migrazione con i dati CLDR: 250 voci (escluse le voci CLDR che non sono
+nazioni, es. Unione Europea, e le sottoregioni con codice speciale, es. Isole Canarie, che
+risulterebbero separate dalla Spagna).
 
 ### `nazioni_appartenenza` (riferimento, D19)
 `iso_territorio`, `iso_nazione` (chiave composta). Un territorio con codice ISO proprio
 compare anche sotto la nazione indicata: SJ → NO (Svalbard), GL e FO → DK, PF e NC → FR,
-FK → GB e AR (vedi D19), ecc. Elenco completo nella migrazione, da rivedere col committente.
+FK e GS → GB e AR (vedi D19), ecc.: 53 collegamenti in tutto, elenco approvato dal committente
+il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
 
 ## 5. Decisioni chiuse in Fase 0 (29-09-2026)
 
@@ -134,7 +137,7 @@ FK → GB e AR (vedi D19), ecc. Elenco completo nella migrazione, da rivedere co
 | Fase | Contenuto | Stato |
 |---|---|---|
 | 0 | Questa roadmap | Completata (aggiornata con D14-D16) |
-| 1 | Migrazione `sql/013_diario_rsm.sql` + applicazione sul DB del Pi | Da fare |
+| 1 | Migrazione `sql/013_diario_rsm.sql` + applicazione sul DB del Pi | Completata (30-09-2026) |
 | 2 | API `www/api/diario_rsm_api.php` (CRUD viaggi privati e contributi) | Da fare |
 | 3 | Pagina viaggi privati (astrologi e soggetti) + collegamento da "Sessioni RS salvate" in `rs.php` | Da fare |
 | 4 | Motore di ricerca (D17) e schede località condivise (lettura contributi e tratte) | Da fare |
