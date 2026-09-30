@@ -1,0 +1,138 @@
+<?php
+require_once __DIR__ . '/includes/bootstrap.php';
+/**
+ * diario.php - Diario RSM (astrologi e soggetti)
+ * docs/roadmaps/ROADMAP_DIARIO_RSM.md, blocco C, Fase 3.
+ *
+ * Accessibile all'astrologo loggato (con il menu dell'astrologo) e al soggetto
+ * loggato con il proprio CODICE (barra semplice, senza menu dell'astrologo).
+ * Tutti i dati arrivano da api/diario_rsm_api.php; la logica e' in
+ * js/diario_rsm.js (nessun handler inline, testi inseriti con textContent).
+ */
+require_once __DIR__ . '/includes/Auth.php';
+
+$pdo  = db_connect();
+$auth = new Auth($pdo);
+
+if ($auth->isLoggedIn()) {
+    $ruoloDiario   = 'astrologo';
+    $isAdmin       = $auth->isAdmin();
+    $username      = $auth->getCurrentUsername();
+    $soggettoNome  = $auth->getSoggettoNome();
+    $nomeVisibile  = $username;
+} elseif ($auth->isLoggedInSoggetto()) {
+    $soggettoLoggato = $auth->richiediLoginSoggetto();
+    $ruoloDiario   = 'soggetto';
+    $isAdmin       = false;
+    $nomeVisibile  = $soggettoLoggato['codice'];
+} else {
+    header('Location: login.php?next=' . urlencode('/diario.php'));
+    exit;
+}
+
+header('X-Robots-Tag: noindex, nofollow');
+?>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Diario RSM - AstroLab</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .diario-main { max-width: 1100px; margin: 0 auto; padding: 20px 24px 60px; }
+        .diario-barra-soggetto { display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 24px; border-bottom: 2px solid #2C3E6B; background: #fff; }
+        .diario-barra-soggetto .logo { font-family: 'Eb Garamond', Georgia, serif; font-size: 28px;
+            color: #B85C38; font-weight: 700; text-decoration: none; }
+        .diario-barra-soggetto .utente { font-size: 14px; color: #2C3E6B; }
+        .diario-barra-soggetto .utente a { margin-left: 12px; }
+        .diario-titolo { font-family: 'Eb Garamond', Georgia, serif; color: #2C3E6B; font-size: 30px; margin: 10px 0 4px; }
+        .diario-sottotitolo { color: #555; font-size: 14px; margin-bottom: 18px; }
+        .diario-schede { display: flex; gap: 6px; border-bottom: 1px solid #D8D2C4; margin-bottom: 18px; flex-wrap: wrap; }
+        .diario-scheda-btn { background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px;
+            font-size: 15px; color: #2C3E6B; cursor: pointer; }
+        .diario-scheda-btn.attiva { border-bottom-color: #2C3E6B; font-weight: 600; }
+        .diario-pannello { display: none; }
+        .diario-pannello.attivo { display: block; }
+        .diario-ricerca { display: flex; gap: 8px; margin-bottom: 16px; }
+        .diario-ricerca input { flex: 1; padding: 10px 12px; font-size: 16px; border: 1px solid #C9C2B2; border-radius: 6px; }
+        .diario-msg { color: #555; font-size: 14px; margin: 10px 0; }
+        .diario-msg.err { color: #8A1C1C; }
+        .diario-sezione-titolo { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #7A6F5A; margin: 18px 0 8px; }
+        .diario-elenco { list-style: none; padding: 0; margin: 0; }
+        .diario-elenco li { margin: 0; }
+        .diario-voce { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left;
+            background: #fff; border: 1px solid #E4DED0; border-radius: 6px; padding: 10px 14px; margin-bottom: 6px;
+            cursor: pointer; font-size: 15px; color: #2C3E6B; }
+        .diario-voce:hover { background: #F7F3EA; }
+        .diario-voce .nota { color: #7A6F5A; font-size: 13px; margin-left: 8px; }
+        .diario-voce .conteggio { background: #2C3E6B; color: #fff; border-radius: 10px; padding: 1px 9px; font-size: 12px; }
+        .diario-nazione-blocco { margin-bottom: 14px; }
+        .diario-nazione-nome { font-weight: 600; color: #2C3E6B; margin: 6px 0; }
+        .diario-indietro { background: none; border: 0; color: #2C3E6B; cursor: pointer; padding: 0; margin-bottom: 10px; font-size: 14px; }
+        .diario-scheda-titolo { font-family: 'Eb Garamond', Georgia, serif; font-size: 26px; color: #2C3E6B; margin: 4px 0 14px; }
+        .diario-contributo { background: #fff; border: 1px solid #E4DED0; border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+        .diario-contributo.nascosto { opacity: 0.55; border-style: dashed; }
+        .diario-contributo-testa { display: flex; justify-content: space-between; color: #7A6F5A; font-size: 13px; margin-bottom: 10px; }
+        .diario-riga { margin: 6px 0; font-size: 14px; line-height: 1.5; }
+        .diario-riga .etichetta { font-weight: 600; color: #2C3E6B; }
+        .diario-testo-lungo { white-space: pre-line; }
+        .diario-tratte { margin: 8px 0; padding-left: 0; list-style: none; font-size: 14px; }
+        .diario-tratte li { margin: 3px 0; }
+        .diario-in-arrivo { background: #F7F3EA; border-radius: 8px; padding: 18px; color: #555; }
+    </style>
+</head>
+<body data-ruolo="<?= htmlspecialchars($ruoloDiario, ENT_QUOTES, 'UTF-8') ?>" data-admin="<?= $isAdmin ? '1' : '0' ?>">
+<?php if ($ruoloDiario === 'astrologo'): ?>
+<?php $paginaAttiva = 'diario'; include 'includes/header_nav.php'; ?>
+<?php else: ?>
+<header class="diario-barra-soggetto">
+    <a href="area_soggetto.php" class="logo">AstroLab</a>
+    <span class="utente">
+        <?= htmlspecialchars($nomeVisibile, ENT_QUOTES, 'UTF-8') ?>
+        <a href="cambio_password_soggetto.php">Cambia password</a>
+        <a href="logout.php">Esci</a>
+    </span>
+</header>
+<?php endif; ?>
+
+<main class="diario-main">
+    <h1 class="diario-titolo">Diario RSM</h1>
+    <div class="diario-sottotitolo">I viaggi fatti per le Rivoluzioni Solari Mirate e i consigli di viaggio condivisi.</div>
+
+    <nav class="diario-schede" aria-label="Sezioni del Diario">
+        <button type="button" class="diario-scheda-btn attiva" data-scheda="cerca">&#128270; Cerca localit&agrave;</button>
+        <button type="button" class="diario-scheda-btn" data-scheda="viaggi">&#9992;&#65039; I miei viaggi</button>
+        <button type="button" class="diario-scheda-btn" data-scheda="contributi">&#128221; I miei contributi</button>
+    </nav>
+
+    <section id="pannello-cerca" class="diario-pannello attivo">
+        <div id="cerca-vista-ricerca">
+            <div class="diario-ricerca">
+                <input type="search" id="cerca-testo" placeholder="Cerca una nazione o una localit&agrave; (es. Norvegia, Australia, Tokyo)" autocomplete="off" maxlength="100">
+            </div>
+            <div id="cerca-msg" class="diario-msg"></div>
+            <div id="cerca-risultati"></div>
+        </div>
+        <div id="cerca-vista-scheda" style="display:none">
+            <button type="button" class="diario-indietro" id="scheda-indietro">&larr; Torna alla ricerca</button>
+            <h2 class="diario-scheda-titolo" id="scheda-titolo"></h2>
+            <div id="scheda-msg" class="diario-msg"></div>
+            <div id="scheda-contributi"></div>
+        </div>
+    </section>
+
+    <section id="pannello-viaggi" class="diario-pannello">
+        <div class="diario-in-arrivo">La sezione dei viaggi privati &egrave; in preparazione.</div>
+    </section>
+
+    <section id="pannello-contributi" class="diario-pannello">
+        <div class="diario-in-arrivo">La sezione dei contributi &egrave; in preparazione.</div>
+    </section>
+</main>
+
+<script src="js/diario_rsm.js"></script>
+</body>
+</html>
