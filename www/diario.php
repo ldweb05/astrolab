@@ -108,6 +108,10 @@ header('X-Robots-Tag: noindex, nofollow');
         .diario-dichiarazione { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin-top: 14px; }
         .diario-nota-privacy { font-size: 12px; color: #7A6F5A; margin-top: 4px; }
         @media (max-width: 800px) { .diario-tratta { grid-template-columns: 1fr 1fr; } }
+        .diario-viaggio-soggetto { color: #B85C38; font-size: 13px; font-weight: 600; }
+        .diario-collega { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+        .diario-collega select { padding: 5px 8px; border: 1px solid #C9C2B2; border-radius: 5px; font-size: 13px; max-width: 100%; }
+        .diario-sessione { color: #2C3E6B; font-size: 13px; background: #EEF2FA; border-radius: 10px; padding: 2px 9px; display: inline-block; margin-top: 4px; }
     </style>
 </head>
 <body data-ruolo="<?= htmlspecialchars($ruoloDiario, ENT_QUOTES, 'UTF-8') ?>" data-admin="<?= $isAdmin ? '1' : '0' ?>">
@@ -154,7 +158,52 @@ header('X-Robots-Tag: noindex, nofollow');
     </section>
 
     <section id="pannello-viaggi" class="diario-pannello">
-        <div class="diario-in-arrivo">La sezione dei viaggi privati &egrave; in preparazione.</div>
+        <div id="viaggi-vista-elenco">
+            <div class="diario-sottotitolo">I tuoi viaggi RSM: sono privati e restano visibili solo a te<?= $ruoloDiario === 'soggetto' ? ' e al tuo astrologo' : '' ?>.</div>
+            <div class="diario-azioni">
+                <button type="button" class="diario-btn" id="viaggi-nuovo">+ Nuovo viaggio</button>
+            </div>
+            <div id="viaggi-msg" class="diario-msg"></div>
+            <div id="viaggi-elenco"></div>
+<?php if ($ruoloDiario === 'astrologo'): ?>
+            <div class="diario-sezione-titolo">Viaggi dei miei soggetti</div>
+            <div class="diario-sottotitolo">Scritti dai tuoi soggetti con il loro accesso: puoi consultarli e collegarli a una sessione RS, ma non modificarli.</div>
+            <div id="viaggi-soggetti-msg" class="diario-msg"></div>
+            <div id="viaggi-soggetti-elenco"></div>
+<?php endif; ?>
+        </div>
+
+        <form id="viaggio-form" class="diario-form" style="display:none" novalidate>
+            <h2 class="diario-scheda-titolo" id="viaggio-form-titolo">Nuovo viaggio</h2>
+            <input type="hidden" id="vf-id">
+            <div class="diario-griglia">
+                <div class="diario-campo"><label for="vf-luogo">Luogo *</label>
+                    <input type="text" id="vf-luogo" maxlength="200" required placeholder="es. Longyearbyen"></div>
+                <div class="diario-campo"><label for="vf-nazione">Nazione *</label>
+                    <input type="text" id="vf-nazione" list="elenco-nazioni" required autocomplete="off" placeholder="Scrivi e scegli dall'elenco"></div>
+                <div class="diario-campo"><label for="vf-arrivo">Arrivo</label>
+                    <input type="date" id="vf-arrivo"></div>
+                <div class="diario-campo"><label for="vf-partenza">Partenza</label>
+                    <input type="date" id="vf-partenza"></div>
+                <div class="diario-campo"><label for="vf-albergo">Albergo</label>
+                    <input type="text" id="vf-albergo" maxlength="200"></div>
+                <div class="diario-campo"><label for="vf-costo-alloggio">Costo alloggio</label>
+                    <input type="number" id="vf-costo-alloggio" min="0" step="0.01"></div>
+                <div class="diario-campo"><label for="vf-costo-trasporti">Costo trasporti</label>
+                    <input type="number" id="vf-costo-trasporti" min="0" step="0.01"></div>
+                <div class="diario-campo"><label for="vf-valuta">Valuta</label>
+                    <input type="text" id="vf-valuta" maxlength="3" value="EUR"></div>
+                <div class="diario-campo largo"><label for="vf-trasporti">Trasporti usati</label>
+                    <textarea id="vf-trasporti" maxlength="4000" placeholder="es. Roma-Oslo in aereo, Oslo-Longyearbyen in aereo"></textarea></div>
+                <div class="diario-campo largo"><label for="vf-note">Note personali</label>
+                    <textarea id="vf-note" maxlength="4000"></textarea></div>
+            </div>
+            <div id="vf-msg" class="diario-msg"></div>
+            <div class="diario-azioni">
+                <button type="submit" class="diario-btn" id="vf-salva">Salva viaggio</button>
+                <button type="button" class="diario-btn secondario" id="vf-annulla">Annulla</button>
+            </div>
+        </form>
     </section>
 
     <section id="pannello-contributi" class="diario-pannello">

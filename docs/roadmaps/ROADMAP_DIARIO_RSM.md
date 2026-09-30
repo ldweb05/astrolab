@@ -139,7 +139,7 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
 | 0 | Questa roadmap | Completata (aggiornata con D14-D16) |
 | 1 | Migrazione `sql/013_diario_rsm.sql` + applicazione sul DB del Pi | Completata (30-09-2026) |
 | 2 | API `www/api/diario_rsm_api.php` (viaggi privati, contributi, motore di ricerca D17, moderazione) | Completata (30-09-2026) |
-| 3 | Pagine: `www/diario.php` + `www/js/diario_rsm.js` (astrologo e soggetto), in quattro passi: 3a ricerca e schede in sola lettura; 3b contributi (form, tratte, moderazione); 3c viaggi privati, viaggi dei propri soggetti e collegamento alle sessioni RS; 3d voce di menu e area del soggetto | In corso: 3a e 3b completate (30-09-2026) |
+| 3 | Pagine: `www/diario.php` + `www/js/diario_rsm.js` (astrologo e soggetto), in quattro passi: 3a ricerca e schede in sola lettura; 3b contributi (form, tratte, moderazione); 3c viaggi privati, viaggi dei propri soggetti e collegamento alle sessioni RS; 3d voce di menu e area del soggetto | In corso: 3a, 3b e 3c completate (30-09-2026) |
 | 4 | Motore di ricerca (D17) e schede località condivise: interfaccia realizzata nella Fase 3a (`diario.php`, scheda "Cerca località") | Completata con la 3a (30-09-2026) |
 | 5 | Documentazione: HANDOVER, START_HERE, ROADMAP generale | Da fare |
 

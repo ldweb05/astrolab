@@ -530,6 +530,184 @@
         });
     }
 
+
+    // ── Viaggi privati ──────────────────────────────────────────────
+
+    var CAMPI_VIAGGIO = {
+        'vf-luogo': 'luogo', 'vf-arrivo': 'data_arrivo', 'vf-partenza': 'data_partenza',
+        'vf-albergo': 'albergo', 'vf-costo-alloggio': 'costo_alloggio',
+        'vf-costo-trasporti': 'costo_trasporti', 'vf-valuta': 'valuta',
+        'vf-trasporti': 'trasporti', 'vf-note': 'note_private'
+    };
+
+    function dataIt(iso) {
+        if (!iso) { return ''; }
+        var p = String(iso).split('-');
+        return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : String(iso);
+    }
+
+    function cartaViaggio(v) {
+        var carta = nuovo('div', 'diario-mio');
+        if (v.soggetto_codice && !v.modificabile) {
+            carta.appendChild(nuovo('div', 'diario-viaggio-soggetto', v.soggetto_codice + ' \u00b7 ' + (v.soggetto_nome || '')));
+        }
+        carta.appendChild(nuovo('div', 'diario-mio-titolo', v.luogo + ' \u2014 ' + v.nazione));
+        var date = [dataIt(v.data_arrivo), dataIt(v.data_partenza)].filter(function (x) { return x; });
+        if (date.length) { carta.appendChild(nuovo('div', 'diario-mio-info', date.join(' \u2192 '))); }
+        riga(carta, 'Albergo', v.albergo);
+        if (v.costo_alloggio !== null && v.costo_alloggio !== undefined) { riga(carta, 'Costo alloggio', importo(v.costo_alloggio, v.valuta)); }
+        if (v.costo_trasporti !== null && v.costo_trasporti !== undefined) { riga(carta, 'Costo trasporti', importo(v.costo_trasporti, v.valuta)); }
+        riga(carta, 'Trasporti', v.trasporti, true);
+        riga(carta, 'Note', v.note_private, true);
+        if (stato.ruolo === 'astrologo' && v.sessione_anno) {
+            carta.appendChild(nuovo('span', 'diario-sessione',
+                'Sessione RS ' + v.sessione_anno + (v.sessione_luogo ? ' \u00b7 ' + v.sessione_luogo : '')));
+        }
+        var az = nuovo('div', 'diario-carta-azioni');
+        if (v.modificabile) {
+            var bMod = nuovo('button', 'diario-btn secondario piccolo', 'Modifica');
+            bMod.type = 'button';
+            bMod.addEventListener('click', function () { apriFormViaggio(v); });
+            var bDel = nuovo('button', 'diario-btn pericolo piccolo', 'Elimina');
+            bDel.type = 'button';
+            bDel.addEventListener('click', function () { eliminaViaggio(v.id, v.luogo); });
+            az.appendChild(bMod); az.appendChild(bDel);
+        }
+        if (stato.ruolo === 'astrologo') {
+            var bCol = nuovo('button', 'diario-btn secondario piccolo',
+                v.sessione_rs_id ? 'Cambia sessione RS' : 'Collega a una sessione RS');
+            bCol.type = 'button';
+            bCol.addEventListener('click', function () { mostraCollega(v, carta, bCol); });
+            az.appendChild(bCol);
+        }
+        carta.appendChild(az);
+        return carta;
+    }
+
+    function elencoViaggi(messaggioFinale) {
+        messaggio('viaggi-msg', 'Caricamento...');
+        apiGet('miei_viaggi').then(function (d) {
+            var viaggi = d.viaggi || [];
+            var miei = viaggi.filter(function (v) { return v.modificabile; });
+            var deiSoggetti = viaggi.filter(function (v) { return !v.modificabile; });
+            var box = el('viaggi-elenco');
+            svuota(box);
+            miei.forEach(function (v) { box.appendChild(cartaViaggio(v)); });
+            messaggio('viaggi-msg', messaggioFinale || (miei.length ? '' : 'Non hai ancora registrato viaggi.'));
+            var boxS = el('viaggi-soggetti-elenco');
+            if (boxS) {
+                svuota(boxS);
+                deiSoggetti.forEach(function (v) { boxS.appendChild(cartaViaggio(v)); });
+                messaggio('viaggi-soggetti-msg', deiSoggetti.length ? '' : 'I tuoi soggetti non hanno ancora registrato viaggi.');
+            }
+        }).catch(function () { messaggio('viaggi-msg', 'Errore di caricamento. Riprova.', true); });
+    }
+
+    function mostraCollega(v, carta, pulsante) {
+        var esistente = carta.querySelector('.diario-collega');
+        if (esistente) { carta.removeChild(esistente); return; }
+        var box = nuovo('div', 'diario-collega');
+        var sel = document.createElement('select');
+        var vuota = document.createElement('option');
+        vuota.value = ''; vuota.textContent = 'Caricamento sessioni...';
+        sel.appendChild(vuota);
+        box.appendChild(sel);
+        var bOk = nuovo('button', 'diario-btn piccolo', 'Collega');
+        bOk.type = 'button';
+        var bNo = nuovo('button', 'diario-btn pericolo piccolo', 'Scollega');
+        bNo.type = 'button';
+        box.appendChild(bOk);
+        if (v.sessione_rs_id) { box.appendChild(bNo); }
+        carta.appendChild(box);
+        var parametri = v.soggetto_id ? { soggetto_id: v.soggetto_id } : {};
+        apiGet('sessioni_rs', parametri).then(function (d) {
+            svuota(sel);
+            var sessioni = d.sessioni || [];
+            if (!sessioni.length) {
+                var o = document.createElement('option');
+                o.value = ''; o.textContent = 'Nessuna sessione RS salvata';
+                sel.appendChild(o);
+                bOk.disabled = true;
+                return;
+            }
+            sessioni.forEach(function (x) {
+                var o = document.createElement('option');
+                o.value = String(x.id);
+                o.textContent = x.anno + ' \u00b7 ' + (x.luogo_rs || '?') +
+                    (v.soggetto_id ? '' : ' \u00b7 ' + x.soggetto_codice) +
+                    (x.condizione ? ' \u00b7 ' + x.condizione : '');
+                if (String(v.sessione_rs_id) === o.value) { o.selected = true; }
+                sel.appendChild(o);
+            });
+        }).catch(function () { vuota.textContent = 'Errore di caricamento'; });
+        function invia(idSessione) {
+            apiPost('viaggio_collega_sessione', { id: v.id, sessione_rs_id: idSessione }).then(function (d) {
+                if (!d.ok) { window.alert(d.errore || 'Operazione non riuscita.'); return; }
+                elencoViaggi(idSessione ? 'Sessione RS collegata.' : 'Sessione RS scollegata.');
+            }).catch(function () { window.alert('Errore di connessione. Riprova.'); });
+        }
+        bOk.addEventListener('click', function () { if (sel.value) { invia(parseInt(sel.value, 10)); } });
+        bNo.addEventListener('click', function () { invia(null); });
+    }
+
+    function apriFormViaggio(v) {
+        v = v || {};
+        caricaNazioni().then(function () {
+            el('viaggi-vista-elenco').style.display = 'none';
+            el('viaggio-form').style.display = '';
+            el('viaggio-form-titolo').textContent = v.id ? 'Modifica viaggio' : 'Nuovo viaggio';
+            el('vf-id').value = v.id || '';
+            Object.keys(CAMPI_VIAGGIO).forEach(function (id) {
+                var x = v[CAMPI_VIAGGIO[id]];
+                el(id).value = (x === null || x === undefined) ? '' : x;
+            });
+            if (!el('vf-valuta').value) { el('vf-valuta').value = 'EUR'; }
+            el('vf-nazione').value = v.iso_nazione ? nomeDaIso(v.iso_nazione) : '';
+            messaggio('vf-msg', '');
+            el('vf-luogo').focus();
+        }).catch(function () { messaggio('viaggi-msg', 'Errore di caricamento. Riprova.', true); });
+    }
+
+    function chiudiFormViaggio(messaggioFinale) {
+        el('viaggio-form').style.display = 'none';
+        el('viaggi-vista-elenco').style.display = '';
+        elencoViaggi(typeof messaggioFinale === 'string' ? messaggioFinale : '');
+    }
+
+    function eliminaViaggio(id, luogo) {
+        if (!window.confirm('Eliminare definitivamente il viaggio a ' + luogo + '?')) { return; }
+        apiPost('viaggio_elimina', { id: id }).then(function (d) {
+            if (!d.ok) { messaggio('viaggi-msg', d.errore || 'Operazione non riuscita.', true); return; }
+            elencoViaggi('Viaggio eliminato.');
+        }).catch(function () { messaggio('viaggi-msg', 'Errore di connessione. Riprova.', true); });
+    }
+
+    function salvaViaggio(ev) {
+        ev.preventDefault();
+        var iso = isoDaNome(el('vf-nazione').value);
+        if (!el('vf-luogo').value.trim()) { messaggio('vf-msg', 'Indica il luogo del viaggio.', true); return; }
+        if (!iso) { messaggio('vf-msg', 'Scegli la nazione dall\'elenco dei nomi proposti.', true); return; }
+        if (el('vf-arrivo').value && el('vf-partenza').value && el('vf-partenza').value < el('vf-arrivo').value) {
+            messaggio('vf-msg', 'La data di partenza non pu\u00f2 precedere quella di arrivo.', true); return;
+        }
+        var dati = { iso_nazione: iso };
+        if (el('vf-id').value) { dati.id = parseInt(el('vf-id').value, 10); }
+        Object.keys(CAMPI_VIAGGIO).forEach(function (id) {
+            var x = el(id).value;
+            dati[CAMPI_VIAGGIO[id]] = x === '' ? null : x;
+        });
+        el('vf-salva').disabled = true;
+        messaggio('vf-msg', 'Salvataggio...');
+        apiPost('viaggio_salva', dati).then(function (d) {
+            el('vf-salva').disabled = false;
+            if (!d.ok) { messaggio('vf-msg', d.errore || 'Salvataggio non riuscito.', true); return; }
+            chiudiFormViaggio('Viaggio salvato.');
+        }).catch(function () {
+            el('vf-salva').disabled = false;
+            messaggio('vf-msg', 'Errore di connessione. Riprova.', true);
+        });
+    }
+
     // ── Avvio ────────────────────────────────────────────────────
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -553,6 +731,12 @@
         el('cf-annulla').addEventListener('click', chiudiForm);
         el('cf-tratta-aggiungi').addEventListener('click', function () { aggiungiTratta({}); });
         el('contrib-form').addEventListener('submit', salvaContributo);
+        el('viaggi-nuovo').addEventListener('click', function () { apriFormViaggio({}); });
+        el('vf-annulla').addEventListener('click', chiudiFormViaggio);
+        el('viaggio-form').addEventListener('submit', salvaViaggio);
+        document.querySelector('[data-scheda="viaggi"]').addEventListener('click', function () {
+            if (el('viaggio-form').style.display === 'none') { elencoViaggi(); }
+        });
         document.querySelector('[data-scheda="contributi"]').addEventListener('click', function () {
             if (el('contrib-form').style.display === 'none') { elencoContributi(); }
         });

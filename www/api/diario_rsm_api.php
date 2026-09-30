@@ -8,7 +8,8 @@ require_once __DIR__ . '/../includes/bootstrap.php';
  * proprio CODICE e accesso attivo (accesso_soggetto).
  *
  * Lettura (GET, ?action=...):
- *   token, nazioni, cerca, nazione, scheda, miei_viaggi, miei_contributi, contributo
+ *   token, nazioni, cerca, nazione, scheda, miei_viaggi, miei_contributi, contributo,
+ *   sessioni_rs (solo astrologo)
  * Scrittura (POST, Content-Type: application/json, header X-CSRF-Token):
  *   viaggio_salva, viaggio_elimina, viaggio_collega_sessione,
  *   contributo_salva, contributo_elimina, contributo_visibilita (solo admin)
@@ -177,7 +178,8 @@ if ($metodo === 'POST') {
     diario_errore('Richiesta non valida.', 405);
 }
 
-$azioniLettura = ['token', 'nazioni', 'cerca', 'nazione', 'scheda', 'miei_viaggi', 'miei_contributi', 'contributo'];
+$azioniLettura = ['token', 'nazioni', 'cerca', 'nazione', 'scheda', 'miei_viaggi', 'miei_contributi', 'contributo',
+                  'sessioni_rs'];
 if ($metodo === 'GET' && !in_array($azione, $azioniLettura, true)) {
     diario_errore('Azione non valida.');
 }
@@ -385,6 +387,31 @@ try {
         $stmt->execute([$contributo['id']]);
         $contributo['tratte'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         diario_json(['contributo' => $contributo]);
+
+    case 'sessioni_rs':
+        // Sessioni RS salvate dall'astrologo, per collegarle a un viaggio (D16).
+        // Con soggetto_id: solo quelle di quel soggetto, che deve essere suo.
+        if ($attore['tipo'] !== 'astrologo') {
+            diario_errore('Non autorizzato.', 403);
+        }
+        $idSoggetto = (int)($_GET['soggetto_id'] ?? 0);
+        $filtro = '';
+        $parametri = [$attore['utente_id']];
+        if ($idSoggetto > 0) {
+            $filtro = 'AND sr.soggetto_id = ?';
+            $parametri[] = $idSoggetto;
+        }
+        $stmt = $pdo->prepare(
+            "SELECT sr.id, sr.anno, sr.luogo_rs, sr.condizione, sr.stelline,
+                    s.codice AS soggetto_codice, s.nome AS soggetto_nome
+               FROM sessioni_rs sr
+               JOIN soggetti s ON s.id = sr.soggetto_id AND s.utente_id = sr.utente_id
+              WHERE sr.utente_id = ? $filtro
+              ORDER BY sr.anno DESC, sr.id DESC
+              LIMIT 200"
+        );
+        $stmt->execute($parametri);
+        diario_json(['sessioni' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
 
     // ── SCRITTURA: VIAGGI PRIVATI ──────────────────────────────
 
