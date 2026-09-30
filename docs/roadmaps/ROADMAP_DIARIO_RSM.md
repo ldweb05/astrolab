@@ -2,8 +2,7 @@
 
 **Creata:** 29-09-2026
 **Branch:** `main`
-**Stato:** Fase 0 (design) — decisioni D1-D19 concordate con il committente il 29-09-2026; Fasi 1-5 da eseguire
-una alla volta, ciascuna su conferma esplicita.
+**Stato:** **completata il 30-09-2026** (Fasi 0-5, decisioni D1-D19). Idee future al §9.
 **Prerequisito:** `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md` (blocchi A e B: CODICE
 automatico e login dei soggetti). Le Fasi 1-5 di questa roadmap partono dopo quei blocchi.
 
@@ -141,7 +140,7 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
 | 2 | API `www/api/diario_rsm_api.php` (viaggi privati, contributi, motore di ricerca D17, moderazione) | Completata (30-09-2026) |
 | 3 | Pagine: `www/diario.php` + `www/js/diario_rsm.js` (astrologo e soggetto), in quattro passi: 3a ricerca e schede in sola lettura; 3b contributi (form, tratte, moderazione); 3c viaggi privati, viaggi dei propri soggetti e collegamento alle sessioni RS; 3d voce di menu e area del soggetto | Completata (30-09-2026): 3a, 3b, 3c e 3d |
 | 4 | Motore di ricerca (D17) e schede località condivise: interfaccia realizzata nella Fase 3a (`diario.php`, scheda "Cerca località") | Completata con la 3a (30-09-2026) |
-| 5 | Documentazione: HANDOVER, START_HERE, ROADMAP generale | Da fare |
+| 5 | Documentazione: manuale `www/help_diario.php` (Help, voce 10), HANDOVER, START_HERE, ROADMAP generale | Completata (30-09-2026) |
 
 ## 7. Vincoli di sicurezza (da `docs/CHECKLIST_SICUREZZA_SVILUPPO.md` e specifici)
 

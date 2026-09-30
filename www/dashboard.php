@@ -253,6 +253,7 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <a href="help_comparatore.php" target="_blank" class="block px-4 py-2 text-sm whitespace-nowrap text-on-surface-variant hover:bg-surface-container hover:text-on-surface">7. Comparatore e DSS</a>
 <a href="help_interfaccia.php" target="_blank" class="block px-4 py-2 text-sm whitespace-nowrap text-on-surface-variant hover:bg-surface-container hover:text-on-surface">8. Interfaccia e Visualizzazione</a>
 <a href="help_faq.php" target="_blank" class="block px-4 py-2 text-sm whitespace-nowrap text-on-surface-variant hover:bg-surface-container hover:text-on-surface">9. FAQ e Limiti</a>
+<a href="help_diario.php" target="_blank" class="block px-4 py-2 text-sm whitespace-nowrap text-on-surface-variant hover:bg-surface-container hover:text-on-surface">10. Diario RSM</a>
 </div>
 </div>
 <span class="text-on-surface-variant font-title-md text-[16px] leading-6 font-medium">&#128100; <?= htmlspecialchars($username) ?></span>

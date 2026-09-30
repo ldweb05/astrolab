@@ -4311,3 +4311,34 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** blocco C (Diario RSM), a partire dalla migrazione `sql/013_diario_rsm.sql` (`docs/roadmaps/ROADMAP_DIARIO_RSM.md`).
 
 ---
+## 30-09-2026 — Diario RSM (blocco C) e fix salvataggio sessioni RS
+
+**Data:** 30-09-2026
+
+**Componente modificato:** codice: nuova migrazione `sql/013_diario_rsm.sql` (applicata al DB del Pi), nuovi `www/api/diario_rsm_api.php`, `www/diario.php`, `www/js/diario_rsm.js`, `www/help_diario.php`; modificati `www/includes/Auth.php`, `www/includes/header_nav.php`, `www/dashboard.php`, `www/area_soggetto.php`, `www/api/sessioni_api.php`. Documentazione: `docs/roadmaps/ROADMAP_DIARIO_RSM.md`, `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`, `docs/roadmaps/ROADMAP.md`, `docs/ux-astrolab/BACKLOG_ux.md`, `docs/START_HERE.md` e questo handover.
+
+**Obiettivo:** completare la richiesta iniziale del 29-09-2026: salvare i viaggi fatti per una RSM e condividere con astrologi e soggetti i consigli di viaggio, consultabili con un motore di ricerca per nazione e localita' (richiesta aggiunta dal committente durante il lavoro).
+
+**Decisioni (committente):** D17 motore di ricerca per nazione/localita' con elenco delle nazioni con contributi; D18 nazione salvata come codice ISO ma mostrata sempre con il nome italiano (il committente non conosce i codici, es. PF, CY); D19 territori con codice proprio anche sotto la nazione di appartenenza (verificato: Longyearbyen nella tabella `localita` e' SJ, non NO), Isole Falkland (Malvine) sotto Regno Unito e Argentina come sola scelta di navigazione, elenco di 53 collegamenti approvato; limiti 10 contributi e 20 viaggi al giorno; l'astrologo vede ma non modifica i viaggi dei propri soggetti e scrive i propri viaggi con il proprio account (non serve entrare come soggetto); backlog BL-0002 (nome della nazione invece del codice ISO nel resto dell'app).
+
+**Modifica:**
+- Fase 1 `6b7ec08`: migrazione 013 con `viaggi_rsm`, `contributi_localita` (con `luogo_chiave` generata per il raggruppamento), `contributi_tratte`, `nazioni` (250 nomi italiani e inglesi CLDR con alias; escluse voci non nazionali come Unione Europea e sottoregioni come Isole Canarie) e `nazioni_appartenenza`; vincoli su autore, date, costi, siti solo http/https, dichiarazione sui contatti, lunghezze.
+- Fase 2 `f84434d`: `api/diario_rsm_api.php` (lettura, ricerca con `pg_trgm`, scrittura con CSRF e solo JSON, permessi per autore, moderazione admin, limiti giornalieri); `Auth::soggettoCorrente()`.
+- Fase 3a `bd4426d` ricerca e schede; 3b `fc717cd` contributi (form, tratte riordinabili, "Scrivi anche tu", moderazione) e azione API `contributo`; 3c `2afd6e4` viaggi privati, viaggi dei soggetti in sola lettura, collegamento alle sessioni RS e azione API `sessioni_rs`; 3d `7bfbf92` voce di menu in `header_nav.php` e `dashboard.php`, area del soggetto con "Apri il tuo Diario RSM".
+- Fase 5: manuale `help_diario.php` (Help voce 10, contenuto diverso per astrologo e soggetto), link "Guida" nella barra del soggetto del Diario.
+
+**Bug trovato e corretto (commit `4edabbd`, preesistente):** "Salva questa RS" in `rs.php` terminava con "Unexpected token '<' ... is not valid JSON" per la RS 2022 a "Longyearbyen, Nordenskiold Land". Causa: `estraiNazione()` in `api/sessioni_api.php` usa l'ultima parte del luogo dopo la virgola come nazione, e "Nordenskiold Land" (17 caratteri) supera `sessioni_rs.nazione_rs VARCHAR(10)` -> errore fatale PDO (verificato nel log del container). Fix minimo: se l'ultima parte supera 10 caratteri si salva NULL; comportamento invariato in tutti gli altri casi.
+
+**Punti di ripristino:** backup DB `~/backup-temp/astrolab_pre013_2026-09-29.dump`, creato il 30-09-2026 alle 05:14 prima della migrazione 013 (la data nel nome del file e' quella del giorno precedente per errore; il contenuto e' corretto).
+
+**Test eseguiti:** sandbox (PostgreSQL 16, PHP 8.3, schema completo 001-013, server PHP locale): 18 vincoli della migrazione; 62 casi sull'API (permessi di lettura e scrittura per astrologo, soggetto, admin e utenti estranei, CSRF, validazioni, ricerca con territori, alias ed errori di battitura, moderazione, limiti, codifica di < > nel JSON); pagine con browser simulato (jsdom) collegato al server: 3a 10 casi, 3b 17 casi, 3c 14 casi; manuale per anonimo, astrologo e soggetto. Correzioni emerse nei test: moderazione (booleani PHP -> PostgreSQL), flag "modificabile", grafia del nome della localita', messaggio di salvataggio cancellato dal ricaricamento, doppia inizializzazione dello script. Sul Pi: MD5 identici al sandbox, `php -l`, `node --check`, riavvii, verifica API lato server e test nel browser di ogni fase come lodian, LD001 e admin, con il primo contributo reale (Longyearbyen 2022). Tutto OK.
+
+**Note e punti aperti:**
+- Restano aperti, registrati in `docs/roadmaps/ROADMAP.md`: il BUG dell'eliminazione utente con trasferimento dei soggetti a se stesso e il PUNTO APERTO sul limite per IP del login.
+- Idee future del Diario in `docs/roadmaps/ROADMAP_DIARIO_RSM.md` §9 ("Pubblica dal mio viaggio", segnalazione dei contributi, indicatore nei risultati di ricerca RSM); backlog BL-0002.
+- `index.php` (Gestione Soggetti) non ha voci di menu: il Diario vi e' raggiungibile passando da dashboard o dalle altre pagine; un eventuale pulsante e' da valutare.
+- Il soggetto `LD001` resta abilitato su decisione del committente.
+
+**Passo successivo:** nessuno per questa feature, conclusa. Punti aperti e idee future come sopra.
+
+---

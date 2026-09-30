@@ -222,6 +222,7 @@ $_hnFotoProfilo = $_stmtHnFoto->fetchColumn() ?: null;
                     <a href="help_comparatore.php" target="_blank">7. Comparatore e DSS</a>
                     <a href="help_interfaccia.php" target="_blank">8. Interfaccia e Visualizzazione</a>
                     <a href="help_faq.php" target="_blank">9. FAQ e Limiti</a>
+                    <a href="help_diario.php" target="_blank">10. Diario RSM</a>
                 </div>
             </div>
             <!-- ── Fine dropdown ────────────────────────────────────── -->

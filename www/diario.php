@@ -122,6 +122,7 @@ header('X-Robots-Tag: noindex, nofollow');
     <a href="area_soggetto.php" class="logo">AstroLab</a>
     <span class="utente">
         <?= htmlspecialchars($nomeVisibile, ENT_QUOTES, 'UTF-8') ?>
+        <a href="help_diario.php" target="_blank">Guida</a>
         <a href="cambio_password_soggetto.php">Cambia password</a>
         <a href="logout.php">Esci</a>
     </span>

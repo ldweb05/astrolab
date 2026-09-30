@@ -773,11 +773,12 @@ Riferimenti operativi dettagliati: `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.
   (blocco C).
 - Stato: design concordato con il committente (decisioni C1-C12 e D1-D16). Blocco A
   completato il 29-09-2026 (commit `9f612a5`, `1d0f278`, `f0fc22f`, `b13a33a`); blocco B
-  completato il 29-09-2026 (commit `a727f7b`, `61e1a7b`, `900ba5a`; l'area del soggetto e' per
-  ora un segnaposto); blocco C (Diario RSM) da fare. La feature e' progettata fin da subito per la futura VPS
+  completato il 29-09-2026 (commit `a727f7b`, `61e1a7b`, `900ba5a`); blocco C (Diario RSM)
+  completato il 30-09-2026 (commit `6b7ec08`, `f84434d`, `bd4426d`, `fc717cd`, `2afd6e4`,
+  `7bfbf92` e chiusura documentale). Lavoro concluso. La feature e' progettata fin da subito per la futura VPS
   pubblica (CSRF, blocco tentativi di login, escaping, noindex).
-- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voci 29-09-2026 (blocco A e
-  blocco B).
+- Cronologia completa: `docs/HANDOVER_OPERATIVO_astrolab.md`, voci 29-09-2026 (blocchi A e B)
+  e 30-09-2026 (blocco C).
 
 ---
 

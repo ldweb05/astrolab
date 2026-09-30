@@ -147,8 +147,22 @@ solo `$_SESSION['accesso_soggetto']` e non contiene mai `utente_id`, quindi tutt
 le API dell'astrologo restano chiuse al soggetto. Blocco dopo 5 tentativi falliti per 15
 minuti, per account e per IP (tabella `tentativi_login_soggetti`, IP solo come hash). Solo
 l'astrologo proprietario gestisce le credenziali dei propri soggetti, admin compreso. Pagine
-del soggetto: `cambio_password_soggetto.php` e `area_soggetto.php` (per ora segnaposto: il
-Diario RSM, blocco C di `docs/roadmaps/ROADMAP_DIARIO_RSM.md`, non e' ancora realizzato).
+del soggetto: `cambio_password_soggetto.php` e `area_soggetto.php` (la sua pagina iniziale, con
+l'accesso al Diario RSM).
+
+Dal 30-09-2026 e' disponibile il **Diario RSM** (`diario.php`), per astrologi e soggetti, con tre
+sezioni: ricerca dei consigli di viaggio condivisi per nazione o localita' (tollerante a errori
+di battitura, con nomi inglesi e alias, e con i territori anche sotto la nazione di
+appartenenza: Longyearbyen/Svalbard sotto la Norvegia); viaggi privati (visibili solo
+all'autore e, per un soggetto, al suo astrologo, che puo' collegarli a una sessione RS ma non
+modificarli); contributi condivisi con tratte, alloggio, spesa indicativa e informazioni
+pratiche (solo anno e mese del viaggio, per non rivelare il compleanno). La nazione e' salvata
+come codice ISO ma mostrata sempre con il nome italiano (tabella `nazioni`, 250 nomi CLDR, e
+`nazioni_appartenenza` per i territori). L'admin puo' nascondere un contributo. Si raggiunge
+dalla voce "Diario RSM" del menu, dalla dashboard e dall'area del soggetto; manuale in
+`help_diario.php` (Help, voce 10). Logica in `www/api/diario_rsm_api.php` e
+`www/js/diario_rsm.js`, migrazione `sql/013`; riferimento operativo
+`docs/roadmaps/ROADMAP_DIARIO_RSM.md`.
 
 La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org
 è mantenuta separatamente nel documento `docs/roadmaps/roadmap_comparazione_myastral.md`,

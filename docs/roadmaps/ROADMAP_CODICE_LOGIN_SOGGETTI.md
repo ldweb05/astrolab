@@ -138,7 +138,7 @@ propri soggetti. Ogni controllo è lato server.
 | B1 | Migrazione `sql/012_accessi_soggetti.sql`: tabelle `accessi_soggetti` e `tentativi_login_soggetti` | `sql/` | Completata (29-09-2026) |
 | B2 | Login del soggetto, sessione dedicata, blocco tentativi, cambio password obbligatorio | `www/includes/Auth.php`, `www/login.php`, `www/cambio_password_soggetto.php` | Completata (29-09-2026) |
 | B3 | Pulsante di abilitazione accesso nella lista soggetti, password provvisoria generata e mostrata una volta | `www/index.php`, `www/js/accesso_soggetti.js`, `www/api/soggetti_api.php`, `www/includes/Auth.php` | Completata (29-09-2026) |
-| B4 | Area riservata del soggetto (solo Diario) | `www/area_soggetto.php` | Segnaposto attivo (29-09-2026); contenuto con il blocco C |
+| B4 | Area riservata del soggetto (solo Diario) | `www/area_soggetto.php` | Completata (30-09-2026): pagina iniziale del soggetto con "Apri il tuo Diario RSM" |
 
 Il blocco C (Diario RSM) segue in `docs/roadmaps/ROADMAP_DIARIO_RSM.md`, con migrazione
 `sql/013_diario_rsm.sql`.
