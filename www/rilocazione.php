@@ -980,6 +980,7 @@ if ($soggetto) {
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/zodiac_wheel.js"></script>
+<script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
 <?php if ($soggetto && $jsData): ?>
 <script>
@@ -1464,11 +1465,13 @@ function cercaLuogoRiloc() {
                 return;
             }
             div.innerHTML = ris.map(r =>
-                `<div class="dropdown-item"
-                      onclick="selezionaLuogoRiloc(${r.lat}, ${r.lon}, '${r.display_name.replace(/'/g, "\\'")}')">
-                    ${r.display_name}
+                `<div class="dropdown-item" data-scelta
+                      data-lat="${escHtml(r.lat)}" data-lon="${escHtml(r.lon)}" data-nome="${escHtml(r.display_name)}">
+                    ${escHtml(r.display_name)}
                 </div>`
             ).join('');
+            // Scelta della voce dagli attributi data-, mai da codice nell'onclick (bug XSS, gruppo 3).
+            collegaScelta(div, d => selezionaLuogoRiloc(parseFloat(d.lat), parseFloat(d.lon), d.nome));
             div.classList.add('visible');
         });
 }

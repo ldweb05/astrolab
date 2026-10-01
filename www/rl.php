@@ -302,6 +302,7 @@ if ($soggetto) {
  
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/zodiac_wheel.js"></script>
+<script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
 <script src="js/svg_zoom.js"></script>
 <script src="js/rl.js"></script>

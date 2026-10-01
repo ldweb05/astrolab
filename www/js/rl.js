@@ -534,13 +534,13 @@ const RLModule = (function () {
          .then(ris => {
              const div = document.getElementById('luogo-rl-risultati');
              if (!div) return;
-             div.innerHTML = ris.map(r => {
-                 const nomeBreve = _estraiNomeLuogoNominatim(r).replace(/'/g,"\\'");
-                 return `<div class="dropdown-item"
-                       onclick="RLModule.selezionaLuogo(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}','${nomeBreve}')">
-                     ${r.display_name}
-                 </div>`;
-             }).join('');
+             div.innerHTML = ris.map(r => `<div class="dropdown-item" data-scelta
+                       data-lat="${escHtml(r.lat)}" data-lon="${escHtml(r.lon)}"
+                       data-nome="${escHtml(r.display_name)}" data-breve="${escHtml(_estraiNomeLuogoNominatim(r))}">
+                     ${escHtml(r.display_name)}
+                 </div>`).join('');
+             // Scelta della voce dagli attributi data-, mai da codice nell'onclick (bug XSS, gruppo 3).
+             collegaScelta(div, d => RLModule.selezionaLuogo(parseFloat(d.lat), parseFloat(d.lon), d.nome, d.breve));
              div.classList.add('visible');
          });
  }

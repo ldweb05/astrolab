@@ -237,6 +237,7 @@ if ($soggetto) {
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/svg_zoom.js"></script> 
 
+<script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
 <script src="js/rs_alert.js"></script>
 <script>
@@ -497,10 +498,13 @@ function cercaLuogoRS() {
         .then(ris => {
             const div = document.getElementById('luogo-rs-risultati');
             div.innerHTML = ris.map(r =>
-                `<div class="dropdown-item" onclick="selezionaLuogoRS(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
-                    ${r.display_name}
+                `<div class="dropdown-item" data-scelta
+                      data-lat="${escHtml(r.lat)}" data-lon="${escHtml(r.lon)}" data-nome="${escHtml(r.display_name)}">
+                    ${escHtml(r.display_name)}
                 </div>`
             ).join('');
+            // Scelta della voce dagli attributi data-, mai da codice nell'onclick (bug XSS, gruppo 3).
+            collegaScelta(div, d => selezionaLuogoRS(parseFloat(d.lat), parseFloat(d.lon), d.nome));
             div.classList.add('visible');
         });
 }

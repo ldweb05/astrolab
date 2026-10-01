@@ -288,12 +288,12 @@ function cercaLuogo() {
                 return;
             }
             div.innerHTML = _nominatimOrdinaRisultati(risultati).map(r => `
-                <div class="dropdown-item" onclick="selezionaLuogo(
-                    ${r.lat}, ${r.lon},
-                    '${r.display_name.replace(/'/g,"\\'")}',
-                    '${(r.address?.country_code || '').toUpperCase()}'
-                )">${r.display_name}${_nominatimEtichetta(r)}</div>
+                <div class="dropdown-item" data-scelta data-lat="${escHtml(r.lat)}" data-lon="${escHtml(r.lon)}"
+                     data-nome="${escHtml(r.display_name)}"
+                     data-paese="${escHtml((r.address?.country_code || '').toUpperCase())}">${escHtml(r.display_name)}${_nominatimEtichetta(r)}</div>
             `).join('');
+            // Scelta della voce dagli attributi data-, mai da codice nell'onclick (bug XSS, gruppo 3).
+            collegaScelta(div, d => selezionaLuogo(parseFloat(d.lat), parseFloat(d.lon), d.nome, d.paese));
             div.classList.add('visible');
         });
 }
@@ -531,12 +531,12 @@ function cercaLuogoResidenza() {
                 return;
             }
             div.innerHTML = _nominatimOrdinaRisultati(risultati).map(r => `
-                <div class="dropdown-item" onclick="selezionaResidenza(
-                    '${r.display_name.replace(/'/g,"\\'")}',
-                    ${r.lat}, ${r.lon},
-                    '${(r.address?.country_code || '').toUpperCase()}'
-                )">${r.display_name}${_nominatimEtichetta(r)}</div>
+                <div class="dropdown-item" data-scelta data-lat="${escHtml(r.lat)}" data-lon="${escHtml(r.lon)}"
+                     data-nome="${escHtml(r.display_name)}"
+                     data-paese="${escHtml((r.address?.country_code || '').toUpperCase())}">${escHtml(r.display_name)}${_nominatimEtichetta(r)}</div>
             `).join('');
+            // Scelta della voce dagli attributi data-, mai da codice nell'onclick (bug XSS, gruppo 3).
+            collegaScelta(div, d => selezionaResidenza(d.nome, parseFloat(d.lat), parseFloat(d.lon), d.paese));
             div.classList.add('visible');
         });
 }

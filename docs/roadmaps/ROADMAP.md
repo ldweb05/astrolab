@@ -925,7 +925,11 @@ login soggetti e segnalato solo a fine lavoro.
        priorita' media;
     8. `www/rs.php` 1025-1037, link Rome2Rio: il luogo finisce nell'attributo `href` senza
        codifica (`formatCittaUrl()` non toglie le virgolette) — priorita' media.
-  - **B. Dati esterni (ricerca luoghi Nominatim/OpenStreetMap), vulnerabile:** `display_name` nel
+  - **B. Dati esterni (ricerca luoghi Nominatim/OpenStreetMap) — corretto il 01-10-2026** (passo 3,
+    gruppo 3: voci dei menu con attributi `data-scelta` e testi con `escHtml()`, scelta gestita
+    dalla nuova `collegaScelta()` di `www/js/sicurezza.js`, incluso anche in `rs.php`,
+    `rilocazione.php`, `transiti.php`, `rl.php`; collaudo 24 casi con un risultato malevolo e
+    test sul Pi delle 6 ricerche). Era: `display_name` nel
     menu dei risultati e nell'`onclick` (escape del solo apice) in `www/js/app.js` 275-281 e
     518-524, `www/rs.php` 1483-1484, `www/rilocazione.php` 1468-1469, `www/transiti.php` 500-501,
     `www/js/rl.js` 540-541 — priorita' alta.

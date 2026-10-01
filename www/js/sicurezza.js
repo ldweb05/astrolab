@@ -8,6 +8,7 @@
  *   escHtml(testo)  -> testo sicuro da inserire in un template HTML, sia nel contenuto
  *                      sia nel valore di un attributo tra virgolette (es. data-nome="...").
  *   urlSicuro(url)  -> l'URL se inizia con http:// o https://, altrimenti stringa vuota.
+ *   collegaScelta(menu, funzione) -> gestore di clic unico per le voci data-scelta di un menu.
  *
  * Regola: i dati scritti dagli utenti o arrivati da servizi esterni non vanno mai messi
  * dentro un attributo onclick; si mettono in un attributo data- (protetto con escHtml)
@@ -30,6 +31,25 @@
         return /^https?:\/\//i.test(testo) ? testo : '';
     }
 
+    /**
+     * Collega una sola volta al menu un gestore di clic: alla scelta di una voce con
+     * l'attributo data-scelta chiama funzione(dataset della voce). Serve ai menu dei
+     * risultati (es. ricerca luoghi) al posto degli onclick con i dati dentro.
+     */
+    function collegaScelta(contenitore, funzione) {
+        if (!contenitore || contenitore.dataset.sceltaCollegata === '1') {
+            return;
+        }
+        contenitore.dataset.sceltaCollegata = '1';
+        contenitore.addEventListener('click', function (ev) {
+            var voce = ev.target.closest ? ev.target.closest('[data-scelta]') : null;
+            if (voce && contenitore.contains(voce)) {
+                funzione(voce.dataset);
+            }
+        });
+    }
+
     window.escHtml = escHtml;
     window.urlSicuro = urlSicuro;
+    window.collegaScelta = collegaScelta;
 })();
