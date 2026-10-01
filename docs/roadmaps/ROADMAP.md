@@ -891,3 +891,43 @@ login soggetti e segnalato solo a fine lavoro.
      pagine: Soggetti, Tema, RS, RL, Rilocazione, Transiti, Stampa — modifiche minime e test su
      ognuna);
   4. correzioni successive: note delle sessioni in `rs.php` e gli altri punti del censimento.
+- **Censimento completato il 01-10-2026** (passo 1; analisi del codice nel sandbox, nessuna
+  modifica): 138 inserimenti HTML (`innerHTML`, `insertAdjacentHTML`, `document.write`) in 20
+  file. Classificazione dei punti con testo libero (numeri di riga al commit `ba8606b`):
+  - **A. Testo scritto dagli utenti, vulnerabile:**
+    1. `www/index.php` 329-371, lista soggetti: `s.nome` (anche nell'`onclick` di elimina, con
+       escape del solo apice), `s.luogo_nascita`, `s.nazione_nascita`, `s.residenza_luogo`,
+       `s.residenza_nazione`; riga 269, soggetto attivo: viene sostituito solo il carattere `<`
+       — priorita' alta;
+    2. `www/js/app.js` 51-87, vecchia `caricaSoggetti()`, stessi campi; e' ancora chiamata dopo
+       salvataggio ed eliminazione (righe 192 e 215) — priorita' alta;
+    3. `www/admin_utenti.php` 312-338, pulsanti "Modifica anagrafica" e "Gestisci piano":
+       `nome_completo`, `email`, `telefono`, `note`, `note_piano` sono passati dentro stringhe
+       JavaScript negli attributi `onclick` con `htmlspecialchars()`, che non protegge in quel
+       contesto (il browser decodifica le entita' prima di eseguire lo script); `nome_completo`
+       e' scritto da chiunque si registri; riga 724, `apriModaleElimina()` inserisce il nome con
+       `innerHTML` (oggi lo username, che ha caratteri limitati) — priorita' alta;
+    4. `www/rs.php` 1562-1570, sessioni RS salvate: `s.luogo`, `s.note` — priorita' media;
+    5. `www/js/rl.js` 268, 302-306, sessioni RL e scelta della RS: `s.luogo`, `s.note` —
+       priorita' media;
+    6. `www/stampa.php` 698-888, report di stampa: nome, luogo e nazione del soggetto, luoghi di
+       RS, RL e rilocazione — priorita' media;
+    7. `www/compare_rs.php` 234 e `www/compare_ril.php` 234, confronti: nome del soggetto —
+       priorita' media;
+    8. `www/rs.php` 1025-1037, link Rome2Rio: il luogo finisce nell'attributo `href` senza
+       codifica (`formatCittaUrl()` non toglie le virgolette) — priorita' media.
+  - **B. Dati esterni (ricerca luoghi Nominatim/OpenStreetMap), vulnerabile:** `display_name` nel
+    menu dei risultati e nell'`onclick` (escape del solo apice) in `www/js/app.js` 275-281 e
+    518-524, `www/rs.php` 1483-1484, `www/rilocazione.php` 1468-1469, `www/transiti.php` 500-501,
+    `www/js/rl.js` 540-541 — priorita' alta.
+  - **C. Dati della tabella `localita` (importazione GeoNames), rischio basso:** nome, citta' e
+    nazione nei risultati di `www/ricerca.php` (1725-1810), `www/ricerca_rl.php` (1787-1872),
+    `www/rilocazione.php` (1589-1595, anche in un `onclick`), `www/compare_rs.php` 207,
+    `www/compare_ril.php` 178-195 — priorita' bassa, da correggere con la stessa funzione.
+  - **D. Verificati sicuri:** testi inseriti con `textContent` o `value` (`rs.php` 1764,
+    `rl.php` 333, risultati in corso di `ricerca.php`/`ricerca_rl.php`, `app.js` 44 e 128,
+    `mostraMessaggio()`); nomi stampati da PHP con `htmlspecialchars()` in HTML normale
+    (`header_nav.php`, `dashboard.php`); dati passati agli script con `json_encode()`, che
+    codifica `/` e quindi impedisce di chiudere il tag `<script>`; tutti gli altri inserimenti,
+    che mostrano solo dati calcolati (posizioni, case, aspetti, stelline, bonus e veti del
+    motore, paginazione, messaggi del server).
