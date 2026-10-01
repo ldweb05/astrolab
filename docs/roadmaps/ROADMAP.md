@@ -901,7 +901,11 @@ login soggetti e segnalato solo a fine lavoro.
        — priorita' alta;
     2. `www/js/app.js` 51-87, vecchia `caricaSoggetti()`, stessi campi; e' ancora chiamata dopo
        salvataggio ed eliminazione (righe 192 e 215) — priorita' alta;
-    3. `www/admin_utenti.php` 312-338, pulsanti "Modifica anagrafica" e "Gestisci piano":
+    3. **corretto il 01-10-2026** (passo 3, gruppo 1: dati negli attributi `data-` con un solo
+       gestore di clic, conferma di eliminazione da `data-conferma`, testo della finestra
+       "Elimina" con `textContent`; risolto anche il pulsante di modifica che non funzionava con
+       note su piu' righe; collaudo 11 casi e prova con un utente dal nome malevolo, sul Pi e
+       nel sandbox) — `www/admin_utenti.php` 312-338, pulsanti "Modifica anagrafica" e "Gestisci piano":
        `nome_completo`, `email`, `telefono`, `note`, `note_piano` sono passati dentro stringhe
        JavaScript negli attributi `onclick` con `htmlspecialchars()`, che non protegge in quel
        contesto (il browser decodifica le entita' prima di eseguire lo script); `nome_completo`

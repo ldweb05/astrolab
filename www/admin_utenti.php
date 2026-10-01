@@ -309,50 +309,48 @@ $paginaAttiva = 'admin';
 
                         <!-- Modifica anagrafica (nome, email, telefono, note) -->
                         <button class="btn-icon" title="Modifica dati anagrafici"
-                            onclick="apriModaleAnagrafica(
-                                <?= $u['id'] ?>,
-                                '<?= htmlspecialchars($u['username'],     ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars($u['email']         ?? '', ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars($u['nome_completo'] ?? '', ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars($u['telefono']      ?? '', ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars($u['note']          ?? '', ENT_QUOTES) ?>'
-                            )">
+                            data-azione="anagrafica"
+                            data-id="<?= (int)$u['id'] ?>"
+                            data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES, 'UTF-8') ?>"
+                            data-email="<?= htmlspecialchars($u['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                            data-nome="<?= htmlspecialchars($u['nome_completo'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                            data-telefono="<?= htmlspecialchars($u['telefono'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                            data-note="<?= htmlspecialchars($u['note'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                             ✏️
                         </button>
 
                         <!-- Reset password (admin su tutti, incluso se stesso) -->
                         <button class="btn-icon" title="Reimposta password"
-                            onclick="apriModaleResetPwd(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>')">
+                            data-azione="reset-pwd" data-id="<?= (int)$u['id'] ?>" data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES, 'UTF-8') ?>">
                             🔑
                         </button>
 
                         <!-- Gestione piano (piano, donazione, scadenza, override, accesso speciale) -->
                         <button class="btn-icon" title="Gestisci piano"
-                            onclick="apriModalePiano(
-                                <?= $u['id'] ?>,
-                                '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars($u['piano'] ?? 'free', ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars((string)($u['donazione_importo'] ?? ''), ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars((string)($u['supporter_inizio'] ?? ''), ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars((string)($u['supporter_scadenza'] ?? ''), ENT_QUOTES) ?>',
-                                '<?= htmlspecialchars((string)($u['subjects_limit_override'] ?? ''), ENT_QUOTES) ?>',
-                                <?= $u['accesso_speciale_permanente'] ? 'true' : 'false' ?>,
-                                '<?= htmlspecialchars($u['note_piano'] ?? '', ENT_QUOTES) ?>'
-                            )">
+                            data-azione="piano"
+                            data-id="<?= (int)$u['id'] ?>"
+                            data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES, 'UTF-8') ?>"
+                            data-piano="<?= htmlspecialchars($u['piano'] ?? 'free', ENT_QUOTES, 'UTF-8') ?>"
+                            data-donazione="<?= htmlspecialchars((string)($u['donazione_importo'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                            data-inizio="<?= htmlspecialchars((string)($u['supporter_inizio'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                            data-scadenza="<?= htmlspecialchars((string)($u['supporter_scadenza'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                            data-override="<?= htmlspecialchars((string)($u['subjects_limit_override'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                            data-speciale="<?= $u['accesso_speciale_permanente'] ? '1' : '0' ?>"
+                            data-note-piano="<?= htmlspecialchars($u['note_piano'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                             💎
                         </button>
 
                         <?php if (!$isCurrentUser): ?>
                         <!-- Cambia ruolo -->
                         <button class="btn-icon" title="Cambia ruolo"
-                            onclick="apriModaleCambiaRuolo(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>', '<?= $u['ruolo'] ?>')">
+                            data-azione="ruolo" data-id="<?= (int)$u['id'] ?>" data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES, 'UTF-8') ?>" data-ruolo="<?= htmlspecialchars($u['ruolo'], ENT_QUOTES, 'UTF-8') ?>">
                             ⚙️
                         </button>
 
                         <!-- Elimina -->
                         <?php if ($nSoggetti === 0): ?>
                         <form method="POST" style="display:inline"
-                              onsubmit="return confirm('Eliminare definitivamente <?= htmlspecialchars($u['username'], ENT_QUOTES) ?>?')">
+                              data-conferma="Eliminare definitivamente <?= htmlspecialchars($u['username'], ENT_QUOTES, 'UTF-8') ?>?">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['admin_utenti_csrf'], ENT_QUOTES, 'UTF-8') ?>">
                             <input type="hidden" name="azione" value="elimina">
                             <input type="hidden" name="id" value="<?= $u['id'] ?>">
@@ -361,7 +359,7 @@ $paginaAttiva = 'admin';
                         </form>
                         <?php else: ?>
                         <button class="btn-icon" title="Elimina (trasferisci i <?= $nSoggetti ?> soggetti)"
-                            onclick="apriModaleElimina(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>', <?= $nSoggetti ?>)">
+                            data-azione="elimina" data-id="<?= (int)$u['id'] ?>" data-username="<?= htmlspecialchars($u['username'], ENT_QUOTES, 'UTF-8') ?>" data-soggetti="<?= (int)$nSoggetti ?>">
                             🗑️
                         </button>
                         <?php endif; ?>
@@ -674,6 +672,28 @@ $paginaAttiva = 'admin';
 </div>
 
 <script>
+// Pulsanti delle azioni: i dati arrivano dagli attributi data- (protetti da
+// htmlspecialchars), mai da codice negli onclick (bug XSS, passo 3, 01-10-2026).
+document.addEventListener('click', function (ev) {
+    const b = ev.target.closest('[data-azione]');
+    if (!b) { return; }
+    const d = b.dataset;
+    const id = parseInt(d.id, 10);
+    switch (d.azione) {
+        case 'anagrafica': apriModaleAnagrafica(id, d.username, d.email, d.nome, d.telefono, d.note); break;
+        case 'reset-pwd':  apriModaleResetPwd(id, d.username); break;
+        case 'piano':      apriModalePiano(id, d.username, d.piano, d.donazione, d.inizio, d.scadenza,
+                                           d.override, d.speciale === '1', d.notePiano); break;
+        case 'ruolo':      apriModaleCambiaRuolo(id, d.username, d.ruolo); break;
+        case 'elimina':    apriModaleElimina(id, d.username, parseInt(d.soggetti, 10)); break;
+    }
+});
+document.addEventListener('submit', function (ev) {
+    const f = ev.target;
+    if (f.dataset && f.dataset.conferma !== undefined && !window.confirm(f.dataset.conferma)) {
+        ev.preventDefault();
+    }
+});
 function apriModaleNuovoUtente() {
     document.getElementById('modal-nuovo').classList.add('vis');
 }
@@ -721,10 +741,15 @@ function apriModaleCambiaRuolo(id, nome, ruoloAttuale) {
 }
 function apriModaleElimina(id, nome, nSoggetti) {
     document.getElementById('elimina-titolo').textContent = '🗑️ Elimina — ' + nome;
-    document.getElementById('elimina-info').innerHTML =
-        '<strong>' + nome + '</strong> ha <strong>' + nSoggetti + '</strong> soggett' +
-        (nSoggetti === 1 ? 'o' : 'i') + ' di studio.' +
-        '<br>Prima di eliminare l\'utente, scegli a chi trasferire i soggetti.';
+    // Testo costruito con textContent: il nome non viene mai interpretato come HTML.
+    const info = document.getElementById('elimina-info');
+    info.textContent = '';
+    const bNome = document.createElement('strong');
+    bNome.textContent = nome;
+    const bNum = document.createElement('strong');
+    bNum.textContent = String(nSoggetti);
+    info.append(bNome, ' ha ', bNum, ' soggett' + (nSoggetti === 1 ? 'o' : 'i') + ' di studio.',
+        document.createElement('br'), 'Prima di eliminare l\'utente, scegli a chi trasferire i soggetti.');
     document.getElementById('elimina-id').value = id;
     // L'utente da eliminare non puo' ricevere i propri soggetti: lo si esclude
     // dall'elenco e si preseleziona il primo utente valido (fix 29-09-2026).
