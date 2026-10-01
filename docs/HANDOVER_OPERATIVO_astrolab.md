@@ -4342,3 +4342,26 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno per questa feature, conclusa. Punti aperti e idee future come sopra.
 
 ---
+## 01-10-2026 — Correzione dei bug aperti: eliminazione utente e limite di login; registrato bug XSS
+
+**Data:** 01-10-2026 (il fix dell'eliminazione utente e la registrazione del bug XSS sono stati fatti la sera del 30-09-2026, commit `19879f5`)
+
+**Componente modificato:** codice: `www/includes/Auth.php`, `www/admin_utenti.php`, `www/login.php`, `www/registrazione.php`; nuovi `www/includes/client_ip.php` e `sql/014_blocco_login.sql` (applicata al DB del Pi). Documentazione: `docs/roadmaps/ROADMAP.md`, `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md`, `docs/roadmaps/ROADMAP_DIARIO_RSM.md` e questo handover.
+
+**Obiettivo:** su richiesta del committente, correggere i bug lasciati aperti durante il lavoro sul Diario RSM e registrare un problema di sicurezza notato ma non ancora segnalato.
+
+**1. Bug eliminazione utente (commit `19879f5`).** `Auth::eliminaUtente()` ora rifiuta il trasferimento dei soggetti verso lo stesso utente o verso un utente inesistente (solo se ci sono soggetti), rifiuta un utente inesistente, esegue trasferimento ed eliminazione in un'unica transazione e restituisce il motivo dell'errore; in `admin_utenti.php` il messaggio usa quel motivo e l'utente da eliminare e' escluso dal menu "Trasferisci i soggetti a". Fix progettato il 29-09-2026, ricollaudato sulla versione attuale di `Auth.php` (9 casi su 9). Test nel browser: astrologo di prova "Test Uno" con soggetto TU001 eliminato dall'admin, soggetto trasferito con codice invariato e poi rimosso.
+
+**2. Bug XSS registrato (commit `19879f5`, non corretto).** In `index.php` la lista soggetti inserisce nome, luoghi e nazioni con `innerHTML` senza escaping: un astrologo potrebbe far eseguire codice nel browser dell'admin. Notato durante la Fase B3 e segnalato al committente solo a fine lavoro. Registrato come BUG APERTO in `docs/roadmaps/ROADMAP.md`, da correggere prima della VPS pubblica.
+
+**3. Limite di login (questo commit).** Decisioni del committente: blocco per account anche per gli astrologi (5 errori -> 15 minuti); limite per IP a 10 fallimenti in 15 minuti; IP reale dietro il proxy predisposto ma spento. Migrazione 014 (`utenti.tentativi_falliti`, `utenti.bloccato_fino`, tabella `tentativi_login` con IP solo come hash); in `Auth.php` i nuovi `ipBloccatoLogin()`, `registraTentativoFallitoIp()`, `loginAstrologo()` (con `login()` invariato e tempi uguali per username inesistenti); `login.php` senza piu' il vecchio `loginRateLimit()` a file; `client_ip.php` con `astrolab_client_ip()` usata da login e registrazione. Sulla VPS: `TRUSTED_PROXIES=<IP del proxy>` nel `.env`.
+
+**Punti di ripristino:** backup DB `~/backup-temp/astrolab_pre014_2026-10-01.dump` (data nel nome ricavata dal sistema).
+
+**Test eseguiti:** sandbox (schema completo 001-014, server PHP locale): 11 casi sul login (15 login riusciti di fila, azzeramento del contatore, blocco per account con altri utenti dello stesso IP liberi, sblocco dopo 15 minuti, errori del soggetto che non bloccano l'astrologo, blocco per IP su username diversi, email da verificare che non conta, login del soggetto), tempi di risposta uguali (circa 75 ms), 7 casi su `astrolab_client_ip()` (senza proxy, proxy fidato, header falso o non valido, catena di proxy). Sul Pi: MD5 identici al sandbox, `php -l`, riavvio, test nel browser dei 5 casi (login ripetuti, LD001 che sbaglia 5 volte senza bloccare lodian, blocco di lodian, roxy libero, registrazione), poi azzeramento dei contatori di test. Tutto OK.
+
+**Note e punti aperti:** resta aperto solo il BUG XSS della lista soggetti (`docs/roadmaps/ROADMAP.md`). Il limite della registrazione resta a file temporanei (non conta i successi e non crea i problemi del login): da valutare se portarlo nel DB.
+
+**Passo successivo:** correzione del BUG XSS della lista soggetti, se il committente lo decide.
+
+---

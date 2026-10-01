@@ -109,11 +109,11 @@ prerequisito: nel Diario RSM chi inserisce i dati del viaggio è il soggetto ste
   (2 lettere + sole cifre), per evitare ambiguità nel form di login unico; oggi nessuno
   username esistente ha questa forma.
   Il form di login è unico, quindi anche il login del soggetto passa prima dal limite per IP
-  già esistente `loginRateLimit()` (10 tentativi in 15 minuti, riusciti compresi). *Punto
-  aperto (29-09-2026):* quel limite è condiviso tra astrologi e soggetti dello stesso IP e
-  va corretto; sulla VPS entrambi i limiti per IP dovranno leggere l'IP reale dietro il
-  reverse proxy. Dettagli in `docs/roadmaps/ROADMAP.md`, sezione "PUNTO APERTO — Limite
-  per IP del login".
+  generale. *Aggiornamento 01-10-2026:* il vecchio `loginRateLimit()` (che contava anche i
+  login riusciti ed era condiviso tra astrologi e soggetti) è stato sostituito: si contano
+  solo i fallimenti, nel DB (10 in 15 minuti per IP), con blocco per account anche per gli
+  astrologi; l'IP reale dietro il reverse proxy è predisposto (`TRUSTED_PROXIES`). Dettagli
+  in `docs/roadmaps/ROADMAP.md`, sezione "PUNTO RISOLTO — Limite per IP del login".
 
 **Gestione delle credenziali (Fase B3, 29-09-2026):** solo l'astrologo proprietario del
 soggetto può abilitare, rigenerare o disattivare l'accesso, **admin compreso** (l'admin non

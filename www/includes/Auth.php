@@ -344,6 +344,92 @@ class Auth {
         ];
     }
 
+    // ── LIMITI DI LOGIN (astrologi e soggetti) ────────────────────────
+    // Correzione del PUNTO APERTO "Limite per IP del login" (docs/roadmaps/ROADMAP.md):
+    // si contano solo i tentativi falliti, nel DB; blocco per account anche per gli
+    // astrologi. login() resta invariato: questi metodi lo avvolgono.
+
+    private const LOGIN_IP_MAX_FALLITI      = 10;
+    private const LOGIN_ACCOUNT_MAX_FALLITI = 5;
+    private const LOGIN_BLOCCO_MINUTI       = 15;
+
+    /** Vero se dallo stesso IP ci sono troppi tentativi falliti recenti. */
+    public function ipBloccatoLogin(string $ip): bool
+    {
+        $this->pdo->exec(
+            "DELETE FROM tentativi_login WHERE creato_il < NOW() - INTERVAL '1 day'"
+        );
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM tentativi_login
+              WHERE ip_hash = ? AND creato_il > NOW() - (? * INTERVAL '1 minute')"
+        );
+        $stmt->execute([hash('sha256', $ip), self::LOGIN_BLOCCO_MINUTI]);
+        return (int)$stmt->fetchColumn() >= self::LOGIN_IP_MAX_FALLITI;
+    }
+
+    /** Registra un tentativo di login fallito per l'IP (salvato solo come hash). */
+    public function registraTentativoFallitoIp(string $ip): void
+    {
+        $this->pdo->prepare(
+            "INSERT INTO tentativi_login (ip_hash) VALUES (?)"
+        )->execute([hash('sha256', $ip)]);
+    }
+
+    /**
+     * Login dell'astrologo con blocco per account: dopo 5 password errate
+     * l'account e' bloccato per 15 minuti, senza coinvolgere gli altri utenti
+     * dello stesso IP. Il tentativo fallito viene registrato anche per l'IP.
+     */
+    public function loginAstrologo(string $username, string $password, string $ip): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT id, (bloccato_fino IS NOT NULL AND bloccato_fino > NOW()) AS bloccato
+               FROM utenti WHERE LOWER(TRIM(username)) = LOWER(TRIM(?)) LIMIT 1"
+        );
+        $stmt->execute([trim($username)]);
+        $utente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($utente && $utente['bloccato']) {
+            return ['ok' => false, 'errore' => 'Troppi tentativi di accesso. Riprova tra qualche minuto.'];
+        }
+        if (!$utente) {
+            // Username inesistente: si verifica comunque una password, cosi' i tempi
+            // di risposta non rivelano quali username esistono.
+            password_verify($password, self::SOGGETTO_HASH_FITTIZIO);
+        }
+
+        $result = $this->login($username, $password);
+
+        if ($result['ok']) {
+            $this->pdo->prepare(
+                "UPDATE utenti SET tentativi_falliti = 0, bloccato_fino = NULL WHERE id = ?"
+            )->execute([(int)$utente['id']]);
+            return $result;
+        }
+
+        // Solo le credenziali errate contano come tentativo fallito (non, ad
+        // esempio, l'email da verificare con password corretta).
+        if (($result['errore'] ?? '') === 'Credenziali non valide.') {
+            $this->registraTentativoFallitoIp($ip);
+            if ($utente) {
+                $stmt = $this->pdo->prepare(
+                    "UPDATE utenti SET tentativi_falliti = tentativi_falliti + 1
+                      WHERE id = ? RETURNING tentativi_falliti"
+                );
+                $stmt->execute([(int)$utente['id']]);
+                if ((int)$stmt->fetchColumn() >= self::LOGIN_ACCOUNT_MAX_FALLITI) {
+                    $this->pdo->prepare(
+                        "UPDATE utenti
+                            SET tentativi_falliti = 0,
+                                bloccato_fino = NOW() + (? * INTERVAL '1 minute')
+                          WHERE id = ?"
+                    )->execute([self::LOGIN_BLOCCO_MINUTI, (int)$utente['id']]);
+                }
+            }
+        }
+        return $result;
+    }
+
     // ── CONTROLLI ─────────────────────────────────────────────────
 
     public function isLoggedIn(): bool {

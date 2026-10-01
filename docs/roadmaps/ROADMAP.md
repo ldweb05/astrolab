@@ -817,9 +817,10 @@ lavoro sul CODICE automatico: e' un difetto preesistente, emerso durante i test 
 
 ---
 
-## PUNTO APERTO — Limite per IP del login (`loginRateLimit()`) da correggere (scoperto 29-09-2026)
+## PUNTO RISOLTO — Limite per IP del login (`loginRateLimit()`) (scoperto 29-09-2026, corretto 01-10-2026)
 
-Stato: **aperto, da correggere** (deciso dal committente il 29-09-2026). Difetto preesistente,
+Stato: **risolto il 01-10-2026** (test nel browser OK: login ripetuti senza blocco, un soggetto
+che sbaglia non blocca piu' il proprio astrologo, blocco per singolo account). Difetto preesistente,
 emerso durante il test del blocco dei tentativi del login soggetti (Fase B2).
 
 - Sintomo: durante il test, dopo il login di un soggetto, 5 password errate e un 6o tentativo,
@@ -834,12 +835,19 @@ emerso durante il test del blocco dei tentativi del login soggetti (Fase B2).
 - Rischio sulla VPS: se l'app sara' dietro un reverse proxy, `$_SERVER['REMOTE_ADDR']` potrebbe
   essere per tutti l'IP del proxy: un solo utente che sbaglia bloccherebbe l'accesso a tutti.
   Lo stesso vale per il limite per IP del login soggetti (tabella `tentativi_login_soggetti`).
-- Correzione indicata (non ancora progettata nel dettaglio):
-  1. contare solo i tentativi **falliti** (come gia' fa il login soggetti);
-  2. valutare un blocco per singolo account anche per gli astrologi, come per i soggetti;
-  3. al trasferimento su VPS, ricavare l'IP reale del client dall'header del reverse proxy
-     (es. `X-Forwarded-For`), fidandosi solo del proxy configurato, sia in `loginClientIp()`
-     sia nel login soggetti.
+- Correzione applicata (01-10-2026, decisioni del committente):
+  1. si contano solo i tentativi **falliti**, salvati nel DB (tabella `tentativi_login`, IP solo
+     come hash; migrazione `sql/014_blocco_login.sql`): 10 fallimenti in 15 minuti per IP
+     (`Auth::ipBloccatoLogin()`); il vecchio `loginRateLimit()` a file e' stato rimosso;
+  2. blocco per singolo account anche per gli astrologi (`Auth::loginAstrologo()`, colonne
+     `utenti.tentativi_falliti` / `bloccato_fino`): 5 password errate -> 15 minuti, solo per
+     quell'account; contano solo le credenziali errate; tempi di risposta uguali per username
+     esistenti e inesistenti; `login()` invariato;
+  3. IP reale dietro il reverse proxy **predisposto ma spento**: `www/includes/client_ip.php`
+     (`astrolab_client_ip()`, usata da `login.php` e `registrazione.php`). Sul Pi non si
+     configura nulla. **Sulla VPS** aggiungere nel file `.env` `TRUSTED_PROXIES=<IP del proxy>`
+     (piu' indirizzi separati da virgola) e riavviare: solo le richieste che arrivano da quel
+     proxy useranno `X-Forwarded-For`.
 - Il limite per IP del login soggetti (5 errori in 15 minuti, solo tentativi falliti, nel DB)
   funziona correttamente: verificato il 29-09-2026 (vedi `ROADMAP_CODICE_LOGIN_SOGGETTI.md`, C12).
 

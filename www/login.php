@@ -29,59 +29,15 @@ $auth = new Auth($pdo);
 $errore = '';
 $next   = $_GET['next'] ?? '';
 
+require_once __DIR__ . '/includes/client_ip.php';
+
 function loginClientIp(): string
 {
-    return substr((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 0, 64);
+    return astrolab_client_ip();
 }
 
-function loginRateLimit(string $ip): bool
-{
-    $windowSeconds = 900;
-    $maxAttempts = 10;
-    $path = sys_get_temp_dir() . '/astrolab-login-' . hash('sha256', $ip) . '.json';
-    $handle = fopen($path, 'c+');
-
-    if ($handle === false) {
-        return false;
-    }
-
-    try {
-        if (!flock($handle, LOCK_EX)) {
-            return false;
-        }
-
-        $raw = stream_get_contents($handle);
-        $data = is_string($raw) && $raw !== ''
-            ? json_decode($raw, true)
-            : [];
-
-        $now = time();
-        $attempts = [];
-
-        if (is_array($data)) {
-            foreach ($data as $timestamp) {
-                if (is_int($timestamp) && $timestamp > $now - $windowSeconds) {
-                    $attempts[] = $timestamp;
-                }
-            }
-        }
-
-        if (count($attempts) >= $maxAttempts) {
-            return false;
-        }
-
-        $attempts[] = $now;
-        rewind($handle);
-        ftruncate($handle, 0);
-        fwrite($handle, json_encode($attempts, JSON_THROW_ON_ERROR));
-        fflush($handle);
-
-        return true;
-    } finally {
-        flock($handle, LOCK_UN);
-        fclose($handle);
-    }
-}
+// Limiti di login: solo tentativi falliti, nel DB (Auth::ipBloccatoLogin(),
+// Auth::loginAstrologo(); correzione del PUNTO APERTO in docs/roadmaps/ROADMAP.md).
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
@@ -89,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($username === '' || $password === '') {
         $errore = 'Inserisci username e password.';
-    } elseif (!loginRateLimit(loginClientIp())) {
+    } elseif ($auth->ipBloccatoLogin(loginClientIp())) {
         $errore = 'Troppi tentativi di accesso. Riprova più tardi.';
     } elseif ($auth->isFormaCodiceSoggetto($username)) {
         // Login del soggetto con il proprio CODICE (ROADMAP_CODICE_LOGIN_SOGGETTI.md,
@@ -102,9 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 : 'area_soggetto.php'));
             exit;
         }
+        if (($result['errore'] ?? '') === 'Credenziali non valide.') {
+            $auth->registraTentativoFallitoIp(loginClientIp());
+        }
         $errore = $result['errore'];
     } else {
-        $result = $auth->login($username, $password);
+        $result = $auth->loginAstrologo($username, $password, loginClientIp());
         if ($result['ok']) {
             // Sicurezza: next deve essere una path relativa, non un URL esterno
             $next = preg_replace('#[^a-zA-Z0-9/_\-\.\?=&]#', '', $next);

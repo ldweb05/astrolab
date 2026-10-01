@@ -21,9 +21,11 @@ if (empty($_SESSION["registration_csrf"])) {
     $_SESSION["registration_csrf"] = bin2hex(random_bytes(32));
 }
 
+require_once __DIR__ . "/includes/client_ip.php";
+
 function registrationClientIp(): string
 {
-    return substr((string)($_SERVER["REMOTE_ADDR"] ?? "unknown"), 0, 64);
+    return astrolab_client_ip();
 }
 
 function registrationRateLimit(string $ip): bool
