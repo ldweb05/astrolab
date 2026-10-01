@@ -4362,6 +4362,6 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 
 **Note e punti aperti:** resta aperto solo il BUG XSS della lista soggetti (`docs/roadmaps/ROADMAP.md`). Il limite della registrazione resta a file temporanei (non conta i successi e non crea i problemi del login): da valutare se portarlo nel DB.
 
-**Passo successivo:** correzione del BUG XSS della lista soggetti, se il committente lo decide.
+**Passo successivo:** correzione del BUG XSS secondo il piano in 4 passi (censimento, funzione comune `escHtml()`, correzioni prioritarie su `index.php` e ricerca luoghi di `app.js`, correzioni successive) e le tre fonti di rischio individuate, registrati in `docs/roadmaps/ROADMAP.md`, sezione "BUG APERTO — Lista soggetti"; si parte dal censimento.
 
 ---

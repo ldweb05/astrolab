@@ -875,3 +875,19 @@ login soggetti e segnalato solo a fine lavoro.
   `caricaSoggetti()`) e nelle altre pagine.
 - Il codice nuovo del Diario RSM e del pulsante di accesso (`js/diario_rsm.js`,
   `js/accesso_soggetti.js`) usa gia' `textContent` e non ha questo problema.
+- Ricognizione del 01-10-2026 (iniziale, non esaustiva): circa 140 usi di `innerHTML` in circa
+  20 file; la maggior parte mostra dati calcolati (posizioni, case, aspetti, stelline) e non e'
+  a rischio. Fonti di testo libero gia' individuate:
+  1. dati dei soggetti scritti dall'astrologo (lista di `index.php`) — priorita' alta;
+  2. note delle sessioni RS (`rs.php`, elenco "Sessioni RS salvate") — priorita' media;
+  3. risultati della ricerca luoghi Nominatim/OpenStreetMap (menu dei luoghi in `www/js/app.js`):
+     dati esterni modificabili da chiunque — priorita' alta.
+- Piano di correzione (proposto al committente il 01-10-2026; ogni passo con collaudo, test del
+  committente e commit):
+  1. censimento completo di tutti gli usi di `innerHTML`, classificati in "testo libero, da
+     correggere" e "solo dati calcolati, sicuro", con il risultato aggiunto a questa sezione;
+  2. una funzione comune di protezione (`escHtml()`) in un punto condiviso;
+  3. correzioni prioritarie: `index.php` e ricerca luoghi di `www/js/app.js` (file condiviso da 7
+     pagine: Soggetti, Tema, RS, RL, Rilocazione, Transiti, Stampa — modifiche minime e test su
+     ognuna);
+  4. correzioni successive: note delle sessioni in `rs.php` e gli altri punti del censimento.
