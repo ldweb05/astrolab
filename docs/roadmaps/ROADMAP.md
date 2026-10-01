@@ -931,3 +931,12 @@ login soggetti e segnalato solo a fine lavoro.
     codifica `/` e quindi impedisce di chiudere il tag `<script>`; tutti gli altri inserimenti,
     che mostrano solo dati calcolati (posizioni, case, aspetti, stelline, bonus e veti del
     motore, paginazione, messaggi del server).
+- **Passo 2 completato il 01-10-2026:** nuovo file `www/js/sicurezza.js` con `escHtml()` (codifica
+  i caratteri speciali dell'HTML, apici e accento grave compresi, per il contenuto e per gli
+  attributi tra virgolette) e `urlSicuro()` (solo indirizzi http/https); collaudo 12 casi su 12.
+  Decisioni del committente: funzione in un file comune, incluso con un tag `<script>` nelle
+  pagine che lo usano (non in `app.js`, che non e' caricato da `admin_utenti.php`,
+  `compare_rs.php`, `compare_ril.php`, `ricerca.php`, `ricerca_rl.php`); i dati scritti dagli
+  utenti o arrivati da servizi esterni passano da attributi `data-` letti da JavaScript, mai
+  dentro gli `onclick`. Il file non e' ancora incluso da nessuna pagina: lo si collega nel
+  passo 3, pagina per pagina.
