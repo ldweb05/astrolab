@@ -247,6 +247,7 @@ $idxFotoProfilo = $stmtIdxFoto->fetchColumn() ?: null;
 
 <script src="js/header_nav.js" defer></script>
 <script src="js/zodiac_wheel.js"></script>
+<script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
 <script>
 // ── Soggetto attivo ────────────────────────────────────────────────────────
@@ -266,8 +267,11 @@ function impostaSoggettoAttivo(id) {
             soggettoAttivoId = data.soggetto_id;
             // Aggiorna info banner
             const infoEl = document.getElementById('info-soggetto-attivo');
-            infoEl.innerHTML = 'Tema natale, RS e ricerca useranno: <b>' +
-                data.soggetto_nome.replace(/</g,'&lt;') + '</b>';
+            // Testo costruito con textContent (bug XSS, passo 3, gruppo 2).
+            const bNome = document.createElement('b');
+            bNome.textContent = data.soggetto_nome;
+            infoEl.textContent = 'Tema natale, RS e ricerca useranno: ';
+            infoEl.appendChild(bNome);
             document.getElementById('soggetto-banner').classList.add('attivo');
             mostraMessaggio('Soggetto attivo: ' + data.soggetto_nome, 'success');
         }
@@ -326,16 +330,15 @@ function caricaSoggettiConDropdown() {
             data.forEach(s => {
                 const isAttivo = s.id == soggettoAttivoId;
                 const residenzaHtml = s.residenza_luogo
-                    ? `<div class="soggetto-residenza">🏠 ${s.residenza_luogo}${s.residenza_nazione ? ', ' + s.residenza_nazione : ''}</div>`
+                    ? `<div class="soggetto-residenza">🏠 ${escHtml(s.residenza_luogo)}${s.residenza_nazione ? ', ' + escHtml(s.residenza_nazione) : ''}</div>`
                     : '';
 
                 // Badge "Soggetto di: [Nome Completo o username]" — solo per admin
                 let tdProp = '';
                 if (IS_ADMIN) {
                     // Preferisce nome_completo, fallback su username
-                    const nomeDisplay = (s.astrologo_nome_completo || s.astrologo_username || '?')
-                        .replace(/</g, '&lt;');
-                    const username = (s.astrologo_username || '').replace(/</g, '&lt;');
+                    const nomeDisplay = escHtml(s.astrologo_nome_completo || s.astrologo_username || '?');
+                    const username = escHtml(s.astrologo_username || '');
                     const tooltip  = username ? `Utente: ${username}` : '';
 
                     tdProp = `<td>
@@ -355,20 +358,20 @@ function caricaSoggettiConDropdown() {
                     : '';
 
                 html += `<tr class="${isAttivo ? 'riga-soggetto-attivo' : ''}">
-                    <td>${s.codice || '—'}</td>
-                    <td><b><a onclick="apriDashboard(${s.id})" style="cursor:pointer;color:inherit;text-decoration:none;">${s.nome}</a></b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
-                    <td>${formatData(s.data_nascita)}</td>
-                    <td>${s.ora_nascita}</td>
+                    <td>${escHtml(s.codice || '—')}</td>
+                    <td><b><a onclick="apriDashboard(${parseInt(s.id, 10)})" style="cursor:pointer;color:inherit;text-decoration:none;">${escHtml(s.nome)}</a></b>${isAttivo ? ' <span class="soggetto-attivo-label">⭐ attivo</span>' : ''}</td>
+                    <td>${escHtml(formatData(s.data_nascita))}</td>
+                    <td>${escHtml(s.ora_nascita)}</td>
                     <td>
-                        <div>${s.luogo_nascita || ''} ${s.nazione_nascita || ''}</div>
+                        <div>${escHtml(s.luogo_nascita || '')} ${escHtml(s.nazione_nascita || '')}</div>
                         ${residenzaHtml}
                     </td>
                     ${tdProp}
                     <td><div class="azioni">
-                        <button class="btn-icon" title="Imposta attivo" onclick="impostaSoggettoAttivo(${s.id})">⭐</button>
-                        <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${s.id})">✏️</button>
+                        <button class="btn-icon" title="Imposta attivo" onclick="impostaSoggettoAttivo(${parseInt(s.id, 10)})">⭐</button>
+                        <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${parseInt(s.id, 10)})">✏️</button>
                         ${accBtn}
-                        <button class="btn-icon" title="Elimina" onclick="eliminaSoggetto(${s.id}, '${s.nome.replace(/'/g, "\\'")}')">🗑️</button>
+                        <button type="button" class="btn-icon" title="Elimina" data-elimina-id="${parseInt(s.id, 10)}" data-elimina-nome="${escHtml(s.nome)}">🗑️</button>
                     </div></td>
                 </tr>`;
             });

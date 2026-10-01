@@ -895,11 +895,16 @@ login soggetti e segnalato solo a fine lavoro.
   modifica): 138 inserimenti HTML (`innerHTML`, `insertAdjacentHTML`, `document.write`) in 20
   file. Classificazione dei punti con testo libero (numeri di riga al commit `ba8606b`):
   - **A. Testo scritto dagli utenti, vulnerabile:**
-    1. `www/index.php` 329-371, lista soggetti: `s.nome` (anche nell'`onclick` di elimina, con
+    1. **corretto il 01-10-2026** (passo 3, gruppo 2: testi con `escHtml()`, elimina da attributi
+       `data-`, riquadro del soggetto attivo con `textContent`; collaudo 16 casi e test sul Pi)
+       — `www/index.php` 329-371, lista soggetti: `s.nome` (anche nell'`onclick` di elimina, con
        escape del solo apice), `s.luogo_nascita`, `s.nazione_nascita`, `s.residenza_luogo`,
        `s.residenza_nazione`; riga 269, soggetto attivo: viene sostituito solo il carattere `<`
        — priorita' alta;
-    2. `www/js/app.js` 51-87, vecchia `caricaSoggetti()`, stessi campi; e' ancora chiamata dopo
+    2. **corretto il 01-10-2026** (passo 3, gruppo 2: `caricaSoggetti()` passa a
+       `caricaSoggettiConDropdown()` quando esiste, vecchio disegno protetto con `escHtml()`; risolto
+       anche il difetto per cui dopo salvataggio o eliminazione la lista ricompariva senza stella,
+       accesso del soggetto e colonna Proprietario) — `www/js/app.js` 51-87, vecchia `caricaSoggetti()`, stessi campi; e' ancora chiamata dopo
        salvataggio ed eliminazione (righe 192 e 215) — priorita' alta;
     3. **corretto il 01-10-2026** (passo 3, gruppo 1: dati negli attributi `data-` con un solo
        gestore di clic, conferma di eliminazione da `data-conferma`, testo della finestra

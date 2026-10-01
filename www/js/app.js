@@ -49,6 +49,13 @@ function aggiornaHeaderSoggetto() {
 // ── SOGGETTI ──────────────────────────────────────────────────────────────
 
 function caricaSoggetti() {
+    // In index.php la lista completa (con stella, accesso del soggetto e colonna
+    // Proprietario) e' disegnata da caricaSoggettiConDropdown(): la si usa sempre
+    // quando esiste, anche dopo salvataggio ed eliminazione (fix 01-10-2026).
+    if (typeof caricaSoggettiConDropdown === 'function') {
+        caricaSoggettiConDropdown();
+        return;
+    }
     fetch('api/soggetti_api.php?action=lista')
         .then(r => r.json())
         .then(data => {
@@ -64,22 +71,22 @@ function caricaSoggetti() {
                 </tr></thead><tbody>`;
             data.forEach(s => {
                 const residenzaHtml = s.residenza_luogo
-                    ? `<div class="subject-residence">🏠 ${s.residenza_luogo}${s.residenza_nazione ? ', ' + s.residenza_nazione : ''}</div>`
+                    ? `<div class="subject-residence">🏠 ${escHtml(s.residenza_luogo)}${s.residenza_nazione ? ', ' + escHtml(s.residenza_nazione) : ''}</div>`
                     : '';
 
                 html += `<tr>
-                    <td>${s.codice || '—'}</td>
-                    <td><b>${s.nome}</b></td>
-                    <td>${formatData(s.data_nascita)}</td>
-                    <td>${s.ora_nascita}</td>
+                    <td>${escHtml(s.codice || '—')}</td>
+                    <td><b>${escHtml(s.nome)}</b></td>
+                    <td>${escHtml(formatData(s.data_nascita))}</td>
+                    <td>${escHtml(s.ora_nascita)}</td>
                     <td>
-                        <div>${s.luogo_nascita || ''} ${s.nazione_nascita || ''}</div>
+                        <div>${escHtml(s.luogo_nascita || '')} ${escHtml(s.nazione_nascita || '')}</div>
                         ${residenzaHtml}
                     </td>
                     <td><div class="azioni">
-                        <button class="btn-icon" title="Tema Natale" onclick="apriTema(${s.id})">☉</button>
-                        <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${s.id})">✏️</button>
-                        <button class="btn-icon" title="Elimina" onclick="eliminaSoggetto(${s.id}, '${s.nome.replace(/'/g, "\\'")}')">🗑️</button>
+                        <button class="btn-icon" title="Tema Natale" onclick="apriTema(${parseInt(s.id, 10)})">☉</button>
+                        <button class="btn-icon" title="Modifica" onclick="modificaSoggetto(${parseInt(s.id, 10)})">✏️</button>
+                        <button type="button" class="btn-icon" title="Elimina" data-elimina-id="${parseInt(s.id, 10)}" data-elimina-nome="${escHtml(s.nome)}">🗑️</button>
                     </div></td>
                 </tr>`;
             });
@@ -202,6 +209,14 @@ function modificaSoggetto(id) {
         .then(r => r.json())
         .then(dati => mostraForm(dati));
 }
+
+// Pulsante elimina della lista soggetti: id e nome arrivano dagli attributi data-
+// (protetti con escHtml), mai da codice nell'onclick (bug XSS, passo 3, gruppo 2).
+document.addEventListener('click', function (ev) {
+    const b = ev.target.closest ? ev.target.closest('[data-elimina-id]') : null;
+    if (!b) { return; }
+    eliminaSoggetto(parseInt(b.dataset.eliminaId, 10), b.dataset.eliminaNome || '');
+});
 
 function eliminaSoggetto(id, nome) {
     if (!confirm('Eliminare ' + nome + '?')) return;
