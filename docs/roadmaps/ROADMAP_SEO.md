@@ -76,6 +76,10 @@ modificare il codice e sui commit (PROMPT_OPERATIVO_ASTROLAB.md, §6).
 - `index.php` resta la pagina Soggetti. Come far servire `/` dalla nuova pagina
   (`DirectoryIndex` o riscrittura) è da verificare: la presenza di un `.htaccess` attivo
   non è stata controllata.
+- Bozza eliminata (02-10-2026, decisione del committente): la prima bozza della landing,
+  `www/index.html` del 24-09-2026, mai committata, è stata eliminata. La landing sarà
+  rifatta da capo dopo il trasferimento sulla VPS e la messa in sicurezza; fino ad allora
+  l'indirizzo principale del sito serve `index.php`.
 
 ## Fase 4 — Contenuti pubblici di approfondimento (da decidere)
 - Il manuale (8 pagine `help_*`) oggi è privato. Se reso pubblico: separarlo dal menu di
