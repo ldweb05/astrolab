@@ -166,7 +166,7 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
 | 3 | Pagine: `www/diario.php` + `www/js/diario_rsm.js` (astrologo e soggetto), in quattro passi: 3a ricerca e schede in sola lettura; 3b contributi (form, tratte, moderazione); 3c viaggi privati, viaggi dei propri soggetti e collegamento alle sessioni RS; 3d voce di menu e area del soggetto | Completata (30-09-2026): 3a, 3b, 3c e 3d |
 | 4 | Motore di ricerca (D17) e schede località condivise: interfaccia realizzata nella Fase 3a (`diario.php`, scheda "Cerca località") | Completata con la 3a (30-09-2026) |
 | 5 | Documentazione: manuale `www/help_diario.php` (Help, voce 10), HANDOVER, START_HERE, ROADMAP generale | Completata (30-09-2026) |
-| 6 | Elenco dei viaggi compatto con ricerca (D20): `www/js/diario_rsm.js`, `www/diario.php` | Da fare |
+| 6 | Elenco dei viaggi compatto con ricerca (D20): `www/js/diario_rsm.js`, `www/diario.php` | Completata (02-10-2026) |
 | 7 | RSM nel viaggio e grafico (D21-D23): migrazione `sql/015`, API, form con ricerca luoghi, finestra con le due ruote e stampa, manuale | Da fare |
 
 ## 7. Vincoli di sicurezza (da `docs/CHECKLIST_SICUREZZA_SVILUPPO.md` e specifici)

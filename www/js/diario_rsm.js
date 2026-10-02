@@ -584,21 +584,82 @@
         return carta;
     }
 
+    // ── Elenco compatto dei viaggi con ricerca (D20) ────────────────
+    // Una riga per viaggio (anno, luogo, nazione); un clic apre il riquadro completo.
+
+    var elenchiViaggi = { miei: [], soggetti: [] };
+
+    function annoViaggio(v) {
+        return v.data_arrivo ? String(v.data_arrivo).slice(0, 4) : '';
+    }
+
+    function normalizza(testo) {
+        return String(testo || '').toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            // Lettere che non si scompongono con NFD (es. Troms\u00f8 si trova scrivendo "tromso").
+            .replace(/\u00f8/g, 'o').replace(/\u00e6/g, 'ae').replace(/\u0153/g, 'oe')
+            .replace(/\u00df/g, 'ss').replace(/\u0142/g, 'l').replace(/\u0111/g, 'd')
+            .replace(/\s+/g, ' ').trim();
+    }
+
+    function corrisponde(v, filtro) {
+        if (!filtro) { return true; }
+        // "RSM2011" o "rsm 2011" cercano l'anno 2011.
+        var f = normalizza(filtro).replace(/^rsm\s*/, '');
+        if (!f) { return true; }
+        var testo = normalizza([annoViaggio(v), v.luogo, v.nazione, v.soggetto_codice, v.soggetto_nome].join(' '));
+        return f.split(' ').every(function (parola) { return testo.indexOf(parola) !== -1; });
+    }
+
+    function disegnaElencoViaggi(chiave, idBox, idMsg, idFiltro, msgVuoto) {
+        var box = el(idBox);
+        if (!box) { return; }
+        var filtroEl = el(idFiltro);
+        var filtro = filtroEl ? filtroEl.value : '';
+        var tutti = elenchiViaggi[chiave];
+        var visibili = tutti.filter(function (v) { return corrisponde(v, filtro); });
+        svuota(box);
+        visibili.forEach(function (v) {
+            var riga = nuovo('button', 'diario-riga-viaggio');
+            riga.type = 'button';
+            riga.setAttribute('aria-expanded', 'false');
+            riga.appendChild(nuovo('span', 'anno', annoViaggio(v) || '\u2014'));
+            riga.appendChild(nuovo('span', 'luogo', v.luogo + ' \u2014 ' + v.nazione));
+            if (chiave === 'soggetti' && v.soggetto_codice) {
+                riga.appendChild(nuovo('span', 'chi', v.soggetto_codice));
+            }
+            riga.appendChild(nuovo('span', 'freccia', '\u25b8'));
+            var dettaglio = nuovo('div', 'diario-dettaglio-viaggio');
+            dettaglio.style.display = 'none';
+            riga.addEventListener('click', function () {
+                var aperto = riga.getAttribute('aria-expanded') === 'true';
+                if (!aperto && !dettaglio.firstChild) { dettaglio.appendChild(cartaViaggio(v)); }
+                dettaglio.style.display = aperto ? 'none' : '';
+                riga.setAttribute('aria-expanded', aperto ? 'false' : 'true');
+                riga.lastChild.textContent = aperto ? '\u25b8' : '\u25be';
+            });
+            box.appendChild(riga);
+            box.appendChild(dettaglio);
+        });
+        var conteggio = nuovo('div', 'diario-conteggio',
+            filtro.trim() ? visibili.length + ' di ' + tutti.length + ' viaggi' : tutti.length + (tutti.length === 1 ? ' viaggio' : ' viaggi'));
+        if (tutti.length) { box.insertBefore(conteggio, box.firstChild); }
+        if (!tutti.length) { messaggio(idMsg, msgVuoto); }
+        else if (!visibili.length) { messaggio(idMsg, 'Nessun viaggio corrisponde alla ricerca.'); }
+    }
+
     function elencoViaggi(messaggioFinale) {
         messaggio('viaggi-msg', 'Caricamento...');
         apiGet('miei_viaggi').then(function (d) {
             var viaggi = d.viaggi || [];
-            var miei = viaggi.filter(function (v) { return v.modificabile; });
-            var deiSoggetti = viaggi.filter(function (v) { return !v.modificabile; });
-            var box = el('viaggi-elenco');
-            svuota(box);
-            miei.forEach(function (v) { box.appendChild(cartaViaggio(v)); });
-            messaggio('viaggi-msg', messaggioFinale || (miei.length ? '' : 'Non hai ancora registrato viaggi.'));
-            var boxS = el('viaggi-soggetti-elenco');
-            if (boxS) {
-                svuota(boxS);
-                deiSoggetti.forEach(function (v) { boxS.appendChild(cartaViaggio(v)); });
-                messaggio('viaggi-soggetti-msg', deiSoggetti.length ? '' : 'I tuoi soggetti non hanno ancora registrato viaggi.');
+            elenchiViaggi.miei = viaggi.filter(function (v) { return v.modificabile; });
+            elenchiViaggi.soggetti = viaggi.filter(function (v) { return !v.modificabile; });
+            messaggio('viaggi-msg', messaggioFinale || '');
+            disegnaElencoViaggi('miei', 'viaggi-elenco', 'viaggi-msg', 'viaggi-filtro', 'Non hai ancora registrato viaggi.');
+            if (el('viaggi-soggetti-elenco')) {
+                messaggio('viaggi-soggetti-msg', '');
+                disegnaElencoViaggi('soggetti', 'viaggi-soggetti-elenco', 'viaggi-soggetti-msg', 'viaggi-soggetti-filtro',
+                    'I tuoi soggetti non hanno ancora registrato viaggi.');
             }
         }).catch(function () { messaggio('viaggi-msg', 'Errore di caricamento. Riprova.', true); });
     }
@@ -732,6 +793,17 @@
         el('cf-tratta-aggiungi').addEventListener('click', function () { aggiungiTratta({}); });
         el('contrib-form').addEventListener('submit', salvaContributo);
         el('viaggi-nuovo').addEventListener('click', function () { apriFormViaggio({}); });
+        el('viaggi-filtro').addEventListener('input', function () {
+            messaggio('viaggi-msg', '');
+            disegnaElencoViaggi('miei', 'viaggi-elenco', 'viaggi-msg', 'viaggi-filtro', 'Non hai ancora registrato viaggi.');
+        });
+        if (el('viaggi-soggetti-filtro')) {
+            el('viaggi-soggetti-filtro').addEventListener('input', function () {
+                messaggio('viaggi-soggetti-msg', '');
+                disegnaElencoViaggi('soggetti', 'viaggi-soggetti-elenco', 'viaggi-soggetti-msg', 'viaggi-soggetti-filtro',
+                    'I tuoi soggetti non hanno ancora registrato viaggi.');
+            });
+        }
         el('vf-annulla').addEventListener('click', chiudiFormViaggio);
         el('viaggio-form').addEventListener('submit', salvaViaggio);
         document.querySelector('[data-scheda="viaggi"]').addEventListener('click', function () {

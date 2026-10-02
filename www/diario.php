@@ -112,6 +112,19 @@ header('X-Robots-Tag: noindex, nofollow');
         .diario-collega { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
         .diario-collega select { padding: 5px 8px; border: 1px solid #C9C2B2; border-radius: 5px; font-size: 13px; max-width: 100%; }
         .diario-sessione { color: #2C3E6B; font-size: 13px; background: #EEF2FA; border-radius: 10px; padding: 2px 9px; display: inline-block; margin-top: 4px; }
+        .diario-filtro-viaggi { width: 100%; max-width: 420px; box-sizing: border-box; padding: 8px 11px; font-size: 14px;
+            border: 1px solid #C9C2B2; border-radius: 6px; margin: 4px 0 6px; }
+        .diario-conteggio { color: #7A6F5A; font-size: 12px; margin-bottom: 8px; }
+        .diario-riga-viaggio { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: #fff;
+            border: 1px solid #E4DED0; border-radius: 6px; padding: 9px 12px; margin-bottom: 6px; cursor: pointer;
+            font-size: 14px; color: #2C3E6B; }
+        .diario-riga-viaggio:hover { background: #F7F3EA; }
+        .diario-riga-viaggio[aria-expanded="true"] { border-color: #2C3E6B; }
+        .diario-riga-viaggio .anno { font-weight: 700; min-width: 3.2em; }
+        .diario-riga-viaggio .luogo { flex: 1; }
+        .diario-riga-viaggio .chi { color: #B85C38; font-size: 12px; font-weight: 600; }
+        .diario-riga-viaggio .freccia { color: #7A6F5A; }
+        .diario-dettaglio-viaggio { margin: -2px 0 10px 14px; }
     </style>
 </head>
 <body data-ruolo="<?= htmlspecialchars($ruoloDiario, ENT_QUOTES, 'UTF-8') ?>" data-admin="<?= $isAdmin ? '1' : '0' ?>">
@@ -164,11 +177,15 @@ header('X-Robots-Tag: noindex, nofollow');
             <div class="diario-azioni">
                 <button type="button" class="diario-btn" id="viaggi-nuovo">+ Nuovo viaggio</button>
             </div>
+            <input type="search" id="viaggi-filtro" class="diario-filtro-viaggi" maxlength="60" autocomplete="off"
+                   placeholder="Cerca per anno o luogo (es. 2011, RSM2011, Tromsø)">
             <div id="viaggi-msg" class="diario-msg"></div>
             <div id="viaggi-elenco"></div>
 <?php if ($ruoloDiario === 'astrologo'): ?>
             <div class="diario-sezione-titolo">Viaggi dei miei soggetti</div>
             <div class="diario-sottotitolo">Scritti dai tuoi soggetti con il loro accesso: puoi consultarli e collegarli a una sessione RS, ma non modificarli.</div>
+            <input type="search" id="viaggi-soggetti-filtro" class="diario-filtro-viaggi" maxlength="60" autocomplete="off"
+                   placeholder="Cerca per anno, luogo o soggetto (es. 2011, LD001)">
             <div id="viaggi-soggetti-msg" class="diario-msg"></div>
             <div id="viaggi-soggetti-elenco"></div>
 <?php endif; ?>
