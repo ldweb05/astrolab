@@ -916,8 +916,11 @@ login soggetti e segnalato solo a fine lavoro.
        contesto (il browser decodifica le entita' prima di eseguire lo script); `nome_completo`
        e' scritto da chiunque si registri; riga 724, `apriModaleElimina()` inserisce il nome con
        `innerHTML` (oggi lo username, che ha caratteri limitati) — priorita' alta;
-    4. `www/rs.php` 1562-1570, sessioni RS salvate: `s.luogo`, `s.note` — priorita' media;
-    5. `www/js/rl.js` 268, 302-306, sessioni RL e scelta della RS: `s.luogo`, `s.note` —
+    4. **corretto il 01-10-2026** (passo 4: testi delle sessioni con `escHtml()`, identificativi con
+       `parseInt`) — `www/rs.php` 1562-1570, sessioni RS salvate: `s.luogo`, `s.note` — priorita' media;
+    5. **corretto il 01-10-2026** (passo 4: come A4; corretto anche l'errore `</table>` nell'intestazione
+       della tabella delle sessioni RL, che faceva finire le righe fuori dalla tabella) —
+       `www/js/rl.js` 268, 302-306, sessioni RL e scelta della RS: `s.luogo`, `s.note` —
        priorita' media;
     6. `www/stampa.php` 698-888, report di stampa: nome, luogo e nazione del soggetto, luoghi di
        RS, RL e rilocazione — priorita' media;

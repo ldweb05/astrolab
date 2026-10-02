@@ -265,7 +265,7 @@ const RLModule = (function () {
              wrap.style.display = '';
              sel.innerHTML = '<option value="">— Nessuna —</option>' +
                  _sessioniRSCache.map(s =>
-                     `<option value="${s.id}">RS ${s.anno} — ${s.luogo || '?'} (${s.val||''})</option>`
+                     `<option value="${parseInt(s.id, 10)}">RS ${escHtml(s.anno)} — ${escHtml(s.luogo || '?')} (${escHtml(s.val || '')})</option>`
                  ).join('');
          })
          .catch(() => {});
@@ -285,7 +285,7 @@ const RLModule = (function () {
              let html = '<table class="tabella-soggetti"><thead><tr>' +
                  '<th>Anno rif.</th><th>RL #</th><th>Luogo</th><th>Condizione</th>' +
                  '<th>Stelle</th><th>VAL</th><th>Note</th><th>Salvata il</th><th>Azioni</th>' +
-                 '</table></thead><tbody>';
+                 '</tr></thead><tbody>';
              rows.forEach(s => {
                  const stelle = s.stelline != null
                      ? '★'.repeat(Math.round(s.stelline)) + '☆'.repeat(5 - Math.round(s.stelline))
@@ -296,18 +296,19 @@ const RLModule = (function () {
                      '&anno=' + (s.anno_rs || '') +
                      '&lat_rl=' + s.lat + '&lon_rl=' + s.lon +
                      '&luogo_rl=' + encodeURIComponent(s.luogo || '');
+                 // Testi delle sessioni con escHtml() (bug XSS, passo 4, punto A5).
                  html += `<tr>
-                     <td>${s.anno_rs ?? '—'}</td>
-                     <td>☽ ${s.rl_index}</td>
-                     <td>${s.luogo || '—'}</td>
-                     <td>${s.condizione}</td>
+                     <td>${escHtml(s.anno_rs ?? '—')}</td>
+                     <td>☽ ${escHtml(s.rl_index)}</td>
+                     <td>${escHtml(s.luogo || '—')}</td>
+                     <td>${escHtml(s.condizione)}</td>
                      <td class="stelle">${stelle}</td>
-                     <td><span class="val-badge">${s.val || '—'}</span></td>
-                     <td class="session-note-cell">${s.note || ''}</td>
+                     <td><span class="val-badge">${escHtml(s.val || '—')}</span></td>
+                     <td class="session-note-cell">${escHtml(s.note || '')}</td>
                      <td class="session-date-cell">${dataSalv}</td>
                      <td><div class="azioni">
-                         <a href="${url}" class="btn-icon" title="Richiama questa sessione">↺</a>
-                         <button class="btn-icon" title="Elimina" onclick="RLModule.eliminaSessioneRL(${s.id})">🗑️</button>
+                         <a href="${escHtml(url)}" class="btn-icon" title="Richiama questa sessione">↺</a>
+                         <button class="btn-icon" title="Elimina" onclick="RLModule.eliminaSessioneRL(${parseInt(s.id, 10)})">🗑️</button>
                      </div></td>
                  </tr>`;
              });

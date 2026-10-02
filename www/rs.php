@@ -1559,28 +1559,29 @@ function caricaSessioniRS() {
                     '&luogo_rs=' + encodeURIComponent(s.luogo || '') +
                     '&condizione=' + encodeURIComponent(s.condizione);
  
+                // Testi delle sessioni con escHtml() (bug XSS, passo 4, punto A4).
                 html += `<tr>
-                    <td>${s.anno}</td>
-                    <td>${s.luogo || '—'}</td>
-                    <td>${s.condizione}</td>
+                    <td>${escHtml(s.anno)}</td>
+                    <td>${escHtml(s.luogo || '—')}</td>
+                    <td>${escHtml(s.condizione)}</td>
                     <td class="stelle">${stelle}</td>
-                    <td><span class="val-badge">${s.val || '—'}</span></td>
+                    <td><span class="val-badge">${escHtml(s.val || '—')}</span></td>
                     <td class="session-note-cell">
                         <div style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                            ${s.note || ''}
+                            ${escHtml(s.note || '')}
                         </div>
                         ${s.note
                             ? `<button type="button"
                                        class="btn-icon"
                                        style="margin-top:6px;font-size:12px;"
-                                       onclick="leggiNoteSessioneRS(${s.id})">Leggi tutto</button>`
+                                       onclick="leggiNoteSessioneRS(${parseInt(s.id, 10)})">Leggi tutto</button>`
                             : ''}
                     </td>
                     <td class="session-date-cell">${dataSalv}</td>
                     <td><div class="azioni">
-                        <a href="${url}" class="btn-icon" title="Richiama questa sessione">↺</a>
-                        <button class="btn-icon" title="Modifica" onclick="modificaSessioneRS(${s.id})">✏️</button>
-                        <button class="btn-icon" title="Cancella" onclick="eliminaSessioneRS(${s.id})">🗑️</button>
+                        <a href="${escHtml(url)}" class="btn-icon" title="Richiama questa sessione">↺</a>
+                        <button class="btn-icon" title="Modifica" onclick="modificaSessioneRS(${parseInt(s.id, 10)})">✏️</button>
+                        <button class="btn-icon" title="Cancella" onclick="eliminaSessioneRS(${parseInt(s.id, 10)})">🗑️</button>
                     </div></td>
                 </tr>`;
             });
