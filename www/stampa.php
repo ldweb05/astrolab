@@ -466,6 +466,7 @@ $annoCorrente = (int)date('Y');
 <!-- Nessun form nascosto: il PDF viene richiesto via fetch() JSON con PNG base64 -->
 
 <script src="js/zodiac_wheel.js"></script>
+<script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
 <script>
 'use strict';
@@ -685,9 +686,11 @@ const NOMI_CASE = {
 };
 
 function buildHeaderReport() {
-    const anno   = document.getElementById('anno-rs-print').value;
-    const luogoRS = document.getElementById('luogo-rs-print').value;
-    const cond   = document.getElementById('condizione-print').value;
+    // Testi protetti con escHtml(): i campi possono arrivare dall'indirizzo della
+    // pagina (luogo_rs, condizione...) e non devono mai diventare HTML (bug XSS, A6).
+    const anno   = escHtml(document.getElementById('anno-rs-print').value);
+    const luogoRS = escHtml(document.getElementById('luogo-rs-print').value);
+    const cond   = escHtml(document.getElementById('condizione-print').value);
     return `
     <div class="report-header">
         <div class="report-header-sinistra">
@@ -695,11 +698,11 @@ function buildHeaderReport() {
             <div class="report-sottotitolo">Scuola di Ciro Discepolo — Rivoluzioni Solari Mirate</div>
         </div>
         <div class="report-header-destra">
-            <div class="report-soggetto">${DS_PRINT.nome}</div>
+            <div class="report-soggetto">${escHtml(DS_PRINT.nome)}</div>
             <div class="report-dati">
-                Nato/a il ${DS_PRINT.data_str} — ${DS_PRINT.ora_loc} (loc.)
+                Nato/a il ${escHtml(DS_PRINT.data_str)} — ${escHtml(DS_PRINT.ora_loc)} (loc.)
             </div>
-            <div class="report-dati">Luogo nascita: ${DS_PRINT.luogo}, ${DS_PRINT.nazione}</div>
+            <div class="report-dati">Luogo nascita: ${escHtml(DS_PRINT.luogo)}, ${escHtml(DS_PRINT.nazione)}</div>
             ${luogoRS ? `<div class="report-dati">RS ${anno} — ${luogoRS} — Cond.: ${cond}</div>` : ''}
         </div>
     </div>`;
@@ -751,17 +754,17 @@ function buildValutazione(val) {
     if (!val) return '';
     const stelle = (val.stelle_str || '').replace(/★/g,'<span style="color:#C8960C">★</span>');
     const veti = (val.veti || []).map(v =>
-        `<div class="val-item-print val-veto-print">⛔ ${v}</div>`).join('');
+        `<div class="val-item-print val-veto-print">⛔ ${escHtml(v)}</div>`).join('');
     const bonus = (val.bonus || []).map(b =>
-        `<div class="val-item-print val-bonus-print"><b>${b.codice}</b> ${b.nota ?? ''}</div>`).join('');
+        `<div class="val-item-print val-bonus-print"><b>${escHtml(b.codice)}</b> ${escHtml(b.nota ?? '')}</div>`).join('');
     const pen = (val.penalita || []).map(p =>
-        `<div class="val-item-print val-pen-print"><b>${p.codice}</b> ${p.nota ?? ''}</div>`).join('');
+        `<div class="val-item-print val-pen-print"><b>${escHtml(p.codice)}</b> ${escHtml(p.nota ?? '')}</div>`).join('');
     return `
     <div class="report-valutazione">
         <div class="val-header-print">
             <span class="stelle-print">${stelle}</span>
-            <span class="val-str-print">${val.val ?? ''}</span>
-            <span class="val-cond-print">Cond.: ${val.condizione ?? ''}</span>
+            <span class="val-str-print">${escHtml(val.val ?? '')}</span>
+            <span class="val-cond-print">Cond.: ${escHtml(val.condizione ?? '')}</span>
         </div>
         <div class="val-body-print">
             ${veti}
@@ -802,7 +805,7 @@ async function buildReportHTML(perStampa) {
             const png = await serializzaPNG('_tmp_natale_svg', _temaNataleCache, 420);
             html += `
             <div class="ruota-col">
-                <div class="ruota-title">☉ Tema Natale — ${DS_PRINT.nome}</div>
+                <div class="ruota-title">☉ Tema Natale — ${escHtml(DS_PRINT.nome)}</div>
                 <div class="ruota-svg-wrap">${imgTag(png)}</div>
                 <div class="ruota-info">
                     ASC: ${_temaNataleCache.case?.ASC?.posizione?.stringa ?? '?'}
@@ -816,8 +819,8 @@ async function buildReportHTML(perStampa) {
         if (modRS) {
             if (!_temaRSCache) _temaRSCache = await caricaTemaRS();
             const png  = await serializzaPNG('_tmp_rs_svg', _temaRSCache.tema_rs, 420);
-            const anno = document.getElementById('anno-rs-print').value;
-            const luogo= document.getElementById('luogo-rs-print').value || '—';
+            const anno = escHtml(document.getElementById('anno-rs-print').value);
+            const luogo= escHtml(document.getElementById('luogo-rs-print').value || '—');
             html += `
             <div class="ruota-col">
                 <div class="ruota-title">↺ RS ${anno} — ${luogo}</div>
@@ -849,7 +852,7 @@ async function buildReportHTML(perStampa) {
         const rlData = _temaRLCache;
         if (rlData?.ok && rlData.tema_rl) {
             const png     = await serializzaPNG('_tmp_rl_svg', rlData.tema_rl, 380);
-            const luogoRL = document.getElementById('luogo-rl-print')?.value || '—';
+            const luogoRL = escHtml(document.getElementById('luogo-rl-print')?.value || '—');
             html += `
             <div class="report-section">
                 <div class="report-section-title">☽ RL ${(parseInt(document.getElementById('rl-index-print')?.value||'0')+1)} — ${luogoRL}</div>
@@ -875,7 +878,7 @@ async function buildReportHTML(perStampa) {
         if (!_temaNataleCache) _temaNataleCache = await caricaTemaNatale();
         const pngNat   = await serializzaPNG('_tmp_riloc_nat_svg', _temaNataleCache, 380);
         const pngRiloc = await serializzaPNG('_tmp_riloc_svg', _temaRilocCache, 380);
-        const luogoRiloc = document.getElementById('luogo-riloc-print')?.value || '—';
+        const luogoRiloc = escHtml(document.getElementById('luogo-riloc-print')?.value || '—');
         html += `
         <div class="report-section">
             <div class="report-section-title">☿ Rilocazione — ${luogoRiloc}</div>

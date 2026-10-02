@@ -922,7 +922,12 @@ login soggetti e segnalato solo a fine lavoro.
        della tabella delle sessioni RL, che faceva finire le righe fuori dalla tabella) —
        `www/js/rl.js` 268, 302-306, sessioni RL e scelta della RS: `s.luogo`, `s.note` —
        priorita' media;
-    6. `www/stampa.php` 698-888, report di stampa: nome, luogo e nazione del soggetto, luoghi di
+    6. **corretto il 01-10-2026** (passo 4: testi del report con `escHtml()`, `sicurezza.js` incluso;
+       durante la correzione e' emerso che il caso era piu' grave del previsto: i luoghi di RS, RL e
+       rilocazione arrivano anche dall'indirizzo della pagina (`luogo_rs`, `luogo_rl`,
+       `luogo_riloc`), quindi un link costruito apposta eseguiva codice nel browser di chi
+       generava il report — XSS riflesso, verificato nel sandbox e chiuso) — `www/stampa.php`
+       698-888, report di stampa: nome, luogo e nazione del soggetto, luoghi di
        RS, RL e rilocazione — priorita' media;
     7. **corretto il 01-10-2026** (passo 4: testi con `escHtml()`, `sicurezza.js` incluso nelle due
        pagine, insieme alla parte C di queste pagine) — `www/compare_rs.php` 234 e
