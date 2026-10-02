@@ -853,11 +853,13 @@ emerso durante il test del blocco dei tentativi del login soggetti (Fase B2).
 
 ---
 
-## BUG APERTO — Lista soggetti: dati inseriti come HTML senza protezione (XSS) (scoperto 30-09-2026)
+## BUG RISOLTO — Lista soggetti: dati inseriti come HTML senza protezione (XSS) (scoperto 30-09-2026, corretto 01-10-2026)
 
-Stato: **aperto, da correggere prima del trasferimento sulla VPS pubblica** (registrato su
-decisione del committente il 30-09-2026). Difetto preesistente, notato durante la Fase B3 del
-login soggetti e segnalato solo a fine lavoro.
+Stato: **risolto il 01-10-2026** in tutti i punti del censimento (passi 1-4, commit `c628391`,
+`33ef130`, `ea81145`, `4829c2b`, `8791b90`, `ebfffba`, `e6397f6`, `488e00c` e la chiusura del
+gruppo C). Registrato su decisione del committente il 30-09-2026: difetto preesistente, notato
+durante la Fase B3 del login soggetti e segnalato solo a fine lavoro. La sezione resta come
+storico del censimento e delle correzioni.
 
 - Sintomo potenziale: in `www/index.php`, `caricaSoggettiConDropdown()` costruisce le righe della
   lista soggetti concatenando i dati in una stringa HTML assegnata con `innerHTML`, senza
@@ -944,7 +946,13 @@ login soggetti e segnalato solo a fine lavoro.
     menu dei risultati e nell'`onclick` (escape del solo apice) in `www/js/app.js` 275-281 e
     518-524, `www/rs.php` 1483-1484, `www/rilocazione.php` 1468-1469, `www/transiti.php` 500-501,
     `www/js/rl.js` 540-541 — priorita' alta.
-  - **C. Dati della tabella `localita` (importazione GeoNames), rischio basso:** nome, citta' e
+  - **C. Dati della tabella `localita` — corretto il 01-10-2026** (passo 4: testi dei risultati, filtro
+    per nazione, chiave del confronto, link e motivi di esclusione con `escHtml()`; `sicurezza.js`
+    incluso in `ricerca.php` e `ricerca_rl.php`; collaudo sulle pagine vere con un risultato
+    malevolo). In `rilocazione.php` il pulsante "☿ Usa" dei risultati delle angolari e' diventato
+    un link che apre la rilocazione in una nuova scheda (richiesta del committente), con calcolo
+    identico a prima (stessa `calcolaRilocazione()`, coordinate a 4 decimali, stesso nome di
+    ripiego). Era, rischio basso: nome, citta' e
     nazione nei risultati di `www/ricerca.php` (1725-1810), `www/ricerca_rl.php` (1787-1872),
     `www/rilocazione.php` (1589-1595, anche in un `onclick`), `www/compare_rs.php` 207,
     `www/compare_ril.php` 178-195 — priorita' bassa, da correggere con la stessa funzione

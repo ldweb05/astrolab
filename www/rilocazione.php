@@ -686,6 +686,8 @@ if ($soggetto) {
 
         /* Bottone "Usa per rilocazione" */
         .btn-usa-riloc {
+            display: inline-block;
+            text-decoration: none;
             background: #3a2c6b;
             color: white;
             border: none;
@@ -1587,17 +1589,21 @@ function _rigaTabella(r, idx) {
 
     return `<tr ${rowCls}>
         <td style="color:#999;font-size:11px;text-align:center">${idx + 1}</td>
-        <td><strong>${r.iata || '—'}</strong>
-            <br><span style="font-size:10px;color:#999">${r.icao || ''}</span></td>
-        <td style="max-width:180px;font-size:12px">${r.nome || ''}</td>
-        <td>${r.citta || ''}</td>
-        <td>${r.nazione || ''}</td>
+        <td><strong>${escHtml(r.iata || '—')}</strong>
+            <br><span style="font-size:10px;color:#999">${escHtml(r.icao || '')}</span></td>
+        <td style="max-width:180px;font-size:12px">${escHtml(r.nome || '')}</td>
+        <td>${escHtml(r.citta || '')}</td>
+        <td>${escHtml(r.nazione || '')}</td>
         <td style="line-height:1.8">${bV}${bG}</td>
         <td>
-            <button class="btn-usa-riloc"
-                    onclick="_usaLuogoAngolari(${r.lat}, ${r.lon}, '${(r.citta || '').replace(/'/g,"\\'")}')">
+            <a class="btn-usa-riloc" target="_blank" rel="noopener"
+               href="${escHtml('rilocazione.php?id=' + encodeURIComponent(DS.id) +
+                    '&lat_riloc=' + encodeURIComponent(Number(r.lat).toFixed(4)) +
+                    '&lon_riloc=' + encodeURIComponent(Number(r.lon).toFixed(4)) +
+                    '&luogo_riloc=' + encodeURIComponent(r.citta ||
+                        (Number(r.lat).toFixed(4) + '°, ' + Number(r.lon).toFixed(4) + '°')))}">
                 ☿ Usa
-            </button>
+            </a>
         </td>
         <td style="text-align:center">
             <input
@@ -1608,6 +1614,9 @@ function _rigaTabella(r, idx) {
         </td>
     </tr>`;
 }
+
+// Pulsante "Usa" dei risultati: link che apre la rilocazione in una nuova scheda
+// (richiesta del committente, 01-10-2026), con l'indirizzo protetto (bug XSS, gruppo C).
 
 const CASE_ANGOLARI_FILTRO = {1: 'I (ASC)', 4: 'IV (FC)', 7: 'VII (DSC)', 10: 'X (MC)'};
 

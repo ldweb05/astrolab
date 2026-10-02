@@ -1514,7 +1514,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
         const escluso  = r.esclusa_filtro;
         const rigaCls  = escluso ? (cls + ' riga-esclusa').trim() : cls;
         const badgeEsclusa = escluso
-            ? `<span class="badge-esclusa" title="${(r.motivi_esclusione||[]).join(' · ').replace(/"/g,'&quot;')}">⚠️ esclusa</span>`
+            ? `<span class="badge-esclusa" title="${escHtml((r.motivi_esclusione||[]).join(' · '))}">⚠️ esclusa</span>`
             : '';
 
         const hasVeti  = r.veti && r.veti.length > 0;
@@ -1523,7 +1523,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             ? `<span class="badge-veto-count" onclick="toggleVetiPanel('${panelId}')">⛔ ${r.veti.length} veto${r.veti.length>1?'i':''}</span>`
             : '';
         const vetiRighe = hasVeti
-            ? r.veti.map(v => `<div class="veto-panel-riga"><span class="veto-ico">⛔</span><span>${v.replace(/</g,'&lt;')}</span></div>`).join('')
+            ? r.veti.map(v => `<div class="veto-panel-riga"><span class="veto-ico">⛔</span><span>${escHtml(v)}</span></div>`).join('')
             : '';
         const pannelloVeti = hasVeti
             ? `<div class="veto-panel" id="${panelId}">` +
@@ -1544,7 +1544,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
             <td><div class="td-val-wrap"><div><span class="val-badge">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${vicinanzaHtml}${pannelloVeti}</div></td>
             <td style="color:#888">${r.lat.toFixed(3)}</td>
             <td style="color:#888">${r.lon.toFixed(3)}</td>
-            <td><a href="${rsUrl}" class="btn-usa" target="_blank">↺ Usa</a></td>
+            <td><a href="${escHtml(rsUrl)}" class="btn-usa" target="_blank">↺ Usa</a></td>
         </tr>`;
     }).join('');
 
@@ -1598,19 +1598,19 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
         const escluso  = r.esclusa_filtro;
         const rigaCls  = escluso ? 'riga-esclusa' : (esatta ? 'top-match' : '');
         const badgeEsclusa = escluso
-            ? `<span class="badge-esclusa" title="${(r.motivi_esclusione||[]).join(' · ').replace(/"/g,'&quot;')}">⚠️ esclusa</span>`
+            ? `<span class="badge-esclusa" title="${escHtml((r.motivi_esclusione||[]).join(' · '))}">⚠️ esclusa</span>`
             : '';
         const segSim = SEGNI_SIM[r.segno_num] || '';
 
         return `<tr class="${rigaCls}">
             <td style="color:#999;font-size:11px">${offset+idx+1}</td>
             <td>
-                <span class="${badgeCls}">${segSim} ${r.cuspide_str}</span>${badgeEsclusa}
+                <span class="${badgeCls}">${segSim} ${escHtml(r.cuspide_str)}</span>${badgeEsclusa}
                 ${distStr ? '<div class="dist-badge">'+distStr+'</div>' : ''}
             </td>
             <td style="color:#888">${r.lat.toFixed(3)}</td>
             <td style="color:#888">${r.lon.toFixed(3)}</td>
-            <td><a href="${rsUrl}" class="btn-usa" target="_blank">↺ RS</a></td>
+            <td><a href="${escHtml(rsUrl)}" class="btn-usa" target="_blank">↺ RS</a></td>
         </tr>`;
     }).join('');
 
@@ -1655,7 +1655,7 @@ const pagRis    = ris.slice(offset, offset + stato.perPagina);
 console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
 const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))].sort();
 const nazioniOpt = nazioniSet.map(n =>
-`<option value="${n}" ${stato.filtroNaz===n?'selected':''}>${n}</option>`).join('');
+`<option value="${escHtml(n)}" ${stato.filtroNaz===n?'selected':''}>${escHtml(n)}</option>`).join('');
 const stelleOpt = [0,1,2,3,4,5].map(n =>
 `<option value="${n}" ${stato.filtroStelle===n?'selected':''}>${n===0?'Tutte':'≥ '+'★'.repeat(n)}</option>`).join('');
 const ppOpt = [50,100,300].map(n =>
@@ -1677,9 +1677,9 @@ const popolazione = isLocalita && Number(r.popolazione) > 0
 : '';
 const codicePunto = isLocalita
 ? ((r.iata || r.icao)
-    ? `<strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||'aeroporto associato'}</span>`
-    : `<strong>Località</strong><br><span style="color:#999;font-size:10px">${tipoPunto}</span>`)
-: `<strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||tipoPunto}</span>`;
+    ? `<strong>${escHtml(r.iata||'—')}</strong><br><span style="color:#999;font-size:10px">${escHtml(r.icao||'aeroporto associato')}</span>`
+    : `<strong>Località</strong><br><span style="color:#999;font-size:10px">${escHtml(tipoPunto)}</span>`)
+: `<strong>${escHtml(r.iata||'—')}</strong><br><span style="color:#999;font-size:10px">${escHtml(r.icao||tipoPunto)}</span>`;
 const confrontoKey = [
 r.lat,
 r.lon,
@@ -1697,7 +1697,7 @@ const valCls  = hasVeti ? 'val-badge veto' : 'val-badge';
 const escluso  = r.esclusa_filtro;
 const rigaCls  = escluso ? (cls + ' riga-esclusa').trim() : cls;
 const badgeEsclusa = escluso
-? `<span class="badge-esclusa" title="${(r.motivi_esclusione||[]).join(' · ').replace(/"/g,'&quot;')}">⚠️ esclusa</span>`
+? `<span class="badge-esclusa" title="${escHtml((r.motivi_esclusione||[]).join(' · '))}">⚠️ esclusa</span>`
 : '';
 // Badge veti cliccabile: mostra/nasconde il pannello inline con
 // la spiegazione esatta del rifiuto secondo le 34 regole di Discepolo.
@@ -1707,7 +1707,7 @@ const badgeVeti = hasVeti
 + `⛔ ${r.veti.length} veto${r.veti.length > 1 ? 'i' : ''}</span>`
 : '';
 const vetiRighe = hasVeti
-? r.veti.map(v => `<div class="veto-panel-riga"><span class="veto-ico">⛔</span><span>${v.replace(/</g,'&lt;')}</span></div>`).join('')
+? r.veti.map(v => `<div class="veto-panel-riga"><span class="veto-ico">⛔</span><span>${escHtml(v)}</span></div>`).join('')
 : '';
 const pannelloVeti = hasVeti
 ? `<div class="veto-panel" id="${panelId}">` +
@@ -1719,19 +1719,19 @@ vetiRighe +
 return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
 <td>${r.v2_html||'—'}</td>
-<td><div class="td-val-wrap"><div><span class="${valCls}">${r.val||'—'}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
+<td><div class="td-val-wrap"><div><span class="${valCls}">${escHtml(r.val||'—')}</span>${badgeEsclusa}${badgeVeti}</div>${pannelloVeti}</div></td>
 <td>${codicePunto}</td>
-<td style="max-width:200px"><strong>${nomePunto}</strong>${popolazione}</td>
-<td>${r.citta||''}</td>
-<td>${r.nazione||''}</td>
+<td style="max-width:200px"><strong>${escHtml(nomePunto)}</strong>${popolazione}</td>
+<td>${escHtml(r.citta||'')}</td>
+<td>${escHtml(r.nazione||'')}</td>
 <td style="color:#888">${parseFloat(r.lat||0).toFixed(2)}</td>
 <td style="color:#888">${parseFloat(r.lon||0).toFixed(2)}</td>
-<td><a href="${rsUrl}" class="btn-usa" target="_blank">↺ Usa</a></td>
+<td><a href="${escHtml(rsUrl)}" class="btn-usa" target="_blank">↺ Usa</a></td>
 <td style="text-align:center">
 <input
 type="checkbox"
 class="confronto-checkbox"
-data-confronto-key="${confrontoKey}"
+data-confronto-key="${escHtml(confrontoKey)}"
 ${stato.confronto.includes(confrontoKey) ? 'checked' : ''}>
 </td>
 </tr>`;
@@ -1778,7 +1778,7 @@ const pagRis    = ris.slice(offset, offset + stato.perPagina);
 console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
 const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))].sort();
 const nazioniOpt = nazioniSet.map(n =>
-`<option value="${n}" ${stato.filtroNaz===n?'selected':''}>${n}</option>`).join('');
+`<option value="${escHtml(n)}" ${stato.filtroNaz===n?'selected':''}>${escHtml(n)}</option>`).join('');
 const ppOpt = [50,100,300].map(n =>
 `<option value="${n}" ${stato.perPagina===n?'selected':''}>${n}</option>`).join('');
 const sogg = getSoggetto();
@@ -1795,22 +1795,22 @@ const distStr  = formatDistanza(r);
 const escluso  = r.esclusa_filtro;
 const rigaCls  = escluso ? 'riga-esclusa' : (esatta ? 'top-match' : '');
 const badgeEsclusa = escluso
-? `<span class="badge-esclusa" title="${(r.motivi_esclusione||[]).join(' · ').replace(/"/g,'&quot;')}">⚠️ esclusa</span>`
+? `<span class="badge-esclusa" title="${escHtml((r.motivi_esclusione||[]).join(' · '))}">⚠️ esclusa</span>`
 : '';
 const segSim   = SEGNI_SIM[r.segno_num] || '';
 return `<tr class="${rigaCls}">
 <td style="color:#999;font-size:11px">${offset+idx+1}</td>
 <td>
-<span class="${badgeCls}">${segSim} ${r.cuspide_str}</span>${badgeEsclusa}
+<span class="${badgeCls}">${segSim} ${escHtml(r.cuspide_str)}</span>${badgeEsclusa}
 ${distStr ? '<div class="dist-badge">'+distStr+'</div>' : ''}
 </td>
-<td><strong>${r.iata||'—'}</strong><br><span style="color:#999;font-size:10px">${r.icao||''}</span></td>
-<td style="max-width:200px">${r.nome||''}</td>
-<td>${r.citta||''}</td>
-<td>${r.nazione||''}</td>
+<td><strong>${escHtml(r.iata||'—')}</strong><br><span style="color:#999;font-size:10px">${escHtml(r.icao||'')}</span></td>
+<td style="max-width:200px">${escHtml(r.nome||'')}</td>
+<td>${escHtml(r.citta||'')}</td>
+<td>${escHtml(r.nazione||'')}</td>
 <td style="color:#888;font-size:11px">${parseFloat(r.lat||0).toFixed(3)}</td>
 <td style="color:#888;font-size:11px">${parseFloat(r.lon||0).toFixed(3)}</td>
-<td><a href="${rsUrl}" class="btn-usa" target="_blank">↺ RS</a></td>
+<td><a href="${escHtml(rsUrl)}" class="btn-usa" target="_blank">↺ RS</a></td>
 </tr>`;
 }).join('');
 document.getElementById('risultati-area').innerHTML = `
@@ -1986,6 +1986,7 @@ document.querySelectorAll('.veto-panel.aperto').forEach(p => p.classList.remove(
 if (!eraAperto) target.classList.add('aperto');
 }
 </script>
+<script src="js/sicurezza.js"></script>
 <script src="js/ricerca_astri.js"></script>
 <script src="js/ricerca_filtri_geo.js"></script>
 <script src="js/ricerca_paginazione.js"></script>
