@@ -2,7 +2,8 @@
 
 **Creata:** 29-09-2026
 **Branch:** `main`
-**Stato:** **completata il 30-09-2026** (Fasi 0-5, decisioni D1-D19). Idee future al §9.
+**Stato:** **completata il 30-09-2026** (Fasi 0-5, decisioni D1-D19). Estensione del 02-10-2026 in
+corso (Fasi 6-7, decisioni D20-D23). Idee future al §9.
 **Prerequisito:** `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md` (blocchi A e B: CODICE
 automatico e login dei soggetti). Le Fasi 1-5 di questa roadmap partono dopo quei blocchi.
 
@@ -109,7 +110,7 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
   astrologo (`soggetti.utente_id`). Nessun altro utente o soggetto.
 - **D16 — Collegamento alla sessione RS:** solo l'astrologo può collegare un viaggio a una
   propria sessione RS salvata; il soggetto non vede mai sessioni, temi o dati di nascita
-  (vincolo di `ROADMAP_CODICE_LOGIN_SOGGETTI.md`).
+  (vincolo di `ROADMAP_CODICE_LOGIN_SOGGETTI.md`). *Modificata il 02-10-2026 dalla D22.*
 - **D17 — Motore di ricerca (29-09-2026):** i contributi condivisi si consultano con una
   ricerca libera per nazione o località (es. "Norvegia", "Australia", "Tokyo", "Svalbard"),
   tollerante a maiuscole, accenti e piccoli errori (estensione `pg_trgm`, già presente). Una
@@ -131,6 +132,30 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
   navigazione, senza alcuna presa di posizione. Territori contesi senza un'appartenenza
   univoca non vengono collegati ad alcuna nazione.
 
+### Decisioni dell'estensione del 02-10-2026
+
+- **D20 — Elenco dei viaggi compatto:** con molti viaggi (il committente ne ha circa 30) le
+  sezioni "I miei viaggi" e "Viaggi dei miei soggetti" mostrano una casella di ricerca (anno,
+  luogo, nazione; es. "2011", "RSM2011", "Tromsø") e un elenco compatto, una riga per viaggio
+  dalla piu' recente; un clic apre il riquadro completo del viaggio, con gli stessi campi e
+  pulsanti di prima.
+- **D21 — La RSM e' nel viaggio, non nella sessione:** il committente salva piu' sessioni RS per
+  studiarle, sceglie la migliore, la trasmette al soggetto e poi cancella le sessioni. Il
+  grafico non dipende quindi dalle sessioni (cancellandole si perderebbe): il viaggio contiene
+  da se' i dati della sua RSM, cioe' le coordinate del luogo del viaggio (che e' il luogo della
+  RSM), scelte con la ricerca luoghi, e l'anno della RSM (precompilato dalla data di arrivo).
+  Il grafico e' calcolato su richiesta: cielo natale del soggetto e RS di quell'anno nel luogo
+  del viaggio, affiancati, con "Stampa / Salva come PDF" tramite la stampa del browser.
+  Nessun file caricato, nessun PDF salvato sul server. Il collegamento a una sessione RS resta
+  facoltativo.
+- **D22 — Il soggetto vede le ruote dei suoi viaggi (modifica la D16):** il soggetto vede il
+  cielo natale e la RS dei propri viaggi; continua a non vedere note, condizione, stelline,
+  elenco o contenuto delle sessioni RS. Il grafico e' visibile solo al soggetto del viaggio e
+  al suo astrologo (stessi permessi dei viaggi, D15); niente di pubblico.
+- **D23 — Soggetto della RSM per i viaggi dell'astrologo:** i viaggi scritti dall'astrologo con
+  il proprio account hanno il campo "Soggetto della RSM", scelto tra i propri soggetti (per il
+  committente LD001, che e' lui stesso), da cui si prende il cielo natale.
+
 ## 6. Fasi
 
 | Fase | Contenuto | Stato |
@@ -141,6 +166,8 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
 | 3 | Pagine: `www/diario.php` + `www/js/diario_rsm.js` (astrologo e soggetto), in quattro passi: 3a ricerca e schede in sola lettura; 3b contributi (form, tratte, moderazione); 3c viaggi privati, viaggi dei propri soggetti e collegamento alle sessioni RS; 3d voce di menu e area del soggetto | Completata (30-09-2026): 3a, 3b, 3c e 3d |
 | 4 | Motore di ricerca (D17) e schede località condivise: interfaccia realizzata nella Fase 3a (`diario.php`, scheda "Cerca località") | Completata con la 3a (30-09-2026) |
 | 5 | Documentazione: manuale `www/help_diario.php` (Help, voce 10), HANDOVER, START_HERE, ROADMAP generale | Completata (30-09-2026) |
+| 6 | Elenco dei viaggi compatto con ricerca (D20): `www/js/diario_rsm.js`, `www/diario.php` | Da fare |
+| 7 | RSM nel viaggio e grafico (D21-D23): migrazione `sql/015`, API, form con ricerca luoghi, finestra con le due ruote e stampa, manuale | Da fare |
 
 ## 7. Vincoli di sicurezza (da `docs/CHECKLIST_SICUREZZA_SVILUPPO.md` e specifici)
 
