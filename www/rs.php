@@ -1029,12 +1029,13 @@ function aggiornaLinkViaggio(luogoRS, luogoHome) {
     const dest   = formatCittaUrl(luogoRS);
     const origin = formatCittaUrl(luogoHome);
     if (!dest) { container.innerHTML = ''; return; }
+    // Parti del percorso codificate e indirizzo protetto (bug XSS, passo 4, punto A8).
     const urlRome2Rio = origin
-        ? `https://www.rome2rio.com/it/map/${origin}/${dest}`
-        : `https://www.rome2rio.com/it/map/${dest}`;
+        ? `https://www.rome2rio.com/it/map/${encodeURIComponent(origin)}/${encodeURIComponent(dest)}`
+        : `https://www.rome2rio.com/it/map/${encodeURIComponent(dest)}`;
     container.innerHTML = `
         <span class="rs-travel-label">Come arrivare:</span>
-        <a href="${urlRome2Rio}" target="_blank" rel="noopener"
+        <a href="${escHtml(urlRome2Rio)}" target="_blank" rel="noopener noreferrer"
            class="rs-travel-link">🗺️ Rome2Rio</a>`;
 }
  

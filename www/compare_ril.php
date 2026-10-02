@@ -116,6 +116,7 @@ $soggettoNome = $auth->getSoggettoNome();
 </div>
 </main>
 
+<script src="js/sicurezza.js"></script>
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/svg_zoom.js"></script>
 <script>
@@ -175,9 +176,9 @@ if (!raw) {
             return matches.map(match => `
                 <tr>
                     <td>${pianeta}</td>
-                    <td>${match.nome || match.casa || '—'}</td>
-                    <td>${match.cuspide || '—'}</td>
-                    <td>${match.distanza ?? '—'}°</td>
+                    <td>${escHtml(match.nome || match.casa || '—')}</td>
+                    <td>${escHtml(match.cuspide || '—')}</td>
+                    <td>${escHtml(match.distanza ?? '—')}°</td>
                 </tr>
             `).join('');
         };
@@ -190,10 +191,10 @@ if (!raw) {
 
             return `
                 <section class="compare-ril-card">
-                    <h3>${localita}</h3>
-                    <p><strong>Aeroporto:</strong> ${aeroporto} (${codice})</p>
-                    <p><strong>Nazione:</strong> ${nazione}</p>
-                    <p><strong>Coordinate:</strong> ${r.lat}, ${r.lon}</p>
+                    <h3>${escHtml(localita)}</h3>
+                    <p><strong>Aeroporto:</strong> ${escHtml(aeroporto)} (${escHtml(codice)})</p>
+                    <p><strong>Nazione:</strong> ${escHtml(nazione)}</p>
+                    <p><strong>Coordinate:</strong> ${escHtml(r.lat)}, ${escHtml(r.lon)}</p>
 
                     <div class="compare-chart-placeholder tema-box">
                         <p id="wheel-status-${i}" class="compare-wheel-status">
@@ -203,7 +204,7 @@ if (!raw) {
                             id="wheel-riloc-${i}"
                             class="compare-wheel-svg"
                             role="img"
-                            aria-label="Ruota astrologica rilocata per ${localita}">
+                            aria-label="Ruota astrologica rilocata per ${escHtml(localita)}">
                         </svg>
                         <p id="wheel-angles-${i}" class="compare-wheel-angles">
                             ASC: — · MC: —
@@ -231,7 +232,7 @@ if (!raw) {
         out.innerHTML = `
             <div class="card">
                 <h3>Comparatore RL</h3>
-                <p><strong>Soggetto:</strong> ${nomeSoggetto}</p>
+                <p><strong>Soggetto:</strong> ${escHtml(nomeSoggetto)}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
                 <p><button type="button" class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button></p>
                 <div class="compare-ril-grid ${risultati.length === 3 ? 'compare-ril-grid-3' : ''}">

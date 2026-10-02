@@ -143,6 +143,7 @@ $soggettoNome = $auth->getSoggettoNome();
 </div>
 </main>
 
+<script src="js/sicurezza.js"></script>
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/svg_zoom.js"></script>
 <script>
@@ -203,8 +204,8 @@ if (!raw) {
 
             return `
                 <section class="compare-rsm-card">
-                    <h3>RSM ${localita}</h3>
-                    <p>${nazione} · ${r.lat}, ${r.lon}</p>
+                    <h3>RSM ${escHtml(localita)}</h3>
+                    <p>${escHtml(nazione)} · ${escHtml(r.lat)}, ${escHtml(r.lon)}</p>
 
                     <div class="compare-chart-placeholder tema-box">
                         <p id="wheel-status-${i}" class="compare-wheel-status">
@@ -214,7 +215,7 @@ if (!raw) {
                             id="wheel-rs-${i}"
                             class="compare-wheel-svg"
                             role="img"
-                            aria-label="Ruota della rivoluzione solare per ${localita}">
+                            aria-label="Ruota della rivoluzione solare per ${escHtml(localita)}">
                         </svg>
                         <p id="wheel-angles-${i}" class="compare-wheel-angles">
                             ASC: — · MC: —
@@ -231,9 +232,9 @@ if (!raw) {
         out.innerHTML = `
             <div class="card">
                 <h3>Comparator RS</h3>
-                <p><strong>Soggetto:</strong> ${nomeSoggetto}</p>
-                <p><strong>Anno:</strong> ${payload.anno}</p>
-                <p><strong>Condizione:</strong> ${condizione}</p>
+                <p><strong>Soggetto:</strong> ${escHtml(nomeSoggetto)}</p>
+                <p><strong>Anno:</strong> ${escHtml(payload.anno)}</p>
+                <p><strong>Condizione:</strong> ${escHtml(condizione)}</p>
                 <p><strong>Località confrontate:</strong> ${risultati.length}</p>
                 <p><button type="button" class="btn-toggle-gradi" id="btn-toggle-gradi" onclick="toggleGradiPianeti()">Mostra Gradi</button></p>
 

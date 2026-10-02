@@ -924,9 +924,12 @@ login soggetti e segnalato solo a fine lavoro.
        priorita' media;
     6. `www/stampa.php` 698-888, report di stampa: nome, luogo e nazione del soggetto, luoghi di
        RS, RL e rilocazione — priorita' media;
-    7. `www/compare_rs.php` 234 e `www/compare_ril.php` 234, confronti: nome del soggetto —
+    7. **corretto il 01-10-2026** (passo 4: testi con `escHtml()`, `sicurezza.js` incluso nelle due
+       pagine, insieme alla parte C di queste pagine) — `www/compare_rs.php` 234 e
+       `www/compare_ril.php` 234, confronti: nome del soggetto —
        priorita' media;
-    8. `www/rs.php` 1025-1037, link Rome2Rio: il luogo finisce nell'attributo `href` senza
+    8. **corretto il 01-10-2026** (passo 4: parti del percorso con `encodeURIComponent()`, indirizzo con
+       `escHtml()`, `rel="noopener noreferrer"`) — `www/rs.php` 1025-1037, link Rome2Rio: il luogo finisce nell'attributo `href` senza
        codifica (`formatCittaUrl()` non toglie le virgolette) — priorita' media.
   - **B. Dati esterni (ricerca luoghi Nominatim/OpenStreetMap) — corretto il 01-10-2026** (passo 3,
     gruppo 3: voci dei menu con attributi `data-scelta` e testi con `escHtml()`, scelta gestita
@@ -939,7 +942,8 @@ login soggetti e segnalato solo a fine lavoro.
   - **C. Dati della tabella `localita` (importazione GeoNames), rischio basso:** nome, citta' e
     nazione nei risultati di `www/ricerca.php` (1725-1810), `www/ricerca_rl.php` (1787-1872),
     `www/rilocazione.php` (1589-1595, anche in un `onclick`), `www/compare_rs.php` 207,
-    `www/compare_ril.php` 178-195 — priorita' bassa, da correggere con la stessa funzione.
+    `www/compare_ril.php` 178-195 — priorita' bassa, da correggere con la stessa funzione
+    (confronti `compare_rs.php` e `compare_ril.php` corretti il 01-10-2026 insieme ad A7).
   - **D. Verificati sicuri:** testi inseriti con `textContent` o `value` (`rs.php` 1764,
     `rl.php` 333, risultati in corso di `ricerca.php`/`ricerca_rl.php`, `app.js` 44 e 128,
     `mostraMessaggio()`); nomi stampati da PHP con `htmlspecialchars()` in HTML normale
