@@ -9,7 +9,7 @@ require_once __DIR__ . '/../includes/bootstrap.php';
  *
  * Lettura (GET, ?action=...):
  *   token, nazioni, cerca, nazione, scheda, miei_viaggi, miei_contributi, contributo,
- *   sessioni_rs (solo astrologo)
+ *   sessioni_rs (solo astrologo), grafico_viaggio
  * Scrittura (POST, Content-Type: application/json, header X-CSRF-Token):
  *   viaggio_salva, viaggio_elimina, viaggio_collega_sessione,
  *   contributo_salva, contributo_elimina, contributo_visibilita (solo admin)
@@ -179,7 +179,7 @@ if ($metodo === 'POST') {
 }
 
 $azioniLettura = ['token', 'nazioni', 'cerca', 'nazione', 'scheda', 'miei_viaggi', 'miei_contributi', 'contributo',
-                  'sessioni_rs'];
+                  'sessioni_rs', 'grafico_viaggio'];
 if ($metodo === 'GET' && !in_array($azione, $azioniLettura, true)) {
     diario_errore('Azione non valida.');
 }
@@ -321,7 +321,9 @@ try {
     case 'miei_viaggi':
         $campi = "v.id, v.luogo, v.iso_nazione, n.nome_it AS nazione, v.latitudine, v.longitudine,
                   v.data_arrivo, v.data_partenza, v.albergo, v.costo_alloggio, v.costo_trasporti,
-                  v.valuta, v.trasporti, v.note_private, v.creato_il, v.aggiornato_il";
+                  v.valuta, v.trasporti, v.note_private, v.creato_il, v.aggiornato_il, v.anno_rsm,
+                  (v.latitudine IS NOT NULL AND v.longitudine IS NOT NULL AND v.anno_rsm IS NOT NULL
+                   AND COALESCE(v.soggetto_id, v.soggetto_rsm_id) IS NOT NULL) AS ha_grafico";
         if ($attore['tipo'] === 'soggetto') {
             // Il soggetto non vede mai le sessioni RS (D16).
             $stmt = $pdo->prepare(
@@ -336,10 +338,12 @@ try {
             $stmt = $pdo->prepare(
                 "SELECT $campi, v.sessione_rs_id, sr.anno AS sessione_anno, sr.luogo_rs AS sessione_luogo,
                         s.id AS soggetto_id, s.codice AS soggetto_codice, s.nome AS soggetto_nome,
+                        v.soggetto_rsm_id, srs.codice AS soggetto_rsm_codice,
                         COALESCE(v.utente_id = ?, FALSE) AS modificabile
                    FROM viaggi_rsm v
                    JOIN nazioni n ON n.iso = v.iso_nazione
                    LEFT JOIN soggetti s ON s.id = v.soggetto_id
+                   LEFT JOIN soggetti srs ON srs.id = v.soggetto_rsm_id
                    LEFT JOIN sessioni_rs sr ON sr.id = v.sessione_rs_id
                   WHERE v.utente_id = ?
                      OR v.soggetto_id IN (SELECT id FROM soggetti WHERE utente_id = ?)
@@ -348,6 +352,76 @@ try {
             $stmt->execute([$attore['utente_id'], $attore['utente_id'], $attore['utente_id']]);
         }
         diario_json(['viaggi' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+
+    case 'grafico_viaggio':
+        // Cielo natale e RS del viaggio, calcolati al volo dai dati del viaggio (D21-D23).
+        // Stessi permessi dei viaggi: il soggetto i propri, l'astrologo i propri e quelli
+        // dei propri soggetti. Nessun dato salvato, nessun file.
+        $idViaggio = (int)($_GET['id'] ?? 0);
+        if ($attore['tipo'] === 'soggetto') {
+            $stmt = $pdo->prepare("SELECT * FROM viaggi_rsm WHERE id = ? AND soggetto_id = ?");
+            $stmt->execute([$idViaggio, $attore['soggetto_id']]);
+        } else {
+            $stmt = $pdo->prepare(
+                "SELECT * FROM viaggi_rsm
+                  WHERE id = ? AND (utente_id = ? OR soggetto_id IN (SELECT id FROM soggetti WHERE utente_id = ?))"
+            );
+            $stmt->execute([$idViaggio, $attore['utente_id'], $attore['utente_id']]);
+        }
+        $viaggio = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$viaggio) {
+            diario_errore('Viaggio non trovato.', 404);
+        }
+        $idSoggetto = $viaggio['soggetto_id'] !== null ? (int)$viaggio['soggetto_id']
+                    : ($viaggio['soggetto_rsm_id'] !== null ? (int)$viaggio['soggetto_rsm_id'] : 0);
+        if ($viaggio['latitudine'] === null || $viaggio['longitudine'] === null
+            || $viaggio['anno_rsm'] === null || $idSoggetto === 0) {
+            diario_errore('Per vedere la RSM scegli il luogo dalla ricerca e indica l\'anno della RSM'
+                . ($viaggio['utente_id'] !== null ? ' e il soggetto della RSM' : '') . '.');
+        }
+        // Per i viaggi dell'astrologo il soggetto della RSM deve essere suo.
+        $condProprietario = $viaggio['utente_id'] !== null ? 'AND utente_id = ' . (int)$viaggio['utente_id'] : '';
+        $stmt = $pdo->prepare(
+            "SELECT data_nascita, ora_nascita, offset_gmt, latitudine, longitudine
+               FROM soggetti WHERE id = ? $condProprietario"
+        );
+        $stmt->execute([$idSoggetto]);
+        $soggetto = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$soggetto) {
+            diario_errore('Soggetto della RSM non disponibile.', 404);
+        }
+        require_once __DIR__ . '/../includes/SweCalc.php';
+        require_once __DIR__ . '/../includes/NascitaGmtHelper.php';
+        // Stesso calcolo di rs.php / rs_api.php.
+        $gmt = calcolaDataOraGmtCorretta(
+            $soggetto['data_nascita'], $soggetto['ora_nascita'], (float)($soggetto['offset_gmt'] ?? 0)
+        );
+        $dataGmt = new DateTime($gmt['data_gmt']);
+        $parti   = explode(':', $gmt['ora_gmt']);
+        $g = (int)$dataGmt->format('d');
+        $m = (int)$dataGmt->format('m');
+        $a = (int)$dataGmt->format('Y');
+        $oraGmt = (int)$parti[0] + ((int)($parti[1] ?? 0)) / 60;
+        $swe = new SweCalc();
+        try {
+            $natale = $swe->calcolaTema($g, $m, $a, $oraGmt,
+                (float)$soggetto['latitudine'], (float)$soggetto['longitudine']);
+            $rs = $swe->calcolaRS($g, $m, $a, $oraGmt, (int)$viaggio['anno_rsm']);
+            $temaRS = $swe->calcolaTema($rs['giorno'], $rs['mese'], $rs['anno'], $rs['ora_gmt'],
+                (float)$viaggio['latitudine'], (float)$viaggio['longitudine']);
+        } catch (RuntimeException $e) {
+            diario_errore('Per questa localita\' non e\' possibile calcolare le case Placido: la latitudine e\' troppo elevata.');
+        }
+        $stmt = $pdo->prepare("SELECT nome_it FROM nazioni WHERE iso = ?");
+        $stmt->execute([$viaggio['iso_nazione']]);
+        diario_json([
+            'natale'  => $natale,
+            'rs'      => $temaRS,
+            'rs_gmt'  => $rs['stringa'],
+            'anno'    => (int)$viaggio['anno_rsm'],
+            'luogo'   => $viaggio['luogo'],
+            'nazione' => (string)$stmt->fetchColumn(),
+        ]);
 
     case 'miei_contributi':
         [$condAutore, $parAutore] = diario_autore($attore);
@@ -434,9 +508,34 @@ try {
             'valuta'          => diario_valuta($dati['valuta'] ?? null),
             'trasporti'       => diario_testo($dati['trasporti'] ?? null, 4000, 'Trasporti', true),
             'note_private'    => diario_testo($dati['note_private'] ?? null, 4000, 'Note', true),
+            'anno_rsm'        => null,
+            'soggetto_rsm_id' => null,
         ];
         if ($valori['data_arrivo'] && $valori['data_partenza'] && $valori['data_partenza'] < $valori['data_arrivo']) {
             diario_errore('La data di partenza non puo\' precedere quella di arrivo.');
+        }
+        // Coordinate del luogo (dalla ricerca luoghi): entrambe o nessuna.
+        if (($valori['latitudine'] === null) !== ($valori['longitudine'] === null)) {
+            diario_errore('Coordinate del luogo incomplete: scegli il luogo dalla ricerca.');
+        }
+        // Anno e soggetto della RSM (D21, D23).
+        $annoRsm = $dati['anno_rsm'] ?? null;
+        if ($annoRsm !== null && $annoRsm !== '') {
+            $annoRsm = (int)$annoRsm;
+            if ($annoRsm < 1900 || $annoRsm > (int)date('Y') + 1) {
+                diario_errore('Anno della RSM non valido.');
+            }
+            $valori['anno_rsm'] = $annoRsm;
+        }
+        $idSoggettoRsm = $dati['soggetto_rsm_id'] ?? null;
+        if ($attore['tipo'] === 'astrologo' && $idSoggettoRsm !== null && $idSoggettoRsm !== '') {
+            // Il soggetto della RSM deve essere un soggetto dell'astrologo che scrive.
+            $stmt = $pdo->prepare("SELECT 1 FROM soggetti WHERE id = ? AND utente_id = ?");
+            $stmt->execute([(int)$idSoggettoRsm, $attore['utente_id']]);
+            if (!$stmt->fetchColumn()) {
+                diario_errore('Soggetto della RSM non valido.', 403);
+            }
+            $valori['soggetto_rsm_id'] = (int)$idSoggettoRsm;
         }
         [$condAutore, $parAutore] = diario_autore($attore);
 
