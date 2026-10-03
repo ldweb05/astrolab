@@ -129,6 +129,19 @@ header('X-Robots-Tag: noindex, nofollow');
         .diario-campo-luogo .dropdown-risultati { min-width: 100%; }
         .diario-coordinate { font-size: 12px; color: #7A6F5A; margin-top: 3px; }
         .diario-coordinate.ok { color: #2E7D32; }
+        .diario-nota-grafico { font-size: 12px; color: #7A6F5A; margin-top: 6px; }
+        .rsm-finestra { position: fixed; inset: 0; background: rgba(30, 24, 12, 0.55); z-index: 1000;
+            display: none; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 24px 12px; }
+        .rsm-finestra.aperta { display: flex; }
+        .rsm-finestra-box { background: #FBF8F1; border-radius: 10px; max-width: 1080px; width: 100%;
+            padding: 18px 20px 22px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+        .rsm-finestra-testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .rsm-finestra-testa h3 { margin: 0 0 4px; color: #2C3E6B; font-size: 19px; }
+        .rsm-finestra-sotto { color: #7A6F5A; font-size: 13px; }
+        .rsm-chiudi { background: none; border: none; font-size: 26px; line-height: 1; cursor: pointer; color: #7A6F5A; }
+        .rsm-ruote { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; margin-top: 14px; }
+        .rsm-ruota { flex: 1 1 420px; max-width: 500px; text-align: center; }
+        .rsm-ruota h4 { margin: 0 0 6px; color: #2C3E6B; font-size: 15px; }
     </style>
 </head>
 <body data-ruolo="<?= htmlspecialchars($ruoloDiario, ENT_QUOTES, 'UTF-8') ?>" data-admin="<?= $isAdmin ? '1' : '0' ?>">
@@ -317,6 +330,27 @@ header('X-Robots-Tag: noindex, nofollow');
     </section>
 </main>
 
+<!-- Grafico della RSM del viaggio (D21-D22): cielo natale e RS affiancati, calcolati su richiesta -->
+<div id="rsm-finestra" class="rsm-finestra" role="dialog" aria-modal="true" aria-labelledby="rsm-titolo">
+    <div class="rsm-finestra-box">
+        <div class="rsm-finestra-testa">
+            <div>
+                <h3 id="rsm-titolo">RSM</h3>
+                <div id="rsm-sotto" class="rsm-finestra-sotto"></div>
+            </div>
+            <button type="button" class="rsm-chiudi" id="rsm-chiudi" aria-label="Chiudi">&times;</button>
+        </div>
+        <div id="rsm-msg" class="diario-msg"></div>
+        <div class="rsm-ruote" id="rsm-ruote">
+            <div class="rsm-ruota"><h4>&#9737; Cielo natale</h4>
+                <svg id="wheel-natale-viaggio" width="480" height="480" class="zodiac-wheel-responsive"></svg></div>
+            <div class="rsm-ruota"><h4 id="rsm-titolo-rs">&#9737; RS</h4>
+                <svg id="wheel-rs-viaggio" width="480" height="480" class="zodiac-wheel-responsive"></svg></div>
+        </div>
+    </div>
+</div>
+
+<script src="js/zodiac_wheel.js"></script>
 <script src="js/diario_rsm.js"></script>
 </body>
 </html>

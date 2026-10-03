@@ -639,6 +639,12 @@
                 'Sessione RS ' + v.sessione_anno + (v.sessione_luogo ? ' \u00b7 ' + v.sessione_luogo : '')));
         }
         var az = nuovo('div', 'diario-carta-azioni');
+        if (v.ha_grafico) {
+            var bGraf = nuovo('button', 'diario-btn piccolo', '\ud83d\udcc8 Vedi la RSM');
+            bGraf.type = 'button';
+            bGraf.addEventListener('click', function () { apriGraficoRsm(v); });
+            az.appendChild(bGraf);
+        }
         if (v.modificabile) {
             var bMod = nuovo('button', 'diario-btn secondario piccolo', 'Modifica');
             bMod.type = 'button';
@@ -656,7 +662,41 @@
             az.appendChild(bCol);
         }
         carta.appendChild(az);
+        if (!v.ha_grafico && v.modificabile) {
+            carta.appendChild(nuovo('div', 'diario-nota-grafico',
+                'Per vedere il grafico della RSM: Modifica, scegli il luogo dall\'elenco e indica l\'anno della RSM' +
+                (stato.ruolo === 'astrologo' ? ' e il soggetto della RSM.' : '.')));
+        }
         return carta;
+    }
+
+    // ── Grafico della RSM del viaggio (D21-D22) ───────────────────
+    // Cielo natale e RS affiancati, calcolati dall'API su richiesta, disegnati con la
+    // stessa ruota di rs.php.
+
+    function chiudiGraficoRsm() {
+        el('rsm-finestra').classList.remove('aperta');
+        document.body.style.overflow = '';
+    }
+
+    function apriGraficoRsm(v) {
+        var finestra = el('rsm-finestra');
+        el('rsm-titolo').textContent = 'RSM ' + (v.anno_rsm || '') + ' \u2014 ' + v.luogo + ', ' + v.nazione;
+        el('rsm-sotto').textContent = '';
+        el('rsm-ruote').style.display = 'none';
+        messaggio('rsm-msg', 'Calcolo in corso...');
+        finestra.classList.add('aperta');
+        document.body.style.overflow = 'hidden';
+        apiGet('grafico_viaggio', { id: v.id }).then(function (d) {
+            if (d.errore) { messaggio('rsm-msg', d.errore, true); return; }
+            messaggio('rsm-msg', '');
+            el('rsm-titolo').textContent = 'RSM ' + d.anno + ' \u2014 ' + d.luogo + ', ' + d.nazione;
+            el('rsm-sotto').textContent = 'Rivoluzione solare: ' + d.rs_gmt;
+            el('rsm-titolo-rs').textContent = '\u2609 RS ' + d.anno + ' \u2014 ' + d.luogo;
+            el('rsm-ruote').style.display = '';
+            ZodiacWheel.disegna('wheel-natale-viaggio', d.natale, { size: 480 });
+            ZodiacWheel.disegna('wheel-rs-viaggio', d.rs, { size: 480 });
+        }).catch(function () { messaggio('rsm-msg', 'Errore di calcolo. Riprova.', true); });
     }
 
     // ── Elenco compatto dei viaggi con ricerca (D20) ────────────────
@@ -875,6 +915,13 @@
         el('cf-tratta-aggiungi').addEventListener('click', function () { aggiungiTratta({}); });
         el('contrib-form').addEventListener('submit', salvaContributo);
         el('viaggi-nuovo').addEventListener('click', function () { apriFormViaggio({}); });
+        el('rsm-chiudi').addEventListener('click', chiudiGraficoRsm);
+        el('rsm-finestra').addEventListener('click', function (ev) {
+            if (ev.target === el('rsm-finestra')) { chiudiGraficoRsm(); }
+        });
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Escape' && el('rsm-finestra').classList.contains('aperta')) { chiudiGraficoRsm(); }
+        });
         el('vf-luogo').addEventListener('input', function () {
             // Il luogo e' cambiato: le coordinate precedenti non valgono piu'.
             el('vf-lat').value = '';

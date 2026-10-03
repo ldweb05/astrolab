@@ -167,7 +167,7 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
 | 4 | Motore di ricerca (D17) e schede località condivise: interfaccia realizzata nella Fase 3a (`diario.php`, scheda "Cerca località") | Completata con la 3a (30-09-2026) |
 | 5 | Documentazione: manuale `www/help_diario.php` (Help, voce 10), HANDOVER, START_HERE, ROADMAP generale | Completata (30-09-2026) |
 | 6 | Elenco dei viaggi compatto con ricerca (D20): `www/js/diario_rsm.js`, `www/diario.php` | Completata (02-10-2026) |
-| 7 | RSM nel viaggio e grafico (D21-D23): migrazione `sql/015`, API, form con ricerca luoghi, finestra con le due ruote e stampa, manuale | In corso: 7a (migrazione `sql/015_rsm_nel_viaggio.sql`, applicata) , 7b (API: nuovi campi, `grafico_viaggio`) e 7c (form con ricerca luoghi, anno e soggetto della RSM) completate (02-10-2026) |
+| 7 | RSM nel viaggio e grafico (D21-D23): migrazione `sql/015`, API, form con ricerca luoghi, finestra con le due ruote e stampa, manuale | In corso: 7a (migrazione `sql/015_rsm_nel_viaggio.sql`, applicata) , 7b (API: nuovi campi, `grafico_viaggio`), 7c (form con ricerca luoghi, anno e soggetto della RSM) e 7d (finestra con cielo natale e RS affiancati, senza stampa su decisione del committente) completate (02-10-2026) |
 
 ## 7. Vincoli di sicurezza (da `docs/CHECKLIST_SICUREZZA_SVILUPPO.md` e specifici)
 
