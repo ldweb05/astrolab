@@ -567,7 +567,11 @@
     }
 
     function selezionaLuogoViaggio(r) {
-        var nome = r.name || String(r.display_name || '').split(',')[0];
+        // Il nome viene dalla prima parte di display_name, che Nominatim restituisce nella
+        // lingua richiesta (accept-language=it,en: italiano, altrimenti inglese, per i luoghi
+        // che in OpenStreetMap non hanno il nome italiano): r.name e' invece il nome locale
+        // (es. 仙台市 invece di Sendai).
+        var nome = String(r.display_name || '').split(',')[0].trim() || r.name || '';
         el('vf-luogo').value = nome.trim();
         el('vf-lat').value = Number(r.lat).toFixed(4);
         el('vf-lon').value = Number(r.lon).toFixed(4);
@@ -582,7 +586,7 @@
         var div = el('vf-luogo-risultati');
         if (q.length < 3) { chiudiRisultatiLuogo(); return; }
         fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) +
-              '&format=json&limit=8&addressdetails=1&accept-language=it')
+              '&format=json&limit=8&addressdetails=1&accept-language=it,en')
             .then(function (r) { return r.json(); })
             .then(function (risultati) {
                 if (el('vf-luogo').value.trim() !== q) { return; } // risposta superata

@@ -4391,6 +4391,8 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 
 **Note e punti aperti:** i viaggi registrati prima della Fase 7 mostrano il grafico solo dopo averli aperti con "Modifica" e aver scelto il luogo dall'elenco (indicato nel riquadro e nel manuale). Il 03-10-2026, su decisione del committente, il backup `pre014` e' stato eliminato: resta `~/backup-temp/astrolab_pre015_2026-10-02.dump` come unico punto di ripristino. Il committente ha anche confermato che le note dei viaggi di un soggetto restano visibili al suo astrologo, come previsto dalla D15 (nessuna modifica).
 
+**Correzione del 03-10-2026 (segnalata dal committente):** scegliendo un luogo dall'elenco, il nome del viaggio veniva preso dal nome locale di OpenStreetMap (es. 仙台市 per Sendai). Ora `www/js/diario_rsm.js` usa la prima parte della descrizione e la chiede in italiano oppure, per i luoghi che in OpenStreetMap non hanno il nome italiano, in inglese (`accept-language=it,en`): verificato sul Pi, Sendai diventa "Sendai, Miyagi Prefecture, Giappone". Il viaggio 2024 di lodian e' stato corretto scegliendo di nuovo il luogo.
+
 **Passo successivo:** nessuno per questa estensione.
 
 ---
