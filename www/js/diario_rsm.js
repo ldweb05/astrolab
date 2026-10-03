@@ -537,8 +537,83 @@
         'vf-luogo': 'luogo', 'vf-arrivo': 'data_arrivo', 'vf-partenza': 'data_partenza',
         'vf-albergo': 'albergo', 'vf-costo-alloggio': 'costo_alloggio',
         'vf-costo-trasporti': 'costo_trasporti', 'vf-valuta': 'valuta',
-        'vf-trasporti': 'trasporti', 'vf-note': 'note_private'
+        'vf-trasporti': 'trasporti', 'vf-note': 'note_private',
+        // Dati della RSM nel viaggio (D21, D23): coordinate dalla ricerca luoghi, anno e,
+        // solo per l'astrologo, soggetto della RSM.
+        'vf-lat': 'latitudine', 'vf-lon': 'longitudine', 'vf-anno-rsm': 'anno_rsm',
+        'vf-soggetto-rsm': 'soggetto_rsm_id'
     };
+
+    // ── Ricerca luoghi nel form del viaggio (OpenStreetMap) ────────────
+    var timerLuogo = null;
+    var soggettiRsmCaricati = false;
+
+    function aggiornaCoordinate() {
+        var box = el('vf-coordinate');
+        if (!box) { return; }
+        var lat = el('vf-lat').value, lon = el('vf-lon').value;
+        if (lat && lon) {
+            box.textContent = '\ud83d\udccd ' + lat + ', ' + lon + ' \u2014 luogo scelto dall\'elenco';
+            box.className = 'diario-coordinate ok';
+        } else {
+            box.textContent = 'Per il grafico della RSM scegli il luogo dall\'elenco che compare mentre scrivi.';
+            box.className = 'diario-coordinate';
+        }
+    }
+
+    function chiudiRisultatiLuogo() {
+        var div = el('vf-luogo-risultati');
+        if (div) { div.classList.remove('visible'); svuota(div); }
+    }
+
+    function selezionaLuogoViaggio(r) {
+        var nome = r.name || String(r.display_name || '').split(',')[0];
+        el('vf-luogo').value = nome.trim();
+        el('vf-lat').value = Number(r.lat).toFixed(4);
+        el('vf-lon').value = Number(r.lon).toFixed(4);
+        var iso = String((r.address && r.address.country_code) || '').toUpperCase();
+        if (iso && nomeDaIso(iso)) { el('vf-nazione').value = nomeDaIso(iso); }
+        chiudiRisultatiLuogo();
+        aggiornaCoordinate();
+    }
+
+    function cercaLuogoViaggio() {
+        var q = el('vf-luogo').value.trim();
+        var div = el('vf-luogo-risultati');
+        if (q.length < 3) { chiudiRisultatiLuogo(); return; }
+        fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) +
+              '&format=json&limit=8&addressdetails=1&accept-language=it')
+            .then(function (r) { return r.json(); })
+            .then(function (risultati) {
+                if (el('vf-luogo').value.trim() !== q) { return; } // risposta superata
+                svuota(div);
+                (risultati || []).forEach(function (r) {
+                    var voce = nuovo('div', 'dropdown-item', r.display_name);
+                    voce.addEventListener('click', function () { selezionaLuogoViaggio(r); });
+                    div.appendChild(voce);
+                });
+                if (!div.firstChild) { div.appendChild(nuovo('div', 'dropdown-item', 'Nessun risultato')); }
+                div.classList.add('visible');
+            })
+            .catch(function () { chiudiRisultatiLuogo(); });
+    }
+
+    function caricaSoggettiRsm() {
+        var sel = el('vf-soggetto-rsm');
+        if (!sel || soggettiRsmCaricati) { return Promise.resolve(); }
+        return fetch('api/soggetti_api.php?action=lista', { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (lista) {
+                (Array.isArray(lista) ? lista : []).forEach(function (s) {
+                    if (s.accesso_gestibile === false) { return; } // solo i propri soggetti
+                    var o = document.createElement('option');
+                    o.value = String(s.id);
+                    o.textContent = (s.codice ? s.codice + ' \u2014 ' : '') + s.nome;
+                    sel.appendChild(o);
+                });
+                soggettiRsmCaricati = true;
+            });
+    }
 
     function dataIt(iso) {
         if (!iso) { return ''; }
@@ -713,15 +788,21 @@
 
     function apriFormViaggio(v) {
         v = v || {};
-        caricaNazioni().then(function () {
+        Promise.all([caricaNazioni(), caricaSoggettiRsm()]).then(function () {
             el('viaggi-vista-elenco').style.display = 'none';
             el('viaggio-form').style.display = '';
             el('viaggio-form-titolo').textContent = v.id ? 'Modifica viaggio' : 'Nuovo viaggio';
             el('vf-id').value = v.id || '';
             Object.keys(CAMPI_VIAGGIO).forEach(function (id) {
+                if (!el(id)) { return; }
                 var x = v[CAMPI_VIAGGIO[id]];
                 el(id).value = (x === null || x === undefined) ? '' : x;
             });
+            ['vf-lat', 'vf-lon'].forEach(function (id) {
+                if (el(id).value !== '') { el(id).value = Number(el(id).value).toFixed(4); }
+            });
+            chiudiRisultatiLuogo();
+            aggiornaCoordinate();
             if (!el('vf-valuta').value) { el('vf-valuta').value = 'EUR'; }
             el('vf-nazione').value = v.iso_nazione ? nomeDaIso(v.iso_nazione) : '';
             messaggio('vf-msg', '');
@@ -754,6 +835,7 @@
         var dati = { iso_nazione: iso };
         if (el('vf-id').value) { dati.id = parseInt(el('vf-id').value, 10); }
         Object.keys(CAMPI_VIAGGIO).forEach(function (id) {
+            if (!el(id)) { return; }
             var x = el(id).value;
             dati[CAMPI_VIAGGIO[id]] = x === '' ? null : x;
         });
@@ -793,6 +875,22 @@
         el('cf-tratta-aggiungi').addEventListener('click', function () { aggiungiTratta({}); });
         el('contrib-form').addEventListener('submit', salvaContributo);
         el('viaggi-nuovo').addEventListener('click', function () { apriFormViaggio({}); });
+        el('vf-luogo').addEventListener('input', function () {
+            // Il luogo e' cambiato: le coordinate precedenti non valgono piu'.
+            el('vf-lat').value = '';
+            el('vf-lon').value = '';
+            aggiornaCoordinate();
+            clearTimeout(timerLuogo);
+            timerLuogo = setTimeout(cercaLuogoViaggio, 450);
+        });
+        el('vf-arrivo').addEventListener('change', function () {
+            if (!el('vf-anno-rsm').value && el('vf-arrivo').value) {
+                el('vf-anno-rsm').value = el('vf-arrivo').value.slice(0, 4);
+            }
+        });
+        document.addEventListener('click', function (ev) {
+            if (!ev.target.closest || !ev.target.closest('.diario-campo-luogo')) { chiudiRisultatiLuogo(); }
+        });
         el('viaggi-filtro').addEventListener('input', function () {
             messaggio('viaggi-msg', '');
             disegnaElencoViaggi('miei', 'viaggi-elenco', 'viaggi-msg', 'viaggi-filtro', 'Non hai ancora registrato viaggi.');

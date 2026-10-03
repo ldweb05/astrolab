@@ -125,6 +125,10 @@ header('X-Robots-Tag: noindex, nofollow');
         .diario-riga-viaggio .chi { color: #B85C38; font-size: 12px; font-weight: 600; }
         .diario-riga-viaggio .freccia { color: #7A6F5A; }
         .diario-dettaglio-viaggio { margin: -2px 0 10px 14px; }
+        .diario-campo-luogo { position: relative; }
+        .diario-campo-luogo .dropdown-risultati { min-width: 100%; }
+        .diario-coordinate { font-size: 12px; color: #7A6F5A; margin-top: 3px; }
+        .diario-coordinate.ok { color: #2E7D32; }
     </style>
 </head>
 <body data-ruolo="<?= htmlspecialchars($ruoloDiario, ENT_QUOTES, 'UTF-8') ?>" data-admin="<?= $isAdmin ? '1' : '0' ?>">
@@ -195,14 +199,23 @@ header('X-Robots-Tag: noindex, nofollow');
             <h2 class="diario-scheda-titolo" id="viaggio-form-titolo">Nuovo viaggio</h2>
             <input type="hidden" id="vf-id">
             <div class="diario-griglia">
-                <div class="diario-campo"><label for="vf-luogo">Luogo *</label>
-                    <input type="text" id="vf-luogo" maxlength="200" required placeholder="es. Longyearbyen"></div>
+                <div class="diario-campo diario-campo-luogo"><label for="vf-luogo">Luogo *</label>
+                    <input type="text" id="vf-luogo" maxlength="200" required autocomplete="off" placeholder="Scrivi e scegli dall'elenco (es. Longyearbyen)">
+                    <div id="vf-luogo-risultati" class="dropdown-risultati"></div>
+                    <input type="hidden" id="vf-lat"><input type="hidden" id="vf-lon">
+                    <div id="vf-coordinate" class="diario-coordinate"></div></div>
                 <div class="diario-campo"><label for="vf-nazione">Nazione *</label>
                     <input type="text" id="vf-nazione" list="elenco-nazioni" required autocomplete="off" placeholder="Scrivi e scegli dall'elenco"></div>
                 <div class="diario-campo"><label for="vf-arrivo">Arrivo</label>
                     <input type="date" id="vf-arrivo"></div>
                 <div class="diario-campo"><label for="vf-partenza">Partenza</label>
                     <input type="date" id="vf-partenza"></div>
+                <div class="diario-campo"><label for="vf-anno-rsm">Anno della RSM</label>
+                    <input type="number" id="vf-anno-rsm" min="1900" max="2100" placeholder="es. 2022"></div>
+<?php if ($ruoloDiario === 'astrologo'): ?>
+                <div class="diario-campo"><label for="vf-soggetto-rsm">Soggetto della RSM</label>
+                    <select id="vf-soggetto-rsm"><option value="">&mdash;</option></select></div>
+<?php endif; ?>
                 <div class="diario-campo"><label for="vf-albergo">Albergo</label>
                     <input type="text" id="vf-albergo" maxlength="200"></div>
                 <div class="diario-campo"><label for="vf-costo-alloggio">Costo alloggio</label>
