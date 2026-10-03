@@ -4367,3 +4367,30 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Pulizia del 02-10-2026 (decisione del committente):** eliminati i backup DB `~/backup-temp/astrolab_pre010_2026-09-29.dump`, `astrolab_pre012_2026-09-29.dump` e `astrolab_pre013_2026-09-29.dump`; resta `~/backup-temp/astrolab_pre014_2026-10-01.dump` come unico punto di ripristino, da sostituire con un backup nuovo subito prima del trasferimento sulla VPS. Eliminata anche la bozza della landing page `www/index.html` (24-09-2026, mai committata): l'indirizzo principale del sito serve ora `index.php`; la landing sara' rifatta da capo dopo il trasferimento sulla VPS e la messa in sicurezza (`docs/roadmaps/ROADMAP_SEO.md`, Fase 3). Questa fase di lavoro e' chiusa.
 
 ---
+## 03-10-2026 — Diario RSM: elenco dei viaggi compatto e grafico della RSM nel viaggio
+
+**Data:** 02-03/10/2026
+
+**Componente modificato:** `www/diario.php`, `www/js/diario_rsm.js`, `www/api/diario_rsm_api.php`, `www/help_diario.php`; nuova migrazione `sql/015_rsm_nel_viaggio.sql` (applicata al DB del Pi). Documentazione: `docs/roadmaps/ROADMAP_DIARIO_RSM.md` (decisioni D20-D23, Fasi 6-7), `docs/START_HERE.md` e questo handover.
+
+**Obiettivo:** due richieste del committente: (1) con circa 30 viaggi l'elenco era troppo lungo; (2) vedere dal viaggio il grafico della RSM (cielo natale e RS del luogo del viaggio), visibile solo all'astrologo e al soggetto.
+
+**Decisioni (dettagli in `docs/roadmaps/ROADMAP_DIARIO_RSM.md`):** D20 elenco compatto con ricerca; D21 i dati della RSM stanno nel viaggio e non nella sessione RS (il committente salva piu' sessioni per studiarle e poi le cancella, quindi il grafico non deve dipenderne); D22 il soggetto vede le ruote dei propri viaggi (modifica la D16), non note, valutazioni o sessioni; D23 "Soggetto della RSM" per i viaggi scritti dall'astrologo (per il committente LD001). Su decisione del committente non c'e' il pulsante di stampa (previsto inizialmente nella D21) ne' l'avviso al salvataggio di un viaggio senza coordinate.
+
+**Lavoro svolto, per fasi (un commit ciascuna):**
+- Fase 6 (`28e9c12`): elenco compatto, una riga per viaggio, con casella di ricerca per anno, luogo, nazione e codice del soggetto ("RSM2011" cerca 2011; "tromso" trova Tromsø); il clic apre il riquadro completo, invariato.
+- 7a (`5627f8d`): migrazione 015, colonne `viaggi_rsm.anno_rsm` e `viaggi_rsm.soggetto_rsm_id` (solo per i viaggi dell'astrologo; le coordinate esistevano gia').
+- 7b (`42b5a30`): API, salvataggio dei nuovi campi (il soggetto della RSM deve essere dell'astrologo; coordinate entrambe o nessuna), `ha_grafico` nell'elenco, nuova azione `grafico_viaggio` che calcola cielo natale e RS con `SweCalc` e `calcolaDataOraGmtCorretta()` come `rs.php`, con gli stessi permessi dei viaggi.
+- 7c (`56bbc1e`): form del viaggio con ricerca luoghi OpenStreetMap (nome, nazione e coordinate automatici), anno della RSM precompilato dalla data di arrivo, menu "Soggetto della RSM" con i soli soggetti dell'astrologo.
+- 7d (`fe41538`): pulsante "Vedi la RSM" e finestra con le due ruote disegnate da `zodiac_wheel.js`; indicazione per i viaggi senza dati.
+- 7e (questo commit): manuale (`help_diario.php`, sezioni sull'elenco compatto e sul grafico) e documentazione.
+
+**Punti di ripristino:** backup DB `~/backup-temp/astrolab_pre015_2026-10-02.dump`, fatto prima della migrazione 015.
+
+**Test eseguiti:** nel sandbox (schema 001-015, server PHP, Swiss Ephemeris compilata per il collaudo): Fase 6, 17 casi con 30 viaggi di prova; 7a, 4 vincoli; 7b, 18 casi (permessi, validazioni, RS e cielo natale identici a quelli di `rs.php`); 7c, 10 casi; 7d, 13 casi. Sul Pi: verifica dell'API con un viaggio temporaneo (RS 2022 a Longyearbyen di LD001: ora GMT 05/09/2022 16:33:01, ASC Ariete 19°03'36", MC Sagittario 10°16'49", identici a `rs.php`); test nel browser del committente per ogni fase. I due viaggi di lodian sono stati completati con luogo dall'elenco, anno e soggetto della RSM.
+
+**Note e punti aperti:** i viaggi registrati prima della Fase 7 mostrano il grafico solo dopo averli aperti con "Modifica" e aver scelto il luogo dall'elenco (indicato nel riquadro e nel manuale). In `~/backup-temp/` ci sono `pre014` e `pre015`: il `pre014` e' superato e puo' essere eliminato quando il committente lo decide.
+
+**Passo successivo:** nessuno per questa estensione.
+
+---

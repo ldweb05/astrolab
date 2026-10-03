@@ -164,6 +164,14 @@ dalla voce "Diario RSM" del menu, dalla dashboard e dall'area del soggetto; manu
 `www/js/diario_rsm.js`, migrazione `sql/013`; riferimento operativo
 `docs/roadmaps/ROADMAP_DIARIO_RSM.md`.
 
+Estensione del 03-10-2026 (decisioni D20-D23): l'elenco dei viaggi e' compatto, con ricerca per
+anno, luogo, nazione e soggetto; ogni viaggio contiene i dati della sua RSM (coordinate scelte
+con la ricerca luoghi, anno della RSM e, per i viaggi dell'astrologo, il soggetto della RSM,
+migrazione `sql/015`), cosi' il pulsante "Vedi la RSM" mostra cielo natale e RS affiancati,
+calcolati su richiesta come in `rs.php` (azione `grafico_viaggio` dell'API), senza dipendere
+dalle sessioni RS. Il soggetto vede le ruote dei propri viaggi, non note, valutazioni o
+sessioni (D22, che modifica la D16).
+
 La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org
 è mantenuta separatamente nel documento `docs/roadmaps/roadmap_comparazione_myastral.md`,
 che costituisce il riferimento ufficiale per le attività di allineamento con

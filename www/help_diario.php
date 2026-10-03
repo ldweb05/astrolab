@@ -86,9 +86,29 @@ header('X-Robots-Tag: noindex, nofollow');
     <div class="help-section">
         <h2>I tuoi viaggi privati</h2>
         <p>Da <strong>I miei viaggi &rarr; + Nuovo viaggio</strong> registri luogo, nazione, date di arrivo e partenza, albergo, costi, trasporti usati e note personali. Qui le date sono quelle esatte, perch&eacute; i viaggi <strong>non sono condivisi</strong>: li vedi solo tu<?= $eSoggetto ? ' e il tuo astrologo' : '' ?>.</p>
+        <p>I viaggi compaiono in un <strong>elenco compatto</strong>, una riga per viaggio (anno, luogo, nazione) dal pi&ugrave; recente: un clic sulla riga apre il riquadro completo, un secondo clic lo richiude. Con la casella di ricerca trovi un viaggio per anno, luogo o nazione: per esempio <em>2011</em>, <em>RSM2011</em> o <em>tromso</em> (anche senza accenti); puoi combinare pi&ugrave; parole.</p>
 <?php if (!$eSoggetto): ?>
         <p>Nella sezione <strong>Viaggi dei miei soggetti</strong> trovi i viaggi registrati dai tuoi soggetti con il loro accesso: puoi consultarli ma non modificarli.</p>
-        <p>Con <strong>Collega a una sessione RS</strong> associ un viaggio (tuo o di un tuo soggetto) a una sessione RS salvata: vengono proposte solo le tue sessioni RS di quel soggetto. Il soggetto non vede mai le sessioni RS.</p>
+        <p>Con <strong>Collega a una sessione RS</strong> associ un viaggio (tuo o di un tuo soggetto) a una sessione RS salvata: vengono proposte solo le tue sessioni RS di quel soggetto. Il soggetto non vede mai le sessioni RS. Il collegamento &egrave; facoltativo: il grafico della RSM non dipende dalle sessioni, che puoi cancellare quando vuoi.</p>
+<?php endif; ?>
+    </div>
+
+    <div class="help-section">
+        <h2>Il grafico della RSM del viaggio</h2>
+        <p>Ogni viaggio pu&ograve; mostrare il grafico della sua RSM: il <strong>cielo natale</strong> e la <strong>RS dell'anno nel luogo del viaggio</strong>, affiancati, calcolati nello stesso modo di Riv. Solare. Il grafico si calcola al momento dai dati del viaggio: niente viene salvato e nessun file viene creato.</p>
+        <p>Perch&eacute; il grafico sia disponibile, nel form del viaggio servono:</p>
+        <ul>
+            <li><strong>Luogo scelto dall'elenco</strong>: mentre scrivi il luogo compare l'elenco dei luoghi; scegliendo una voce si compilano da soli nome, nazione e coordinate, e sotto il campo appare la riga verde &laquo;&#128205; &hellip; luogo scelto dall'elenco&raquo;. Se il nome viene solo scritto a mano, le coordinate non ci sono.</li>
+            <li><strong>Anno della RSM</strong>: si precompila dall'anno della data di arrivo; puoi correggerlo.</li>
+<?php if (!$eSoggetto): ?>
+            <li><strong>Soggetto della RSM</strong> (solo per i viaggi scritti da te): il soggetto da cui prendere il cielo natale, scelto tra i tuoi soggetti; per i tuoi viaggi personali scegli la tua scheda soggetto.</li>
+<?php endif; ?>
+        </ul>
+        <p>Con questi dati, nel riquadro del viaggio compare il pulsante <strong>&#128200; Vedi la RSM</strong>: si apre una finestra con le due ruote; si chiude con la &times;, con un clic fuori o con il tasto Esc. Se un dato manca, al posto del pulsante trovi l'indicazione su cosa completare. I viaggi registrati prima di questa funzione vanno aperti una volta con <strong>Modifica</strong> per scegliere il luogo dall'elenco.</p>
+<?php if ($eSoggetto): ?>
+        <div class="help-note">&#128161; Vedi il grafico dei tuoi viaggi; note, valutazioni e sessioni del tuo astrologo restano riservate a lui.</div>
+<?php else: ?>
+        <div class="help-note">&#128161; Il grafico &egrave; visibile solo al soggetto del viaggio e a te; il soggetto vede le due ruote dei suoi viaggi, ma non le tue note, le valutazioni o le sessioni RS.</div>
 <?php endif; ?>
     </div>
 

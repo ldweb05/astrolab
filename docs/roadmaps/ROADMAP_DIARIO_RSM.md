@@ -2,8 +2,8 @@
 
 **Creata:** 29-09-2026
 **Branch:** `main`
-**Stato:** **completata il 30-09-2026** (Fasi 0-5, decisioni D1-D19). Estensione del 02-10-2026 in
-corso (Fasi 6-7, decisioni D20-D23). Idee future al §9.
+**Stato:** **completata il 30-09-2026** (Fasi 0-5, decisioni D1-D19); estensione **completata il
+03-10-2026** (Fasi 6-7, decisioni D20-D23). Idee future al §9.
 **Prerequisito:** `docs/roadmaps/ROADMAP_CODICE_LOGIN_SOGGETTI.md` (blocchi A e B: CODICE
 automatico e login dei soggetti). Le Fasi 1-5 di questa roadmap partono dopo quei blocchi.
 
@@ -145,8 +145,9 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
   da se' i dati della sua RSM, cioe' le coordinate del luogo del viaggio (che e' il luogo della
   RSM), scelte con la ricerca luoghi, e l'anno della RSM (precompilato dalla data di arrivo).
   Il grafico e' calcolato su richiesta: cielo natale del soggetto e RS di quell'anno nel luogo
-  del viaggio, affiancati, con "Stampa / Salva come PDF" tramite la stampa del browser.
-  Nessun file caricato, nessun PDF salvato sul server. Il collegamento a una sessione RS resta
+  del viaggio, affiancati. Nessun file caricato, nessun PDF salvato sul server. *Durante la
+  realizzazione il committente ha deciso di non prevedere il pulsante di stampa: il grafico si
+  consulta solo a video.* Il collegamento a una sessione RS resta
   facoltativo.
 - **D22 — Il soggetto vede le ruote dei suoi viaggi (modifica la D16):** il soggetto vede il
   cielo natale e la RS dei propri viaggi; continua a non vedere note, condizione, stelline,
@@ -167,7 +168,7 @@ il 29-09-2026 (vedi `sql/013_diario_rsm.sql`).
 | 4 | Motore di ricerca (D17) e schede località condivise: interfaccia realizzata nella Fase 3a (`diario.php`, scheda "Cerca località") | Completata con la 3a (30-09-2026) |
 | 5 | Documentazione: manuale `www/help_diario.php` (Help, voce 10), HANDOVER, START_HERE, ROADMAP generale | Completata (30-09-2026) |
 | 6 | Elenco dei viaggi compatto con ricerca (D20): `www/js/diario_rsm.js`, `www/diario.php` | Completata (02-10-2026) |
-| 7 | RSM nel viaggio e grafico (D21-D23): migrazione `sql/015`, API, form con ricerca luoghi, finestra con le due ruote e stampa, manuale | In corso: 7a (migrazione `sql/015_rsm_nel_viaggio.sql`, applicata) , 7b (API: nuovi campi, `grafico_viaggio`), 7c (form con ricerca luoghi, anno e soggetto della RSM) e 7d (finestra con cielo natale e RS affiancati, senza stampa su decisione del committente) completate (02-10-2026) |
+| 7 | RSM nel viaggio e grafico (D21-D23): migrazione `sql/015`, API, form con ricerca luoghi, finestra con le due ruote e stampa, manuale | In corso: 7a (migrazione `sql/015_rsm_nel_viaggio.sql`, applicata) , 7b (API: nuovi campi, `grafico_viaggio`), 7c (form con ricerca luoghi, anno e soggetto della RSM) e 7d (finestra con cielo natale e RS affiancati, senza stampa su decisione del committente) completate (02-10-2026); 7e (manuale e documentazione) completata: **Completata (03-10-2026)** |
 
 ## 7. Vincoli di sicurezza (da `docs/CHECKLIST_SICUREZZA_SVILUPPO.md` e specifici)
 
