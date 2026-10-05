@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertitore Universale</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
+        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        header p { font-size: 1.1em; opacity: 0.9; }
+        .tabs { display: flex; flex-wrap: wrap; background: #f8f9fa; border-bottom: 2px solid #dee2e6; }
+        .tab { flex: 1; min-width: 150px; padding: 15px 20px; text-align: center; cursor: pointer; transition: all 0.3s; border: none; background: transparent; font-size: 1em; font-weight: 600; color: #495057; }
+        .tab:hover { background: #e9ecef; }
+        .tab.active { background: white; color: #667eea; border-bottom: 3px solid #667eea; }
+        .content { padding: 40px; }
+        .converter-section { display: none; }
+        .converter-section.active { display: block; }
+        .converter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .converter-card { background: #f8f9fa; padding: 25px; border-radius: 10px; border: 2px solid #dee2e6; transition: transform 0.2s, box-shadow 0.2s; }
+        .converter-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .converter-card h3 { color: #667eea; margin-bottom: 20px; font-size: 1.3em; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; color: #495057; font-weight: 600; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 2px solid #dee2e6; border-radius: 5px; font-size: 1em; transition: border-color 0.3s; }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: #667eea; }
+        .result { background: white; padding: 15px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #667eea; font-size: 1.1em; font-weight: 600; color: #333; }
+        .swap-btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1em; margin: 10px 0; transition: background 0.3s; }
+        .swap-btn:hover { background: #764ba2; }
+        @media (max-width: 768px) { header h1 { font-size: 1.8em; } .content { padding: 20px; } .converter-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header><h1>🔄 Convertitore Universale</h1><p>Tutte le conversioni in un unico posto</p></header>
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('length')">📏 Lunghezza</button>
+            <button class="tab" onclick="showTab('weight')">⚖️ Peso</button>
+            <button class="tab" onclick="showTab('temperature')">🌡️ Temperatura</button>
+            <button class="tab" onclick="showTab('volume')">💧 Volume</button>
+            <button class="tab" onclick="showTab('area')">📐 Area</button>
+            <button class="tab" onclick="showTab('speed')">🚀 Velocità</button>
+            <button class="tab" onclick="showTab('time')">⏱️ Tempo</button>
+            <button class="tab" onclick="showTab('energy')">⚡ Energia</button>
+            <button class="tab" onclick="showTab('pressure')">🔧 Pressione</button>
+            <button class="tab" onclick="showTab('data')">💾 Dati</button>
+        </div>
+        <div class="content">
+            <div id="length" class="converter-section active"><div class="converter-grid"><div class="converter-card"><h3>Metrico ↔ Imperiale</h3><div class="input-group"><label>Valore:</label><input type="number" id="length-value" placeholder="Inserisci valore" oninput="convertLength()"></div><div class="input-group"><label>Da:</label><select id="length-from" onchange="convertLength()"><option value="mm">Millimetri (mm)</option><option value="cm" selected>Centimetri (cm)</option><option value="m">Metri (m)</option><option value="km">Chilometri (km)</option><option value="in">Pollici (in)</option><option value="ft">Piedi (ft)</option><option value="yd">Iarde (yd)</option><option value="mi">Miglia (mi)</option></select></div><div class="input-group"><label>A:</label><select id="length-to" onchange="convertLength()"><option value="mm">Millimetri (mm)</option><option value="cm">Centimetri (cm)</option><option value="m">Metri (m)</option><option value="km">Chilometri (km)</option><option value="in" selected>Pollici (in)</option><option value="ft">Piedi (ft)</option><option value="yd">Iarde (yd)</option><option value="mi">Miglia (mi)</option></select></div><button class="swap-btn" onclick="swapUnits('length')">⇄ Scambia</button><div class="result" id="length-result">Risultato apparirà qui</div></div></div></div>
+            <div id="weight" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Peso e Massa</h3><div class="input-group"><label>Valore:</label><input type="number" id="weight-value" placeholder="Inserisci valore" oninput="convertWeight()"></div><div class="input-group"><label>Da:</label><select id="weight-from" onchange="convertWeight()"><option value="mg">Milligrammi (mg)</option><option value="g" selected>Grammi (g)</option><option value="kg">Chilogrammi (kg)</option><option value="oz">Once (oz)</option><option value="lb">Libbre (lb)</option><option value="st">Stone (st)</option><option value="t">Tonnellate (t)</option></select></div><div class="input-group"><label>A:</label><select id="weight-to" onchange="convertWeight()"><option value="mg">Milligrammi (mg)</option><option value="g">Grammi (g)</option><option value="kg">Chilogrammi (kg)</option><option value="oz" selected>Once (oz)</option><option value="lb">Libbre (lb)</option><option value="st">Stone (st)</option><option value="t">Tonnellate (t)</option></select></div><button class="swap-btn" onclick="swapUnits('weight')">⇄ Scambia</button><div class="result" id="weight-result">Risultato apparirà qui</div></div></div></div>
+            <div id="temperature" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Scala Termica</h3><div class="input-group"><label>Valore:</label><input type="number" id="temp-value" placeholder="Inserisci valore" oninput="convertTemperature()"></div><div class="input-group"><label>Da:</label><select id="temp-from" onchange="convertTemperature()"><option value="c" selected>Celsius (°C)</option><option value="f">Fahrenheit (°F)</option><option value="k">Kelvin (K)</option></select></div><div class="input-group"><label>A:</label><select id="temp-to" onchange="convertTemperature()"><option value="c">Celsius (°C)</option><option value="f" selected>Fahrenheit (°F)</option><option value="k">Kelvin (K)</option></select></div><button class="swap-btn" onclick="swapUnits('temp')">⇄ Scambia</button><div class="result" id="temp-result">Risultato apparirà qui</div></div></div></div>
+            <div id="volume" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Volume e Capacità</h3><div class="input-group"><label>Valore:</label><input type="number" id="volume-value" placeholder="Inserisci valore" oninput="convertVolume()"></div><div class="input-group"><label>Da:</label><select id="volume-from" onchange="convertVolume()"><option value="ml">Millilitri (ml)</option><option value="l" selected>Litri (l)</option><option value="gal_us">Galloni US (gal)</option><option value="qt_us">Quarti US (qt)</option><option value="pt_us">Pinte US (pt)</option><option value="cup">Tazze (cup)</option><option value="fl_oz">Once fluide (fl oz)</option><option value="m3">Metri cubi (m³)</option></select></div><div class="input-group"><label>A:</label><select id="volume-to" onchange="convertVolume()"><option value="ml">Millilitri (ml)</option><option value="l">Litri (l)</option><option value="gal_us" selected>Galloni US (gal)</option><option value="qt_us">Quarti US (qt)</option><option value="pt_us">Pinte US (pt)</option><option value="cup">Tazze (cup)</option><option value="fl_oz">Once fluide (fl oz)</option><option value="m3">Metri cubi (m³)</option></select></div><button class="swap-btn" onclick="swapUnits('volume')">⇄ Scambia</button><div class="result" id="volume-result">Risultato apparirà qui</div></div></div></div>
+            <div id="area" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Superficie</h3><div class="input-group"><label>Valore:</label><input type="number" id="area-value" placeholder="Inserisci valore" oninput="convertArea()"></div><div class="input-group"><label>Da:</label><select id="area-from" onchange="convertArea()"><option value="mm2">mm²</option><option value="cm2">cm²</option><option value="m2" selected>m²</option><option value="ha">Ettari (ha)</option><option value="km2">km²</option><option value="in2">Pollici quadrati (in²)</option><option value="ft2">Piedi quadrati (ft²)</option><option value="yd2">Iarde quadrate (yd²)</option><option value="ac">Acri (ac)</option><option value="mi2">Miglia quadrate (mi²)</option></select></div><div class="input-group"><label>A:</label><select id="area-to" onchange="convertArea()"><option value="mm2">mm²</option><option value="cm2">cm²</option><option value="m2">m²</option><option value="ha">Ettari (ha)</option><option value="km2">km²</option><option value="in2">Pollici quadrati (in²)</option><option value="ft2" selected>Piedi quadrati (ft²)</option><option value="yd2">Iarde quadrate (yd²)</option><option value="ac">Acri (ac)</option><option value="mi2">Miglia quadrate (mi²)</option></select></div><button class="swap-btn" onclick="swapUnits('area')">⇄ Scambia</button><div class="result" id="area-result">Risultato apparirà qui</div></div></div></div>
+            <div id="speed" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Velocità</h3><div class="input-group"><label>Valore:</label><input type="number" id="speed-value" placeholder="Inserisci valore" oninput="convertSpeed()"></div><div class="input-group"><label>Da:</label><select id="speed-from" onchange="convertSpeed()"><option value="ms">m/s</option><option value="kmh" selected>km/h</option><option value="mph">Miglia/ora (mph)</option><option value="kn">Nodi (kn)</option><option value="fts">Piedi/secondo (ft/s)</option></select></div><div class="input-group"><label>A:</label><select id="speed-to" onchange="convertSpeed()"><option value="ms">m/s</option><option value="kmh">km/h</option><option value="mph" selected>Miglia/ora (mph)</option><option value="kn">Nodi (kn)</option><option value="fts">Piedi/secondo (ft/s)</option></select></div><button class="swap-btn" onclick="swapUnits('speed')">⇄ Scambia</button><div class="result" id="speed-result">Risultato apparirà qui</div></div></div></div>
+            <div id="time" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Durata</h3><div class="input-group"><label>Valore:</label><input type="number" id="time-value" placeholder="Inserisci valore" oninput="convertTime()"></div><div class="input-group"><label>Da:</label><select id="time-from" onchange="convertTime()"><option value="ms">Millisecondi</option><option value="s">Secondi</option><option value="min">Minuti</option><option value="h" selected>Ore</option><option value="d">Giorni</option><option value="w">Settimane</option><option value="mo">Mesi (30 giorni)</option><option value="y">Anni (365 giorni)</option></select></div><div class="input-group"><label>A:</label><select id="time-to" onchange="convertTime()"><option value="ms">Millisecondi</option><option value="s">Secondi</option><option value="min">Minuti</option><option value="h">Ore</option><option value="d" selected>Giorni</option><option value="w">Settimane</option><option value="mo">Mesi (30 giorni)</option><option value="y">Anni (365 giorni)</option></select></div><button class="swap-btn" onclick="swapUnits('time')">⇄ Scambia</button><div class="result" id="time-result">Risultato apparirà qui</div></div></div></div>
+            <div id="energy" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Energia e Lavoro</h3><div class="input-group"><label>Valore:</label><input type="number" id="energy-value" placeholder="Inserisci valore" oninput="convertEnergy()"></div><div class="input-group"><label>Da:</label><select id="energy-from" onchange="convertEnergy()"><option value="j">Joule (J)</option><option value="kj">Kilojoule (kJ)</option><option value="cal">Calorie (cal)</option><option value="kcal" selected>Kilocalorie (kcal)</option><option value="wh">Wattora (Wh)</option><option value="kwh">Kilowattora (kWh)</option><option value="btu">BTU</option></select></div><div class="input-group"><label>A:</label><select id="energy-to" onchange="convertEnergy()"><option value="j">Joule (J)</option><option value="kj">Kilojoule (kJ)</option><option value="cal">Calorie (cal)</option><option value="kcal">Kilocalorie (kcal)</option><option value="wh">Wattora (Wh)</option><option value="kwh" selected>Kilowattora (kWh)</option><option value="btu">BTU</option></select></div><button class="swap-btn" onclick="swapUnits('energy')">⇄ Scambia</button><div class="result" id="energy-result">Risultato apparirà qui</div></div></div></div>
+            <div id="pressure" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Pressione</h3><div class="input-group"><label>Valore:</label><input type="number" id="pressure-value" placeholder="Inserisci valore" oninput="convertPressure()"></div><div class="input-group"><label>Da:</label><select id="pressure-from" onchange="convertPressure()"><option value="pa">Pascal (Pa)</option><option value="kpa">Kilopascal (kPa)</option><option value="bar">Bar</option><option value="atm">Atmosfere (atm)</option><option value="psi" selected>PSI</option><option value="mmhg">mmHg</option></select></div><div class="input-group"><label>A:</label><select id="pressure-to" onchange="convertPressure()"><option value="pa">Pascal (Pa)</option><option value="kpa">Kilopascal (kPa)</option><option value="bar">Bar</option><option value="atm">Atmosfere (atm)</option><option value="psi">PSI</option><option value="mmhg" selected>mmHg</option></select></div><button class="swap-btn" onclick="swapUnits('pressure')">⇄ Scambia</button><div class="result" id="pressure-result">Risultato apparirà qui</div></div></div></div>
+            <div id="data" class="converter-section"><div class="converter-grid"><div class="converter-card"><h3>Dati Digitali</h3><div class="input-group"><label>Valore:</label><input type="number" id="data-value" placeholder="Inserisci valore" oninput="convertData()"></div><div class="input-group"><label>Da:</label><select id="data-from" onchange="convertData()"><option value="b">Bit</option><option value="B">Byte</option><option value="KB">Kilobyte (KB)</option><option value="MB" selected>Megabyte (MB)</option><option value="GB">Gigabyte (GB)</option><option value="TB">Terabyte (TB)</option><option value="PB">Petabyte (PB)</option></select></div><div class="input-group"><label>A:</label><select id="data-to" onchange="convertData()"><option value="b">Bit</option><option value="B">Byte</option><option value="KB">Kilobyte (KB)</option><option value="MB">Megabyte (MB)</option><option value="GB" selected>Gigabyte (GB)</option><option value="TB">Terabyte (TB)</option><option value="PB">Petabyte (PB)</option></select></div><button class="swap-btn" onclick="swapUnits('data')">⇄ Scambia</button><div class="result" id="data-result">Risultato apparirà qui</div></div></div></div>
+        </div>
+    </div>
+    <script>
+        const lengthFactors = { mm: 0.001, cm: 0.01, m: 1, km: 1000, in: 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.344 };
+        const weightFactors = { mg: 0.001, g: 1, kg: 1000, oz: 28.3495, lb: 453.592, st: 6350.29, t: 1000000 };
+        const volumeFactors = { ml: 0.001, l: 1, gal_us: 3.78541, qt_us: 0.946353, pt_us: 0.473176, cup: 0.236588, fl_oz: 0.0295735, m3: 1000 };
+        const areaFactors = { mm2: 0.000001, cm2: 0.0001, m2: 1, ha: 10000, km2: 1000000, in2: 0.00064516, ft2: 0.092903, yd2: 0.836127, ac: 4046.86, mi2: 2589988 };
+        const speedFactors = { ms: 1, kmh: 0.277778, mph: 0.44704, kn: 0.514444, fts: 0.3048 };
+        const timeFactors = { ms: 0.001, s: 1, min: 60, h: 3600, d: 86400, w: 604800, mo: 2592000, y: 31536000 };
+        const energyFactors = { j: 1, kj: 1000, cal: 4.184, kcal: 4184, wh: 3600, kwh: 3600000, btu: 1055.06 };
+        const pressureFactors = { pa: 1, kpa: 1000, bar: 100000, atm: 101325, psi: 6894.76, mmhg: 133.322 };
+        const dataFactors = { b: 1, B: 8, KB: 8192, MB: 8388608, GB: 8589934592, TB: 8796093022208, PB: 9007199254740992 };
+
+        function showTab(tabName) {
+            document.querySelectorAll('.converter-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function genericConvert(value, from, to, factors, resultId, unitLabel) {
+            if (isNaN(value)) { document.getElementById(resultId).textContent = 'Inserisci un valore valido'; return; }
+            const result = (value * factors[from]) / factors[to];
+            document.getElementById(resultId).textContent = `${value} ${from} = ${result.toFixed(6)} ${to}`;
+        }
+
+        function convertLength() { genericConvert(parseFloat(document.getElementById('length-value').value), document.getElementById('length-from').value, document.getElementById('length-to').value, lengthFactors, 'length-result'); }
+        function convertWeight() { genericConvert(parseFloat(document.getElementById('weight-value').value), document.getElementById('weight-from').value, document.getElementById('weight-to').value, weightFactors, 'weight-result'); }
+        function convertVolume() { genericConvert(parseFloat(document.getElementById('volume-value').value), document.getElementById('volume-from').value, document.getElementById('volume-to').value, volumeFactors, 'volume-result'); }
+        function convertArea() { genericConvert(parseFloat(document.getElementById('area-value').value), document.getElementById('area-from').value, document.getElementById('area-to').value, areaFactors, 'area-result'); }
+        function convertSpeed() { genericConvert(parseFloat(document.getElementById('speed-value').value), document.getElementById('speed-from').value, document.getElementById('speed-to').value, speedFactors, 'speed-result'); }
+        function convertTime() { genericConvert(parseFloat(document.getElementById('time-value').value), document.getElementById('time-from').value, document.getElementById('time-to').value, timeFactors, 'time-result'); }
+        function convertEnergy() { genericConvert(parseFloat(document.getElementById('energy-value').value), document.getElementById('energy-from').value, document.getElementById('energy-to').value, energyFactors, 'energy-result'); }
+        function convertPressure() { genericConvert(parseFloat(document.getElementById('pressure-value').value), document.getElementById('pressure-from').value, document.getElementById('pressure-to').value, pressureFactors, 'pressure-result'); }
+        function convertData() { genericConvert(parseFloat(document.getElementById('data-value').value), document.getElementById('data-from').value, document.getElementById('data-to').value, dataFactors, 'data-result'); }
+
+        function convertTemperature() {
+            const v = parseFloat(document.getElementById('temp-value').value);
+            const f = document.getElementById('temp-from').value;
+            const t = document.getElementById('temp-to').value;
+            if (isNaN(v)) { document.getElementById('temp-result').textContent = 'Inserisci un valore valido'; return; }
+            let c = f === 'c' ? v : f === 'f' ? (v - 32) * 5/9 : v - 273.15;
+            let r = t === 'c' ? c : t === 'f' ? (c * 9/5) + 32 : c + 273.15;
+            document.getElementById('temp-result').textContent = `${v}°${f.toUpperCase()} = ${r.toFixed(2)}°${t.toUpperCase()}`;
+        }
+
+        function swapUnits(type) {
+            const f = document.getElementById(`${type}-from`);
+            const t = document.getElementById(`${type}-to`);
+            [f.value, t.value] = [t.value, f.value];
+            const converters = { length: convertLength, weight: convertWeight, temp: convertTemperature, volume: convertVolume, area: convertArea, speed: convertSpeed, time: convertTime, energy: convertEnergy, pressure: convertPressure, data: convertData };
+            converters[type]();
+        }
+    </script>
+</body>
+</html>
