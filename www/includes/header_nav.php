@@ -223,6 +223,7 @@ $_hnFotoProfilo = $_stmtHnFoto->fetchColumn() ?: null;
                     <a href="help_interfaccia.php" target="_blank">8. Interfaccia e Visualizzazione</a>
                     <a href="help_faq.php" target="_blank">9. FAQ e Limiti</a>
                     <a href="help_diario.php" target="_blank">10. Diario RSM</a>
+                    <a href="help_convertitore.php" target="_blank">11. Convertitore</a>
                 </div>
             </div>
             <!-- ── Fine dropdown ────────────────────────────────────── -->

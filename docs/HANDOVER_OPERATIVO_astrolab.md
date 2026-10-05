@@ -4396,3 +4396,18 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno per questa estensione.
 
 ---
+## 03-10-2026 — Convertitore di unita' di misura nel menu Help (voce 11)
+
+**Componente modificato:** nuovo `www/help_convertitore.php`; `www/includes/header_nav.php` e `www/dashboard.php` (voce "11. Convertitore" nei due menu Help); eliminato `www/converter.html` (commit `b07a774` del committente).
+
+**Obiettivo:** il committente aveva aggiunto una sua pagina `www/converter.html` (convertitore di unita', pubblica, senza login) e ha chiesto di portarla nella grafica delle pagine Help e sotto la voce Help.
+
+**Decisioni del committente:** pagina Help con login e `noindex` come le altre; eliminata la vecchia `converter.html`; tolte le grandezze Volume, Area ed Energia (restano Lunghezza, Peso, Temperatura, Velocita', Tempo, Pressione, Dati); corrette due imprecisioni: nella grandezza Dati le unita' KB-PB sono decimali (1 KB = 1000 byte, prima su base 1024) e il Kelvin e' scritto "K" (non "°K"). Fattori e formule sono quelli della pagina del committente; tutto il calcolo avviene nel browser, senza chiamate al server.
+
+**Test eseguiti:** sandbox, 9 casi (accesso solo con login, 7 grandezze, conversioni di lunghezza, temperatura, Kelvin, dati decimali, scambio, peso); sul Pi `converter.html` risponde 404 e il committente ha verificato nel browser i due menu e la pagina.
+
+**Nota operativa:** dopo la modifica di `header_nav.php` e `dashboard.php` la voce nuova non compariva finche' il container non e' stato riavviato: OPcache conserva la versione dei file PHP gia' letti. Dopo ogni modifica a file PHP esistenti va riavviato `astrolab-web` (i file nuovi invece sono letti subito).
+
+**Passo successivo:** nessuno.
+
+---
