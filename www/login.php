@@ -71,7 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result['ok']) {
             // Sicurezza: next deve essere una path relativa, non un URL esterno
             $next = preg_replace('#[^a-zA-Z0-9/_\-\.\?=&]#', '', $next);
-            if (empty($next) || str_starts_with($next, '//') || str_contains($next, ':')) {
+            // La pagina iniziale ("/" o "/index.php", next aggiunto da richiediLogin() quando si
+            // apre l'indirizzo principale) vale come nessuna destinazione: si usa quella del ruolo.
+            if (empty($next) || str_starts_with($next, '//') || str_contains($next, ':')
+                || in_array($next, ['/', '/index.php', 'index.php'], true)) {
                 // Nessuna destinazione esplicita: pagina predefinita in base al ruolo
                 $next = ($result['ruolo'] ?? '') === 'admin'
                     ? 'admin_utenti.php'

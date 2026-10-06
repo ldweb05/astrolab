@@ -4455,3 +4455,18 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno.
 
 ---
+## 06-10-2026 (bis) — Login dell'admin dall'indirizzo principale: arrivo su admin_utenti.php
+
+**Componente modificato:** `www/login.php`.
+
+**Problema (segnalato dal committente):** quando l'admin entra dall'indirizzo principale (`http://<pi>:8090/`), dopo il login arrivava sulla pagina Soggetti invece che su `admin_utenti.php`. Diagnosi dal registro accessi e dal log del web server: `/` porta a `index.php`, che senza sessione rimanda a `login.php?next=%2F`; il login riusciva e `login.php` rispettava `next=/`, quindi la regola "admin -> `admin_utenti.php`" (che vale solo senza `next`) non scattava. Comportamento preesistente, non legato al registro accessi.
+
+**Correzione:** `next` uguale a `/`, `/index.php` o `index.php` (la pagina iniziale) vale come nessuna destinazione e si usa la pagina del ruolo: admin -> `admin_utenti.php`, astrologo -> `index.php` (per l'astrologo nulla cambia). Il ritorno alle pagine specifiche dopo una sessione scaduta resta (es. `next=/rs.php?id=3`).
+
+**Decisione del committente:** il logo "AstroLab" resta collegato alla dashboard (era stato chiesto di farlo puntare ad `admin_utenti.php` / `index.php`, ma e' l'unico collegamento alla dashboard nei menu: modifica annullata).
+
+**Test eseguiti:** sandbox, 5 casi (admin con `next` `/`, `/index.php`, `/rs.php?id=3`; astrologo con `/` e `/rs.php`); sul Pi `php -l` nel container, MD5 identico al sandbox, riavvio di `astrolab-web`; test nel browser del committente.
+
+**Passo successivo:** nessuno.
+
+---
