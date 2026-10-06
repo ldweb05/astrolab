@@ -352,6 +352,8 @@ class Auth {
     private const LOGIN_IP_MAX_FALLITI      = 10;
     private const LOGIN_ACCOUNT_MAX_FALLITI = 5;
     private const LOGIN_BLOCCO_MINUTI       = 15;
+    // Registro accessi degli astrologi: righe conservate per 6 mesi (sql/016).
+    private const REGISTRO_ACCESSI_MESI     = 6;
 
     /** Vero se dallo stesso IP ci sono troppi tentativi falliti recenti. */
     public function ipBloccatoLogin(string $ip): bool
@@ -376,6 +378,50 @@ class Auth {
     }
 
     /**
+     * Registro accessi degli astrologi (sql/016_registro_accessi.sql), letto
+     * dall'admin in admin_accessi.php. Esito: riuscito, fallito o bloccato.
+     * Una scrittura non riuscita non deve mai impedire il login: l'errore
+     * finisce solo nel log di PHP. Ogni chiamata elimina anche le righe piu'
+     * vecchie di REGISTRO_ACCESSI_MESI. L'IP e' salvato solo come hash.
+     */
+    public function registraAccessoAstrologo(
+        string $username,
+        string $esito,
+        ?string $motivo,
+        string $ip,
+        ?int $utenteId = null
+    ): void {
+        try {
+            $username = mb_substr(trim($username), 0, 60, 'UTF-8');
+            if ($utenteId === null && $username !== '') {
+                $stmt = $this->pdo->prepare(
+                    "SELECT id FROM utenti WHERE LOWER(TRIM(username)) = LOWER(?) LIMIT 1"
+                );
+                $stmt->execute([$username]);
+                $trovato = $stmt->fetchColumn();
+                $utenteId = $trovato !== false ? (int)$trovato : null;
+            }
+            $userAgent = mb_substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255, 'UTF-8');
+            $this->pdo->prepare(
+                "INSERT INTO registro_accessi (utente_id, username, esito, motivo, ip_hash, user_agent)
+                 VALUES (?, ?, ?, ?, ?, ?)"
+            )->execute([
+                $utenteId,
+                $username,
+                $esito,
+                $motivo,
+                hash('sha256', $ip),
+                $userAgent !== '' ? $userAgent : null,
+            ]);
+            $this->pdo->prepare(
+                "DELETE FROM registro_accessi WHERE creato_il < NOW() - (? * INTERVAL '1 month')"
+            )->execute([self::REGISTRO_ACCESSI_MESI]);
+        } catch (\Throwable $e) {
+            error_log('registraAccessoAstrologo: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Login dell'astrologo con blocco per account: dopo 5 password errate
      * l'account e' bloccato per 15 minuti, senza coinvolgere gli altri utenti
      * dello stesso IP. Il tentativo fallito viene registrato anche per l'IP.
@@ -390,6 +436,7 @@ class Auth {
         $utente = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($utente && $utente['bloccato']) {
+            $this->registraAccessoAstrologo($username, 'bloccato', 'account_bloccato', $ip, (int)$utente['id']);
             return ['ok' => false, 'errore' => 'Troppi tentativi di accesso. Riprova tra qualche minuto.'];
         }
         if (!$utente) {
@@ -404,6 +451,7 @@ class Auth {
             $this->pdo->prepare(
                 "UPDATE utenti SET tentativi_falliti = 0, bloccato_fino = NULL WHERE id = ?"
             )->execute([(int)$utente['id']]);
+            $this->registraAccessoAstrologo($username, 'riuscito', null, $ip, (int)$utente['id']);
             return $result;
         }
 
@@ -427,6 +475,14 @@ class Auth {
                 }
             }
         }
+        $errore = (string)($result['errore'] ?? '');
+        $motivo = 'credenziali';
+        if ($errore === 'Account non disponibile.') {
+            $motivo = 'account_non_attivo';
+        } elseif (str_starts_with($errore, 'Devi verificare')) {
+            $motivo = 'email_non_verificata';
+        }
+        $this->registraAccessoAstrologo($username, 'fallito', $motivo, $ip, $utente ? (int)$utente['id'] : null);
         return $result;
     }
 

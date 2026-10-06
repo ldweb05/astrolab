@@ -47,6 +47,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errore = 'Inserisci username e password.';
     } elseif ($auth->ipBloccatoLogin(loginClientIp())) {
         $errore = 'Troppi tentativi di accesso. Riprova più tardi.';
+        // Registro accessi: solo per gli astrologi, non per i CODICE dei soggetti
+        if (!$auth->isFormaCodiceSoggetto($username)) {
+            $auth->registraAccessoAstrologo($username, 'bloccato', 'ip_bloccato', loginClientIp());
+        }
     } elseif ($auth->isFormaCodiceSoggetto($username)) {
         // Login del soggetto con il proprio CODICE (ROADMAP_CODICE_LOGIN_SOGGETTI.md,
         // blocco B). Il parametro next viene ignorato: il soggetto va solo alla
