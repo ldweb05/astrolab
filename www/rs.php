@@ -44,6 +44,16 @@ $condizioni = [
 ];
  
 $annoCorrente = (int)date('Y');
+// Anno RS di default (se ?anno= non e' nell'URL): prossima RSM del soggetto.
+// Dal giorno dopo il compleanno (giorno/mese di nascita locale, ora italiana) si passa all'anno successivo.
+$oggiRoma = new DateTime('now', new DateTimeZone('Europe/Rome'));
+$annoRsDefault = $annoCorrente;
+if ($soggetto && !empty($soggetto['data_nascita'])) {
+    $annoRsDefault = (int)$oggiRoma->format('Y');
+    if ((int)$oggiRoma->format('md') > (int)date('md', strtotime($soggetto['data_nascita']))) {
+        $annoRsDefault++;
+    }
+}
  
 require_once __DIR__ . '/includes/NascitaGmtHelper.php';
 
@@ -144,7 +154,7 @@ if ($soggetto) {
             <label>Anno RS</label>
             <select id="anno-rs">
                 <?php for($y = 1960; $y <= $annoCorrente + 7; $y++): ?>
-                <option value="<?= $y ?>" <?= ($annoRS_Url ?? $annoCorrente) == $y ? 'selected' : '' ?>><?= $y ?></option>
+                <option value="<?= $y ?>" <?= ($annoRS_Url ?? $annoRsDefault) == $y ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
         </div>

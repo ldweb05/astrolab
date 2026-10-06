@@ -58,6 +58,8 @@ $dashFotoProfilo = $stmtFoto->fetchColumn() ?: null;
 // Mappa id -> {data, ora} per riempire i campi via JS quando c'è più di un soggetto
 // (stesso formato di tema.php: d/m/Y e ora locale, non GMT)
 $dashSoggettiDatiJs = [];
+// Data di oggi in ora italiana (bootstrap.php imposta UTC) per l'anno della prossima RSM
+$dashOggiRoma = new DateTime('now', new DateTimeZone('Europe/Rome'));
 foreach ($dashSoggetti as $ds) {
     $resLat = $ds['residenza_latitudine']  ?: ($ds['latitudine']  ?? null);
     $resLon = $ds['residenza_longitudine'] ?: ($ds['longitudine'] ?? null);
@@ -77,6 +79,12 @@ foreach ($dashSoggetti as $ds) {
             $gmtG = $gmtM = $gmtA = $gmtOra = null;
         }
     }
+    // Anno della prossima RSM: dal giorno dopo il compleanno (giorno/mese di nascita locale)
+    // la tendina "Scelta Anno" propone gia' l'anno successivo
+    $annoRsm = (int)$dashOggiRoma->format('Y');
+    if (!empty($ds['data_nascita']) && (int)$dashOggiRoma->format('md') > (int)date('md', strtotime($ds['data_nascita']))) {
+        $annoRsm++;
+    }
     // Stessa etichetta luogo di default di rs.php (residenza, altrimenti luogo di nascita)
     $luogoRsLabel = $ds['residenza_luogo']
         ? $ds['residenza_luogo'] . ($ds['residenza_nazione'] ? ', ' . $ds['residenza_nazione'] : '')
@@ -94,11 +102,16 @@ foreach ($dashSoggetti as $ds) {
         'm'    => $gmtM,
         'a'    => $gmtA,
         'ora_gmt' => $gmtOra,
+        'anno_rsm' => $annoRsm,
     ];
 }
 
 // Range anni per la ricerca RS/RL: 1960 -> anno corrente + 7
 $annoCorrente = (int)date('Y');
+// Anno preselezionato: prossima RSM del soggetto gia' selezionato, altrimenti anno corrente
+$annoDefault = ($dashSoggettoUnicoId > 0 && isset($dashSoggettiDatiJs[$dashSoggettoUnicoId]))
+    ? $dashSoggettiDatiJs[$dashSoggettoUnicoId]['anno_rsm']
+    : $annoCorrente;
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -334,7 +347,7 @@ HELP <span class="material-symbols-outlined text-sm">expand_more</span>
 <div class="relative">
 <select id="dash-anno" class="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg text-on-surface w-full appearance-none pr-10 cursor-pointer transition-colors hover:border-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
 <?php for ($y = 1960; $y <= $annoCorrente + 7; $y++): ?>
-<option value="<?= $y ?>" <?= $y === $annoCorrente ? 'selected' : '' ?>><?= $y ?></option>
+<option value="<?= $y ?>" <?= $y === $annoDefault ? 'selected' : '' ?>><?= $y ?></option>
 <?php endfor; ?>
 </select>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
@@ -423,6 +436,8 @@ function aggiornaSoggettoSelezionato(id) {
     const dati = DASH_SOGGETTI_DATI[dashSoggettoSelezionatoId];
     if (datiCampo) { datiCampo.value = dati ? dati.data : ''; }
     if (oraCampo) { oraCampo.value = dati ? dati.ora : ''; }
+    const annoCampo = document.getElementById('dash-anno');
+    if (annoCampo && dati && dati.anno_rsm) { annoCampo.value = String(dati.anno_rsm); }
     aggiornaMappaResidenza(dati);
     try { aggiornaGrafici(dati); } catch (e) { console.error('Grafici dashboard:', e); }
 }

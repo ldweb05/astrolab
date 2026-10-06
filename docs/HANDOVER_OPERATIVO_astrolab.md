@@ -4411,3 +4411,20 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno.
 
 ---
+## 06-10-2026 — Anno della prossima RSM preselezionato in dashboard e in rs.php
+
+**Componente modificato:** `www/dashboard.php` (tendina "Scelta Anno"), `www/rs.php` (tendina "Anno RS").
+
+**Obiettivo:** il committente ha chiesto che, dal giorno successivo al compleanno del soggetto, le due tendine propongano gia' l'anno della prossima RSM (es. nascita 5/9, a ottobre 2026 deve comparire 2027 e non 2026), perche' la RSM dell'anno in corso e' ormai passata.
+
+**Regola:** se oggi (giorno/mese) e' dopo il giorno/mese di nascita locale del soggetto, anno corrente + 1; altrimenti anno corrente. Il giorno del compleanno resta l'anno corrente. "Oggi" e' calcolato in ora italiana (`Europe/Rome`) solo in queste due pagine, perche' `bootstrap.php` imposta UTC. Nati il 29/2: negli anni non bisestili il passaggio avviene dal 1/3.
+
+**Dettagli:** in `dashboard.php` ogni soggetto riceve il campo `anno_rsm` in `DASH_SOGGETTI_DATI`; la tendina parte dall'`anno_rsm` del soggetto selezionato (anno corrente se nessuno) e `aggiornaSoggettoSelezionato()` la riallinea al cambio soggetto prima di ricaricare i grafici (decisione del committente: al cambio soggetto l'anno scelto a mano viene sostituito). In `rs.php` il nuovo default `$annoRsDefault` vale solo se l'URL non contiene `?anno=`: CERCA dalla dashboard, sessioni salvate e altri link con anno restano invariati. Range degli anni (1960 -> anno corrente + 7) invariato.
+
+**Punto di ripristino:** tag locale `pre-anno-rsm-dashboard`.
+
+**Test eseguiti:** sandbox (`php -l`, regola verificata su 5/9, 6/10, 7/10, 29/2 con oggi 06-10-2026); sul Pi `php -l` nel container, MD5 dei file identico al sandbox, riavvio di `astrolab-web`; test nel browser del committente su dashboard (anno 2027, grafico RS 2027, CERCA con anno scelto a mano) e su `rs.php` (2027 da menu, anno dell'URL rispettato).
+
+**Passo successivo:** nessuno.
+
+---
