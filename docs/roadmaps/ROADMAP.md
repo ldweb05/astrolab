@@ -973,3 +973,21 @@ storico del censimento e delle correzioni.
   utenti o arrivati da servizi esterni passano da attributi `data-` letti da JavaScript, mai
   dentro gli `onclick`. Il file non e' ancora incluso da nessuna pagina: lo si collega nel
   passo 3, pagina per pagina.
+
+## 06-10-2026 — Registro accessi degli astrologi per l'admin (completato)
+
+Stato: **completato il 06-10-2026** su `main` (commit `492836c` e successivo). Dettagli in
+`docs/HANDOVER_OPERATIVO_astrolab.md`, voce del 06-10-2026.
+
+- Migrazione `sql/016_registro_accessi.sql`: tabella `registro_accessi` (un tentativo di login di
+  un astrologo per riga: esito, motivo, hash dell'IP, browser, data e ora).
+- Scrittura in `Auth::registraAccessoAstrologo()` (da `loginAstrologo()` e, per l'IP bloccato, da
+  `login.php`); i login dei soggetti con il CODICE non sono registrati; conservazione automatica
+  di 6 mesi; un errore del registro non blocca mai il login.
+- Pagina `admin_accessi.php` (voce "📊 Accessi" del menu admin): statistiche, grafico 30 giorni,
+  accessi per astrologo, registro filtrabile e cancellazioni (riga, selezione, filtri correnti,
+  piu' vecchie di N giorni, tutto).
+- Corretta l'ora di "Ultimo accesso" in `admin_utenti.php` (era in UTC).
+- **Punto aperto:** citare il registro accessi nell'informativa privacy (finalita' di sicurezza,
+  conservazione 6 mesi, IP come hash), con le scelte legali gia' aperte in
+  `docs/roadmaps/ROADMAP_SEO.md`.

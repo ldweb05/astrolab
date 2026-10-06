@@ -4428,3 +4428,30 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno.
 
 ---
+## 06-10-2026 — Registro accessi degli astrologi (admin_accessi.php)
+
+**Componente modificato:** nuova migrazione `sql/016_registro_accessi.sql` (applicata al DB del Pi); nuova pagina `www/admin_accessi.php`; modificati `www/includes/Auth.php`, `www/login.php`, `www/admin_utenti.php`, `www/includes/header_nav.php`, `www/help_interfaccia.php`. Documentazione: `docs/START_HERE.md`, `docs/roadmaps/ROADMAP.md` e questo handover.
+
+**Obiettivo:** il committente ha chiesto che l'admin abbia una statistica degli accessi degli utenti, con data e ora, e possa cancellarla quando vuole.
+
+**Decisioni del committente:** si registrano solo gli astrologi (non i soggetti che entrano con il CODICE); si registrano anche i tentativi falliti e bloccati; IP solo come hash SHA-256, come nelle tabelle `tentativi_login`; conservazione automatica di 6 mesi; l'admin cancella le righe del registro (non gli utenti, gia' gestiti in `admin_utenti.php`); voce "📊 Accessi" anche nel menu condiviso; correzione dell'ora di "Ultimo accesso" in `admin_utenti.php`.
+
+**Dettagli tecnici:**
+- Tabella `registro_accessi`: `utente_id` (NULL per username inesistenti; `ON DELETE CASCADE`, eliminando un utente si eliminano le sue righe), `username` digitato, `esito` (`riuscito`/`fallito`/`bloccato`), `motivo` (`credenziali`, `email_non_verificata`, `account_non_attivo`, `account_bloccato`, `ip_bloccato`), `ip_hash`, `user_agent`, `creato_il` (TIMESTAMPTZ); indici su data e su utente+data.
+- `Auth::registraAccessoAstrologo()` (costante `REGISTRO_ACCESSI_MESI = 6`): scrive la riga ed elimina quelle piu' vecchie di 6 mesi; tutto dentro `try/catch`, un errore del registro finisce solo nel log di PHP e non blocca mai il login. Chiamato in `loginAstrologo()` nei tre esiti; `login()` e il login dei soggetti sono invariati. In `login.php` il caso "IP bloccato" (che non arriva a `loginAstrologo()`) registra `bloccato · ip_bloccato` solo se lo username non ha la forma di un CODICE soggetto.
+- `admin_accessi.php` (solo admin, `noindex`, stili page-scoped): riepilogo, grafico degli ultimi 30 giorni, accessi per astrologo nel periodo, filtri (date, astrologo, esito), registro paginato da 50 righe; date calcolate da PostgreSQL con `AT TIME ZONE 'Europe/Rome'`. Cancellazioni solo via POST con token CSRF (`admin_accessi_csrf`) e conferma nel browser: riga singola, righe selezionate, righe dei filtri correnti, righe piu' vecchie di N giorni (1-3650), intero registro (scrivendo ELIMINA); poi redirect con i filtri e messaggio (Post/Redirect/Get).
+- Collegamenti: pulsante "📊 Registro accessi" in `admin_utenti.php`, voce "📊 Accessi" in `header_nav.php` dentro `if ($isAdmin)` (`$paginaAttiva = 'accessi'`).
+
+**Bug corretto:** `admin_utenti.php` mostrava "Ultimo accesso" con `date()`, che usa UTC (`bootstrap.php`): verificato sul Pi 05:12 invece di 07:12. Ora converte in `Europe/Rome`.
+
+**Commit:** fasi 1-3 (migrazione, scrittura del registro) `492836c`; fasi 4-6 (pagina, cancellazioni, collegamenti, documentazione) in questo commit.
+
+**Punti di ripristino:** tag `restore/pre-registro-accessi-2026-10-06` (`main` @ `8328b67`); backup DB `~/backup-temp/astrolab_pre016_2026-10-06.dump` (115 MB, fatto prima della migrazione 016).
+
+**Test eseguiti:** sandbox (PostgreSQL 16 con schema e migrazioni, server PHP): migrazione e vincoli; login riuscito, password errata, username inesistente, email non verificata, account sospeso, blocco dopo 5 errori, IP bloccato (astrologo registrato, CODICE no), tabella del registro mancante (login riuscito comunque), conservazione (riga di 7 mesi eliminata, di 5 mesi conservata); pagina: accesso negato a non loggati e non admin, filtri anche con valori non validi, paginazione, tutte le cancellazioni, CSRF errato, ELIMINA in minuscolo rifiutato, selezione nel browser. Sul Pi: `php -l` nel container, MD5 identici al sandbox, registro scritto dai login reali del committente; test nel browser del committente su pagina, cancellazioni (compreso lo svuotamento), menu e ora corretta in `admin_utenti.php`.
+
+**Note e punti aperti:** il registro andra' citato nell'informativa privacy (finalita' di sicurezza, conservazione 6 mesi, IP come hash), insieme alle scelte legali gia' aperte in `docs/roadmaps/ROADMAP_SEO.md`. Ogni tentativo da un IP gia' bloccato aggiunge una riga: la crescita resta limitata dalla conservazione di 6 mesi e dalle cancellazioni dell'admin.
+
+**Passo successivo:** nessuno.
+
+---

@@ -154,7 +154,10 @@ $paginaAttiva = 'admin';
 <main>
     <div class="page-title">
         <h2>Gestione Utenti</h2>
-        <button class="btn-primary" onclick="apriModaleNuovoUtente()">+ Nuovo Utente</button>
+        <div style="display:flex;gap:10px;align-items:center">
+            <a class="btn-secondary" href="admin_accessi.php" style="text-decoration:none">📊 Registro accessi</a>
+            <button class="btn-primary" onclick="apriModaleNuovoUtente()">+ Nuovo Utente</button>
+        </div>
     </div>
 
     <?php if ($messaggio): ?>
@@ -276,7 +279,7 @@ $paginaAttiva = 'admin';
                 <!-- Ultimo accesso -->
                 <td style="font-size:11px;color:#888;white-space:nowrap">
                     <?= $u['ultimo_accesso']
-                        ? date('d/m/Y H:i', strtotime($u['ultimo_accesso']))
+                        ? (new DateTime($u['ultimo_accesso']))->setTimezone(new DateTimeZone('Europe/Rome'))->format('d/m/Y H:i')
                         : '— mai —' ?>
                 </td>
 

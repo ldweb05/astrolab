@@ -172,6 +172,18 @@ calcolati su richiesta come in `rs.php` (azione `grafico_viaggio` dell'API), sen
 dalle sessioni RS. Il soggetto vede le ruote dei propri viaggi, non note, valutazioni o
 sessioni (D22, che modifica la D16).
 
+Dal 06-10-2026 l'admin ha il **Registro Accessi** (`admin_accessi.php`, voce "📊 Accessi" del menu
+e pulsante in `admin_utenti.php`): ogni login di un astrologo (riuscito, fallito o bloccato, con
+il motivo) e' registrato nella tabella `registro_accessi` (migrazione `sql/016`) da
+`Auth::registraAccessoAstrologo()`, chiamato in `loginAstrologo()` e, per l'IP bloccato, in
+`login.php`. I login dei soggetti con il CODICE non sono registrati. IP solo come hash, browser e
+dispositivo dallo user-agent, date in ora italiana. La pagina mostra riepilogo, grafico degli
+ultimi 30 giorni, accessi per astrologo e registro filtrabile e paginato; l'admin puo' cancellare
+una riga, le righe selezionate, quelle dei filtri correnti, quelle piu' vecchie di N giorni o
+l'intero registro (scrivendo ELIMINA). Le righe piu' vecchie di 6 mesi sono eliminate in
+automatico; eliminando un utente si eliminano anche le sue righe. Un errore del registro non
+blocca mai il login.
+
 La roadmap relativa alla comparazione funzionale tra Astrolab e MyAstral.org
 è mantenuta separatamente nel documento `docs/roadmaps/roadmap_comparazione_myastral.md`,
 che costituisce il riferimento ufficiale per le attività di allineamento con

@@ -4,7 +4,7 @@
  *
  * Richiede che siano definiti:
  *   $auth, $isAdmin, $username, $soggettoNome
- *   $paginaAttiva → 'soggetti' | 'tema' | 'rs' | 'rl' | 'rilocazione' | 'ricerca' | 'diario' | 'admin'
+ *   $paginaAttiva → 'soggetti' | 'tema' | 'rs' | 'rl' | 'rilocazione' | 'ricerca' | 'diario' | 'admin' | 'accessi'
  *
  * Il soggetto attivo viene propagato nei link del nav tramite ?id=
  * così la navigazione tra Tema / RS / Ricerca mantiene il soggetto corrente.
@@ -231,6 +231,8 @@ $_hnFotoProfilo = $_stmtHnFoto->fetchColumn() ?: null;
             <?php if ($isAdmin): ?>
             <a href="admin_utenti.php"
                <?= ($paginaAttiva??'') === 'admin' ? 'class="active"' : '' ?>>⚙️ Utenti</a>
+            <a href="admin_accessi.php"
+               <?= ($paginaAttiva??'') === 'accessi' ? 'class="active"' : '' ?>>📊 Accessi</a>
             <?php endif; ?>
 
 

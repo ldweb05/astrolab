@@ -48,7 +48,7 @@ $auth->richiediLogin();
 
     <div class="help-section">
         <h2>Navigazione globale, menu e responsive design</h2>
-        <p>Il menu principale in alto ti porta a: <strong>Soggetti</strong>, <strong>Tema Natale</strong>, il menu a tendina <strong>Rivoluzioni</strong> (RS / RL / Rilocazione), <strong>Ricerca Località</strong>, il menu <strong>Help</strong> con le 8 sezioni del manuale, e — solo per l'amministratore — <strong>Gestione Utenti</strong>. In alto a destra trovi il tuo username, <strong>Password</strong> e <strong>Esci</strong>.</p>
+        <p>Il menu principale in alto ti porta a: <strong>Soggetti</strong>, <strong>Tema Natale</strong>, il menu a tendina <strong>Rivoluzioni</strong> (RS / RL / Rilocazione), <strong>Ricerca Località</strong>, il menu <strong>Help</strong> con le 11 sezioni del manuale, e — solo per l'amministratore — <strong>Utenti</strong> (gestione degli utenti) e <strong>Accessi</strong> (registro degli accessi degli astrologi, con statistiche e cancellazione delle righe). In alto a destra trovi il tuo username, <strong>Password</strong> e <strong>Esci</strong>.</p>
         <p>L'interfaccia è responsive: si adatta automaticamente a schermi più piccoli (tablet e smartphone), riorganizzando colonne dei form e spaziatura del contenuto.</p>
     </div>
 </div>
