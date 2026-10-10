@@ -1011,12 +1011,15 @@ function aggiornaFusoOrarioLocale(lat, lon, gmtString) {
             document.getElementById('rs-ora-locale-label').textContent = partiLocale[1];
             let offsetOre = data.gmtOffset / 3600;
             document.getElementById('rs-fuso-label').textContent = 'GMT ' + (offsetOre >= 0 ? '+' : '') + offsetOre;
-            let giornoGmt   = parseInt(dp[0]);
-            let giornoLocale= parseInt(partiLocale[0].split('-')[2]);
+            // Confronto su data completa (YYYY-MM-DD), corretto anche a cavallo di fine mese/anno
+            let dataGmtIso    = dp[2] + '-' + dp[1].padStart(2, '0') + '-' + dp[0].padStart(2, '0');
+            let dataLocaleIso = partiLocale[0];
+            let dpl           = dataLocaleIso.split('-');
+            let dataLocaleIt  = dpl[2] + '/' + dpl[1] + '/' + dpl[0];
             let el = document.getElementById('rs-giorno-succ-label');
-            if (giornoLocale > giornoGmt)       { el.textContent = '+1 Giorno'; el.style.display = 'inline-block'; }
-            else if (giornoLocale < giornoGmt)  { el.textContent = '-1 Giorno'; el.style.display = 'inline-block'; }
-            else                                { el.style.display = 'none'; }
+            if (dataLocaleIso > dataGmtIso)       { el.textContent = '+1 Giorno ' + dataLocaleIt; el.style.display = 'inline-block'; }
+            else if (dataLocaleIso < dataGmtIso)  { el.textContent = '-1 Giorno ' + dataLocaleIt; el.style.display = 'inline-block'; }
+            else                                  { el.style.display = 'none'; }
         })
         .catch(() => {
             const elOra  = document.getElementById('rs-ora-locale-label');

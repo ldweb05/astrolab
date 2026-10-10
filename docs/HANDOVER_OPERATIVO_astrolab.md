@@ -4470,3 +4470,20 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno.
 
 ---
+## 10-10-2026 — rs.php: badge "+1/-1 Giorno" con data locale
+
+**Componente modificato:** `www/rs.php`, funzione `aggiornaFusoOrarioLocale()` (JS nella pagina). Nessun file CSS/JS condiviso toccato.
+
+**Obiettivo (richiesta del committente):** nell'intestazione della RSM, accanto al badge "+1 Giorno", mostrare anche la data locale in formato DD/MM/YYYY. Esempio: RSM 2027 a Sofia, GMT 05/09/2027 21:30:09, ora locale 00:30:09 (GMT +3) -> badge `+1 Giorno 06/09/2027`.
+
+**Bug corretto nella stessa funzione (approvato dal committente):** il confronto usava solo il numero del giorno (`giornoLocale > giornoGmt`), quindi a cavallo di fine mese/anno il segno era sbagliato (es. GMT 31/10 23:30, locale 01/11 -> mostrava "-1 Giorno"). Ora il confronto e' sulla data completa `YYYY-MM-DD` (data GMT da `gmtString`, data locale da `data.formatted` di timezonedb).
+
+**Formato scelto dal committente:** `+1 Giorno 06/09/2027` (solo uno spazio come separatore); stesso formato per `-1 Giorno`. Se il giorno coincide il badge resta nascosto, come prima.
+
+**Test eseguiti:** sandbox, 5 casi (Sofia +1, fine mese, fine anno 31/12 -> 01/01, -1 giorno 01/03 -> 28/02, stesso giorno nascosto) e patch applicata una sola volta (seconda esecuzione rifiutata); sul Pi `php -l` nel container, `git diff --check`, riavvio di `astrolab-web`; test nel browser del committente superato.
+
+**Documentazione:** solo questo handover (modifica piccola dell'intestazione RSM; nessuna pagina Help descrive il badge).
+
+**Passo successivo:** nessuno.
+
+---
