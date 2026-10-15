@@ -4487,3 +4487,18 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno.
 
 ---
+## 15-10-2026 — Confronto RSM anche dalle posizioni scelte sulla mappa
+
+**Componenti modificati:** `www/ricerca.php`, `www/rs.php` (solo JS/HTML nella pagina). Nessun file CSS/JS condiviso toccato; `compare_rs.php` invariato.
+
+**Obiettivo (richiesta del committente):** confrontare le RSM scelte dall'elenco di `ricerca.php` insieme a quelle scelte in `rs.php` con MAPPA → "Usa questa posizione".
+
+**Soluzione:** `rs.php` si apre in un'altra scheda (`target="_blank"`), che non condivide `sessionStorage`. Le selezioni stanno quindi in `localStorage`, chiave `astrolabConfrontoRsm`, valide solo per lo stesso soggetto e anno RS. `ricerca.php` scrive contesto e scelte dall'elenco (`lista`); `rs.php` aggiunge le posizioni da mappa (`mappa`). In `rs.php`, dopo "Usa questa posizione", compaiono "➕ Aggiungi al confronto", il contatore e, da 2 scelte, "⚖️ Confronta le N selezioni". In `ricerca.php` la barra del confronto mostra le voci "📍 da mappa" con ✕ e somma lista e mappa. Limite del piano (`getComparatorLimit()`) applicato sul totale; una nuova ricerca azzera tutto. `usaPosizione()` invariata nel comportamento: registra solo la posizione per il confronto.
+
+**Test eseguiti:** sandbox (patch applicata una sola volta, `php -l`, `node --check`, test logici su conteggio, doppioni, limite Free, cambio anno, payload); sul Pi MD5 identici al sandbox, `php -l` nel container, `git diff --check`, riavvio di `astrolab-web`; test nel browser del committente superati (lista + mappa, confronto da entrambe le pagine, rimozione ✕, limite, doppioni, nessuna regressione).
+
+**Documentazione:** questo handover, `docs/START_HERE.md` (sezione Comparator), `www/help_comparatore.php`.
+
+**Passo successivo:** eventuale estensione alle RL (`rl.php` + `ricerca_rl.php`), non pianificata.
+
+---

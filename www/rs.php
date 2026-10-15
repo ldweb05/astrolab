@@ -189,6 +189,11 @@ if ($soggetto) {
             <button class="btn-mappa is-hidden" id="btn-correzione-tempo" onclick="toggleCorrezioneTempo()">⏱️ Correzione tempo ed ora</button>
             <button class="btn-stampa-diretta" onclick="prepareStampaRS()">🖨️ Stampa Rivoluzione Solare</button>
         </div>
+        <div id="rs-confronto-bar" style="display:none;width:100%;gap:10px;align-items:center;flex-wrap:wrap">
+            <button type="button" class="btn-mappa" id="btn-aggiungi-confronto" style="display:none" onclick="aggiungiPosizioneAlConfronto()">➕ Aggiungi al confronto</button>
+            <span id="rs-confronto-contatore" style="font-size:12px;color:#666"></span>
+            <button type="button" class="btn-mappa" id="btn-rs-confronta" style="display:none" onclick="confrontaDaRs()">⚖️ Confronta le selezioni</button>
+        </div>
     </div>
  
     <div class="header-rs is-hidden" id="header-rs">
@@ -948,14 +953,111 @@ function usaPosizione() {
         .then(r => {
             const nome = (r && !r.error) ? _estraiNomeLuogoNominatim(r) : '';
             document.getElementById('luogo-rs-input').value = nome || 'NaN';
+            const nazione = (r && r.address && r.address.country_code) ? String(r.address.country_code).toUpperCase() : '';
+            _registraPosMappaConfronto(latPos, lonPos, nome, nazione);
         })
         .catch(() => {
             document.getElementById('luogo-rs-input').value = 'NaN';
+            _registraPosMappaConfronto(latPos, lonPos, '', '');
         })
         .finally(() => {
             calcolaRS();
         });
 }
+
+// ── Confronto RSM da mappa (condiviso con ricerca.php via localStorage) ──
+// ricerca.php scrive soggetto, anno, condizione e scelte dall'elenco (lista);
+// qui si aggiungono le posizioni scelte sulla mappa (mappa).
+const CONFRONTO_RSM_STORAGE_KEY = 'astrolabConfrontoRsm';
+const RS_SOGGETTO_ID = <?= json_encode((string)$id) ?>;
+const RS_COMPARATOR_LIMIT = <?= json_encode($auth->getComparatorLimit()) ?>;
+const RS_COMPARATOR_LIMIT_MESSAGE = RS_COMPARATOR_LIMIT < 3
+    ? 'Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 RSM è necessario il piano Supporter.'
+    : `Puoi confrontare al massimo ${RS_COMPARATOR_LIMIT} RSM.`;
+let _posMappaConfronto = null;
+
+function _leggiConfrontoRsm() {
+    try {
+        const raw = localStorage.getItem(CONFRONTO_RSM_STORAGE_KEY);
+        const rec = raw ? JSON.parse(raw) : null;
+        return (rec && typeof rec === 'object') ? rec : null;
+    } catch (errore) { return null; }
+}
+function _scriviConfrontoRsm(rec) {
+    try { localStorage.setItem(CONFRONTO_RSM_STORAGE_KEY, JSON.stringify(rec)); } catch (errore) {}
+}
+// Confronto valido solo per lo stesso soggetto e lo stesso anno RS mostrati qui
+function _confrontoRsmAttivo() {
+    const rec = _leggiConfrontoRsm();
+    const anno = document.getElementById('anno-rs')?.value;
+    if (!rec || String(rec.soggetto_id) !== RS_SOGGETTO_ID || String(rec.anno) !== String(anno)) return null;
+    if (!Array.isArray(rec.lista)) rec.lista = [];
+    if (!Array.isArray(rec.mappa)) rec.mappa = [];
+    return rec;
+}
+function _registraPosMappaConfronto(lat, lon, nome, nazione) {
+    _posMappaConfronto = { lat: lat, lon: lon, nome: nome || '', nazione: nazione || '' };
+    aggiornaBarraConfrontoRs();
+}
+function aggiornaBarraConfrontoRs() {
+    const bar = document.getElementById('rs-confronto-bar');
+    if (!bar) return;
+    const rec = _confrontoRsmAttivo();
+    const totale = rec ? rec.lista.length + rec.mappa.length : 0;
+    if (!rec || (!_posMappaConfronto && totale === 0)) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    document.getElementById('btn-aggiungi-confronto').style.display = _posMappaConfronto ? '' : 'none';
+    document.getElementById('rs-confronto-contatore').textContent =
+        'Confronto: ' + totale + '/' + RS_COMPARATOR_LIMIT + ' selezionate';
+    const btnConfronta = document.getElementById('btn-rs-confronta');
+    btnConfronta.style.display = totale >= 2 ? '' : 'none';
+    btnConfronta.textContent = '⚖️ Confronta le ' + totale + ' selezioni';
+}
+function aggiungiPosizioneAlConfronto() {
+    const rec = _confrontoRsmAttivo();
+    if (!rec || !_posMappaConfronto) return;
+    const lat = Number(Number(_posMappaConfronto.lat).toFixed(4));
+    const lon = Number(Number(_posMappaConfronto.lon).toFixed(4));
+    const key = 'mappa|' + lat + '|' + lon;
+    if (rec.mappa.some(m => m.key === key)) {
+        alert('Questa posizione è già nel confronto.');
+        return;
+    }
+    if (rec.lista.length + rec.mappa.length >= RS_COMPARATOR_LIMIT) {
+        alert(RS_COMPARATOR_LIMIT_MESSAGE);
+        return;
+    }
+    const nome = _posMappaConfronto.nome || ('Punto mappa ' + lat.toFixed(2) + ', ' + lon.toFixed(2));
+    rec.mappa.push({ key: key, lat: lat, lon: lon, nome: nome, citta: nome, nazione: _posMappaConfronto.nazione, origine: 'mappa' });
+    _scriviConfrontoRsm(rec);
+    aggiornaBarraConfrontoRs();
+}
+function confrontaDaRs() {
+    const rec = _confrontoRsmAttivo();
+    if (!rec) return;
+    const risultati = rec.lista.concat(rec.mappa);
+    if (risultati.length < 2) {
+        alert('Seleziona almeno 2 RS o rilocazioni da confrontare.');
+        return;
+    }
+    const payload = {
+        soggetto: rec.soggetto,
+        anno: rec.anno,
+        modalita: rec.modalita === 'astri' ? 'astri' : 'standard',
+        condizione: rec.condizione,
+        astri_in_casa: Array.isArray(rec.astri_in_casa) ? rec.astri_in_casa : [],
+        risultati: risultati
+    };
+    sessionStorage.setItem('astroDssConfrontoRs', JSON.stringify(payload));
+    window.open('compare_rs.php', '_blank');
+}
+window.addEventListener('storage', function(event) {
+    if (event.key === CONFRONTO_RSM_STORAGE_KEY) aggiornaBarraConfrontoRs();
+});
+document.addEventListener('DOMContentLoaded', function() {
+    aggiornaBarraConfrontoRs();
+    document.getElementById('anno-rs')?.addEventListener('change', aggiornaBarraConfrontoRs);
+});
  
 // ── Ora nascita con controlli ─────────────────────────────────────────────
 function initOraRS(oraLocale, offsetGmt) {

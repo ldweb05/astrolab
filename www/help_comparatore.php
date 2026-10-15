@@ -39,6 +39,7 @@ $auth->richiediLogin();
     <div class="help-section">
         <h2>Comparatore (Comparator RS e Rilocazioni)</h2>
         <p>Dalla pagina "Ricerca Località", seleziona più risultati (2 o 3 RSM) e premi "Confronta le selezioni": si apre il Comparatore, che affianca in tempo reale le ruote (RS o Rilocazione) delle località scelte, con le rispettive tabelle, per visualizzare subito le differenze tra le RSM messe a confronto.</p>
+        <p>Puoi aggiungere al confronto anche una località scelta sulla mappa: dalla RSM aperta con "↺ Usa", premi "🌍 Mappa", sposta il marker, premi "Usa questa posizione" e poi "➕ Aggiungi al confronto". Le località scelte dalla mappa si sommano a quelle selezionate dall'elenco, e il pulsante "Confronta" compare appena le scelte sono almeno 2, sia nell'elenco sia nella RSM.</p>
         <div class="help-note">💎 Il piano Free consente di confrontare fino a 2 risultati contemporaneamente. Con il piano Supporter puoi arrivare a confrontarne 3.</div>
     </div>
 

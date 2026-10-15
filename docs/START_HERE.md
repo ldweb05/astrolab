@@ -376,7 +376,8 @@ Sono disponibili:
 - riepilogo soggetti;
 - layout responsive;
 - ruote astrologiche integrate;
-- preservazione delle regole personalizzate.
+- preservazione delle regole personalizzate;
+- confronto delle RSM anche da posizioni scelte sulla mappa di `rs.php`, insieme a quelle dell'elenco.
 
 Il Comparator rappresenta la base del Decision Support System.
 

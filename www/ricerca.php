@@ -472,6 +472,63 @@ const COMPARATOR_LIMIT = <?= json_encode($auth->getComparatorLimit()) ?>;
 const COMPARATOR_LIMIT_MESSAGE = COMPARATOR_LIMIT < 3
     ? 'Il piano gratuito consente di confrontare fino a 2 risultati. Per confrontare 3 RSM è necessario il piano Supporter.'
     : `Puoi confrontare al massimo ${COMPARATOR_LIMIT} RSM.`;
+// ── Confronto RSM condiviso con rs.php (scelte dalla mappa) ─────────────
+// rs.php si apre in un'altra scheda: le selezioni stanno in localStorage,
+// condiviso tra schede. lista = scelte dall'elenco, mappa = da rs.php.
+const CONFRONTO_RSM_STORAGE_KEY = 'astrolabConfrontoRsm';
+function leggiConfrontoRsm() {
+    try {
+        const raw = localStorage.getItem(CONFRONTO_RSM_STORAGE_KEY);
+        const rec = raw ? JSON.parse(raw) : null;
+        return (rec && typeof rec === 'object') ? rec : null;
+    } catch (errore) { return null; }
+}
+function scriviConfrontoRsm(rec) {
+    try {
+        if (rec) localStorage.setItem(CONFRONTO_RSM_STORAGE_KEY, JSON.stringify(rec));
+        else localStorage.removeItem(CONFRONTO_RSM_STORAGE_KEY);
+    } catch (errore) {}
+}
+function contestoConfrontoRsm() {
+    return {
+        soggetto_id: String(document.getElementById('sel-soggetto').value || ''),
+        anno: String(document.getElementById('anno-rs').value || '')
+    };
+}
+function confrontoRsmStessoContesto(rec) {
+    const ctx = contestoConfrontoRsm();
+    return !!rec && String(rec.soggetto_id) === ctx.soggetto_id && String(rec.anno) === ctx.anno;
+}
+function getMappaConfronto() {
+    const rec = leggiConfrontoRsm();
+    return (confrontoRsmStessoContesto(rec) && Array.isArray(rec.mappa)) ? rec.mappa : [];
+}
+function totaleSelezioniConfronto() {
+    return stato.confronto.length + getMappaConfronto().length;
+}
+function sincronizzaConfrontoRsm() {
+    const ctx = contestoConfrontoRsm();
+    if (!ctx.soggetto_id || !ctx.anno) return;
+    const precedente = leggiConfrontoRsm();
+    const modalita = stato.modalita === 'astri' ? 'astri' : 'standard';
+    scriviConfrontoRsm({
+        soggetto_id: ctx.soggetto_id,
+        anno: ctx.anno,
+        soggetto: getSoggetto(),
+        modalita: modalita,
+        condizione: modalita === 'astri' ? 'Decima' : document.getElementById('condizione').value,
+        astri_in_casa: modalita === 'astri' ? buildAstriInCasaParam() : [],
+        limite: COMPARATOR_LIMIT,
+        lista: getRisultatiConfronto(),
+        mappa: (confrontoRsmStessoContesto(precedente) && Array.isArray(precedente.mappa)) ? precedente.mappa : []
+    });
+}
+function rimuoviMappaConfronto(key) {
+    const rec = leggiConfrontoRsm();
+    if (!rec || !Array.isArray(rec.mappa)) return;
+    rec.mappa = rec.mappa.filter(m => m.key !== key);
+    scriviConfrontoRsm(rec);
+}
 // ── Stato ────────────────────────────────────────────────────────────────
 let stato = {
 tutti:        [],
@@ -873,6 +930,7 @@ function avviaRicerca(espansioneOrbe) {
     stato.filtroStelle = 0;
     stato.pagina       = 1;
     stato.confronto    = [];
+    scriviConfrontoRsm(null);
     stato.offsetRicerca = 0;
     stato.analizzatiFinoA = 0;
     stato.ricercaCompletata = true;
@@ -1638,13 +1696,20 @@ if (stato.filtroNaz)    ris = ris.filter(r => (r.nazione||'').toUpperCase() === 
 if (stato.filtroStelle > 0) ris = ris.filter(r => r.stelline >= stato.filtroStelle);
 console.log('ATL_POS', ris.find(r => r.icao === 'KATL' || r.iata === 'ATL'));
 const totale    = ris.length;
-const confrontoToolbar = stato.confronto.length >= 2
-? `<div class="confronto-toolbar">
-<button type="button" id="btn-confronta-selezioni">
-Confronta le ${stato.confronto.length} selezioni
-</button>
+const mappaConfronto  = getMappaConfronto();
+const totaleConfronto = stato.confronto.length + mappaConfronto.length;
+const vociMappa = mappaConfronto.map(m => `<span style="display:inline-flex;align-items:center;gap:4px;background:#E3F2FD;border:1px solid #90CAF9;border-radius:12px;padding:2px 8px;font-size:12px">
+📍 ${escHtml(m.nome || 'Punto mappa')} <span style="color:#666">(da mappa)</span>
+<button type="button" class="confronto-mappa-rimuovi" data-mappa-key="${escHtml(m.key)}" title="Rimuovi dal confronto" style="border:none;background:none;cursor:pointer;color:#C62828;font-size:13px;padding:0 2px">✕</button>
+</span>`).join('');
+const confrontoToolbar = (totaleConfronto >= 2 || mappaConfronto.length > 0)
+? `<div class="confronto-toolbar" style="flex-wrap:wrap;align-items:center;gap:8px">
+${vociMappa}
+${totaleConfronto >= 2 ? `<button type="button" id="btn-confronta-selezioni">
+Confronta le ${totaleConfronto} selezioni
+</button>` : ''}
 <span style="font-size:12px;color:#666">
-${stato.confronto.length}/${COMPARATOR_LIMIT} selezionate
+${totaleConfronto}/${COMPARATOR_LIMIT} selezionate
 </span>
 </div>`
 : '';
@@ -1890,6 +1955,11 @@ impostaAnnoRsPredefinito();
 document.getElementById('sel-soggetto').addEventListener('change', impostaAnnoRsPredefinito);
 ripristinaStatoRicerca();
 
+window.addEventListener('storage', function(event) {
+    if (event.key !== CONFRONTO_RSM_STORAGE_KEY) return;
+    if (stato.tutti.length) renderTabella();
+});
+
 document.getElementById('risultati-area').addEventListener('change', function(event) {
     const checkbox = event.target.closest('.confronto-checkbox');
     if (!checkbox) return;
@@ -1899,7 +1969,7 @@ document.getElementById('risultati-area').addEventListener('change', function(ev
     if (checkbox.checked) {
         if (stato.confronto.includes(key)) return;
 
-        if (stato.confronto.length >= COMPARATOR_LIMIT) {
+        if (totaleSelezioniConfronto() >= COMPARATOR_LIMIT) {
             checkbox.checked = false;
             alert(COMPARATOR_LIMIT_MESSAGE);
             return;
@@ -1910,6 +1980,7 @@ document.getElementById('risultati-area').addEventListener('change', function(ev
         stato.confronto = stato.confronto.filter(item => item !== key);
     }
 
+    sincronizzaConfrontoRsm();
     renderTabella();
 });
 
@@ -1917,13 +1988,21 @@ document.getElementById('risultati-area').addEventListener('click', function(eve
     const linkRs = event.target.closest('a.btn-usa');
     if (linkRs) {
         salvaStatoRicerca();
+        sincronizzaConfrontoRsm();
+        return;
+    }
+
+    const rimuoviMappa = event.target.closest('.confronto-mappa-rimuovi');
+    if (rimuoviMappa) {
+        rimuoviMappaConfronto(rimuoviMappa.dataset.mappaKey);
+        renderTabella();
         return;
     }
 
     const button = event.target.closest('#btn-confronta-selezioni');
     if (!button) return;
 
-    const risultati = getRisultatiConfronto();
+    const risultati = getRisultatiConfronto().concat(getMappaConfronto());
     if (risultati.length < 2) {
         alert('Seleziona almeno 2 RS o rilocazioni da confrontare.');
         return;
