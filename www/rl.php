@@ -94,6 +94,11 @@ if ($soggetto) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        /* page-scoped rl.php: coordinate GMS sempre intere nella testata mappa, il titolo si accorcia */
+        #mappa-rl-float .map-float-header h3 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #mappa-rl-coords { flex-shrink: 0; }
+    </style>
 </head>
 <body>
 <?php $paginaAttiva = 'rl'; include 'includes/header_nav.php'; ?>
@@ -304,6 +309,7 @@ if ($soggetto) {
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
+<script src="js/coord_gms.js"></script>
 <script src="js/svg_zoom.js"></script>
 <script src="js/rl.js"></script>
  
@@ -331,7 +337,7 @@ function prepareStampaRL() {
     const latRL = parseFloat(document.getElementById('rl-lat')?.value) || 0;
     const lonRL = parseFloat(document.getElementById('rl-lon')?.value) || 0;
     document.getElementById('print-h-luogo-rl').textContent =
-        'Luogo: ' + luogo + '   Long ' + lonRL.toFixed(4) + '°   Lat ' + latRL.toFixed(4) + '°';
+        'Luogo: ' + luogo + '   Long ' + formattaCoordGMS(lonRL, 'lon') + '   Lat ' + formattaCoordGMS(latRL, 'lat');
 
     buildAspettiOrizzontale('aspetti-rl-body', 'print-aspetti-rl');
     stampaPagina('print-rl');

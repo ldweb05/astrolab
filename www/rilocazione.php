@@ -984,6 +984,7 @@ if ($soggetto) {
 <script src="js/zodiac_wheel.js"></script>
 <script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
+<script src="js/coord_gms.js"></script>
 <?php if ($soggetto && $jsData): ?>
 <script>
 'use strict';
@@ -1120,14 +1121,14 @@ function apriMappa() {
                 const p = e.target.getLatLng();
                 posMappa = {lat: p.lat, lon: p.lng};
                 document.getElementById('mappa-coords').textContent =
-                    p.lat.toFixed(4) + '°  ' + p.lng.toFixed(4) + '°';
+                    formattaCoordGMS(p.lat, 'lat') + '  ' + formattaCoordGMS(p.lng, 'lon');
             });
 
             mapMarker.on('dragend', e => {
                 const p = e.target.getLatLng();
                 posMappa = {lat: p.lat, lon: p.lng};
                 document.getElementById('mappa-coords').textContent =
-                    p.lat.toFixed(4) + '°  ' + p.lng.toFixed(4) + '°';
+                    formattaCoordGMS(p.lat, 'lat') + '  ' + formattaCoordGMS(p.lng, 'lon');
                 clearTimeout(ricalcoloTimer);
                 ricalcoloTimer = setTimeout(() => {
                     // Aggiorna i campi con le coordinate della mappa
@@ -1147,7 +1148,7 @@ function apriMappa() {
     }
 
     document.getElementById('mappa-coords').textContent =
-        lat.toFixed(4) + '°  ' + lon.toFixed(4) + '°';
+        formattaCoordGMS(lat, 'lat') + '  ' + formattaCoordGMS(lon, 'lon');
 }
 
 function chiudiMappa() {
@@ -1167,7 +1168,7 @@ function usaPosizioneMappa() {
     // Aggiorna il campo città con un placeholder generico
     const input = document.getElementById('riloc-luogo-input');
     if (input && !input.value.trim()) {
-        input.value = posMappa.lat.toFixed(4) + '° ' + posMappa.lon.toFixed(4) + '°';
+        input.value = formattaCoordGMS(posMappa.lat, 'lat') + ' ' + formattaCoordGMS(posMappa.lon, 'lon');
     }
     chiudiMappa();
     calcolaRilocazione();
@@ -1363,7 +1364,7 @@ function calcolaRilocazione() {
                 mapMarker.setLatLng([lat, lon]);
                 leafletMap.setView([lat, lon], leafletMap.getZoom());
                 document.getElementById('mappa-coords').textContent =
-                    lat.toFixed(4) + '°  ' + lon.toFixed(4) + '°';
+                    formattaCoordGMS(lat, 'lat') + '  ' + formattaCoordGMS(lon, 'lon');
             }
         })
         .catch(err => {
@@ -1490,7 +1491,7 @@ function selezionaLuogoRiloc(lat, lon, nome) {
         mapMarker.setLatLng([parseFloat(lat), parseFloat(lon)]);
         leafletMap.setView([parseFloat(lat), parseFloat(lon)], leafletMap.getZoom());
         document.getElementById('mappa-coords').textContent =
-            parseFloat(lat).toFixed(4) + '°  ' + parseFloat(lon).toFixed(4) + '°';
+            formattaCoordGMS(lat, 'lat') + '  ' + formattaCoordGMS(lon, 'lon');
     }
 
     calcolaRilocazione();
@@ -1601,7 +1602,7 @@ function _rigaTabella(r, idx) {
                     '&lat_riloc=' + encodeURIComponent(Number(r.lat).toFixed(4)) +
                     '&lon_riloc=' + encodeURIComponent(Number(r.lon).toFixed(4)) +
                     '&luogo_riloc=' + encodeURIComponent(r.citta ||
-                        (Number(r.lat).toFixed(4) + '°, ' + Number(r.lon).toFixed(4) + '°')))}">
+                        (formattaCoordGMS(r.lat, 'lat') + ', ' + formattaCoordGMS(r.lon, 'lon'))))}">
                 ☿ Usa
             </a>
         </td>
@@ -1941,7 +1942,7 @@ window._usaLuogoAngolari = function(lat, lon, nomeCitta) {
     const inpLuogo = document.getElementById('riloc-luogo-input');
     if (inpLat)   inpLat.value   = parseFloat(lat).toFixed(4);
     if (inpLon)   inpLon.value   = parseFloat(lon).toFixed(4);
-    if (inpLuogo) inpLuogo.value = nomeCitta || (lat.toFixed(4) + '°, ' + lon.toFixed(4) + '°');
+    if (inpLuogo) inpLuogo.value = nomeCitta || (formattaCoordGMS(lat, 'lat') + ', ' + formattaCoordGMS(lon, 'lon'));
 
     const controlli = document.querySelector('.controlli-riloc');
     if (controlli) controlli.scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -387,7 +387,7 @@ const RLModule = (function () {
      if (headerRL) headerRL.style.display = 'flex';
      _setText('rl-indice-label', `${_rlIndex + 1} di ${_rlList.length} (RS ${_annoRS})`);
      _setText('rl-gmt-label',    data.rl_gmt);
-     _setText('rl-luogo-label',  luogoRL || `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`);
+     _setText('rl-luogo-label',  luogoRL || (formattaCoordGMS(lat, 'lat') + ', ' + formattaCoordGMS(lon, 'lon')));
      _setText('rl-asc-label',    data.tema_rl?.case?.ASC?.posizione?.stringa ?? '—');
      _setText('rl-mc-label',     data.tema_rl?.case?.MC?.posizione?.stringa  ?? '—');
      // ── Ruote SVG con ZOOM ──────────────────────────────────────────
@@ -484,7 +484,7 @@ const RLModule = (function () {
          setTimeout(() => _leafletMap.invalidateSize(), 60);
      }
      const coordsEl = document.getElementById(_coordsDivId);
-     if (coordsEl) coordsEl.textContent = lat.toFixed(4) + '°  ' + lon.toFixed(4) + '°';
+     if (coordsEl) coordsEl.textContent = formattaCoordGMS(lat, 'lat') + '  ' + formattaCoordGMS(lon, 'lon');
  }
  function _initLeaflet(lat, lon) {
      const mapDiv = document.getElementById(_mapDivId);
@@ -498,13 +498,13 @@ const RLModule = (function () {
      _mapMarker.on('drag', e => {
          const p = e.target.getLatLng();
          const coordsEl = document.getElementById(_coordsDivId);
-         if (coordsEl) coordsEl.textContent = p.lat.toFixed(4) + '°  ' + p.lng.toFixed(4) + '°';
+         if (coordsEl) coordsEl.textContent = formattaCoordGMS(p.lat, 'lat') + '  ' + formattaCoordGMS(p.lng, 'lon');
      });
      _mapMarker.on('dragend', e => {
          const p   = e.target.getLatLng();
          const lat = p.lat, lon = p.lng;
          const coordsEl = document.getElementById(_coordsDivId);
-         if (coordsEl) coordsEl.textContent = lat.toFixed(4) + '°  ' + lon.toFixed(4) + '°';
+         if (coordsEl) coordsEl.textContent = formattaCoordGMS(lat, 'lat') + '  ' + formattaCoordGMS(lon, 'lon');
          _sincronizzaCoordinate(lat, lon);
          clearTimeout(_ricalcoloTimer);
          _ricalcoloTimer = setTimeout(() => calcolaRL(lat, lon), 280);
@@ -513,7 +513,7 @@ const RLModule = (function () {
          const lat = e.latlng.lat, lon = e.latlng.lng;
          _mapMarker.setLatLng([lat, lon]);
          const coordsEl = document.getElementById(_coordsDivId);
-         if (coordsEl) coordsEl.textContent = lat.toFixed(4) + '°  ' + lon.toFixed(4) + '°';
+         if (coordsEl) coordsEl.textContent = formattaCoordGMS(lat, 'lat') + '  ' + formattaCoordGMS(lon, 'lon');
          _sincronizzaCoordinate(lat, lon);
          clearTimeout(_ricalcoloTimer);
          _ricalcoloTimer = setTimeout(() => calcolaRL(lat, lon), 280);

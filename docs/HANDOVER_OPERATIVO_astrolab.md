@@ -4502,3 +4502,22 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** eventuale estensione alle RL (`rl.php` + `ricerca_rl.php`), non pianificata.
 
 ---
+## 20-10-2026 — Coordinate geografiche in formato GMS (gradi, minuti, secondi)
+
+**Componenti modificati:** nuovo `www/js/coord_gms.js`; `www/rs.php`, `www/rl.php`, `www/js/rl.js`, `www/rilocazione.php`, `www/transiti.php`, `www/ricerca.php`, `www/ricerca_rl.php`. Nessun file CSS/JS condiviso esistente toccato (`css/style.css` e `js/app.js` invariati).
+
+**Obiettivo (richiesta del committente):** mostrare le coordinate geografiche (Lat/Lon) in formato GMS invece che in gradi decimali. Formato scelto dal committente: `41°54′10″ N` / `12°29′47″ E` (lettera N/S/E/W, niente segno).
+
+**Soluzione:** nuova funzione `formattaCoordGMS(valore, 'lat'|'lon')` in un file dedicato `js/coord_gms.js` (non in `app.js`, perche' `ricerca.php` e `ricerca_rl.php` non lo caricano), incluso nelle 6 pagine. Arrotondamento sul totale dei secondi, quindi niente `59′60″`. Cambia solo la VISUALIZZAZIONE: coordinate sotto la mappa (RS, RL, Rilocazione), etichetta luogo RS/Transiti, intestazione di stampa RS/RL, nome provvisorio del luogo quando manca la citta' (RL, Rilocazione), riga live e colonna Luogo della ricerca a griglia (RSM e RL).
+
+**Volutamente invariato (decisione del committente):** campi `rs-lat`/`rs-lon`, `rl-lat`/`rl-lon`, `riloc-lat`/`riloc-lon` (restano decimali: sono `type="number"` e alimentano il calcolo), parametri `lat_rs`/`lon_rs`/`lat_riloc`/`lon_riloc` nei link, API e DB. Posizioni zodiacali (gia' in GMS via `SweCalc::gradi2DMS()`) e etichette della ruota invariate.
+
+**Ritocchi grafici collegati (page-scoped):** `rs.php` e `transiti.php` -> `.header-rs b { font-weight: normal; }` (valori gialli dell'intestazione non piu' in grassetto, richiesta del committente). `rl.php` -> nella testata della mappa RL le coordinate GMS venivano tagliate (titolo RL piu' lungo, finestra 560px) e sparivano le lettere N/S/E/W: coordinate con `flex-shrink: 0`, il titolo si accorcia con "…".
+
+**Test eseguiti:** sandbox (`node --check`, casi di test della funzione, ogni patch con contesto univoco e scrittura solo dopo verifica di tutte le sostituzioni); sul Pi MD5 identici al sandbox per ogni file, `php -l` nel container, `node --check` su `coord_gms.js` e `rl.js`, `git diff --check`, riavvio di `astrolab-web`; test nel browser del committente superati su tutte le pagine. Punto di ripristino: tag locale `pre-gms-coordinate` su `fe92a35`.
+
+**Documentazione:** solo questo handover (modifica di visualizzazione, nessuna nuova funzionalita').
+
+**Passo successivo:** nessuno.
+
+---

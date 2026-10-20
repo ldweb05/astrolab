@@ -104,6 +104,10 @@ if ($soggetto) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
+    <style>
+        /* page-scoped transiti.php: valori gialli intestazione non in grassetto */
+        .header-rs b { font-weight: normal; }
+    </style>
 </head>
 <body>
 <?php $paginaAttiva = 'transiti'; include 'includes/header_nav.php'; ?>
@@ -239,6 +243,7 @@ if ($soggetto) {
 
 <script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
+<script src="js/coord_gms.js"></script>
 <script src="js/rs_alert.js"></script>
 <script>
 <?php if ($soggetto && $jsData): ?>
@@ -360,7 +365,7 @@ function eseguiCalcoloTransiti(g, m, a, oraGmtDec, latT, lonT, luogoT) {
             document.getElementById('rs-anno-label').textContent  = dataStr;
             document.getElementById('rs-gmt-label').textContent   = data.transito_gmt;
             document.getElementById('rs-luogo-label').textContent =
-                luogoT + ' (Long: ' + parseFloat(lonT).toFixed(4) + '°, Lat: ' + parseFloat(latT).toFixed(4) + '°)';
+                luogoT + ' (Long: ' + formattaCoordGMS(lonT, 'lon') + ', Lat: ' + formattaCoordGMS(latT, 'lat') + ')';
             document.getElementById('header-rs').style.display    = 'flex';
 
             aggiornaFusoOrarioLocale(latT, lonT, data.transito_gmt);

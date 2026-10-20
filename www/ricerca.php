@@ -1015,7 +1015,7 @@ function avviaRicercaGriglia(s) {
         const r = JSON.parse(e.data);
         stato.tutti.push(r);
         document.getElementById('risultati-live').textContent =
-            '★'.repeat(r.stelline) + ' Lat ' + r.lat.toFixed(2) + '° Lon ' + r.lon.toFixed(2) + '° — ' + r.val;
+            '★'.repeat(r.stelline) + ' Lat ' + formattaCoordGMS(r.lat, 'lat') + ' Lon ' + formattaCoordGMS(r.lon, 'lon') + ' — ' + r.val;
     });
 
     eventoCorrente.addEventListener('done', e => {
@@ -1097,7 +1097,7 @@ function avviaRicercaGrigliaAstri(s) {
         const r = JSON.parse(e.data);
         stato.tutti.push(r);
         document.getElementById('risultati-live').textContent =
-            '★'.repeat(r.stelline) + ' Lat ' + r.lat.toFixed(2) + '° Lon ' + r.lon.toFixed(2) + '° — ' + r.val;
+            '★'.repeat(r.stelline) + ' Lat ' + formattaCoordGMS(r.lat, 'lat') + ' Lon ' + formattaCoordGMS(r.lon, 'lon') + ' — ' + r.val;
     });
 
     eventoCorrente.addEventListener('done', e => {
@@ -1183,7 +1183,7 @@ function avviaRicercaGrigliaCuspidi(s, espansioneOrbe) {
         const r = JSON.parse(e.data);
         stato.tutti.push(r);
         document.getElementById('risultati-live').textContent =
-            (SEGNI_SIM[r.segno_num]||'') + ' ' + r.cuspide_str + ' — Lat ' + r.lat.toFixed(2) + '° Lon ' + r.lon.toFixed(2) + '°';
+            (SEGNI_SIM[r.segno_num]||'') + ' ' + r.cuspide_str + ' — Lat ' + formattaCoordGMS(r.lat, 'lat') + ' Lon ' + formattaCoordGMS(r.lon, 'lon');
     });
 
     eventoCorrente.addEventListener('done', e => {
@@ -1562,7 +1562,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
     const cond = document.getElementById('condizione').value;
 
     const righe = pagRis.map((r, idx) => {
-        const luogoStr = 'Lat ' + r.lat.toFixed(2) + '° Lon ' + r.lon.toFixed(2) + '°';
+        const luogoStr = 'Lat ' + formattaCoordGMS(r.lat, 'lat') + ' Lon ' + formattaCoordGMS(r.lon, 'lon');
         const rsUrl = 'rs.php?id=' + (sogg?.id||'') +
             '&lat_rs=' + r.lat + '&lon_rs=' + r.lon +
             '&luogo_rs=' + encodeURIComponent(luogoStr) +
@@ -1645,7 +1645,7 @@ console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.ia
     const casa = document.getElementById('cusp-casa').value;
 
     const righe = pagRis.map((r, idx) => {
-        const luogoStr = 'Lat ' + r.lat.toFixed(2) + '° Lon ' + r.lon.toFixed(2) + '°';
+        const luogoStr = 'Lat ' + formattaCoordGMS(r.lat, 'lat') + ' Lon ' + formattaCoordGMS(r.lon, 'lon');
         const rsUrl = 'rs.php?id=' + (sogg?.id||'') +
             '&lat_rs=' + r.lat + '&lon_rs=' + r.lon +
             '&luogo_rs=' + encodeURIComponent(luogoStr) +
@@ -2066,6 +2066,7 @@ if (!eraAperto) target.classList.add('aperto');
 }
 </script>
 <script src="js/sicurezza.js"></script>
+<script src="js/coord_gms.js"></script>
 <script src="js/ricerca_astri.js"></script>
 <script src="js/ricerca_filtri_geo.js"></script>
 <script src="js/ricerca_paginazione.js"></script>

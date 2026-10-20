@@ -115,6 +115,10 @@ if ($soggetto) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..700&family=Noto+Symbols+2&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        /* page-scoped rs.php: valori gialli intestazione RS non in grassetto */
+        .header-rs b { font-weight: normal; }
+    </style>
 </head>
 <body>
 <?php $paginaAttiva = 'rs'; include 'includes/header_nav.php'; ?>
@@ -500,6 +504,7 @@ if ($soggetto) {
 
 <script src="js/sicurezza.js"></script>
 <script src="js/app.js"></script>
+<script src="js/coord_gms.js"></script>
 <script src="js/rs_alert.js"></script>
 <script>
 <?php if ($soggetto && $jsData): ?>
@@ -825,14 +830,14 @@ function apriMappa() {
                 const p = e.target.getLatLng();
                 posMappa = {lat: p.lat, lon: p.lng};
                 document.getElementById('mappa-coords').textContent =
-                    p.lat.toFixed(4) + '°  ' + p.lng.toFixed(4) + '°';
+                    formattaCoordGMS(p.lat, 'lat') + '  ' + formattaCoordGMS(p.lng, 'lon');
             });
  
             mapMarker.on('dragend', e => {
                 const p = e.target.getLatLng();
                 posMappa = {lat: p.lat, lon: p.lng};
                 document.getElementById('mappa-coords').textContent =
-                    p.lat.toFixed(4) + '°  ' + p.lng.toFixed(4) + '°';
+                    formattaCoordGMS(p.lat, 'lat') + '  ' + formattaCoordGMS(p.lng, 'lon');
                 clearTimeout(ricalcoloTimer);
                 ricalcoloTimer = setTimeout(() => calcolaRS(p.lat, p.lng, true), 280);
             });
@@ -847,7 +852,7 @@ function apriMappa() {
     }
  
     document.getElementById('mappa-coords').textContent =
-        lat.toFixed(4) + '°  ' + lon.toFixed(4) + '°';
+        formattaCoordGMS(lat, 'lat') + '  ' + formattaCoordGMS(lon, 'lon');
 }
  
 // ── Ricalcolo con nuova ora locale ───────────────────────────────────────
@@ -1211,7 +1216,7 @@ function calcolaRS(latOvr, lonOvr, soloGrafico) {
             document.getElementById('rs-gmt-label').textContent   = data.rs_gmt;
             
             // FIX 1 APPLICATO: Corretto lo swap tra Long e Lat
-            document.getElementById('rs-luogo-label').textContent = luogoRS + ' (Long: ' + parseFloat(lonRS).toFixed(4) + '°, Lat: ' + parseFloat(latRS).toFixed(4) + '°)';
+            document.getElementById('rs-luogo-label').textContent = luogoRS + ' (Long: ' + formattaCoordGMS(lonRS, 'lon') + ', Lat: ' + formattaCoordGMS(latRS, 'lat') + ')';
             
             document.getElementById('header-rs').style.display    = 'flex';
  
@@ -1880,7 +1885,7 @@ function prepareStampaRS() {
     const latRS = parseFloat(document.getElementById('rs-lat')?.value) || 0;
     const lonRS = parseFloat(document.getElementById('rs-lon')?.value) || 0;
     document.getElementById('print-h-luogo').textContent =
-        'Luogo: ' + luogo + '   Long ' + lonRS.toFixed(4) + '°   Lat ' + latRS.toFixed(4) + '°';
+        'Luogo: ' + luogo + '   Long ' + formattaCoordGMS(lonRS, 'lon') + '   Lat ' + formattaCoordGMS(latRS, 'lat');
 
     buildAspettiOrizzontale('aspetti-rs-body', 'print-aspetti-rs');
     stampaPagina('print-rs');
