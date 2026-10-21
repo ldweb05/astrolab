@@ -4616,3 +4616,24 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** BL-0004 (eliporti nelle altre ricerche, a partire da Cuspidi).
 
 ---
+## 21-10-2026 (sexies) — BL-0004: eliporti attivi anche nelle ricerche Cuspidi e Rilocazione angolare
+
+**Componenti modificati:** `www/api/cuspidi_search_api.php`, `www/api/riloc_angolari_api.php` (una riga ciascuno, ramo "tutti"). Nessun file CSS/JS condiviso toccato, DB invariato.
+
+**Obiettivo:** allineare alle ricerche RSM/RL (voce 21-10-2026) le altre ricerche che leggono la tabella `aeroporti`: con "Tutti" entrano anche gli `heliport` attivi, cioe' quelli con codice IATA (voli di linea, es. Groenlandia meridionale).
+
+**Analisi dei file elencati in BL-0004:**
+- `cuspidi_search_api.php` (modalita' Cuspidi di `ricerca.php`/`ricerca_rl.php`, ora con default "Tutti") -> aggiornato.
+- `riloc_angolari_api.php` (ricerca angolare di `rilocazione.php`, menu proprio con "Tutti (lento)") -> aggiornato.
+- `includes/search_engine.php` -> non toccato: usato solo da `api/ricerca_api.php`, che nessuna pagina richiama (il file si dichiara "LEGACY / NON USATO").
+- `api/luoghi_api.php` -> non toccato: nessuna pagina lo richiama.
+
+**Fuori ambito, annotato:** il menu "Aeroporti" di `rilocazione.php` parte ancora da "Grandi + Medi" e non ha "Solo Hub", a differenza delle pagine di ricerca.
+
+**Test eseguiti:** sandbox (un contesto per file, rifiuto di doppia applicazione, `php -l`, `git diff --check`); sul Pi MD5 identici al sandbox, `php -l` nel container, `git diff --check`, riavvio di `astrolab-web`; test nel browser del committente: Cuspidi e Rilocazione angolare con "Tutti" e "Grandi + Medi" senza errori. Punto di ripristino: tag locale `pre-bl0004-eliporti` su `4c76dc2`.
+
+**Documentazione:** questo handover, `docs/ux-astrolab/BACKLOG_ux.md` (BL-0004 risolto).
+
+**Passo successivo:** campagna di confronto sistematico con Aladino per condizione, a partire da Denaro.
+
+---

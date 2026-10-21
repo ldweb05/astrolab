@@ -166,7 +166,8 @@ try {
             $where[] = "tipo IN ('large_airport','medium_airport','small_airport')";
             break;
         default: // tutti
-            $where[] = "tipo IN ('large_airport','medium_airport','small_airport')";
+            // BL-0004 (2026-10-21): anche gli eliporti attivi (con IATA), come ricerca_stream_api
+            $where[] = "tipo IN ('large_airport','medium_airport','small_airport','heliport')";
     }
 
     $sql = "SELECT icao_code, iata_code, nome, citta, nazione,

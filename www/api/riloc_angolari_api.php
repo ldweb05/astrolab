@@ -133,7 +133,8 @@ try {
             $where[] = "tipo IN ('large_airport','medium_airport','small_airport')";
             break;
         default:
-            $where[] = "tipo IN ('large_airport','medium_airport','small_airport')";
+            // BL-0004 (2026-10-21): anche gli eliporti attivi (con IATA), come ricerca_stream_api
+            $where[] = "tipo IN ('large_airport','medium_airport','small_airport','heliport')";
     }
 
     if ($filtroNazione !== '') {
