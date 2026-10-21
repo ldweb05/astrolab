@@ -4637,3 +4637,23 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** campagna di confronto sistematico con Aladino per condizione, a partire da Denaro.
 
 ---
+## 21-10-2026 (septies) — Confronto Aladino LD001/Casa/RSM 2027 e nuova voce "Tutti + aviosuperfici"
+
+**Componenti modificati:** `www/api/ricerca_stream_api.php`, `www/api/ricerca_stream_rl_api.php`, `www/api/cuspidi_search_api.php` (nuovo valore `tipo_ricerca=tutti_avio`), `www/ricerca.php`, `www/ricerca_rl.php` (nuova voce del menu Aeroporti), `www/help_ricerca.php`. Regole, DB e file CSS/JS condivisi invariati.
+
+**Confronto con Aladino (soggetto LD001 Lorenzo Diana, condizione Casa, RSM 2027):** nascita 05/09/1960 16:47 GMT e RS 05/09/2027 21:30 GMT identiche ad Aladino. Script diagnostico in sola lettura nel container sulle 102 localita' gia' trascritte in `tests/test_confronto_aladino_casa.php` piu' ~40 nuove dagli screenshot (lon 39°42'-41°50' E), con la pipeline completa della ricerca Casa (FiltroEsclusione, gerarchia IV casa, veti ufficiali, Regola 33) e la verifica del punto nel DB. Esito su 143 localita': **regole coincidenti in 139 (97%)**; 4 escluse da `FiltroEsclusione` per Saturno in X RS (Tbilisi, Volgograd, Elista x2). Trovate davvero da AstroLab 108 (75%): le altre mancano per dati (18 assenti nel DB, 6 chiuse, 4 basi militari, 3 inattive senza IATA).
+
+**Localita' italiane di Aladino (S. Maria di Leuca, Lepore, Lecce, Casale Brindisi):** per questo soggetto Marte RS (212,5°) e' appena prima della cuspide della VI in Puglia; la distanza cresce verso est (Bari 1,46°, Taranto 2,08°, Brindisi 2,85°, Galatina 2,94°, Lecce 3,03°, Lepore 3,19°, Leuca 3,07°).
+- Brindisi Casale (LIBR): esclusa dal veto di pre-ingresso Marte entro 3° (UX-0025 punto 3). Aladino usa evidentemente l'orbo di 2°30' della Regola 32. **Decisione del committente: la soglia resta 3°** (divergenza voluta, conferma di UX-0025 punto 3; codice invariato).
+- Lepore (LINL) e le piste di Lecce (Fondone, Corte): regole OK, ma `small_airport` senza IATA, quindi inattive e mai cercate.
+- S. Maria di Leuca: nessun aeroporto nel DB; si trova con la ricerca per Localita' (GeoNames).
+
+**Soluzione per le aviosuperfici (decisione del committente):** nuova voce "Tutti + aviosuperfici" nel menu Aeroporti (RSM e RL), dopo "Tutti" che resta predefinito. Valore `tutti_avio` nelle tre API: la condizione `attivo = true` diventa `(attivo = true OR tipo = 'small_airport')` con i tipi di "tutti"; eliporti senza IATA e piste chiuse restano esclusi, il filtro Militari continua a valere. La ricerca per Localita' non e' toccata (`preparaFiltriLocalita()` ignora la nuova condizione). Guida aggiornata (ricerca piu' lenta).
+
+**Test eseguiti:** sandbox (patch con contesti univoci, rifiuto di doppia applicazione, `php -l`, `git diff --check`, simulazione di `preparaFiltriLocalita()` con la nuova condizione); sul Pi MD5 identici al sandbox per i sei file, `php -l` nel container, `git diff --check` sui file della feature, riavvio di `astrolab-web`; test nel browser del committente superati (LD001 Casa 2027 con "Tutti + aviosuperfici": piste salentine presenti, Brindisi esclusa come deciso; "Tutti" invariato; Cuspidi e RL senza errori). Punto di ripristino: tag locale `pre-aviosuperfici` su `6e04580`.
+
+**Documentazione:** questo handover, `www/help_ricerca.php`.
+
+**Passo successivo:** proseguire la campagna di confronto con Aladino (Denaro e le altre condizioni); valutare se aggiornare `tests/test_confronto_aladino_casa.php` con FiltroEsclusione e verifica DB.
+
+---

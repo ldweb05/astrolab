@@ -42,7 +42,7 @@ require_once __DIR__ . '/../includes/CuspidiUtils.php';
  *   tol_gradi                    → tolleranza gradi (default 0)
  *   minuti                       → 0-59
  *   tol_minuti                   → tolleranza minuti (default 0)
- *   tipo_ricerca                 → large_medium | iata_only | solo_hub | nazione | tutti
+ *   tipo_ricerca                 → large_medium | iata_only | solo_hub | nazione | tutti | tutti_avio
  *   nazione                      → codice ISO (solo se tipo=nazione)
  *   escludi_militari             → 1|0
  */
@@ -154,6 +154,11 @@ try {
         case 'solo_hub': // "Solo Hub (large + IATA)" - 2026-10-21, prima il frontend inviava large_medium
             $where[] = "tipo = 'large_airport'";
             $where[] = "iata_code IS NOT NULL AND iata_code <> ''";
+            break;
+        case 'tutti_avio': // "Tutti + aviosuperfici" - 2026-10-21: come 'tutti' piu' le piste minori senza IATA
+            $where = array_values(array_diff($where, ['attivo = true']));
+            $where[] = "(attivo = true OR tipo = 'small_airport')";
+            $where[] = "tipo IN ('large_airport','medium_airport','small_airport','heliport')";
             break;
         case 'iata_only':
             $where[] = "iata_code IS NOT NULL AND iata_code <> ''";

@@ -96,7 +96,7 @@ require_once __DIR__ . '/../includes/RicercaRSExclusionFilter.php';
  *   lat, lon                → coordinate luogo di nascita
  *   anno                    → anno RS (default: anno corrente)
  *   condizione              → Decima|Lavoro|Amore|Salute|Denaro|Denaro Low|Casa
- *   tipo_ricerca            → large_medium|iata_only|solo_hub|tutti
+ *   tipo_ricerca            → large_medium|iata_only|solo_hub|tutti|tutti_avio
  *   escludi_militari        → 1|0 (default 1)
  *   nazione                 → codice ISO singolo (legacy, compatibilità)
  *   nazioni_filtro          → "IT,FR,DE" — lista ISO separata da virgola
@@ -328,6 +328,12 @@ try {
         // "Solo Hub (large + IATA)" - 2026-10-21, prima il frontend inviava large_medium
         $where[] = "tipo = 'large_airport'";
         $where[] = "iata_code IS NOT NULL AND iata_code <> ''";
+    } elseif ($tipoRicerca === 'tutti_avio') {
+        // "Tutti + aviosuperfici" - 2026-10-21: come 'tutti' piu' le piste minori senza IATA
+        // (small_airport inattive, es. Lecce-Lepore); eliporti inattivi e piste chiuse restano esclusi.
+        $where = array_values(array_diff($where, ['attivo = true']));
+        $where[] = "(attivo = true OR tipo = 'small_airport')";
+        $where[] = "tipo IN ('large_airport','medium_airport','small_airport','heliport')";
     } elseif ($tipoRicerca === 'iata_only') {
         $where[] = "iata_code IS NOT NULL AND iata_code <> ''";
         $where[] = "tipo IN ('large_airport','medium_airport','small_airport')";

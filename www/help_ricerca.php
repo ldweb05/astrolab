@@ -40,7 +40,7 @@ $auth->richiediLogin();
         <h2>Ricerca Migliori Località (RSM v3)</h2>
         <p>Dalla pagina "Ricerca Località" imposta <strong>Soggetto</strong>, <strong>Anno RS</strong>, <strong>Condizione</strong> (il tema su cui valutare stelline e punteggio) e <strong>Tipo località</strong>:</p>
         <ul>
-            <li><strong>Aeroporti</strong> — disponibile per tutti i piani. Accanto compare il selettore <strong>Aeroporti</strong>: <em>Tutti</em> (predefinito, comprende anche gli eliporti con voli di linea) oppure <em>Grandi + Medi</em> / <em>Solo IATA</em> / <em>Solo Hub</em> (solo i grandi scali internazionali con codice IATA) per restringere la ricerca se i risultati sono troppi.</li>
+            <li><strong>Aeroporti</strong> — disponibile per tutti i piani. Accanto compare il selettore <strong>Aeroporti</strong>: <em>Tutti</em> (predefinito, comprende anche gli eliporti con voli di linea), <em>Tutti + aviosuperfici</em> (aggiunge le piste minori senza codice IATA, come fa Aladino: ricerca piu' lenta) oppure <em>Grandi + Medi</em> / <em>Solo IATA</em> / <em>Solo Hub</em> (solo i grandi scali internazionali con codice IATA) per restringere la ricerca se i risultati sono troppi.</li>
             <li><strong>Località</strong> (ricerca libera per nazione, non limitata agli aeroporti) — <span class="help-supporter">riservata al piano Supporter</span>.</li>
         </ul>
         <p>La ricerca ha tre modalità:</p>

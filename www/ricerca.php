@@ -82,6 +82,7 @@ BARRA CONTROLLI PRINCIPALE
 <label>Aeroporti</label>
 <select id="tipo-ricerca">
 <option value="tutti" selected>Tutti</option>
+<option value="tutti_avio">Tutti + aviosuperfici</option>
 <option value="large_medium">Grandi + Medi</option>
 <option value="iata_only">Solo IATA</option>
 <option value="solo_hub">Solo Hub</option>
