@@ -1714,9 +1714,11 @@ const pagina    = Math.min(stato.pagina, totPagine);
 const offset    = (pagina - 1) * stato.perPagina;
 const pagRis    = ris.slice(offset, offset + stato.perPagina);
 console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
-const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))].sort();
+const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))]
+.map(n => ({ iso: n, etichetta: etichettaNazione(n) }))
+.sort((a, b) => a.etichetta.localeCompare(b.etichetta, 'it'));
 const nazioniOpt = nazioniSet.map(n =>
-`<option value="${escHtml(n)}" ${stato.filtroNaz===n?'selected':''}>${escHtml(n)}</option>`).join('');
+`<option value="${escHtml(n.iso)}" ${stato.filtroNaz===n.iso?'selected':''}>${escHtml(n.etichetta)}</option>`).join('');
 const stelleOpt = [0,1,2,3,4,5].map(n =>
 `<option value="${n}" ${stato.filtroStelle===n?'selected':''}>${n===0?'Tutte':'≥ '+'★'.repeat(n)}</option>`).join('');
 const ppOpt = [50,100,300].map(n =>
@@ -1838,9 +1840,11 @@ const pagina    = Math.min(stato.pagina, totPagine);
 const offset    = (pagina - 1) * stato.perPagina;
 const pagRis    = ris.slice(offset, offset + stato.perPagina);
 console.log('ATL_RENDER', { indice: ris.findIndex(r => r.icao === 'KATL' || r.iata === 'ATL'), pagina: pagina, offset: offset, presenteNellaPagina: pagRis.some(r => r.icao === 'KATL' || r.iata === 'ATL'), totale: ris.length });
-const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))].sort();
+const nazioniSet = [...new Set(stato.tutti.map(r=>r.nazione).filter(Boolean))]
+.map(n => ({ iso: n, etichetta: etichettaNazione(n) }))
+.sort((a, b) => a.etichetta.localeCompare(b.etichetta, 'it'));
 const nazioniOpt = nazioniSet.map(n =>
-`<option value="${escHtml(n)}" ${stato.filtroNaz===n?'selected':''}>${escHtml(n)}</option>`).join('');
+`<option value="${escHtml(n.iso)}" ${stato.filtroNaz===n.iso?'selected':''}>${escHtml(n.etichetta)}</option>`).join('');
 const ppOpt = [50,100,300].map(n =>
 `<option value="${n}" ${stato.perPagina===n?'selected':''}>${n}</option>`).join('');
 const sogg = getSoggetto();
@@ -1916,6 +1920,30 @@ function getRisultatiConfronto() {
 // ── Filtri Risultati ─────────────────────────────────────────────────────────────
 
 function setFiltroNaz(v)    { stato.filtroNaz = v; stato.pagina = 1; renderTabella(); }
+// BL-0002 (2026-10-21): filtro "Nazione" dei risultati con etichetta "Nome italiano (CODICE)",
+// ordinata per nome; nomi lunghi abbreviati. Il valore dell'option resta il codice ISO.
+const NAZIONI_ABBREVIATE = {
+    CF: 'Centrafrica', GS: 'Georgia del Sud', IO: 'Oceano Indiano Brit.',
+    MP: 'Isole Marianne Sett.', PM: 'St-Pierre e Miquelon', TF: 'Terre Australi Franc.',
+    UM: 'Isole Minori USA', VC: 'St Vincent e Grenadine', VG: 'Isole Vergini Brit.',
+    VI: 'Isole Vergini USA',
+};
+let nomiRegioniIt = null;
+function etichettaNazione(iso) {
+    const codice = String(iso || '').toUpperCase();
+    let nome = NAZIONI_ABBREVIATE[codice] || '';
+    if (!nome) {
+        try {
+            if (!nomiRegioniIt) nomiRegioniIt = new Intl.DisplayNames(['it'], { type: 'region' });
+            nome = nomiRegioniIt.of(codice) || '';
+        } catch (e) {
+            nome = '';
+        }
+    }
+    if (!nome || nome === codice || nome === 'Regione sconosciuta') return codice;
+    if (nome.length > 22) nome = nome.slice(0, 21).trimEnd() + '…';
+    return `${nome} (${codice})`;
+}
 function setFiltroStelle(v) { stato.filtroStelle = parseInt(v)||0; stato.pagina = 1; renderTabella(); }
 
 // ── Init ──────────────────────────────────────────────────────────────────

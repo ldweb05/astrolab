@@ -4581,3 +4581,20 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** altre modifiche indicate dal committente.
 
 ---
+## 21-10-2026 (quater) — Filtro "Nazione" dei risultati con nome completo; valori gialli della barra ricerca non in grassetto
+
+**Componenti modificati:** `www/ricerca.php`, `www/ricerca_rl.php` (JS nella pagina), `www/css/style.css` (una regola). API e DB invariati.
+
+**Obiettivo (richiesta del committente, BL-0002 parziale):** nel menu "Nazione" che filtra i risultati delle ricerche RSM/RL comparivano solo i codici ISO (IT, FR, GL…), poco leggibili per chi non li conosce. Scelta lasciata all'assistente tra sostituire con il nome completo o aggiungere un checkbox.
+
+**Soluzione scelta:** nessun checkbox: etichetta unica "Nome italiano (CODICE)" (es. "Groenlandia (GL)"), utile sia a chi conosce i codici sia a chi no, senza un controllo in piu' da ricordare. Elenco ordinato per nome (`localeCompare` 'it'). Nuova funzione page-scoped `etichettaNazione()` accanto a `setFiltroNaz()`: nomi da `Intl.DisplayNames(['it'])` (stessa API gia' usata in pagina per il menu nazione della ricerca per localita'), tabella fissa `NAZIONI_ABBREVIATE` per i 10 nomi oltre 22 caratteri (es. "Isole Minori USA", "St Vincent e Grenadine"), taglio con "…" come rete di sicurezza; codice da solo se il browser non conosce il codice. Il valore delle option resta il codice ISO, quindi il filtro funziona come prima. Applicato alle due tabelle (standard e cuspidi) di entrambe le pagine. La colonna "Naz." della tabella resta con il codice.
+
+**Grassetto:** i valori gialli della barra blu informativa (`.info-rs b`) erano ancora in grassetto: il ritocco del 20-10 riguardava solo `.header-rs b` in `rs.php`/`transiti.php`. Aggiunto `font-weight: normal` a `.info-rs b` in `css/style.css`: file condiviso, ma la classe `info-rs` e' usata solo da `ricerca.php` e `ricerca_rl.php` (le altre pagine hanno solo un elemento con id `info-rs`, non toccato dalla regola).
+
+**Test eseguiti:** sandbox (patch con blocco opzioni atteso 2 volte per file, rifiuto di doppia applicazione, `php -l`, `git diff --check`, funzione provata con `node` su codici noti, abbreviati, sconosciuti e ordinamento); sul Pi MD5 identici al sandbox per i tre file, `php -l` nel container, `git diff --check`, riavvio di `astrolab-web`; test nel browser del committente superati su RSM e RL. Punto di ripristino: tag locale `pre-nomi-nazioni` su `02bdc8c`.
+
+**Documentazione:** questo handover, `docs/ux-astrolab/BACKLOG_ux.md` (BL-0002 in corso).
+
+**Passo successivo:** resto di BL-0002 (lista soggetti e altre pagine), quando indicato dal committente.
+
+---

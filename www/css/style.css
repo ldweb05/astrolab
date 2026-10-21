@@ -2104,7 +2104,7 @@ main {
     font-size: 12px; display: none; gap: 24px; flex-wrap: wrap; align-items: center;
 }
 .info-rs span { color: #88AACC; }
-.info-rs b    { color: #FFD700; }
+.info-rs b    { color: #FFD700; font-weight: normal; } /* 21-10-2026: valori gialli non in grassetto, come rs.php/transiti.php */
 
 /* ── Filtri bar risultati ──────────────────────────────────────── */
 .filtri-bar {
