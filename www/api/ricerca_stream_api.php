@@ -328,8 +328,9 @@ try {
         $where[] = "iata_code IS NOT NULL AND iata_code <> ''";
         $where[] = "tipo IN ('large_airport','medium_airport','small_airport')";
     } else {
-        // 'tutti'
-        $where[] = "tipo IN ('large_airport','medium_airport','small_airport')";
+        // 'tutti' — include anche gli eliporti (attivi solo se con codice IATA,
+        // es. Groenlandia meridionale): allineamento ad Aladino, 2026-10-21.
+        $where[] = "tipo IN ('large_airport','medium_airport','small_airport','heliport')";
     }
 
     // Filtro singola nazione (legacy — mantenuto per compatibilità con ricerca.php)

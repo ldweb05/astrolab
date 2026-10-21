@@ -4521,3 +4521,31 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** nessuno.
 
 ---
+## 21-10-2026 — Allineamento ad Aladino: punti mancanti nella ricerca RSM (Groenlandia, condizione Denaro)
+
+**Componenti modificati:** `www/api/ricerca_stream_api.php`, `www/api/ricerca_stream_rl_api.php` (una riga ciascuno), nuovo `import/import_aeroporti_fascia65.py`; **DB**: tabella `aeroporti` (+247 righe). Nessun file CSS/JS condiviso toccato, nessuna regola (RuleEngine, Rule Map, FiltroEsclusione, `verificaCondizioneDenaro`) modificata.
+
+**Problema (segnalato dal committente):** soggetto nato a Bucarest il 23/11/2004 (23:10 locali, 21:10 GMT), RSM 2026, condizione Denaro. Aladino restituisce 11-12 localita' in Groenlandia (piu' St. John's e Inhambane), AstroLab al massimo 1-2.
+
+**Diagnosi:**
+- Le regole erano gia' allineate: sulle coordinate di Aladino la pipeline di AstroLab (stesso codice, eseguito in sandbox con libswe) dava le localita' groenlandesi valide per Denaro (Venere in II casa o in pre-ingresso), nessun veto, 7-8 stelle V2; RS 24/11/2026 05:12:36 GMT come Aladino (05:13).
+- Causa 1 — dataset: l'import originale di `aeroporti` da `import/data/airports.csv` (OurAirports, 85.503 righe) aveva scartato tutti i punti con |lat| > 65° (84.616 righe, max 64,9999°). Mancavano Maniitsoq (GL, presente in Aladino), Kangerlussuaq, Sisimiut, Ilulissat, e in Islanda Akureyri, Egilsstadir, Isafjordur.
+- Causa 2 — eliporti mai cercati: la ricerca includeva solo `large/medium/small_airport` anche con "Tutti". In Groenlandia meridionale quasi tutti i centri di Aladino sono eliporti (Narsaq, Nanortalik, Narsarmijit, Kangilinnguit, Arsuk); anche Narsarsuaq e' classificato `heliport` gia' in OurAirports. Con il default "Grandi + Medi" in tutta la Groenlandia restavano solo Nuuk e Qaqortoq.
+
+**Soluzione:**
+- Reimport della sola fascia 65° < |lat| < 66,5° (247 righe, 82 attive): oltre il Circolo Polare (66,56°) le case Placido non sono definite e `swe_houses` ripiega in silenzio su un altro sistema (`SweCalc::calcolaCasePlacidoBackendLibswe()` accetta comunque le cuspidi se finite), quindi quei punti restano esclusi (decisione del committente). Totale ora 84.863.
+- Regole dell'import originale ricostruite e verificate con 0 errori su tutte le 84.616 righe: `icao_code` <- `ident`, `attivo` = large/medium oppure small/heliport/seaplane CON codice IATA (closed e balloonport mai), `militare` = nome con "air base", "military" o "air force".
+- `import/import_aeroporti_fascia65.py`: rende l'import riproducibile (es. VPS), idempotente, in una sola transazione; istruzioni d'uso nel docstring.
+- Tipo di ricerca "Tutti (lento)": aggiunto `heliport` (RSM e RL). Entrano solo gli eliporti attivi, cioe' i 66 con codice IATA nel mondo (+ quelli nuovi della fascia), non le ~22.000 elipiazzole. "Grandi + Medi" e "Solo IATA" invariati.
+
+**Test eseguiti:** sandbox (pipeline AstroLab con libswe compilata, patch applicate una sola volta, `php -l`, `git diff --check`, script di import provato sui dati OurAirports); sul Pi: backup tabella, verifica regole su tutto il DB, import con controllo del conteggio finale, `php -l` nel container, `git diff --check`, riavvio di `astrolab-web`, MD5 dello script identico al sandbox; test nel browser del committente con utente TEST: 14 risultati Denaro con "Tutti", Nuuk incluso. Nota: una prima verifica con l'utente abituale mostrava ancora la ricerca precedente (pagina non ricaricata).
+
+**Punto di ripristino:** `~/backup_astrolab/aeroporti_pre_import65_20261021_083837.sql` (pg_dump della tabella, 84.616 righe) e `git_stato_20261021_083837.txt`.
+
+**Divergenze residue con Aladino (non risolte, in BACKLOG_ux):** Inhambane (MZ) e' scartata da AstroLab per Plutone in II casa RS (`verificaCondizioneDenaro` esclude MA/SA/UR/NE/PLU in II/VIII; la Rule Map Denaro include anche la X casa, mentre il commento in testa a `ricerca_stream_api.php` indica solo II e VIII). Aladino la mostra con 5 stelle. Serve una decisione UX prima di toccare il codice (FREEZE.md, Sistema B).
+
+**Documentazione:** questo handover, `docs/ux-astrolab/BACKLOG_ux.md` (BL-0002 integrato, nuovi BL-0003/0004/0005).
+
+**Passo successivo:** decisione del committente su BL-0003 (Denaro: Plutone/Nettuno in II/VIII e X casa nella Rule Map).
+
+---
