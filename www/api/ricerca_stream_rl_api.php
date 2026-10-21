@@ -96,7 +96,7 @@ require_once __DIR__ . '/../includes/RicercaRSExclusionFilter.php';
  *   lat, lon                → coordinate luogo di nascita
  *   anno                    → anno RS (default: anno corrente)
  *   condizione              → Decima|Lavoro|Amore|Salute|Denaro|Denaro Low|Casa
- *   tipo_ricerca            → large_medium|iata_only|tutti
+ *   tipo_ricerca            → large_medium|iata_only|solo_hub|tutti
  *   escludi_militari        → 1|0 (default 1)
  *   nazione                 → codice ISO singolo (legacy, compatibilità)
  *   nazioni_filtro          → "IT,FR,DE" — lista ISO separata da virgola
@@ -328,6 +328,10 @@ try {
     // Tipo aeroporto
     if ($tipoRicerca === 'large_medium') {
         $where[] = "tipo IN ('large_airport','medium_airport')";
+    } elseif ($tipoRicerca === 'solo_hub') {
+        // "Solo Hub (large + IATA)" - 2026-10-21, prima il frontend inviava large_medium
+        $where[] = "tipo = 'large_airport'";
+        $where[] = "iata_code IS NOT NULL AND iata_code <> ''";
     } elseif ($tipoRicerca === 'iata_only') {
         $where[] = "iata_code IS NOT NULL AND iata_code <> ''";
         $where[] = "tipo IN ('large_airport','medium_airport','small_airport')";

@@ -130,6 +130,7 @@ BARRA CONTROLLI PRINCIPALE
 <option value="tutti" selected>Tutti</option>
 <option value="large_medium">Grandi + Medi</option>
 <option value="iata_only">Solo IATA</option>
+<option value="solo_hub">Solo Hub</option>
 </select>
 </div>
 <div class="form-group" id="wrap-nazione-localita" style="display:none">
@@ -357,21 +358,6 @@ Tolleranza dinamica (Orbe)
 <option value="3">≥ ★★★</option>
 <option value="4">≥ ★★★★</option>
 <option value="5">★★★★★</option>
-</select>
-</div>
-<!-- Importanza Aeroporto -->
-<div class="avanzati-group">
-<label>
-Importanza aeroporto
-<span class="tooltip-wrap">
-<i class="tooltip-icon">i</i>
-<span class="tooltip-box">Limita la ricerca ai soli grandi Hub internazionali (large_airport con codice IATA) per mostrare solo mete facilmente raggiungibili con voli di linea. Sovrascrive il selettore "Aeroporti" nella barra principale se diverso. Non pertinente per la Ricerca a Griglia.</span>
-</span>
-</label>
-<select id="filt-importanza">
-<option value="">— Usa il selettore principale —</option>
-<option value="solo_hub">Solo Hub (large + IATA)</option>
-<option value="iata_only">Aeroporti IATA</option>
 </select>
 </div>
 <!-- Allargamento Automatico Orbe (solo Cuspidi) -->
@@ -755,12 +741,11 @@ document.getElementById('cusp-tol-gradi').value  = p.tol_gradi;
 document.getElementById('cusp-tol-minuti').value = p.tol_minuti;
 }
 /**
-* Calcola tipo_ricerca effettivo tenendo conto dell'override "importanza".
+* Tipo di ricerca aeroporti scelto nella barra principale.
+* 2026-10-21: rimosso l'override "Importanza aeroporto" (doppione); "Solo Hub" e' ora
+* una voce del selettore principale.
 */
 function getTipoRicercaEffettivo() {
-const override = document.getElementById('filt-importanza').value;
-if (override === 'solo_hub')    return 'large_medium';
-if (override === 'iata_only')   return 'iata_only';
 return document.getElementById('tipo-ricerca').value;
 }
 // ════════════════════════════════════════════════════════════════════════

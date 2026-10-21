@@ -4598,3 +4598,21 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** resto di BL-0002 (lista soggetti e altre pagine), quando indicato dal committente.
 
 ---
+## 21-10-2026 (quinquies) — "Solo Hub" corretto (solo large_airport con IATA) e spostato nel menu principale; rimosso "Importanza aeroporto"
+
+**Componenti modificati:** `www/api/ricerca_stream_api.php`, `www/api/ricerca_stream_rl_api.php`, `www/api/cuspidi_search_api.php` (nuovo valore `tipo_ricerca=solo_hub`), `www/ricerca.php`, `www/ricerca_rl.php` (HTML/JS nella pagina), `www/help_ricerca.php`. Nessun file CSS/JS condiviso toccato, DB invariato.
+
+**Problema:** l'opzione "Solo Hub (large + IATA)" di "Importanza aeroporto" faceva inviare `large_medium`, cioe' lo stesso filtro di "Grandi + Medi": non restringeva ai grandi scali come prometteva. Emerso con il nuovo default "Tutti" (voce 21-10-2026 ter), che rende "Solo Hub" il passo naturale per affinare.
+
+**Soluzione:**
+- Nuovo valore `solo_hub` nelle tre API che ricevono il tipo di ricerca dalle pagine RSM/RL (RSM, RL, Cuspidi): `tipo = 'large_airport'` con `iata_code` non vuoto. Le API sono state aggiornate prima delle pagine, perche' un valore sconosciuto finisce nel ramo "tutti". La Griglia non usa `tipo_ricerca`.
+- Su richiesta del committente, "Importanza aeroporto" (doppione del menu principale: "Aeroporti IATA" = "Solo IATA") e' stato rimosso dai Filtri avanzati; "Solo Hub" e' la quarta voce del menu principale "Aeroporti" (Tutti -> Grandi + Medi -> Solo IATA -> Solo Hub). `getTipoRicercaEffettivo()` ora legge solo `#tipo-ricerca`; nessun riferimento residuo a `filt-importanza`.
+- Guida `help_ricerca.php` aggiornata.
+
+**Test eseguiti:** sandbox (patch con contesti univoci, rifiuto di doppia applicazione, `php -l`, `git diff --check`); sul Pi MD5 identici al sandbox per tutti i file, `php -l` nel container, `git diff --check` sui file della feature, riavvio di `astrolab-web`; test nel browser del committente (Denaro RSM 2026, punti cercati "su N totali"): Tutti 8.879, Grandi + Medi 4.653, Solo Hub 1.154; Cuspidi e RL senza errori, su entrambe le pagine. Punto di ripristino: tag locale `pre-solo-hub` su `db579f1`.
+
+**Documentazione:** questo handover, `www/help_ricerca.php`.
+
+**Passo successivo:** BL-0004 (eliporti nelle altre ricerche, a partire da Cuspidi).
+
+---
