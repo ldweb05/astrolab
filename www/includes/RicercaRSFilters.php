@@ -43,7 +43,8 @@ function getRuleMapEsclusione(string $condizione): array {
         'Salute'     => ['malevoli' => [4],     'case' => [6, 12]],
 
         // Entrate/uscite, eredità, investimenti → II e VIII
-        'Denaro'     => ['malevoli' => $tutti,  'case' => [2, 8, 10]],
+        // UX-0026 (2026-10-21): X casa rimossa (prima [2, 8, 10]).
+        'Denaro'     => ['malevoli' => $tutti,  'case' => [2, 8]],
 
         // Piccole entrate costanti → solo II; esclusi solo i tre principali
         'Denaro Low' => ['malevoli' => $forti,  'case' => [2, 8]],

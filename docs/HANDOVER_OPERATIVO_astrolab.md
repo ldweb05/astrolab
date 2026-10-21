@@ -4549,3 +4549,18 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** decisione del committente su BL-0003 (Denaro: Plutone/Nettuno in II/VIII e X casa nella Rule Map).
 
 ---
+## 21-10-2026 (bis) — Denaro: X casa rimossa dalla Rule Map di esclusione (UX-0026)
+
+**Componenti modificati:** `www/includes/RicercaRSFilters.php` (una riga in `getRuleMapEsclusione()`), `docs/ux-astrolab/DECISION_LOG_ux.md` (UX-0026), `docs/ux-astrolab/BACKLOG_ux.md` (BL-0003 chiuso).
+
+**Decisione del committente (BL-0003):** per Denaro la X casa esce dalla Rule Map (`[2, 8, 10]` -> `[2, 8]`), coerente con il commento in testa a `ricerca_stream_api.php`, con la doc di `verificaCondizioneDenaro()` e con Denaro Low. Nettuno e Plutone in II/VIII restano escludenti: divergenza voluta con Aladino, che mostra Inhambane e Vilanculos (MZ) nonostante Plutone in II casa RS.
+
+**Effetto:** funzione condivisa, vale per RSM (`ricerca_stream_api.php`), RL (`ricerca_stream_rl_api.php`) e Griglia (`ricerca_griglia_api.php`). Saturno in X continua a escludere per tutte le condizioni tramite `FiltroEsclusione.php` (non toccato): con questa modifica tornano ammessi per Denaro solo Marte, Urano, Nettuno e Plutone in X.
+
+**Test eseguiti:** sandbox (patch applicata una sola volta, `php -l`, `git diff --check`); sul Pi MD5 identici al sandbox (codice e DECISION_LOG), `php -l` nel container, `git diff --check`, riavvio di `astrolab-web`; test nel browser del committente: stessa ricerca Denaro RSM 2026 con "Tutti" -> stesse 14 localita' (nessun malefico in X per questo soggetto nelle localita' coinvolte), ricerca a Griglia e RL senza errori. Punto di ripristino: tag locale `pre-ux0026-denaro-rulemap` su `7e43379`.
+
+**Documentazione:** questo handover, UX-0026, BL-0003.
+
+**Passo successivo:** altre modifiche indicate dal committente.
+
+---

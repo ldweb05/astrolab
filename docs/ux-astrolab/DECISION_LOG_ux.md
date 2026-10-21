@@ -819,4 +819,21 @@ Questo documento contiene esclusivamente decisioni formalmente valutate.
 
 ---
 
+### UX-0026 - Denaro: X casa rimossa dalla Rule Map di esclusione radicale, Nettuno/Plutone in II/VIII restano escludenti
+
+- **Data:** 2026-10-21
+- **Area:** `includes/RicercaRSFilters.php` - `getRuleMapEsclusione('Denaro')`. Funzione condivisa: vale per `api/ricerca_stream_api.php` (RSM), `api/ricerca_stream_rl_api.php` (RL) e `api/ricerca_griglia_api.php` (Griglia).
+- **Stato:** APPROVATA
+- **Problema osservato:** nel confronto con Aladino (soggetto nato a Bucarest il 23/11/2004, RSM 2026, condizione Denaro) la Rule Map di Denaro escludeva le RS con MA/SA/UR/NE/PLU in II, VIII **e X** casa (`[2, 8, 10]`), mentre il commento in testa a `ricerca_stream_api.php`, la doc di `verificaCondizioneDenaro()` e Denaro Low indicano solo II e VIII. Nello stesso confronto Aladino mostra Inhambane e Vilanculos (MZ) con 5 stelle nonostante Plutone in II casa RS.
+- **Decisione:**
+  1. La X casa esce dalla Rule Map di Denaro: `'case' => [2, 8]`. I malefici in X non escludono piu' radicalmente una RS per Denaro.
+  2. Nettuno e Plutone in II/VIII continuano a escludere (Rule Map e `verificaCondizioneDenaro()` invariate su questo punto): scelta del committente, divergenza voluta rispetto ad Aladino (Inhambane/Vilanculos restano escluse).
+- **Volutamente invariato:** Saturno in X continua a escludere per tutte le condizioni tramite `FiltroEsclusione.php` (filtro separato, regola 4 dell'elenco del filtro); Denaro Low gia' `[2, 8]`.
+- **Motivazione:** coerenza interna (codice allineato alla propria documentazione e a Denaro Low) e allineamento ad Aladino sulle case finanziarie.
+- **Costo tecnico stimato:** BASSO (una riga).
+- **Rischi:** funzione condivisa da tre ricerche - verificare RSM, RL e Griglia con condizione Denaro.
+- **Documento collegato:** `docs/HANDOVER_OPERATIVO_astrolab.md` voce 21-10-2026, `docs/ux-astrolab/BACKLOG_ux.md` BL-0003.
+
+---
+
 Nessuna ulteriore decisione registrata.
