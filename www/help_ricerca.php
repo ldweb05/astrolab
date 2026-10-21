@@ -40,7 +40,7 @@ $auth->richiediLogin();
         <h2>Ricerca Migliori Località (RSM v3)</h2>
         <p>Dalla pagina "Ricerca Località" imposta <strong>Soggetto</strong>, <strong>Anno RS</strong>, <strong>Condizione</strong> (il tema su cui valutare stelline e punteggio) e <strong>Tipo località</strong>:</p>
         <ul>
-            <li><strong>Aeroporti</strong> — disponibile per tutti i piani.</li>
+            <li><strong>Aeroporti</strong> — disponibile per tutti i piani. Accanto compare il selettore <strong>Aeroporti</strong>: <em>Tutti</em> (predefinito, comprende anche gli eliporti con voli di linea) oppure <em>Grandi + Medi</em> / <em>Solo IATA</em> per restringere la ricerca se i risultati sono troppi.</li>
             <li><strong>Località</strong> (ricerca libera per nazione, non limitata agli aeroporti) — <span class="help-supporter">riservata al piano Supporter</span>.</li>
         </ul>
         <p>La ricerca ha tre modalità:</p>
@@ -56,7 +56,7 @@ $auth->richiediLogin();
         <p>Apri il pannello "⚙️ Filtri avanzati" per affinare la ricerca:</p>
         <ul>
             <li><strong>Geografici</strong> — Macro-Area/Regione (limita a un continente), Fascia Oraria/Longitudine (per contenere il jet-lag).</li>
-            <li><strong>Tecnici</strong> — tipo Aeroporti (Grandi+Medi / Solo IATA / Tutti), esclusione basi Militari, Stelline minime, Importanza aeroporto, Allargamento automatico dell'orbe se la ricerca non trova risultati.</li>
+            <li><strong>Tecnici</strong> — esclusione basi Militari, Stelline minime, Importanza aeroporto, Allargamento automatico dell'orbe se la ricerca non trova risultati.</li>
             <li><strong>Tolleranza dinamica dell'Orbe</strong> — <span class="help-supporter">riservata al piano Supporter</span>.</li>
         </ul>
     </div>

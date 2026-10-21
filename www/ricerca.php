@@ -78,6 +78,14 @@ BARRA CONTROLLI PRINCIPALE
 <option value="localita" <?= $tipoLocalitaDefault === 'localita' ? 'selected' : '' ?>>Località</option>
 </select>
 </div>
+<div class="form-group" id="wrap-tipo-ricerca">
+<label>Aeroporti</label>
+<select id="tipo-ricerca">
+<option value="tutti" selected>Tutti</option>
+<option value="large_medium">Grandi + Medi</option>
+<option value="iata_only">Solo IATA</option>
+</select>
+</div>
 <div class="form-group" id="wrap-nazione-localita" style="display:none">
 <label>Nazione</label>
 <select id="nazione-localita">
@@ -286,15 +294,6 @@ Tolleranza dinamica (Orbe)
 <option value="normale">Normale: ±1° 0′</option>
 <option value="largo">Largo: ±2° 0′</option>
 <option value="larghissimo">Larghissimo: ±5° 0′</option>
-</select>
-</div>
-<!-- Filtri aeroportuali -->
-<div class="avanzati-group">
-<label>Aeroporti</label>
-<select id="tipo-ricerca">
-<option value="large_medium">Grandi + Medi</option>
-<option value="iata_only">Solo IATA</option>
-<option value="tutti">Tutti (lento)</option>
 </select>
 </div>
 <div class="avanzati-group">
@@ -629,6 +628,7 @@ val = 'aeroporti';
 const ricercaLocalita = val === 'localita';
 document.getElementById('wrap-nazione-localita').style.display = ricercaLocalita ? '' : 'none';
 document.getElementById('wrap-numero-localita').style.display = ricercaLocalita ? '' : 'none';
+document.getElementById('wrap-tipo-ricerca').style.display = ricercaLocalita ? 'none' : '';
 }
 
 function onModalitaRegolaChange(select) {

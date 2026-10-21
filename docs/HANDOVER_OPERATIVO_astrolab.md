@@ -4564,3 +4564,20 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** altre modifiche indicate dal committente.
 
 ---
+## 21-10-2026 (ter) — Selettore "Aeroporti" nella barra principale, default "Tutti" (RSM e RL)
+
+**Componenti modificati:** `www/ricerca.php`, `www/ricerca_rl.php` (HTML/JS nella pagina), `www/help_ricerca.php`. API invariate (default di `tipo_ricerca` lato server resta `large_medium` per le chiamate che non lo passano). Nessun file CSS/JS condiviso toccato.
+
+**Obiettivo (richiesta del committente):** non dover aprire ogni volta i Filtri avanzati per scegliere "Tutti" gli aeroporti; partire da "Tutti" e lasciare all'astrologo il compito di restringere (Grandi + Medi, Solo IATA, Importanza aeroporto) se i risultati sono troppi.
+
+**Soluzione:** il gruppo "Aeroporti" (`select#tipo-ricerca`) e' stato spostato dai Filtri avanzati alla barra principale, subito dopo "Tipo localita'", nel nuovo contenitore `#wrap-tipo-ricerca`. Stesso id, quindi `getTipoRicercaEffettivo()` e l'override "Importanza aeroporto" funzionano invariati. Opzioni in ordine: "Tutti" (preselezionato, etichetta senza "(lento)" su scelta del committente), "Grandi + Medi", "Solo IATA". `onTipoLocalitaChange()` nasconde il selettore quando "Tipo localita'" = Localita' (in quel ramo non ha effetto). "Importanza aeroporto" resta nei Filtri avanzati. Guida `help_ricerca.php` aggiornata.
+
+**Nota tecnica emersa:** l'opzione "Solo Hub (large + IATA)" di "Importanza aeroporto" invia `large_medium`, cioe' lo stesso filtro di "Grandi + Medi", non i soli large con IATA. Non modificata.
+
+**Test eseguiti:** sandbox (patch con contesti univoci, rifiuto di doppia applicazione, `php -l`, `git diff --check`); sul Pi MD5 identici al sandbox per i tre file, `php -l` nel container, `git diff --check`, riavvio di `astrolab-web`; test nel browser del committente superati su RSM e RL (posizione e default del selettore, scomparsa con Localita', stesse 14 localita' Denaro senza toccare nulla, "Grandi + Medi" riduce i risultati). Punto di ripristino: tag locale `pre-selettore-aeroporti` su `ae458fa`.
+
+**Documentazione:** questo handover, `www/help_ricerca.php`.
+
+**Passo successivo:** altre modifiche indicate dal committente.
+
+---
