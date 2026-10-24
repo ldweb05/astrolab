@@ -416,6 +416,8 @@ Allargamento automatico orbe
 </div><!-- /avanzati-grid avanzata -->
 </div><!-- /pannello-avanzati -->
 <!-- ── Info RS ──────────────────────────────────────────────────────── -->
+<!-- Pannello "Sessioni RL salvate" (montato da js/sessioni_rs_ricerca.js, data-tipo="rl") -->
+<div id="sessioni-rs-ricerca" data-tipo="rl"></div>
 <div class="info-rs" id="info-rs">
 <div><span>RL GMT: </span><b id="info-rs-gmt">—</b></div>
 <div><span>Condizione: </span><b id="info-rs-cond">—</b></div>
@@ -2041,6 +2043,7 @@ if (!eraAperto) target.classList.add('aperto');
 }
 </script>
 <script src="js/sicurezza.js"></script>
+<script src="js/sessioni_rs_ricerca.js"></script>
 <script src="js/coord_gms.js"></script>
 <script src="js/ricerca_astri.js"></script>
 <script src="js/ricerca_filtri_geo.js"></script>

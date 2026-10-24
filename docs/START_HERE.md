@@ -360,6 +360,8 @@ Riusa integralmente il motore di valutazione esistente (RuleEngine, Rule Map di 
 
 È disponibile in una pagina dedicata (Ricerca Località RL), separata dalla ricerca RSM per non introdurre accoppiamento tra i due motori.
 
+**Sessioni salvate nelle pagine di ricerca** (24-10-2026): Ricerca RSM mostra, per il soggetto selezionato, le sessioni RS salvate (richiama, note, modifica note, elimina); Ricerca RL mostra solo le sessioni RL salvate (richiama, note, elimina). RS e RL restano separate. Codice in `js/sessioni_rs_ricerca.js`.
+
 ---
 
 # Comparator

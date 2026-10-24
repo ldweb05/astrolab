@@ -4657,3 +4657,26 @@ Nessuna modifica al margine/`vbSize` globale del `viewBox`: intervento isolato a
 **Passo successivo:** proseguire la campagna di confronto con Aladino (Denaro e le altre condizioni); valutare se aggiornare `tests/test_confronto_aladino_casa.php` con FiltroEsclusione e verifica DB.
 
 ---
+## 24-10-2026 — Sessioni salvate in Ricerca RSM e Ricerca RL
+
+**Componenti modificati:** nuovo `www/js/sessioni_rs_ricerca.js`; `www/ricerca.php` e `www/ricerca_rl.php` (3 righe ciascuno: contenitore `#sessioni-rs-ricerca` prima di "Info RS" e inclusione dello script dopo `js/sicurezza.js`). API, DB, `rs.php`, `rl.php` e file CSS/JS condivisi invariati.
+
+**Obiettivo:** gestire le sessioni salvate anche dalle pagine di ricerca, senza dover entrare in `rs.php`/`rl.php`.
+
+**Comportamento:**
+- Ricerca RSM: card collassabile (chiusa) "Sessioni RS salvate per questo soggetto" per il soggetto di `#sel-soggetto`; colonne come `rs.php`; azioni richiama (apre `rs.php` in nuova scheda), leggi note, modifica note (`modifica_rs`), elimina (`elimina_rs`).
+- Ricerca RL (`data-tipo="rl"`): solo sessioni RL (`lista_rl`), colonne come `rl.php`; richiama (`rl.php`), leggi note, elimina (`elimina_rl`). Nessuna modifica note: l'API non ha `modifica_rl` (BL-0006).
+- RS e RL mai mescolate (precisazione del committente).
+- L'elenco si ricarica al cambio soggetto e al rientro sulla scheda (`visibilitychange`/`focus`, max 1 ogni 1,5 s), ad esempio dopo aver salvato in un'altra scheda.
+
+**Decisioni tecniche:** un solo file JS nuovo, configurato da `data-tipo`, invece di duplicare il codice nelle due pagine o rifattorizzare `rs.php`/`rl.php`; id interni con prefisso `srr-`; azioni con delega `data-srr` (niente dati negli `onclick`) e testi con `escHtml()`; riuso delle classi gia' in `css/style.css`; toggle proprio perche' `toggleCollapse()` sta in `zodiac_wheel.js`, non caricato dalle pagine di ricerca.
+
+**Problemi incontrati:** la consegna del JS in un unico comando base64 si e' troncata; risolto con payload compresso diviso in 4 pezzi in `/tmp/astrolab_srr.b64` (MD5 per pezzo, rimosso a fine scrittura).
+
+**Test eseguiti:** sandbox (`node --check`, DOM simulato con jsdom per RS e RL, rifiuto di doppia applicazione delle patch); sul Pi MD5 identici al sandbox, `node --check`, `php -l` nel container, `git diff --check`, riavvio di `astrolab-web`; test nel browser del committente superati su entrambe le pagine. Punto di ripristino: tag locale `pre-sessioni-rs-ricerca` su `048139f`.
+
+**Documentazione:** questo handover, `docs/START_HERE.md`, `docs/ux-astrolab/BACKLOG_ux.md` (BL-0006).
+
+**Passo successivo:** BL-0006 (modifica note delle sessioni RL).
+
+---
