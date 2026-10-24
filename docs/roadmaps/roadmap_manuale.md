@@ -1,7 +1,7 @@
 # Roadmap: Manuale d'Uso ASTROLAB (v2)
 
 **Creata:** 24-10-2026
-**Stato:** Fase 0 in corso
+**Stato:** Fase 0 completata (24-10-2026), prossima Fase 1
 **Sostituisce:** la struttura di `docs/roadmaps/roadmap_aiuto.md`, che resta come archivio
 storico della prima versione del menu Help (Fasi 1-5, pagine `help_*.php`).
 
@@ -87,6 +87,11 @@ Organizzata sul percorso reale di lavoro dell'astrologo.
 | 23 | Convertitore | `help_convertitore.php` |
 | 24 | Domande frequenti e limiti dei piani | — |
 
+### Appendice — Guida per il soggetto (decisione D3)
+Mini-capitolo separato, scritto per il soggetto che accede con il proprio CODICE:
+primo accesso e cambio password, Area soggetto, Diario RSM (cosa vede e cosa no).
+Pagine di riferimento: `cambio_password_soggetto.php`, `area_soggetto.php`, `diario.php`.
+
 Le pagine admin (`admin_utenti.php`, `admin_accessi.php`) restano fuori dal manuale per
 astrologi.
 
@@ -118,7 +123,7 @@ astrologi.
 
 ## 5. Fasi
 
-- [~] **Fase 0** — Questa roadmap e decisioni aperte (§6). Solo documentazione.
+- [x] **Fase 0** — Questa roadmap e decisioni (§6). Solo documentazione. Completata 24-10-2026.
 - [ ] **Fase 1** — Scheletro: nuovo `www/css/help.css` dedicato, template di pagina,
       indice e navigazione "← precedente / successivo →", nuovo menu Help in
       `header_nav.php`. Nessun file condiviso esistente toccato oltre a `header_nav.php`.
@@ -132,14 +137,14 @@ astrologi.
 
 ---
 
-## 6. Decisioni aperte
+## 6. Decisioni (prese dal committente il 24-10-2026)
 
-| # | Domanda | Proposta |
+| # | Domanda | Decisione |
 |---|---|---|
-| D1 | Riscrivere le pagine `help_*.php` esistenti o affiancarne di nuove? | Riscrivere e rinumerare, recuperando i contenuti validi |
-| D2 | Screenshot nel manuale? | Da decidere (utili ma vanno rifatti a ogni modifica grafica) |
-| D3 | Mini-capitolo per i soggetti che accedono con il CODICE? | Da decidere |
-| D4 | Branch di lavoro | `main` con tag di ripristino prima di ogni intervento |
+| D1 | Riscrivere le pagine `help_*.php` esistenti o affiancarne di nuove? | **Riscrivere e rinumerare**, recuperando i contenuti validi |
+| D2 | Screenshot nel manuale? | **No**: solo nomi esatti dei pulsanti e relative icone |
+| D3 | Mini-capitolo per i soggetti che accedono con il CODICE? | **Sì, breve**: Appendice in §3 |
+| D4 | Branch di lavoro | **`main`** con tag di ripristino prima di ogni intervento |
 
 ---
 
@@ -147,4 +152,5 @@ astrologi.
 
 | Data | Fase | Cosa |
 |---|---|---|
-| 24-10-2026 | 0 | Creata la roadmap |
+| 24-10-2026 | 0 | Creata la roadmap (commit 6ec33f0) |
+| 24-10-2026 | 0 | Registrate le decisioni D1-D4, aggiunta Appendice per il soggetto; Fase 0 completata |
