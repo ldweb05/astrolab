@@ -1,7 +1,7 @@
 # Roadmap: Manuale d'Uso ASTROLAB (v2)
 
 **Creata:** 24-10-2026
-**Stato:** Fase 0 completata (24-10-2026), prossima Fase 1
+**Stato:** Fase 1 in corso (passi 1-3 di 9 completati il 24-10-2026)
 **Sostituisce:** la struttura di `docs/roadmaps/roadmap_aiuto.md`, che resta come archivio
 storico della prima versione del menu Help (Fasi 1-5, pagine `help_*.php`).
 
@@ -124,7 +124,14 @@ astrologi.
 ## 5. Fasi
 
 - [x] **Fase 0** — Questa roadmap e decisioni (§6). Solo documentazione. Completata 24-10-2026.
-- [ ] **Fase 1** — Scheletro: nuovo `www/css/help.css` dedicato, template di pagina,
+- [~] **Fase 1** — Architettura approvata il 24-10-2026: una sola pagina `www/manuale.php?c=N`,
+      elenco capitoli in `www/includes/manuale_capitoli.php`, testo di ogni capitolo in
+      `www/includes/manuale/cNN.php` (protetto da accesso diretto), vecchie `help_*.php`
+      trasformate in reindirizzamenti. Passi: 1 tag, 2 `help.css`, 3 elenco capitoli,
+      4 `manuale.php`, 5 file capitolo (testo attuale come versione provvisoria),
+      6 test astrologo/soggetto, 7 link in `header_nav.php`/`dashboard.php`/`diario.php`,
+      8 reindirizzamenti, 9 documentazione e commit.
+      Scheletro: nuovo `www/css/help.css` dedicato, template di pagina,
       indice e navigazione "← precedente / successivo →", nuovo menu Help in
       `header_nav.php`. Nessun file condiviso esistente toccato oltre a `header_nav.php`.
 - [ ] **Fase 2** — Capitolo pilota 11 + 12, per fissare tono e profondità.
@@ -154,3 +161,4 @@ astrologi.
 |---|---|---|
 | 24-10-2026 | 0 | Creata la roadmap (commit 6ec33f0) |
 | 24-10-2026 | 0 | Registrate le decisioni D1-D4, aggiunta Appendice per il soggetto; Fase 0 completata |
+| 24-10-2026 | 1 | Passi 1-3: tag `pre-manuale-fase1-24-10-2026`, creati `www/css/help.css` e `www/includes/manuale_capitoli.php` (non ancora usati da nessuna pagina). Prossimo passo: 4, `manuale.php` |

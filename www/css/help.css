@@ -1,0 +1,133 @@
+/*
+ * css/help.css — Stile del Manuale d'uso AstroLab (manuale.php)
+ * docs/roadmaps/roadmap_manuale.md, Fase 1.
+ * Usato SOLO dalle pagine del manuale: non modifica nessuna classe di style.css.
+ */
+
+:root {
+    --man-blu: #2C3E6B;
+    --man-oro: #D4C9A8;
+    --man-sfondo: #F2EDE4;
+    --man-testo: #444;
+    --man-tenue: #888;
+    --man-bordo: #E4DED0;
+}
+
+body.manuale { background: var(--man-sfondo); margin: 0; }
+
+/* --- Barra superiore --------------------------------------------------- */
+.man-topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--man-blu); color: #fff;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 20px;
+}
+.man-topbar .man-marchio { font-weight: 600; font-size: 15px; color: #fff; text-decoration: none; }
+.man-topbar select {
+    flex: 1 1 260px; max-width: 460px;
+    font-size: 13px; padding: 5px 8px; border-radius: 6px;
+    border: 1px solid var(--man-oro); background: #fff; color: var(--man-blu);
+}
+.man-topbar .man-chiudi { margin-left: auto; font-size: 12px; color: var(--man-oro); text-decoration: none; }
+.man-topbar .man-chiudi:hover { color: #fff; }
+
+/* --- Corpo del capitolo ------------------------------------------------ */
+.man-main { max-width: 780px; margin: 30px auto; padding: 0 20px 60px; }
+.man-intestazione { border-bottom: 2px solid var(--man-blu); padding-bottom: 14px; margin-bottom: 26px; }
+.man-parte { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--man-tenue); margin: 0 0 4px; }
+.man-intestazione h1 { color: var(--man-blu); font-size: 22px; margin: 0; }
+
+.man-section, .help-section { margin-bottom: 30px; }
+.man-section h2, .help-section h2 {
+    color: var(--man-blu); font-size: 17px; margin: 0 0 10px;
+    border-left: 3px solid var(--man-oro); padding-left: 12px;
+}
+.man-section h3 { color: var(--man-blu); font-size: 15px; margin: 18px 0 6px; }
+.man-section p, .man-section li,
+.help-section p, .help-section li { color: var(--man-testo); font-size: 14px; line-height: 1.7; }
+.man-section ul, .help-section ul, .help-section ol { padding-left: 22px; }
+.man-section li, .help-section li { margin-bottom: 6px; }
+
+/* Nome di un pulsante o di una voce esattamente come appare a schermo */
+.man-pulsante {
+    display: inline-block; padding: 0 7px; border-radius: 4px;
+    background: #fff; border: 1px solid var(--man-oro);
+    color: var(--man-blu); font-weight: 600; font-size: 13px; white-space: nowrap;
+}
+
+/* --- Passo passo: elenco numerato con cerchi --------------------------- */
+ol.man-passi { list-style: none; counter-reset: passo; padding-left: 0; }
+ol.man-passi > li { counter-increment: passo; position: relative; padding-left: 38px; margin-bottom: 12px; }
+ol.man-passi > li::before {
+    content: counter(passo);
+    position: absolute; left: 0; top: 1px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--man-blu); color: #fff;
+    font-size: 12px; font-weight: 600; line-height: 24px; text-align: center;
+}
+
+/* --- Riquadri ----------------------------------------------------------- */
+.man-box, .help-note {
+    border-radius: 6px; padding: 14px 18px; margin: 14px 0;
+    font-size: 13.5px; line-height: 1.65;
+}
+.man-box > :first-child { margin-top: 0; }
+.man-box > :last-child { margin-bottom: 0; }
+.man-box .man-box-titolo { display: block; font-weight: 700; margin-bottom: 6px; }
+
+/* 📐 Approfondimento astrologico: registro professionale */
+.man-astro { background: #EEF1F8; border: 1px solid #C9D2E6; border-left: 4px solid var(--man-blu); color: #2B3550; }
+/* ⚠️ Attenzione */
+.man-attenzione { background: #FFF4E5; border: 1px solid #F0D2A8; border-left: 4px solid #D9902F; color: #6B4A1E; }
+/* 💎 Piano Free / Supporter */
+.man-piano, .help-note { background: #FFF8ED; border: 1px solid #E8DCC8; color: #6B5D3E; }
+.man-piano { border-left: 4px solid var(--man-oro); }
+.help-supporter { color: #6B5D3E; font-weight: 600; }
+/* Capitolo in redazione o versione provvisoria */
+.man-provvisorio { background: #fff; border: 1px dashed var(--man-oro); color: var(--man-tenue); font-size: 13px; }
+
+/* Vedi anche */
+.man-vedi { font-size: 13px; color: var(--man-tenue); }
+.man-vedi a { color: var(--man-blu); }
+
+/* --- Navigazione precedente / successivo ------------------------------- */
+.man-nav {
+    display: flex; justify-content: space-between; gap: 12px;
+    border-top: 1px solid var(--man-bordo); margin-top: 40px; padding-top: 18px;
+}
+.man-nav a {
+    flex: 0 1 48%; text-decoration: none; color: var(--man-blu);
+    background: #fff; border: 1px solid var(--man-bordo); border-radius: 8px;
+    padding: 10px 14px; font-size: 13px;
+}
+.man-nav a:hover { border-color: var(--man-oro); }
+.man-nav a small { display: block; color: var(--man-tenue); font-size: 11px; }
+.man-nav .man-succ { margin-left: auto; text-align: right; }
+
+/* --- Indice generale ----------------------------------------------------- */
+.man-indice h2 { color: var(--man-blu); font-size: 16px; margin: 26px 0 8px; border-left: 3px solid var(--man-oro); padding-left: 12px; }
+.man-indice ol { list-style: none; padding-left: 0; margin: 0; }
+.man-indice li { margin: 0; }
+.man-indice a {
+    display: flex; gap: 10px; padding: 7px 10px; border-radius: 6px;
+    color: var(--man-testo); text-decoration: none; font-size: 14px;
+}
+.man-indice a:hover { background: #fff; color: var(--man-blu); }
+.man-indice .man-num { min-width: 26px; color: var(--man-blu); font-weight: 600; }
+
+/* --- Telefono ------------------------------------------------------------ */
+@media (max-width: 600px) {
+    .man-topbar { padding: 10px 16px; }
+    .man-topbar select { max-width: none; }
+    .man-main { margin-top: 20px; padding: 0 16px 40px; }
+    .man-nav { flex-direction: column; }
+    .man-nav a { flex-basis: auto; }
+}
+
+/* --- Stampa --------------------------------------------------------------- */
+@media print {
+    body.manuale { background: #fff; }
+    .man-topbar, .man-nav { display: none; }
+    .man-main { margin: 0; max-width: none; }
+    .man-box { break-inside: avoid; }
+}
